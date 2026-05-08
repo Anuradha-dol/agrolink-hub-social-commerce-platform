@@ -44,6 +44,18 @@ public class PostApiController {
         return ResponseEntity.ok(ApiResponse.success("Post created", toPostResponse(post)));
     }
 
+    @PutMapping("/{postId}")
+    public ResponseEntity<ApiResponse<PostResponse>> updatePost(
+            @AuthenticationPrincipal User user,
+            @PathVariable Long postId,
+            @RequestParam(value = "content", required = false) String content,
+            @RequestParam(value = "image", required = false) MultipartFile image,
+            @RequestParam(value = "removeMedia", required = false, defaultValue = "false") boolean removeMedia
+    ) {
+        Post post = postService.updatePost(user.getUserId(), postId, content, image, removeMedia);
+        return ResponseEntity.ok(ApiResponse.success("Post updated", toPostResponse(post)));
+    }
+
     @DeleteMapping("/{postId}")
     public ResponseEntity<ApiResponse<Void>> deletePost(
             @AuthenticationPrincipal User user,
@@ -79,6 +91,25 @@ public class PostApiController {
                 .map(this::toPostResponse)
                 .toList();
         return ResponseEntity.ok(ApiResponse.success("Feed posts fetched", paginate(feed, page, size)));
+    }
+
+    @GetMapping("/reels")
+    public ResponseEntity<ApiResponse<Page<PostResponse>>> reels(
+            @AuthenticationPrincipal User user,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        List<PostResponse> reels = postService.getFeedPosts(user.getUserId()).stream()
+                .filter(post -> "VIDEO".equalsIgnoreCase(post.getMediaType()))
+                .map(this::toPostResponse)
+                .toList();
+        return ResponseEntity.ok(ApiResponse.success("Reels fetched", paginate(reels, page, size)));
+    }
+
+    @PostMapping("/{postId}/reel-view")
+    public ResponseEntity<ApiResponse<Long>> markReelView(@PathVariable Long postId) {
+        long viewCount = postService.incrementReelView(postId);
+        return ResponseEntity.ok(ApiResponse.success("Reel view counted", viewCount));
     }
 
     @GetMapping("/{postId}/comments")
@@ -126,10 +157,14 @@ public class PostApiController {
     private PostResponse toPostResponse(Post post) {
         return PostResponse.builder()
                 .postId(post.getPostId())
+                .authorId(post.getUser().getUserId())
                 .content(post.getContent())
                 .imageUrl(post.getImageUrl())
+                .mediaType(post.getMediaType())
+                .reelViewCount(post.getReelViewCount())
                 .authorName(post.getUser().getFirstname() + " " + post.getUser().getLastName())
                 .createdAt(post.getCreatedAt())
+                .editedAt(post.getEditedAt())
                 .build();
     }
 

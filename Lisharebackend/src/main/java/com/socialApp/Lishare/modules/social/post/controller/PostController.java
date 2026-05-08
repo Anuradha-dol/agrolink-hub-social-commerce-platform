@@ -1,9 +1,9 @@
 package com.socialApp.Lishare.modules.social.post.controller;
 
-import com.socialApp.Lishare.modules.social.post.service.PostService;
+import com.socialApp.Lishare.modules.platform.user.entity.User;
 import com.socialApp.Lishare.modules.social.post.dto.PostResponse;
 import com.socialApp.Lishare.modules.social.post.entity.Post;
-import com.socialApp.Lishare.modules.platform.user.entity.User;
+import com.socialApp.Lishare.modules.social.post.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -23,92 +23,85 @@ public class PostController {
     public ResponseEntity<PostResponse> createPost(
             @AuthenticationPrincipal User user,
             @RequestParam(value = "content", required = false, defaultValue = "") String content,
-            @RequestParam(value = "image", required = false) MultipartFile image) {
-
+            @RequestParam(value = "image", required = false) MultipartFile image
+    ) {
         if (user == null) {
             return ResponseEntity.status(401).body(null);
         }
-
         if (content.isBlank() && (image == null || image.isEmpty())) {
             return ResponseEntity.badRequest().body(null);
         }
 
         Post post = postService.createPost(user.getUserId(), content, image);
+        return ResponseEntity.ok(toResponse(post));
+    }
 
-        PostResponse response = PostResponse.builder()
-                .postId(post.getPostId())
-                .content(post.getContent())
-                .imageUrl(post.getImageUrl())
-                .authorName(post.getUser().getFirstname() + " " + post.getUser().getLastName())
-                .createdAt(post.getCreatedAt())
-                .build();
+    @PutMapping("/update/{postId}")
+    public ResponseEntity<PostResponse> updatePost(
+            @AuthenticationPrincipal User user,
+            @PathVariable Long postId,
+            @RequestParam(value = "content", required = false) String content,
+            @RequestParam(value = "image", required = false) MultipartFile image,
+            @RequestParam(value = "removeMedia", required = false, defaultValue = "false") boolean removeMedia
+    ) {
+        if (user == null) {
+            return ResponseEntity.status(401).body(null);
+        }
+        Post post = postService.updatePost(user.getUserId(), postId, content, image, removeMedia);
+        return ResponseEntity.ok(toResponse(post));
+    }
 
-        return ResponseEntity.ok(response);
+    @PostMapping("/{postId}/reel-view")
+    public ResponseEntity<Long> incrementReelView(@PathVariable Long postId) {
+        return ResponseEntity.ok(postService.incrementReelView(postId));
     }
 
     @DeleteMapping("/delete/{postId}")
     public ResponseEntity<String> deletePost(
             @AuthenticationPrincipal User user,
-            @PathVariable Long postId) {
-
+            @PathVariable Long postId
+    ) {
         if (user == null) {
             return ResponseEntity.status(401).body("Unauthorized");
         }
 
         Post post = postService.getPostById(postId);
-
         if (!post.getUser().getUserId().equals(user.getUserId())) {
             return ResponseEntity.status(403).body("Cannot delete others' posts");
         }
 
-        try {
-            // delete post (cascade removes comments/likes/shares)
-            postService.deletePost(postId);
-            return ResponseEntity.ok("Post deleted successfully");
-        } catch (Exception e) {
-            e.printStackTrace(); // see exact DB error
-            return ResponseEntity.badRequest().body("Cannot delete post: " + e.getMessage());
-        }
+        postService.deletePost(postId);
+        return ResponseEntity.ok("Post deleted successfully");
     }
 
     @GetMapping("/my")
     public ResponseEntity<List<PostResponse>> getMyPosts(@AuthenticationPrincipal User user) {
         List<Post> posts = postService.getPostsByUser(user.getUserId());
-
-        List<PostResponse> responses = posts.stream()
-                .map(p -> PostResponse.builder()
-                        .postId(p.getPostId())
-                        .content(p.getContent())
-                        .imageUrl(p.getImageUrl())
-                        .authorName(p.getUser().getFirstname() + " " + p.getUser().getLastName())
-                        .createdAt(p.getCreatedAt())
-                        .build())
-                .toList();
-
+        List<PostResponse> responses = posts.stream().map(this::toResponse).toList();
         return ResponseEntity.ok(responses);
     }
-
-
 
     @GetMapping("/feed")
     public ResponseEntity<List<PostResponse>> getFeedPosts(@AuthenticationPrincipal User user) {
         if (user == null) {
             return ResponseEntity.status(401).body(null);
         }
-
-        // Call service method to get feed posts
         List<Post> feedPosts = postService.getFeedPosts(user.getUserId());
-
-        List<PostResponse> responses = feedPosts.stream()
-                .map(p -> PostResponse.builder()
-                        .postId(p.getPostId())
-                        .content(p.getContent())
-                        .imageUrl(p.getImageUrl())
-                        .authorName(p.getUser().getFirstname() + " " + p.getUser().getLastName())
-                        .createdAt(p.getCreatedAt())
-                        .build())
-                .toList();
-
+        List<PostResponse> responses = feedPosts.stream().map(this::toResponse).toList();
         return ResponseEntity.ok(responses);
+    }
+
+    private PostResponse toResponse(Post post) {
+        return PostResponse.builder()
+                .postId(post.getPostId())
+                .authorId(post.getUser().getUserId())
+                .content(post.getContent())
+                .imageUrl(post.getImageUrl())
+                .mediaType(post.getMediaType())
+                .reelViewCount(post.getReelViewCount())
+                .authorName(post.getUser().getFirstname() + " " + post.getUser().getLastName())
+                .createdAt(post.getCreatedAt())
+                .editedAt(post.getEditedAt())
+                .build();
     }
 }

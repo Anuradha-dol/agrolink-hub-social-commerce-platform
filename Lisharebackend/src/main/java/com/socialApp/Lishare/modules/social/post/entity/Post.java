@@ -43,15 +43,24 @@ public class Post {
 
     private String imageUrl;
 
+    @Column(length = 20)
+    private String mediaType;
+
+    @Column(name = "reel_view_count", nullable = false, columnDefinition = "BIGINT DEFAULT 0")
+    private Long reelViewCount;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(name = "edited_at")
+    private LocalDateTime editedAt;
 
     // Comments cascade
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Comment> comments;
 
     // Shares cascade
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "post")
     private List<Share> shares;
 
     // Reactions cascade
@@ -61,6 +70,9 @@ public class Post {
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
+        if (this.reelViewCount == null) {
+            this.reelViewCount = 0L;
+        }
     }
 
     // Convenience getter for frontend

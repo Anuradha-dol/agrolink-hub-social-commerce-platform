@@ -105,10 +105,14 @@ public class PostSafetyServiceImpl implements PostSafetyService {
     private PostResponse toPostResponse(Post post) {
         return PostResponse.builder()
                 .postId(post.getPostId())
+                .authorId(post.getUser().getUserId())
                 .content(post.getContent())
                 .imageUrl(post.getImageUrl())
+                .mediaType(post.getMediaType())
+                .reelViewCount(post.getReelViewCount())
                 .authorName(post.getUser().getFirstname() + " " + post.getUser().getLastName())
                 .createdAt(post.getCreatedAt())
+                .editedAt(post.getEditedAt())
                 .build();
     }
 

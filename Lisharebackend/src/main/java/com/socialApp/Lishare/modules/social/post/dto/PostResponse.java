@@ -13,9 +13,13 @@ import java.util.List;
 @Builder
 public class PostResponse {
     private Long postId;
+    private Long authorId;
     private String content;
     private String imageUrl;
+    private String mediaType;
+    private Long reelViewCount;
     private String authorName;
     private LocalDateTime createdAt;
+    private LocalDateTime editedAt;
     private List<CommentResponse> comments; // all comments including replies
 }
