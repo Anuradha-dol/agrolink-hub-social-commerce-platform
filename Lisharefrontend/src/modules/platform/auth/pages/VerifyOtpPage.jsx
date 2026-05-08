@@ -41,6 +41,7 @@ export default function VerifyOtpPage() {
   return (
     <div className="auth-page">
       <form className="auth-card" onSubmit={verify}>
+        <span className="auth-badge">Security Verification</span>
         <h1>Verify Email</h1>
         <p>Enter the OTP sent to your email.</p>
         <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="6-digit OTP" maxLength={6} />

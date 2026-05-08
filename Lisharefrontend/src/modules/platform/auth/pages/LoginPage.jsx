@@ -46,6 +46,7 @@ export default function LoginPage() {
   return (
     <div className="auth-page">
       <form className="auth-card" onSubmit={onSubmit}>
+        <span className="auth-badge">Welcome Back</span>
         <h1>Welcome Back</h1>
         <p>Login to continue.</p>
 

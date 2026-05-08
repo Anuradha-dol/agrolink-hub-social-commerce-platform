@@ -38,6 +38,27 @@ export default function CalendarPage() {
 
   return (
     <div className="calendar-page">
+      <section className="page-hero">
+        <div>
+          <h2>Calendar Planner</h2>
+          <p>Plan meetings, launches and reminders with clean timeline visibility.</p>
+        </div>
+        <div className="hero-stats">
+          <article>
+            <strong>{events.length}</strong>
+            <span>Events</span>
+          </article>
+          <article>
+            <strong>{mode.toUpperCase()}</strong>
+            <span>View Mode</span>
+          </article>
+          <article>
+            <strong>{sortedEvents.length > 0 ? formatDateTime(sortedEvents[0].datetime).split(",")[0] : "-"}</strong>
+            <span>Next Date</span>
+          </article>
+        </div>
+      </section>
+
       <section className="card">
         <h2>Calendar</h2>
         <div className="segment">

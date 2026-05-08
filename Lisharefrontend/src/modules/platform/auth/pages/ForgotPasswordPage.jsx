@@ -67,6 +67,7 @@ export default function ForgotPasswordPage() {
     <div className="auth-page">
       {step === 1 ? (
         <form className="auth-card" onSubmit={sendOtp}>
+          <span className="auth-badge">Recovery</span>
           <h1>Forgot Password</h1>
           <p>Provide at least 2 identifiers.</p>
           <input
@@ -92,6 +93,7 @@ export default function ForgotPasswordPage() {
 
       {step === 2 ? (
         <form className="auth-card" onSubmit={verifyOtp}>
+          <span className="auth-badge">OTP Check</span>
           <h1>Verify OTP</h1>
           <input value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="Enter OTP" />
           <button className="btn btn-primary" type="submit" disabled={loading}>
@@ -105,6 +107,7 @@ export default function ForgotPasswordPage() {
 
       {step === 3 ? (
         <form className="auth-card" onSubmit={changePassword}>
+          <span className="auth-badge">Reset Password</span>
           <h1>Set New Password</h1>
           <input
             type="password"

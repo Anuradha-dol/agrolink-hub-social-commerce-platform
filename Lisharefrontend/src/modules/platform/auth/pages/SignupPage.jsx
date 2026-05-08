@@ -51,6 +51,7 @@ export default function SignupPage() {
   return (
     <div className="auth-page">
       <form className="auth-card" onSubmit={onSubmit}>
+        <span className="auth-badge">Create Account</span>
         <h1>Create Account</h1>
         <p>Get started with Lishare.</p>
 

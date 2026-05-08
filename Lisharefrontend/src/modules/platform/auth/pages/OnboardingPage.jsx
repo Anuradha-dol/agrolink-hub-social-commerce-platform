@@ -36,6 +36,7 @@ export default function OnboardingPage() {
   return (
     <div className="auth-page">
       <form className="auth-card" onSubmit={onSubmit}>
+        <span className="auth-badge">Onboarding</span>
         <h1>Set Up Profile</h1>
         <p>Complete your profile to continue.</p>
 
