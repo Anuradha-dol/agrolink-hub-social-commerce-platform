@@ -1,0 +1,8 @@
+Lisharefrontend/node_modules/
+Lisharefrontend/dist/
+Lisharefrontend/.edge-ui-check/
+Lisharefrontend/*.log
+Lisharefrontend/home-ui-check.png
+
+uploads/
+.idea/inspectionProfiles/
