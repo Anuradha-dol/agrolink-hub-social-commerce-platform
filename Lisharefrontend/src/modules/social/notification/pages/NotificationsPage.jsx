@@ -46,33 +46,56 @@ export default function NotificationsPage() {
   if (error) return <ErrorState message={error} onRetry={() => load(page)} />;
 
   return (
-    <div className="card">
-      <h2>Notifications</h2>
-      {items.length === 0 ? <EmptyState title="No notifications yet" /> : null}
-      <ul className="notif-list full-page">
-        {items.map((item) => (
-          <li key={item.id} className={item.read ? "notif-item" : "notif-item unread"}>
-            <div>
-              <p>{item.message}</p>
-              <small>{item.createdAt ? new Date(item.createdAt).toLocaleString() : ""}</small>
-            </div>
-            {!item.read ? (
-              <button className="btn btn-primary" type="button" onClick={() => markRead(item.id)}>
-                Mark Read
-              </button>
-            ) : null}
-          </li>
-        ))}
-      </ul>
-      <div className="pagination-row">
-        <button className="btn btn-secondary" type="button" disabled={page <= 0} onClick={() => load(page - 1)}>
-          Prev
-        </button>
-        <span>Page {page + 1}</span>
-        <button className="btn btn-secondary" type="button" disabled={!hasNext} onClick={() => load(page + 1)}>
-          Next
-        </button>
-      </div>
+    <div className="notifications-page">
+      <section className="page-hero">
+        <div>
+          <h2>Notification Center</h2>
+          <p>Track likes, follows, mentions and system updates in one place.</p>
+        </div>
+        <div className="hero-stats">
+          <article>
+            <strong>{items.length}</strong>
+            <span>Visible</span>
+          </article>
+          <article>
+            <strong>{items.filter((item) => !item.read).length}</strong>
+            <span>Unread</span>
+          </article>
+          <article>
+            <strong>{page + 1}</strong>
+            <span>Page</span>
+          </article>
+        </div>
+      </section>
+
+      <section className="card">
+        <h2>Notifications</h2>
+        {items.length === 0 ? <EmptyState title="No notifications yet" /> : null}
+        <ul className="notif-list full-page">
+          {items.map((item) => (
+            <li key={item.id} className={item.read ? "notif-item" : "notif-item unread"}>
+              <div>
+                <p>{item.message}</p>
+                <small>{item.createdAt ? new Date(item.createdAt).toLocaleString() : ""}</small>
+              </div>
+              {!item.read ? (
+                <button className="btn btn-primary" type="button" onClick={() => markRead(item.id)}>
+                  Mark Read
+                </button>
+              ) : null}
+            </li>
+          ))}
+        </ul>
+        <div className="pagination-row">
+          <button className="btn btn-secondary" type="button" disabled={page <= 0} onClick={() => load(page - 1)}>
+            Prev
+          </button>
+          <span>Page {page + 1}</span>
+          <button className="btn btn-secondary" type="button" disabled={!hasNext} onClick={() => load(page + 1)}>
+            Next
+          </button>
+        </div>
+      </section>
     </div>
   );
 }

@@ -4,6 +4,15 @@ import { useRealtimeNotifications } from "../hooks/useRealtimeNotifications";
 import { useAuth } from "/src/modules/platform/app/store";
 import { useToast } from "/src/modules/platform/common/hooks/useToast";
 
+function BellIcon() {
+  return (
+    <svg className="notif-button-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 3a5 5 0 0 0-5 5v2.4c0 1.6-.6 3.1-1.7 4.2L4 16h16l-1.3-1.4A6.1 6.1 0 0 1 17 10.4V8a5 5 0 0 0-5-5z" />
+      <path d="M9.5 18.2a2.5 2.5 0 0 0 5 0" />
+    </svg>
+  );
+}
+
 export default function NotificationDropdown() {
   const { user } = useAuth();
   const { pushToast } = useToast();
@@ -73,7 +82,9 @@ export default function NotificationDropdown() {
   return (
     <div className="notif-dropdown">
       <button type="button" className="btn btn-secondary notif-button" onClick={() => setOpen((prev) => !prev)}>
-        Notifications {unreadCount > 0 ? <span className="notif-badge">{unreadBadge}</span> : null}
+        <BellIcon />
+        Notifications
+        {unreadCount > 0 ? <span className="notif-badge">{unreadBadge}</span> : null}
       </button>
 
       {open ? (
