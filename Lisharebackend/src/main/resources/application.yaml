@@ -1,0 +1,45 @@
+spring:
+  application:
+    name: Lishare
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/bodlyy_db
+    username: postgres
+    password: Anu@20021214
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: anuradhawork123@gmail.com
+    password: psid ggoz qszq hzhs
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 5MB
+      max-request-size: 5MB
+
+
+file:
+  upload-dir: uploads
+
+server:
+  port: 4041
+
+jwt:
+  secret: Y2hhbGxlbmdlVG9Xcml0ZUZ1bGxQcmVkaWN0YWJsZVNlY3JldEtleQ==
+
+cookie:
+  secure: false
+  same-site: Lax

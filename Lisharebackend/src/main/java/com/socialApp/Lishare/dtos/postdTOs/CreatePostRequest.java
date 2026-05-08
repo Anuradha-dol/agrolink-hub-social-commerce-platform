@@ -1,0 +1,13 @@
+package com.socialApp.Lishare.dtos.postdTOs;
+
+
+
+import lombok.Data;
+import org.springframework.web.multipart.MultipartFile;
+
+@Data
+public class CreatePostRequest {
+
+    private String content;
+    private MultipartFile image;
+}
