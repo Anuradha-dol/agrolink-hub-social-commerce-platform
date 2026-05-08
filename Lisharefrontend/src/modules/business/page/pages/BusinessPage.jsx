@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { businessService } from "../services/businessService";
 import { marketplaceService } from "/src/modules/business/product/services/marketplaceService";
 import { useToast } from "/src/modules/platform/common/hooks/useToast";
 import LoadingState from "/src/modules/platform/common/components/LoadingState";
+import { toMediaUrl } from "/src/modules/platform/common/utils/mediaUrl";
 
 const initialPageForm = { name: "", description: "", category: "" };
 const initialProductForm = {
@@ -23,6 +24,20 @@ export default function BusinessPage() {
   const [selectedPageId, setSelectedPageId] = useState("");
   const [pageForm, setPageForm] = useState(initialPageForm);
   const [productForm, setProductForm] = useState(initialProductForm);
+
+  const selectedPage = useMemo(
+    () => pages.find((item) => String(item.id) === String(selectedPageId)) || null,
+    [pages, selectedPageId]
+  );
+
+  const inventoryValue = useMemo(
+    () =>
+      products.reduce(
+        (total, item) => total + Number(item.price || 0) * Number(item.stock || 0),
+        0
+      ),
+    [products]
+  );
 
   const loadPages = async () => {
     setLoading(true);
@@ -105,6 +120,42 @@ export default function BusinessPage() {
 
   return (
     <div className="business-page">
+      <section className="page-hero">
+        <div>
+          <h2>Business Studio</h2>
+          <p>Create business pages and publish product catalogs from a central workspace.</p>
+        </div>
+        <div className="hero-stats">
+          <article>
+            <strong>{pages.length}</strong>
+            <span>Business Pages</span>
+          </article>
+          <article>
+            <strong>{products.length}</strong>
+            <span>Products</span>
+          </article>
+          <article>
+            <strong>{selectedPage?.name || "No Page"}</strong>
+            <span>Selected Page</span>
+          </article>
+        </div>
+      </section>
+
+      <section className="business-stat-grid">
+        <article className="business-stat-card">
+          <strong>{products.reduce((sum, item) => sum + Number(item.stock || 0), 0)}</strong>
+          <span>Total Stock Units</span>
+        </article>
+        <article className="business-stat-card">
+          <strong>${inventoryValue.toFixed(2)}</strong>
+          <span>Inventory Value</span>
+        </article>
+        <article className="business-stat-card">
+          <strong>{selectedPage?.category || "-"}</strong>
+          <span>Page Category</span>
+        </article>
+      </section>
+
       <section className="card">
         <h2>Create Business Page</h2>
         <form onSubmit={createPage} className="grid-form">
@@ -188,13 +239,20 @@ export default function BusinessPage() {
       <section className="product-grid">
         {products.map((product) => (
           <article key={product.id} className="card product-card">
+            {product.imageUrl ? <img src={toMediaUrl(product.imageUrl)} alt={product.name} className="product-image" /> : null}
             <h3>{product.name}</h3>
             <p>{product.description}</p>
+            <div className="reaction-row">
+              {product.category ? <span className="chip">{product.category}</span> : null}
+              {selectedPage?.name ? <span className="chip">{selectedPage.name}</span> : null}
+            </div>
             <p className="price">${product.price}</p>
             <p className="muted">Stock: {product.stock}</p>
-            <button className="btn btn-secondary" type="button" onClick={() => removeProduct(product.id)}>
-              Delete
-            </button>
+            <div className="row-actions">
+              <button className="btn btn-secondary" type="button" onClick={() => removeProduct(product.id)}>
+                Delete
+              </button>
+            </div>
           </article>
         ))}
       </section>

@@ -74,6 +74,27 @@ export default function OrdersPage() {
 
   return (
     <div className="orders-page">
+      <section className="page-hero">
+        <div>
+          <h2>Orders & Tracking</h2>
+          <p>Monitor your purchases and manage fulfillment updates in realtime.</p>
+        </div>
+        <div className="hero-stats">
+          <article>
+            <strong>{myOrders.length}</strong>
+            <span>My Orders</span>
+          </article>
+          <article>
+            <strong>{businessOrders.length}</strong>
+            <span>Business Orders</span>
+          </article>
+          <article>
+            <strong>{role === "ROLE_BUSINESS" ? "Business" : "User"}</strong>
+            <span>Mode</span>
+          </article>
+        </div>
+      </section>
+
       <section className="card">
         <h2>My Orders</h2>
         <ul className="simple-list">

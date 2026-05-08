@@ -71,6 +71,27 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="admin-page">
+      <section className="page-hero">
+        <div>
+          <h2>Admin Command Center</h2>
+          <p>Govern users, reports, platform health and moderation from one dashboard.</p>
+        </div>
+        <div className="hero-stats">
+          <article>
+            <strong>{users.length}</strong>
+            <span>Users Loaded</span>
+          </article>
+          <article>
+            <strong>{reports.length}</strong>
+            <span>Reports</span>
+          </article>
+          <article>
+            <strong>{stats?.totalPosts ?? 0}</strong>
+            <span>Total Posts</span>
+          </article>
+        </div>
+      </section>
+
       <section className="stats-grid">
         <article className="card"><h3>{stats?.totalUsers ?? 0}</h3><p>Total Users</p></article>
         <article className="card"><h3>{stats?.totalPosts ?? 0}</h3><p>Total Posts</p></article>
