@@ -3,20 +3,25 @@ spring:
     name: Lishare
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/bodlyy_db
-    username: postgres
-    password: Anu@20021214
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/bodlyy_db}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:}
     driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: ${JPA_DDL_AUTO:update}
+    defer-datasource-initialization: false
+
+  sql:
+    init:
+      mode: always
 
   mail:
-    host: smtp.gmail.com
-    port: 587
-    username: anuradhawork123@gmail.com
-    password: psid ggoz qszq hzhs
+    host: ${MAIL_HOST:smtp.gmail.com}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
     properties:
       mail:
         smtp:
@@ -32,14 +37,27 @@ spring:
 
 
 file:
-  upload-dir: uploads
+  upload-dir: ${FILE_UPLOAD_DIR:uploads}
 
 server:
-  port: 4041
+  port: ${SERVER_PORT:4041}
 
 jwt:
-  secret: Y2hhbGxlbmdlVG9Xcml0ZUZ1bGxQcmVkaWN0YWJsZVNlY3JldEtleQ==
+  secret: ${JWT_SECRET:}
+  access-expiration-ms: ${JWT_ACCESS_EXPIRATION_MS:3600000}
+  refresh-expiration-ms: ${JWT_REFRESH_EXPIRATION_MS:604800000}
+  verify-expiration-ms: ${JWT_VERIFY_EXPIRATION_MS:1800000}
 
 cookie:
-  secure: false
-  same-site: Lax
+  secure: ${COOKIE_SECURE:false}
+  same-site: ${COOKIE_SAME_SITE:Lax}
+  domain: ${COOKIE_DOMAIN:}
+  path: ${COOKIE_PATH:/}
+
+app:
+  cors:
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:5173}
+
+logging:
+  level:
+    org.springframework.web.socket.config.WebSocketMessageBrokerStats: WARN
