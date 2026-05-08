@@ -34,10 +34,11 @@ function ComposerToolIcon({ name }) {
         <circle cx="12" cy="10" r="2" />
       </>
     ),
-    send: (
+    liveFeed: (
       <>
-        <path d="m3 11 18-8-6.5 18-2.4-7.1z" />
-        <path d="M21 3 12 14" />
+        <circle cx="5" cy="12" r="2" />
+        <path d="M2 12c0-5.5 4.5-10 10-10s10 4.5 10 10-4.5 10-10 10" />
+        <path d="M6 12c0-3.3 2.7-6 6-6s6 2.7 6 6" />
       </>
     )
   };
@@ -82,14 +83,7 @@ export default function PostComposer({ onSubmit, submitting }) {
 
   return (
     <form className="card composer composer-premium" onSubmit={submit}>
-      <div className="composer-top premium-composer-top">
-        <div>
-          <h3>Create Post</h3>
-          <p>Share updates, photos and moments with your network.</p>
-        </div>
-        <span className="composer-badge">Live Feed</span>
-      </div>
-
+      {/* Input row: avatar + textarea + live-feed badge */}
       <div className="composer-input-row">
         <span className="composer-avatar" aria-hidden="true">
           {(user?.firstName || user?.name || "A").slice(0, 1)}
@@ -100,8 +94,13 @@ export default function PostComposer({ onSubmit, submitting }) {
           placeholder={`What's happening, ${firstName}?`}
           rows={2}
         />
+        <span className="composer-live-badge" aria-hidden="true">
+          <ComposerToolIcon name="liveFeed" />
+          Live Feed
+        </span>
       </div>
 
+      {/* Toolbar row: tools on left, Post button on right */}
       <div className="composer-actions premium-composer-actions">
         <div className="composer-tool-row">
           <label className="composer-tool-button composer-file-label" aria-label="Attach image or video" title="Attach image or video">
@@ -109,10 +108,10 @@ export default function PostComposer({ onSubmit, submitting }) {
             <ComposerToolIcon name="image" />
           </label>
           <ComposerToolButton label="Add video" icon="video" />
-          <ComposerToolButton label="Add emoji" icon="smile" />
           <ComposerToolButton label="Add GIF" icon="gif" />
-          <ComposerToolButton label="Add poll" icon="chart" />
+          <ComposerToolButton label="Add emoji" icon="smile" />
           <ComposerToolButton label="Add location" icon="pin" />
+          <ComposerToolButton label="Add poll" icon="chart" />
         </div>
         {fileLabel ? <small className="composer-file-name">{fileLabel}</small> : null}
         <button type="submit" className="btn btn-primary composer-publish-btn" disabled={submitting}>

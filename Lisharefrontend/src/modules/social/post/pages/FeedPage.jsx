@@ -986,19 +986,28 @@ export default function FeedPage() {
     <div className="feed-page premium-feed-page">
       <section className="premium-feed-banner">
         <div className="premium-feed-banner-left">
-          <div className="premium-feed-badge-icon">
-            <FeedIcon name="bolt" />
-          </div>
           <div>
             <h2>Bondly Social Feed</h2>
             <p>
-              Premium social workspace with clean posts and reels flow.
+              Premium social workspace with
+              clean posts and reels flow.
               {selectedHashtag ? ` Filter: ${selectedHashtag}` : ""}
             </p>
           </div>
         </div>
         <div className="premium-feed-banner-art" aria-hidden="true">
-          <FeedIcon name="chat" />
+          {/* 3D Chat Bubble Illustration */}
+          <div className="banner-3d-wrap">
+            <div className="banner-bubble-orbit banner-bubble-orbit-1" />
+            <div className="banner-bubble-orbit banner-bubble-orbit-2" />
+            <div className="banner-bubble-main">
+              <div className="banner-bubble-dots">
+                <span /><span /><span />
+              </div>
+            </div>
+            <div className="banner-bubble-small" />
+            <div className="banner-bubble-tiny" />
+          </div>
         </div>
       </section>
 
@@ -1011,11 +1020,8 @@ export default function FeedPage() {
                 <p>Manual stories only. Replies are delivered to {CHAT_PRODUCT_NAME}.</p>
               </div>
               <div className="row-actions">
-                <button className="btn btn-secondary" type="button" onClick={() => navigate("/chat")}>
-                  Open {CHAT_PRODUCT_NAME}
-                </button>
-                <button className="btn btn-primary" type="button" onClick={() => setStoryComposerOpen(true)}>
-                  Add Story
+                <button className="feed-view-btn" type="button" onClick={() => navigate("/chat")}>
+                  See all
                 </button>
               </div>
             </header>
@@ -1049,6 +1055,7 @@ export default function FeedPage() {
                       <img src={toMediaUrl(story.mediaUrl)} alt={storyOwnerName(story)} />
                     )}
                   </span>
+                  {index === 0 ? <span className="story-live-badge">LIVE</span> : null}
                   <small>{storyOwnerName(story)}</small>
                 </button>
               ))}
@@ -1098,9 +1105,44 @@ export default function FeedPage() {
         </div>
 
         <aside className="feed-right-rail">
+          {/* Trending Hashtags */}
+          <section className="feed-side-panel rail-card rail-trending-card">
+            <header className="feed-section-head compact">
+              <h4>Trending Hashtags</h4>
+              <button type="button" className="feed-view-btn" onClick={() => setTrendPanelOpen(!trendPanelOpen)}>View all</button>
+            </header>
+            <div className="trend-list">
+              {trendingHashtags.length === 0 ? <p className="muted">No hashtags yet.</p> : null}
+              {visibleTrendingHashtags.slice(0, trendPanelOpen ? visibleTrendingHashtags.length : 5).map(({ tag, count }, index) => (
+                <button
+                  key={tag}
+                  type="button"
+                  className={`trend-row ${index === 0 ? "featured" : ""} ${selectedHashtag.toLowerCase() === tag.toLowerCase() ? "active" : ""}`}
+                  onClick={() => selectHashtag(tag)}
+                  title={`${count} use${count === 1 ? "" : "s"}`}
+                >
+                  <span className="trend-dot-indicator" />
+                  <span className="trend-tag-text">{tag}</span>
+                  <span className="trend-count">
+                    {formatTrendCount(count)} posts
+                    <svg className="trend-wave-icon" viewBox="0 0 60 20" aria-hidden="true"><polyline points="0,14 10,6 20,14 30,6 40,14 50,6 60,14" /></svg>
+                  </span>
+                </button>
+              ))}
+            </div>
+            {selectedHashtag ? (
+              <div className="row-actions rail-clear-filter">
+                <button type="button" className="btn btn-secondary" onClick={() => setSelectedHashtag("")}>
+                  Clear Filter
+                </button>
+              </div>
+            ) : null}
+          </section>
+
+          {/* Suggested People */}
           <section className="feed-side-panel rail-card rail-suggestions-card">
             <header className="feed-section-head compact">
-              <h4>Suggestions</h4>
+              <h4>Suggested People</h4>
               <button type="button" className="feed-view-btn" onClick={() => navigate("/friends")}>View all</button>
             </header>
             {suggestions.length === 0 ? <p className="muted">No suggestions yet.</p> : null}
@@ -1111,13 +1153,13 @@ export default function FeedPage() {
                     <span className="suggestion-avatar">{(suggestion.displayName || "U").slice(0, 1)}</span>
                     <div>
                       <strong>{suggestion.displayName}</strong>
-                      <p>{suggestion.isFollower ? "Follows you" : suggestion.posts ? `${suggestion.posts} posts` : "Suggested"}</p>
+                      <p>@{String(suggestion.email || suggestion.displayName || "user").split("@")[0].replace(/[^a-zA-Z0-9_]/g, "").toLowerCase()}</p>
                     </div>
                   </button>
                   <div className="suggestion-actions">
                     <button
                       type="button"
-                      className="btn btn-primary"
+                      className="suggestion-follow-btn"
                       onClick={() => followSuggestedUser(suggestion.userId)}
                       disabled={suggestion.isFollowing}
                     >
@@ -1127,136 +1169,69 @@ export default function FeedPage() {
                 </article>
               ))}
             </div>
-            <div className="feed-slider-dots" aria-hidden="true">
-              <span className="active" />
-              <span />
-              <span />
-            </div>
           </section>
 
-          <section className="feed-side-panel rail-card rail-saved-card">
-            <header className="feed-section-head compact">
-              <h4>Saved Posts & Reels</h4>
-              <FeedIcon name="bookmark" className="rail-head-icon" />
-            </header>
-            <div className="saved-rail-groups">
-              <section>
-                <strong>Posts</strong>
-                <ul className="simple-list saved-rail-list">
-                  {savedFeedPosts.slice(0, 1).map((post) => (
-                    <li key={`saved-post-${post.postId}`}>
-                      <button type="button" className="saved-rail-item saved-rail-media-item" onClick={() => openSavedItem(post)}>
-                        <span>
-                          <strong>{post.authorName || "Author"}</strong>
-                          <small>{(post.content || "Image post").slice(0, 64)}</small>
-                        </span>
-                        {post.imageUrl ? (
-                          <img className="saved-rail-thumb" src={toMediaUrl(post.imageUrl)} alt="" />
-                        ) : (
-                          <span className="saved-rail-thumb empty"><FeedIcon name="posts" /></span>
-                        )}
-                      </button>
-                    </li>
-                  ))}
-                  {savedFeedPosts.length === 0 ? <li className="muted">No saved posts yet.</li> : null}
-                </ul>
-              </section>
-              <section>
-                <strong>Reels</strong>
-                <ul className="simple-list saved-rail-list">
-                  {savedReels.slice(0, 1).map((post) => (
-                    <li key={`saved-reel-${post.postId}`}>
-                      <button type="button" className="saved-rail-item saved-rail-media-item" onClick={() => openSavedItem(post)}>
-                        <span>
-                          <strong>{post.authorName || "Author"}</strong>
-                          <small>{(post.content || "Video reel").slice(0, 64)}</small>
-                        </span>
-                        {post.imageUrl ? (
-                          <video className="saved-rail-thumb" src={toMediaUrl(post.imageUrl)} muted />
-                        ) : (
-                          <span className="saved-rail-thumb empty"><FeedIcon name="reels" /></span>
-                        )}
-                      </button>
-                    </li>
-                  ))}
-                  {savedReels.length === 0 ? <li className="muted">No saved reels yet.</li> : null}
-                </ul>
-              </section>
-              <button
-                type="button"
-                className="rail-explore-reels"
-                onClick={() => {
-                  setActiveMode("reels");
-                  setSelectedHashtag("");
-                }}
-              >
-                <FeedIcon name="play" />
-                Explore Reels
-              </button>
-            </div>
-          </section>
-
-          <section className="feed-side-panel rail-card rail-trending-card">
-            <header className="feed-section-head compact">
-              <h4>
-                <span className="feed-heading-icon">
-                  <FeedIcon name="fire" />
-                </span>
-                Trending Hashtags
-              </h4>
-              <button type="button" className="rail-menu-btn" aria-label="Trending options">
-                <span />
-                <span />
-                <span />
-              </button>
-            </header>
-            <div className="trend-list">
-              {trendingHashtags.length === 0 ? <p className="muted">No hashtags yet.</p> : null}
-              {visibleTrendingHashtags.slice(0, trendPanelOpen ? visibleTrendingHashtags.length : 6).map(({ tag, count }, index) => (
-                <button
-                  key={tag}
-                  type="button"
-                  className={`trend-row ${index === 0 ? "featured" : ""} ${selectedHashtag.toLowerCase() === tag.toLowerCase() ? "active" : ""}`}
-                  onClick={() => selectHashtag(tag)}
-                  title={`${count} use${count === 1 ? "" : "s"}`}
-                >
-                  <span>{tag}</span>
-                  {index === 0 ? null : (
-                    <span className="trend-count">
-                      {formatTrendCount(count)}
-                      <FeedIcon name="trending" />
-                    </span>
-                  )}
-                </button>
-              ))}
+          {/* Explore Reels */}
+          <section className="feed-side-panel rail-card rail-explore-card">
+            <div className="rail-explore-content">
+              <div className="rail-explore-icon-wrap">
+                <FeedIcon name="reels" />
+              </div>
+              <div>
+                <h4>Explore Reels</h4>
+                <p>Discover short videos and trending content from the community.</p>
+              </div>
             </div>
             <button
               type="button"
-              className="feed-link-btn"
+              className="rail-explore-thumb-btn"
               onClick={() => {
-                if (trendPanelOpen) {
-                  if (hasMoreTrends) {
-                    setTrendVisibleCount((count) => count + 3);
-                  } else {
-                    setTrendPanelOpen(false);
-                    setTrendVisibleCount(9);
-                  }
-                } else {
-                  setTrendPanelOpen(true);
-                  setTrendVisibleCount(9);
-                }
+                setActiveMode("reels");
+                setSelectedHashtag("");
               }}
+              aria-label="Explore Reels"
             >
-              {trendPanelOpen ? (hasMoreTrends ? "Load 3 more trends" : "Show less trends") : "View all trends"}
-              <FeedIcon name="chevronRight" className="feed-inline-chevron" />
+              {reels[0]?.imageUrl ? (
+                <video
+                  className="rail-explore-thumb"
+                  src={toMediaUrl(reels[0].imageUrl)}
+                  muted
+                  playsInline
+                />
+              ) : (
+                <div className="rail-explore-thumb-placeholder">
+                  <span>▶</span>
+                </div>
+              )}
             </button>
-            {selectedHashtag ? (
-              <div className="row-actions rail-clear-filter">
-                <button type="button" className="btn btn-secondary" onClick={() => setSelectedHashtag("")}>
-                  Clear Filter
-                </button>
+          </section>
+
+          {/* Explore Images */}
+          <section className="feed-side-panel rail-card rail-explore-card">
+            <div className="rail-explore-content">
+              <div className="rail-explore-icon-wrap">
+                <FeedIcon name="posts" />
               </div>
-            ) : null}
+              <div>
+                <h4>Explore Images</h4>
+                <p>Browse stunning photos and captivating moments shared by the community.</p>
+              </div>
+            </div>
+            <div className="rail-explore-grid">
+              {feedMediaCandidates.filter((item) => !item.originalPostDeleted).slice(0, 4).map((item) => (
+                <img
+                  key={`explore-img-${item.sourcePostId}`}
+                  className="rail-explore-grid-thumb"
+                  src={toMediaUrl(item.imageUrl)}
+                  alt={item.authorName}
+                />
+              ))}
+              {feedMediaCandidates.filter((item) => !item.originalPostDeleted).length === 0 && (
+                <div className="rail-explore-grid-empty">
+                  <FeedIcon name="posts" />
+                </div>
+              )}
+            </div>
           </section>
         </aside>
       </div>

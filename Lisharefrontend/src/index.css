@@ -9951,14 +9951,13 @@ button:disabled {
 }
 
 .shell.shell-home-theme .shell-theme-switch {
-  width: 70px;
-  height: 58px;
+  width: auto;
+  height: auto;
+  position: relative;
 }
 
-.shell.shell-home-theme .shell-theme-trigger,
-.shell.shell-home-theme .notif-button,
 .shell.shell-home-theme .shell-logout-btn {
-  min-height: 58px;
+  min-height: 40px;
   border: 1px solid rgba(145, 97, 255, 0.55);
   border-radius: 13px;
   color: #fff;
@@ -9967,21 +9966,10 @@ button:disabled {
   font-size: 0.95rem;
   font-weight: 760;
   letter-spacing: 0;
+  padding: 0 20px;
 }
 
-.shell.shell-home-theme .shell-theme-trigger {
-  width: 58px;
-  height: 58px;
-  color: #fff;
-  border-color: rgba(186, 56, 255, 0.82);
-  box-shadow:
-    0 0 22px rgba(180, 48, 255, 0.44),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.07);
-}
-
-.shell.shell-home-theme .notif-button {
-  padding: 0 24px;
-}
+/* shell-theme-trigger and notif-button: handled by shell-icon-action-btn overrides at bottom */
 
 .shell.shell-home-theme .notif-badge {
   top: -10px;
@@ -10705,14 +10693,15 @@ button:disabled {
 
 .shell.shell-home-theme .shell-main {
   background:
-    radial-gradient(circle at 84% 4%, rgba(170, 46, 186, 0.16), transparent 26%),
-    linear-gradient(180deg, #050719 0%, #050615 54%, #040512 100%);
+    radial-gradient(ellipse at 75% 0%, rgba(90, 50, 220, 0.22) 0%, transparent 50%),
+    radial-gradient(ellipse at 20% 80%, rgba(60, 30, 180, 0.15) 0%, transparent 40%),
+    linear-gradient(180deg, #0a0b1e 0%, #080a1c 50%, #070818 100%);
 }
 
 .shell.shell-home-theme .shell-sidebar {
-  border-color: rgba(105, 88, 205, 0.42);
-  background: linear-gradient(180deg, rgba(9, 11, 36, 0.96), rgba(7, 8, 28, 0.98));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.055);
+  border-color: rgba(105, 88, 205, 0.35);
+  background: linear-gradient(180deg, #0d0e28 0%, #0b0c24 100%);
+  box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.04);
 }
 
 .shell.shell-home-theme .shell-brand {
@@ -10758,14 +10747,14 @@ button:disabled {
 }
 
 .shell.shell-home-theme .shell-header {
-  border-color: rgba(112, 92, 216, 0.42);
-  background: rgba(7, 8, 30, 0.88);
+  border-color: rgba(112, 92, 216, 0.3);
+  background: rgba(10, 11, 30, 0.96);
+  backdrop-filter: blur(16px);
 }
 
-.shell.shell-home-theme .shell-theme-trigger,
-.shell.shell-home-theme .notif-button,
+/* Logout button specific border - notif/trigger handled separately */
 .shell.shell-home-theme .shell-logout-btn {
-  border-color: rgba(112, 92, 216, 0.42);
+  border-color: rgba(112, 92, 216, 0.45);
   background: rgba(8, 9, 32, 0.72);
   box-shadow: none;
 }
@@ -10794,14 +10783,17 @@ button:disabled {
   filter: none;
 }
 
+/* banner-art now handled by .banner-3d-wrap 3D illustration CSS */
 .shell.shell-home-theme .premium-feed-banner-art {
-  background: linear-gradient(135deg, #ff8f35 0%, #ef37c9 54%, #7646ff 100%);
-  box-shadow: 10px 8px 0 rgba(118, 70, 255, 0.28);
+  background: none;
+  box-shadow: none;
+  transform: none;
 }
 
 .shell.shell-home-theme .feed-stories-card {
-  border-color: rgba(112, 92, 216, 0.42);
-  background: rgba(7, 8, 30, 0.8);
+  border-color: rgba(112, 92, 216, 0.38);
+  background: rgba(10, 11, 32, 0.92);
+  border-radius: 18px;
 }
 
 .shell.shell-home-theme .feed-stories-card .btn-primary,
@@ -10825,15 +10817,16 @@ button:disabled {
 }
 
 .shell.shell-home-theme .feed-mode-switch {
-  border-color: rgba(112, 92, 216, 0.42);
-  background: rgba(7, 8, 30, 0.78);
+  border-color: rgba(112, 92, 216, 0.38);
+  background: rgba(10, 11, 32, 0.88);
 }
 
 .shell.shell-home-theme .rail-trending-card,
 .shell.shell-home-theme .rail-card:not(.rail-trending-card),
 .shell.shell-home-theme .composer-premium {
-  border-color: rgba(112, 92, 216, 0.42);
-  background: rgba(7, 8, 30, 0.84);
+  border-color: rgba(112, 92, 216, 0.35);
+  background: rgba(10, 11, 32, 0.94);
+  border-radius: 18px;
 }
 
 .shell.shell-home-theme .rail-trending-card {
@@ -10864,4 +10857,1207 @@ button:disabled {
 .shell.shell-home-theme .composer-premium {
   width: 100%;
   box-sizing: border-box;
+}
+
+/* ── Reference Redesign: Shell Icon Action Buttons ── */
+.shell-icon-action-btn {
+  width: 48px;
+  height: 48px;
+  border: 0;
+  border-radius: 12px;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+  background: transparent;
+  color: #c4cada;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+
+.shell-icon-action-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  transform: none;
+}
+
+.shell.shell-home-theme .shell-icon-action-btn {
+  min-height: unset;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 10px;
+  color: rgba(220, 215, 255, 0.9);
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: none;
+}
+
+.shell.shell-home-theme .shell-icon-action-btn:hover {
+  background: rgba(255, 255, 255, 0.13);
+  color: #fff;
+  transform: none;
+}
+
+.shell.shell-home-theme .shell-icon-action-btn .shell-inline-icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* ── Reference Redesign: Banner Chat Bubble Emoji ── */
+.shell.shell-home-theme .premium-feed-banner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.shell.shell-home-theme .premium-feed-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+.shell.shell-home-theme .premium-feed-banner h2 {
+  font-size: 2.2rem;
+  font-weight: 940;
+  background: linear-gradient(90deg, #ff9230 0%, #ff48d0 55%, #c97dff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.01em;
+}
+
+.shell.shell-home-theme .banner-chat-bubble-emoji {
+  font-size: 7.5rem;
+  line-height: 1;
+  filter: drop-shadow(0 8px 32px rgba(255, 72, 200, 0.55)) drop-shadow(0 0 18px rgba(142, 90, 255, 0.5));
+  animation: banner-bubble-float 3.5s ease-in-out infinite;
+  display: block;
+}
+
+@keyframes banner-bubble-float {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-10px) rotate(3deg); }
+}
+
+.shell.shell-home-theme .premium-feed-banner-art {
+  position: relative;
+  z-index: 2;
+  right: auto;
+  top: auto;
+  width: auto;
+  height: auto;
+  background: none;
+  border: none;
+  border-radius: 0;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ── Reference Redesign: Story LIVE badge ── */
+.story-live-badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  z-index: 4;
+  border: 0;
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 0.65rem;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  color: #fff;
+  background: linear-gradient(90deg, #ff3b4f, #ff208c);
+  pointer-events: none;
+}
+
+.story-thumb-card {
+  position: relative;
+}
+
+/* ── Reference Redesign: Right Rail - Trending Hashtags ── */
+.shell.shell-home-theme .rail-trending-card {
+  order: -3;
+  border-color: rgba(112, 92, 216, 0.42);
+  background: rgba(7, 8, 30, 0.84);
+  border-radius: 18px;
+  padding: 22px 24px;
+  margin-top: 0;
+  min-height: unset;
+}
+
+.shell.shell-home-theme .rail-trending-card .feed-section-head {
+  margin-bottom: 18px;
+}
+
+.shell.shell-home-theme .rail-trending-card .feed-section-head h4 {
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 820;
+}
+
+.shell.shell-home-theme .rail-trending-card .feed-view-btn {
+  font-size: 0.82rem;
+  color: #ff9b2e;
+  font-weight: 700;
+}
+
+/* Trend row - reference style with dot + tag + posts count + wave */
+.shell.shell-home-theme .trend-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 32px;
+  border: 0;
+  padding: 4px 0;
+  background: transparent;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.shell.shell-home-theme .trend-row:hover {
+  opacity: 0.8;
+  transform: none;
+}
+
+.shell.shell-home-theme .trend-dot-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: #ff8b25;
+}
+
+.shell.shell-home-theme .trend-row:nth-child(2) .trend-dot-indicator { background: #ff48d0; }
+.shell.shell-home-theme .trend-row:nth-child(3) .trend-dot-indicator { background: #53d4d8; }
+.shell.shell-home-theme .trend-row:nth-child(4) .trend-dot-indicator { background: #a88eff; }
+.shell.shell-home-theme .trend-row:nth-child(5) .trend-dot-indicator { background: #ffdb4f; }
+
+.shell.shell-home-theme .trend-tag-text {
+  flex: 1;
+  color: rgba(246, 240, 255, 0.92);
+  font-size: 0.94rem;
+  font-weight: 680;
+  text-align: left;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shell.shell-home-theme .trend-row.active .trend-tag-text {
+  color: #ffb23a;
+}
+
+.shell.shell-home-theme .trend-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(220, 214, 255, 0.72);
+  font-size: 0.8rem;
+  font-weight: 580;
+  white-space: nowrap;
+}
+
+.shell.shell-home-theme .trend-wave-icon {
+  width: 36px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  color: rgba(200, 190, 255, 0.55);
+}
+
+/* ── Reference Redesign: Suggested People ── */
+.shell.shell-home-theme .rail-suggestions-card {
+  border-color: rgba(112, 92, 216, 0.42);
+  background: rgba(7, 8, 30, 0.84);
+  border-radius: 18px;
+  padding: 22px 24px;
+}
+
+.shell.shell-home-theme .rail-suggestions-card .feed-section-head h4 {
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 820;
+}
+
+.shell.shell-home-theme .rail-suggestion-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: transparent;
+}
+
+.shell.shell-home-theme .rail-suggestion-row:last-child {
+  border-bottom: 0;
+}
+
+.shell.shell-home-theme .suggestion-feature-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  text-align: left;
+}
+
+.shell.shell-home-theme .suggestion-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  font-size: 0.9rem;
+  font-weight: 820;
+  color: #fff;
+  background: linear-gradient(135deg, #ff8c2b 0%, #ff28c9 47%, #5b35ff 100%);
+  border: 2px solid rgba(255, 150, 64, 0.62);
+}
+
+.shell.shell-home-theme .suggestion-feature-user strong {
+  display: block;
+  color: #fff;
+  font-size: 0.88rem;
+  font-weight: 760;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shell.shell-home-theme .suggestion-feature-user p {
+  margin-top: 2px;
+  color: rgba(220, 214, 255, 0.66);
+  font-size: 0.78rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Follow button - reference style: bordered pill */
+.suggestion-follow-btn {
+  border: 1px solid rgba(145, 97, 255, 0.7);
+  border-radius: 8px;
+  padding: 6px 16px;
+  font-size: 0.82rem;
+  font-weight: 760;
+  color: #fff;
+  background: rgba(10, 9, 34, 0.6);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 0.18s, background 0.18s;
+}
+
+.suggestion-follow-btn:hover:not(:disabled) {
+  border-color: rgba(255, 139, 37, 0.7);
+  background: rgba(255, 139, 37, 0.12);
+  transform: none;
+}
+
+.suggestion-follow-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ── Reference Redesign: Explore Reels & Explore Images ── */
+.shell.shell-home-theme .rail-explore-card {
+  border-color: rgba(112, 92, 216, 0.42);
+  background: rgba(7, 8, 30, 0.84);
+  border-radius: 18px;
+  padding: 18px 20px;
+}
+
+.shell.shell-home-theme .rail-explore-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.shell.shell-home-theme .rail-explore-icon-wrap {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  color: #c97dff;
+  background: rgba(130, 70, 255, 0.18);
+  border: 1px solid rgba(130, 70, 255, 0.38);
+}
+
+.shell.shell-home-theme .rail-explore-icon-wrap .feed-inline-icon {
+  width: 22px;
+  height: 22px;
+}
+
+.shell.shell-home-theme .rail-explore-card h4 {
+  color: #fff;
+  font-size: 0.92rem;
+  font-weight: 800;
+  margin: 0 0 4px;
+}
+
+.shell.shell-home-theme .rail-explore-card p {
+  color: rgba(220, 214, 255, 0.7);
+  font-size: 0.8rem;
+  line-height: 1.42;
+}
+
+/* Explore Reels thumbnail button */
+.rail-explore-thumb-btn {
+  width: 100%;
+  min-height: 80px;
+  border: 0;
+  border-radius: 10px;
+  padding: 0;
+  overflow: hidden;
+  cursor: pointer;
+  background: rgba(20, 15, 50, 0.7);
+  display: block;
+  position: relative;
+}
+
+.rail-explore-thumb-btn:hover {
+  transform: none;
+  opacity: 0.88;
+}
+
+.rail-explore-thumb {
+  width: 100%;
+  height: 80px;
+  object-fit: cover;
+  display: block;
+}
+
+.rail-explore-thumb-placeholder {
+  width: 100%;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(80, 48, 180, 0.5), rgba(40, 20, 100, 0.7));
+  border-radius: 10px;
+}
+
+.rail-explore-thumb-placeholder span {
+  font-size: 2rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Explore Images grid */
+.rail-explore-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.rail-explore-grid-thumb {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: 8px;
+  display: block;
+}
+
+.rail-explore-grid-empty {
+  grid-column: 1 / -1;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed rgba(130, 100, 255, 0.4);
+  border-radius: 10px;
+  color: rgba(200, 190, 255, 0.5);
+}
+
+/* ── Reference Redesign: feed-right-rail layout ── */
+.shell.shell-home-theme .feed-right-rail {
+  border-left: 0;
+  padding-left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ── Reference Redesign: feed-view-btn global style ── */
+.shell.shell-home-theme .feed-view-btn {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #ff9b2e;
+  font-size: 0.82rem;
+  font-weight: 720;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.shell.shell-home-theme .feed-view-btn:hover {
+  color: #ffbd59;
+  transform: none;
+}
+
+/* Stories header - "See all" style */
+.shell.shell-home-theme .feed-stories-card .row-actions {
+  gap: 16px;
+  align-items: center;
+}
+
+/* Notification button - icon only in reference */
+.shell.shell-home-theme .notif-button {
+  width: 40px;
+  min-height: 40px;
+  padding: 0;
+  justify-content: center;
+  border: 0;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(220, 215, 255, 0.9);
+  box-shadow: none;
+  font-size: 0;
+  gap: 0;
+  position: relative;
+}
+
+.shell.shell-home-theme .notif-button:hover {
+  background: rgba(255, 255, 255, 0.13);
+  color: #fff;
+}
+
+.shell.shell-home-theme .notif-button .notif-button-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.shell.shell-home-theme .notif-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: auto;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  background: #ff3b4f;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(6, 7, 28, 0.9);
+}
+
+/* Theme trigger button same as icon-btn */
+.shell.shell-home-theme .shell-theme-trigger {
+  border: 0;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+/* Ensure feed-reference-grid retains 2-col layout */
+.shell.shell-home-theme .feed-reference-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 24px;
+  align-items: start;
+}
+
+/* Feed section head view-all button */
+.shell.shell-home-theme .feed-section-head.compact {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   3D CHAT BUBBLE BANNER ILLUSTRATION  (matches reference exactly)
+═══════════════════════════════════════════════════════════════ */
+.shell.shell-home-theme .premium-feed-banner {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 180px;
+  padding: 32px 44px 32px 40px;
+  border-radius: 22px;
+  border: 1px solid rgba(145, 97, 255, 0.45);
+  background:
+    radial-gradient(circle at 8% 50%, rgba(95, 64, 255, 0.55) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(255, 100, 37, 0.22) 0%, transparent 32%),
+    linear-gradient(115deg, rgba(9, 8, 38, 0.97) 0%, rgba(6, 7, 28, 0.97) 50%, rgba(14, 8, 42, 0.97) 100%);
+}
+
+.shell.shell-home-theme .premium-feed-banner-left {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 420px;
+}
+
+.shell.shell-home-theme .premium-feed-banner h2 {
+  font-size: 2.4rem;
+  font-weight: 950;
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  background: linear-gradient(90deg, #ff9230 0%, #ff4abf 52%, #c97dff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+}
+
+.shell.shell-home-theme .premium-feed-banner p {
+  max-width: 340px;
+  margin: 6px 0 0;
+  color: rgba(228, 222, 255, 0.78);
+  font-size: 0.98rem;
+  line-height: 1.5;
+  letter-spacing: 0;
+  -webkit-text-fill-color: unset;
+}
+
+/* Banner Art: 3D Chat Bubble */
+.shell.shell-home-theme .premium-feed-banner-art {
+  position: relative;
+  z-index: 3;
+  right: auto;
+  top: auto;
+  width: 200px;
+  height: 160px;
+  border: none;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  transform: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.banner-3d-wrap {
+  position: relative;
+  width: 190px;
+  height: 155px;
+}
+
+/* Main large purple chat bubble */
+.banner-bubble-main {
+  position: absolute;
+  left: 30px;
+  top: 18px;
+  width: 130px;
+  height: 108px;
+  border-radius: 50% 50% 50% 12px / 50% 50% 40% 18px;
+  background: linear-gradient(145deg, #8b5cf6 0%, #6d28d9 38%, #5b21b6 70%, #4c1d95 100%);
+  box-shadow:
+    0 8px 32px rgba(109, 40, 217, 0.6),
+    0 2px 12px rgba(139, 92, 246, 0.4),
+    inset 0 2px 8px rgba(255, 255, 255, 0.18),
+    inset 0 -4px 12px rgba(0, 0, 0, 0.3);
+  animation: bubble-main-float 3.8s ease-in-out infinite;
+  z-index: 4;
+}
+
+@keyframes bubble-main-float {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-8px) scale(1.02); }
+}
+
+/* Three dots inside the main bubble */
+.banner-bubble-dots {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.banner-bubble-dots span {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+  animation: dot-pulse 1.4s ease-in-out infinite;
+}
+
+.banner-bubble-dots span:nth-child(2) {
+  animation-delay: 0.2s;
+  width: 15px;
+  height: 15px;
+}
+
+.banner-bubble-dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes dot-pulse {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+/* Small orange bubble (lower right) */
+.banner-bubble-small {
+  position: absolute;
+  right: 8px;
+  bottom: 20px;
+  width: 72px;
+  height: 60px;
+  border-radius: 50% 50% 12px 50% / 50% 50% 18px 40%;
+  background: linear-gradient(145deg, #f97316 0%, #ea580c 50%, #c2410c 100%);
+  box-shadow:
+    0 6px 24px rgba(249, 115, 22, 0.55),
+    inset 0 2px 6px rgba(255, 255, 255, 0.22),
+    inset 0 -3px 8px rgba(0, 0, 0, 0.25);
+  animation: bubble-small-float 4.2s ease-in-out infinite 0.6s;
+  z-index: 3;
+}
+
+@keyframes bubble-small-float {
+  0%, 100% { transform: translateY(0) rotate(2deg); }
+  50% { transform: translateY(-6px) rotate(-2deg); }
+}
+
+/* Tiny accent bubble */
+.banner-bubble-tiny {
+  position: absolute;
+  left: 10px;
+  bottom: 14px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #a78bfa, #7c3aed);
+  box-shadow: 0 4px 14px rgba(167, 139, 250, 0.5);
+  animation: bubble-tiny-float 5s ease-in-out infinite 1s;
+  z-index: 2;
+}
+
+@keyframes bubble-tiny-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+/* Orbit ring 1 - large ellipse */
+.banner-bubble-orbit {
+  position: absolute;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  pointer-events: none;
+  z-index: 5;
+}
+
+.banner-bubble-orbit-1 {
+  width: 200px;
+  height: 70px;
+  left: -4px;
+  top: 46px;
+  transform: rotate(-15deg);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.banner-bubble-orbit-2 {
+  width: 160px;
+  height: 55px;
+  left: 20px;
+  top: 60px;
+  transform: rotate(-8deg);
+  border-color: rgba(255, 200, 100, 0.18);
+}
+
+/* Star/sparkle dots on orbits */
+.banner-bubble-orbit-1::before {
+  content: "";
+  position: absolute;
+  top: -3px;
+  right: 28px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.7);
+}
+
+.banner-bubble-orbit-2::before {
+  content: "";
+  position: absolute;
+  bottom: -3px;
+  left: 22px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: rgba(255, 200, 100, 0.9);
+  box-shadow: 0 0 8px rgba(255, 200, 100, 0.7);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   FEED CARDS — Dark premium style matching reference
+═══════════════════════════════════════════════════════════════ */
+.shell.shell-home-theme .card.feed-card-wrap,
+.shell.shell-home-theme .feed-item-card {
+  border: 1px solid rgba(112, 92, 216, 0.32);
+  border-radius: 16px;
+  background: rgba(8, 9, 32, 0.82);
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(8px);
+}
+
+/* Feed card author text */
+.shell.shell-home-theme .feed-author {
+  color: #fff;
+  font-weight: 800;
+}
+
+.shell.shell-home-theme .feed-content {
+  color: rgba(230, 224, 255, 0.88);
+  white-space: pre-wrap;
+}
+
+.shell.shell-home-theme .feed-time {
+  color: rgba(200, 190, 255, 0.62);
+}
+
+/* Feed hashtag styling */
+.shell.shell-home-theme .feed-hashtag {
+  color: #ff9b2e;
+  font-weight: 700;
+}
+
+/* Reaction bar dark style */
+.shell.shell-home-theme .reaction-bar {
+  border-color: rgba(112, 92, 216, 0.25);
+  background: rgba(5, 6, 22, 0.7);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   HEADER — Match reference exactly
+═══════════════════════════════════════════════════════════════ */
+.shell.shell-home-theme .shell-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* User section in header */
+.shell.shell-home-theme .shell-header .shell-user {
+  gap: 12px;
+}
+
+.shell.shell-home-theme .shell-header .shell-user .avatar {
+  width: 50px;
+  height: 50px;
+  font-size: 1.1rem;
+  border: 2px solid rgba(255, 139, 37, 0.7);
+}
+
+.shell.shell-home-theme .shell-header-right {
+  gap: 14px;
+  align-items: center;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SIDEBAR ACTIVE DOT — orange dot next to Feed in reference
+═══════════════════════════════════════════════════════════════ */
+.shell.shell-home-theme .shell-nav-link.active::after {
+  content: "";
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ff9230;
+  box-shadow: 0 0 8px rgba(255, 146, 48, 0.8);
+}
+
+.shell.shell-home-theme .shell-nav-link {
+  position: relative;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   STORIES SECTION — polished reference style
+═══════════════════════════════════════════════════════════════ */
+.shell.shell-home-theme .feed-stories-card .feed-section-head {
+  margin-bottom: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.shell.shell-home-theme .feed-stories-card .feed-section-head h3 {
+  font-size: 1.1rem;
+  font-weight: 840;
+}
+
+.shell.shell-home-theme .feed-stories-card .feed-section-head p {
+  margin-top: 4px;
+  font-size: 0.82rem;
+  color: rgba(210, 200, 255, 0.7);
+}
+
+.shell.shell-home-theme .feed-stories-card .btn-primary {
+  min-height: 40px;
+  padding: 0 18px;
+  font-size: 0.9rem;
+  border-radius: 10px;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   POST/REELS TOGGLE — reference style
+═══════════════════════════════════════════════════════════════ */
+.shell.shell-home-theme .feed-mode-switch {
+  width: auto;
+  max-width: 360px;
+  border-color: rgba(112, 92, 216, 0.42);
+}
+
+.shell.shell-home-theme .feed-mode-pill {
+  min-width: 160px;
+  min-height: 48px;
+  font-size: 0.96rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   COMPOSER — post composer full reference match
+═══════════════════════════════════════════════════════════════ */
+.shell.shell-home-theme .composer-top h3 {
+  font-size: 1.15rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   XP LEVEL SECTION — sidebar bottom
+═══════════════════════════════════════════════════════════════ */
+.shell.shell-home-theme .shell-side-user-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  padding: 12px 14px;
+  flex-direction: column;
+  align-items: center;
+}
+
+.shell.shell-home-theme .shell-side-user-top {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.shell.shell-home-theme .shell-user-level {
+  grid-column: 1 / -1;
+}
+
+.shell.shell-home-theme .shell-user-progress {
+  grid-column: 1 / -1;
+  display: block;
+  width: 100%;
+  position: relative;
+}
+
+.shell.shell-home-theme .shell-user-progress::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 49%;
+}
+
+.shell.shell-home-theme .shell-user-xp {
+  grid-column: 1 / -1;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   RIGHT RAIL — Trending Hashtags reference format with colored waves
+═══════════════════════════════════════════════════════════════ */
+.shell.shell-home-theme .trend-list {
+  display: grid;
+  gap: 10px;
+}
+
+.shell.shell-home-theme .trend-row.featured {
+  display: none; /* reference doesn't show featured pill in this layout */
+}
+
+/* ══ Per-row wave color overrides matching reference sparklines ══ */
+.shell.shell-home-theme .trend-row:nth-child(1) .trend-wave-icon { color: #ff48b8; }
+.shell.shell-home-theme .trend-row:nth-child(2) .trend-wave-icon { color: #53d4d8; }
+.shell.shell-home-theme .trend-row:nth-child(3) .trend-wave-icon { color: #a78bfa; }
+.shell.shell-home-theme .trend-row:nth-child(4) .trend-wave-icon { color: #ffdb4f; }
+.shell.shell-home-theme .trend-row:nth-child(5) .trend-wave-icon { color: #4ade80; }
+
+/* Trending "featured" row (first item) — shows normally, no pill */
+.shell.shell-home-theme .trend-row.featured {
+  display: flex;
+}
+
+/* Story thumbnails — name label */
+.shell.shell-home-theme .story-thumb-card small {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.78rem;
+  color: #fff;
+  max-width: 76px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Remove the green dot before story name (it's a CSS ::before) */
+.shell.shell-home-theme .story-thumb-card small::before {
+  content: "";
+  display: none;
+  box-shadow: none;
+}
+
+/* Header actions gap tightened to match reference */
+.shell.shell-home-theme .shell-header-actions {
+  gap: 8px;
+}
+
+/* Header user avatar border match */
+.shell.shell-home-theme .shell-header-right .shell-user .avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 1rem;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   REFERENCE IMAGE MATCH — Final overrides pass
+═══════════════════════════════════════════════════════════════ */
+
+/* HEADER: username color */
+.shell.shell-home-theme .shell-header .shell-user-name {
+  color: #f7f8ff;
+  font-size: 0.84rem;
+  font-weight: 860;
+}
+
+/* COMPOSER: hide old header section, show new layout */
+.shell.shell-home-theme .composer-premium .composer-top,
+.shell.shell-home-theme .composer-premium .premium-composer-top {
+  display: none;
+}
+
+.shell.shell-home-theme .composer-input-row {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.composer-live-badge {
+  display: none;
+}
+
+.shell.shell-home-theme .composer-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border: 1px solid rgba(255, 139, 37, 0.55);
+  border-radius: 999px;
+  padding: 5px 10px;
+  color: #ff9b2e;
+  background: rgba(255, 139, 37, 0.08);
+  font-size: 0.72rem;
+  font-weight: 780;
+  white-space: nowrap;
+  flex-shrink: 0;
+  width: auto;
+  min-width: unset;
+}
+
+.shell.shell-home-theme .composer-live-badge .composer-inline-icon {
+  width: 13px;
+  height: 13px;
+  stroke: #ff9b2e;
+}
+
+.shell.shell-home-theme .composer-premium textarea {
+  min-height: 52px;
+  resize: none;
+  border: 0 !important;
+  border-bottom: 1px solid rgba(131, 102, 255, 0.25) !important;
+  border-radius: 0;
+  padding: 10px 0;
+  color: #fff;
+  background: transparent;
+  font-size: 0.98rem;
+  line-height: 1.42;
+  box-shadow: none !important;
+}
+
+.shell.shell-home-theme .premium-composer-actions {
+  margin-top: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-left: 60px;
+}
+
+.shell.shell-home-theme .composer-tool-row {
+  gap: 2px;
+}
+
+.shell.shell-home-theme .composer-tool-button {
+  width: 34px;
+  height: 34px;
+  border: 0 !important;
+  border-radius: 8px;
+  padding: 0;
+  color: rgba(200, 190, 255, 0.65);
+  background: transparent;
+  box-shadow: none;
+}
+
+.shell.shell-home-theme .composer-tool-button:hover {
+  border: 0 !important;
+  color: #ffbd59;
+  background: rgba(255, 255, 255, 0.07);
+  transform: none;
+}
+
+.shell.shell-home-theme .composer-tool-button.composer-file-label {
+  min-height: 34px;
+  border: 0 !important;
+}
+
+.shell.shell-home-theme .composer-publish-btn {
+  min-width: 88px;
+  min-height: 40px;
+  margin-left: auto;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, #ff9138 0%, #ff4ebf 100%);
+  box-shadow: 0 6px 18px rgba(255, 145, 56, 0.28);
+  border: 0;
+}
+
+/* STORIES: Create Story circle */
+.shell.shell-home-theme .story-add-card {
+  flex: 0 0 82px;
+  min-height: unset;
+  height: auto;
+  border: 0 !important;
+  border-radius: 0;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  padding: 0;
+}
+
+.shell.shell-home-theme .story-add-card .story-add-icon {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  border: 2px dashed rgba(255, 139, 37, 0.7);
+  background: rgba(255, 139, 37, 0.06);
+}
+
+.shell.shell-home-theme .story-add-card .story-add-icon .feed-inline-icon {
+  width: 22px;
+  height: 22px;
+  stroke: #ff9b2e;
+  stroke-width: 2;
+}
+
+.shell.shell-home-theme .story-add-card small {
+  font-size: 0.72rem;
+  color: rgba(240, 230, 255, 0.78);
+  font-weight: 600;
+}
+
+/* SUGGESTIONS: Follow button */
+.shell.shell-home-theme .suggestion-follow-btn {
+  min-width: 60px;
+  min-height: 26px;
+  border: 1px solid rgba(180, 61, 255, 0.75) !important;
+  border-radius: 7px;
+  padding: 0 10px;
+  color: #fff;
+  background: rgba(112, 28, 161, 0.12);
+  font-size: 0.68rem;
+  font-weight: 820;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+}
+
+.shell.shell-home-theme .suggestion-follow-btn:hover {
+  border-color: rgba(255, 139, 37, 0.75) !important;
+  background: rgba(255, 139, 37, 0.12);
+  transform: none;
+}
+
+.shell.shell-home-theme .suggestion-follow-btn:disabled {
+  border-color: rgba(103, 113, 147, 0.38) !important;
+  color: rgba(220, 215, 255, 0.5);
+  background: transparent;
+}
+
+/* TRENDING: per-position dot color */
+.shell.shell-home-theme .trend-row:nth-child(1) .trend-dot-indicator { background: #ff4b4b !important; }
+.shell.shell-home-theme .trend-row:nth-child(2) .trend-dot-indicator { background: #53d4d8 !important; }
+.shell.shell-home-theme .trend-row:nth-child(3) .trend-dot-indicator { background: #a88eff !important; }
+.shell.shell-home-theme .trend-row:nth-child(4) .trend-dot-indicator { background: #ffdb4f !important; }
+.shell.shell-home-theme .trend-row:nth-child(5) .trend-dot-indicator { background: #4ade80 !important; }
+
+/* EXPLORE: bigger thumbnails */
+.shell.shell-home-theme .rail-explore-thumb-btn {
+  min-height: 90px;
+}
+
+.shell.shell-home-theme .rail-explore-thumb {
+  height: 90px;
+}
+
+.shell.shell-home-theme .rail-explore-thumb-placeholder {
+  height: 90px;
+}
+
+/* FEED GRID: 2 columns */
+.shell.shell-home-theme .feed-reference-grid {
+  grid-template-columns: minmax(0, 1fr) 310px;
+  gap: 18px;
+}
+
+/* BRAND gradient text */
+.shell.shell-home-theme .shell-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 1.46rem;
+  font-weight: 900;
+  background: linear-gradient(90deg, #ff9138, #ff4ebf 60%, #9566ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }

@@ -1,0 +1,628 @@
+/* ═══════════════════════════════════════════════════════
+   REFERENCE-EXACT FEED CARD DESIGN
+   Scoped to .shell.shell-home-theme for home page only
+═══════════════════════════════════════════════════════ */
+
+/* ── Card wrapper ── */
+.shell.shell-home-theme .card.feed-card-wrap,
+.shell.shell-home-theme article.feed-card,
+.shell.shell-home-theme .premium-feed-card {
+  background: rgba(14, 13, 43, 0.92);
+  border: 1px solid rgba(112, 92, 216, 0.28);
+  border-radius: 20px;
+  padding: 0;
+  overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.28);
+  margin-bottom: 16px;
+  transition: border-color 0.2s;
+}
+
+.shell.shell-home-theme .premium-feed-card:hover {
+  border-color: rgba(145, 100, 255, 0.46);
+}
+
+/* ── Card header ── */
+.shell.shell-home-theme .feed-card-header,
+.shell.shell-home-theme .premium-feed-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px 12px;
+  border-bottom: none;
+  background: transparent;
+}
+
+/* ── Author avatar ── */
+.shell.shell-home-theme .feed-avatar-badge {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, #ff8c2b 0%, #ff28c9 47%, #5b35ff 100%);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 900;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  padding: 0;
+  box-shadow: 0 0 0 2px rgba(255, 140, 43, 0.38);
+}
+
+/* online dot */
+.shell.shell-home-theme .feed-avatar-online {
+  position: absolute;
+  bottom: 1px;
+  right: 1px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #22c55e;
+  border: 2px solid rgba(14, 13, 43, 0.92);
+}
+
+/* author info */
+.shell.shell-home-theme .feed-card-author-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.shell.shell-home-theme .feed-author,
+.shell.shell-home-theme .feed-author-line,
+.shell.shell-home-theme .feed-author-name-button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border: none;
+  background: transparent;
+  padding: 0;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  text-align: left;
+}
+
+.shell.shell-home-theme .feed-author:hover {
+  color: #ff9b2e;
+}
+
+.shell.shell-home-theme .feed-verified-icon {
+  width: 17px;
+  height: 17px;
+  fill: #ff9230;
+  stroke: none;
+  flex-shrink: 0;
+}
+
+.shell.shell-home-theme .feed-time-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 3px;
+  color: rgba(200, 190, 255, 0.6);
+  font-size: 0.8rem;
+}
+
+.shell.shell-home-theme .feed-time-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.5;
+}
+
+.shell.shell-home-theme .feed-meta-icon {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  opacity: 0.7;
+}
+
+/* kebab menu button */
+.shell.shell-home-theme .icon-btn.premium-icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: none;
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(220, 215, 255, 0.75);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  transition: background 0.15s;
+}
+
+.shell.shell-home-theme .icon-btn.premium-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.13);
+  color: #fff;
+}
+
+.shell.shell-home-theme .kebab-glyph {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+  stroke: none;
+}
+
+/* ── Post content ── */
+.shell.shell-home-theme .feed-content {
+  padding: 0 20px 14px;
+  color: rgba(236, 230, 255, 0.9);
+  font-size: 0.97rem;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.shell.shell-home-theme .feed-hashtag {
+  color: #ff9b2e;
+  font-weight: 700;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-size: inherit;
+}
+
+.shell.shell-home-theme .feed-hashtag:hover {
+  color: #ffbd59;
+  text-decoration: underline;
+}
+
+/* ── Post image/video ── */
+.shell.shell-home-theme .feed-media-shell {
+  width: 100%;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.shell.shell-home-theme .feed-image {
+  width: 100%;
+  max-height: 480px;
+  object-fit: cover;
+  display: block;
+  border-radius: 0;
+}
+
+.shell.shell-home-theme .feed-video {
+  width: 100%;
+  max-height: 480px;
+  display: block;
+  object-fit: cover;
+  border-radius: 0;
+  background: #000;
+}
+
+.shell.shell-home-theme .feed-view-count {
+  padding: 6px 20px 0;
+  color: rgba(200, 190, 255, 0.6);
+  font-size: 0.8rem;
+}
+
+/* ── Reaction + Action bar ── */
+.shell.shell-home-theme .reaction-bar,
+.shell.shell-home-theme .premium-reaction-bar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0;
+  border-top: 1px solid rgba(112, 92, 216, 0.2);
+  border-bottom: 1px solid rgba(112, 92, 216, 0.2);
+  margin: 12px 0 0;
+  background: rgba(8, 8, 30, 0.45);
+}
+
+/* All action buttons in the bar */
+.shell.shell-home-theme .reaction-bar .btn,
+.shell.shell-home-theme .reaction-trigger,
+.shell.shell-home-theme .feed-action-group .btn {
+  flex: 1;
+  min-height: 48px;
+  border: none;
+  border-right: 1px solid rgba(112, 92, 216, 0.2);
+  border-radius: 0;
+  background: transparent;
+  color: rgba(220, 215, 255, 0.82);
+  font-size: 0.9rem;
+  font-weight: 680;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  transition: background 0.15s, color 0.15s;
+  padding: 0 8px;
+  box-shadow: none;
+}
+
+.shell.shell-home-theme .reaction-bar .btn:last-child,
+.shell.shell-home-theme .feed-action-group .btn:last-child {
+  border-right: none;
+}
+
+.shell.shell-home-theme .reaction-bar .btn:hover,
+.shell.shell-home-theme .reaction-trigger:hover,
+.shell.shell-home-theme .feed-action-group .btn:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+  transform: none;
+  box-shadow: none;
+}
+
+.shell.shell-home-theme .reaction-bar .btn.active,
+.shell.shell-home-theme .feed-save-action.active {
+  color: #ff9b2e;
+  background: rgba(255, 155, 46, 0.1);
+}
+
+/* Action icons */
+.shell.shell-home-theme .feed-action-icon {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
+
+.shell.shell-home-theme .feed-action-button-content {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+/* Reaction glyph */
+.shell.shell-home-theme .reaction-glyph {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Reactions count area */
+.shell.shell-home-theme .reaction-total,
+.shell.shell-home-theme .premium-reaction-total {
+  margin-left: auto;
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: rgba(200, 190, 255, 0.7);
+  font-size: 0.84rem;
+  white-space: nowrap;
+  border-right: none;
+  flex: 0 0 auto;
+  min-height: 48px;
+  border-left: 1px solid rgba(112, 92, 216, 0.2);
+}
+
+.shell.shell-home-theme .reaction-summary-icons {
+  display: flex;
+  gap: 2px;
+}
+
+.shell.shell-home-theme .reaction-summary-icon .reaction-glyph {
+  width: 16px;
+  height: 16px;
+}
+
+/* Reaction popover */
+.shell.shell-home-theme .reaction-popover,
+.shell.shell-home-theme .premium-reaction-popover {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  z-index: 200;
+  display: flex;
+  gap: 6px;
+  padding: 10px 14px;
+  border-radius: 50px;
+  background: rgba(14, 13, 50, 0.97);
+  border: 1px solid rgba(145, 97, 255, 0.45);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.shell.shell-home-theme .reaction-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 10px;
+  color: rgba(220, 215, 255, 0.85);
+  transition: transform 0.15s, background 0.15s;
+}
+
+.shell.shell-home-theme .reaction-option:hover {
+  transform: scale(1.25) translateY(-4px);
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.shell.shell-home-theme .reaction-option-icon .reaction-glyph {
+  width: 26px;
+  height: 26px;
+}
+
+.shell.shell-home-theme .reaction-option small {
+  font-size: 0.68rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* ── Comment section ── */
+.shell.shell-home-theme .feed-thread-shell {
+  padding: 14px 20px 16px;
+}
+
+.shell.shell-home-theme .feed-inline-form,
+.shell.shell-home-theme .premium-inline-form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(8, 8, 30, 0.7);
+  border: 1px solid rgba(112, 92, 216, 0.35);
+  border-radius: 50px;
+  padding: 6px 8px 6px 14px;
+  transition: border-color 0.2s;
+}
+
+.shell.shell-home-theme .feed-inline-form:focus-within {
+  border-color: rgba(145, 97, 255, 0.65);
+}
+
+.shell.shell-home-theme .feed-comment-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff8c2b, #5b35ff);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 900;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.shell.shell-home-theme .feed-inline-form input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: #fff;
+  font-size: 0.9rem;
+  outline: none;
+  padding: 0;
+}
+
+.shell.shell-home-theme .feed-inline-form input::placeholder {
+  color: rgba(200, 190, 255, 0.5);
+}
+
+.shell.shell-home-theme .feed-comment-tools {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.shell.shell-home-theme .feed-tool-button {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: rgba(200, 190, 255, 0.65);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  transition: background 0.15s, color 0.15s;
+}
+
+.shell.shell-home-theme .feed-tool-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.shell.shell-home-theme .feed-tool-icon {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+
+.shell.shell-home-theme .feed-comment-submit {
+  min-height: 34px;
+  padding: 0 16px;
+  border-radius: 50px;
+  font-size: 0.85rem;
+  font-weight: 780;
+  background: linear-gradient(90deg, #ff8c2b, #e040fb);
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.15s;
+  box-shadow: none;
+}
+
+.shell.shell-home-theme .feed-comment-submit:hover {
+  opacity: 0.88;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Comment list */
+.shell.shell-home-theme .comment-list,
+.shell.shell-home-theme .premium-comment-list {
+  list-style: none;
+  padding: 10px 0 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.shell.shell-home-theme .comment-list li {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 14px;
+  padding: 8px 12px;
+  font-size: 0.88rem;
+  color: rgba(230, 224, 255, 0.88);
+}
+
+.shell.shell-home-theme .comment-list li strong {
+  color: #fff;
+  font-weight: 780;
+  margin-right: 4px;
+}
+
+/* Post value chip */
+.shell.shell-home-theme .feed-post-value-chip {
+  display: inline-block;
+  margin: 0 20px 10px;
+  padding: 2px 10px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.shell.shell-home-theme .feed-post-value-chip.value-top {
+  background: rgba(255, 155, 46, 0.18);
+  color: #ff9b2e;
+  border: 1px solid rgba(255, 155, 46, 0.4);
+}
+
+.shell.shell-home-theme .feed-post-value-chip.value-medium {
+  background: rgba(145, 97, 255, 0.18);
+  color: #b07dff;
+  border: 1px solid rgba(145, 97, 255, 0.35);
+}
+
+.shell.shell-home-theme .feed-post-value-chip.value-low {
+  background: rgba(80, 200, 200, 0.12);
+  color: #53d4d8;
+  border: 1px solid rgba(80, 200, 200, 0.3);
+}
+
+/* Share caption */
+.shell.shell-home-theme .feed-share-caption {
+  padding: 4px 20px 10px;
+  color: rgba(210, 200, 255, 0.8);
+  font-size: 0.9rem;
+  font-style: italic;
+}
+
+/* Post menu */
+.shell.shell-home-theme .premium-post-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 100;
+  min-width: 160px;
+  border-radius: 14px;
+  background: rgba(16, 14, 50, 0.98);
+  border: 1px solid rgba(145, 97, 255, 0.45);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.shell.shell-home-theme .premium-post-menu button {
+  border: none;
+  background: transparent;
+  color: rgba(230, 224, 255, 0.88);
+  padding: 11px 18px;
+  font-size: 0.9rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.shell.shell-home-theme .premium-post-menu button:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.shell.shell-home-theme .premium-post-menu button.danger {
+  color: #ff4d6a;
+}
+
+.shell.shell-home-theme .premium-post-menu button.danger:hover {
+  background: rgba(255, 77, 106, 0.14);
+}
+
+/* ── Deleted post note ── */
+.shell.shell-home-theme .deleted-post-note {
+  margin: 0 20px 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(255, 77, 106, 0.1);
+  border: 1px solid rgba(255, 77, 106, 0.28);
+  color: rgba(255, 160, 175, 0.9);
+  font-size: 0.86rem;
+}
+
+/* ── feed-action-group layout ── */
+.shell.shell-home-theme .feed-action-group {
+  display: contents;
+}
+
+/* ── Reaction picker wrap ── */
+.shell.shell-home-theme .reaction-picker-wrap {
+  position: relative;
+  flex: 1;
+}
+
+/* tool popover */
+.shell.shell-home-theme .feed-tool-popover {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 300;
+  display: flex;
+  gap: 4px;
+  padding: 8px;
+  border-radius: 14px;
+  background: rgba(14, 13, 50, 0.97);
+  border: 1px solid rgba(145, 97, 255, 0.45);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.shell.shell-home-theme .feed-tool-popover button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 1.3rem;
+  border-radius: 8px;
+  padding: 4px;
+  transition: background 0.12s, transform 0.12s;
+}
+
+.shell.shell-home-theme .feed-tool-popover button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.2);
+}

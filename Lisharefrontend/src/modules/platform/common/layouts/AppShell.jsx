@@ -12,6 +12,8 @@ function NavIcon({ name }) {
     marketplace: "M4 7h16l-1.1 12.1a1 1 0 0 1-1 .9H6.1a1 1 0 0 1-1-.9zM7.5 7l1.1-2.4A2.8 2.8 0 0 1 11.2 3h1.6a2.8 2.8 0 0 1 2.6 1.6L16.5 7",
     orders: "M5 5h14v4H5zM5 11h14v8H5zM8 13.5h3.8M8 16.5h6.5",
     calendar: "M7 3v2.4M17 3v2.4M4.6 7h14.8a1.2 1.2 0 0 1 1.2 1.2v10.2a1.2 1.2 0 0 1-1.2 1.2H4.6a1.2 1.2 0 0 1-1.2-1.2V8.2A1.2 1.2 0 0 1 4.6 7zm3.2 4h2.8v2.4H7.8zm5.6 0h2.8v2.4h-2.8z",
+    bookmark: "M7 3h10a1 1 0 0 1 1 1v17l-6-4-6 4V4a1 1 0 0 1 1-1z",
+    analytics: "M4 20V9M9 20V5M14 20v-7M19 20v-3",
     business: "M4 20V7.8a1 1 0 0 1 1-1h5.6V4.7a.9.9 0 0 1 .9-.9h.9a.9.9 0 0 1 .9.9v2.1H19a1 1 0 0 1 1 1V20M8 20v-5.2h8V20",
     admin: "M12 3l7.2 4v5.6c0 4.2-3 7.2-7.2 8.4-4.2-1.2-7.2-4.2-7.2-8.4V7zM9 11.4l2 2 4-4"
   };
@@ -45,7 +47,14 @@ function ShellActionIcon({ type, className = "" }) {
         <circle cx="12" cy="19" r="1.7" />
       </>
     ),
-    logout: <path d="M9 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h4M16 16l4-4-4-4M20 12H10" />
+    logout: <path d="M9 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h4M16 16l4-4-4-4M20 12H10" />,
+    search: <path d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />,
+    settings: (
+      <>
+        <circle cx="12" cy="12" r="2.8" />
+        <path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4l1.4-1.4M17 7l1.4-1.4" />
+      </>
+    )
   };
 
   return (
@@ -107,7 +116,9 @@ export default function AppShell() {
   const commerceLinks = [
     { to: "/marketplace", label: "Marketplace", icon: "marketplace" },
     { to: "/orders", label: "Orders", icon: "orders" },
-    { to: "/calendar", label: "Calendar", icon: "calendar" }
+    { to: "/calendar", label: "Calendar", icon: "calendar" },
+    { to: "/bookmarks", label: "Bookmarks", icon: "bookmark" },
+    { to: "/analytics", label: "Analytics", icon: "analytics" }
   ];
 
   const handleLogout = async () => {
@@ -193,17 +204,21 @@ export default function AppShell() {
               </div>
             </div>
             <div className="shell-header-actions">
+              <button type="button" className="shell-icon-action-btn" aria-label="Search" title="Search">
+                <ShellActionIcon type="search" />
+              </button>
+              <NotificationDropdown />
               {isHomeRoute ? (
                 <div className="shell-theme-switch" aria-label="Color mode">
                   <button
                     type="button"
-                    className="shell-theme-trigger"
+                    className="shell-theme-trigger shell-icon-action-btn"
                     onClick={() => setThemeMenuOpen((open) => !open)}
                     aria-label="Change color mode"
                     aria-expanded={themeMenuOpen}
                     title="Change color mode"
                   >
-                    <ShellActionIcon type="theme" />
+                    <ShellActionIcon type="settings" />
                   </button>
                   {themeMenuOpen ? (
                     <div className="shell-theme-menu">
@@ -230,8 +245,11 @@ export default function AppShell() {
                     </div>
                   ) : null}
                 </div>
-              ) : null}
-              <NotificationDropdown />
+              ) : (
+                <button type="button" className="shell-icon-action-btn" aria-label="Settings" title="Settings">
+                  <ShellActionIcon type="settings" />
+                </button>
+              )}
               <button type="button" className="btn btn-secondary shell-logout-btn" onClick={handleLogout}>
                 <ShellActionIcon type="logout" />
                 Logout
