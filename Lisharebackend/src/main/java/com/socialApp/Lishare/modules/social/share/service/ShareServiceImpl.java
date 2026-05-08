@@ -1,21 +1,24 @@
 package com.socialApp.Lishare.modules.social.share.service;
 
-import com.socialApp.Lishare.modules.social.share.service.ShareService;
-import com.socialApp.Lishare.modules.social.share.dto.FeedResponse;
-import com.socialApp.Lishare.modules.social.notification.entity.Notification;
-import com.socialApp.Lishare.modules.social.post.entity.Post;
-import com.socialApp.Lishare.modules.social.share.entity.Share;
 import com.socialApp.Lishare.modules.platform.user.entity.User;
+import com.socialApp.Lishare.modules.platform.user.repository.UserRepo;
+import com.socialApp.Lishare.modules.social.follow.repository.FollowRepository;
+import com.socialApp.Lishare.modules.social.friend.entity.Friend;
+import com.socialApp.Lishare.modules.social.friend.repository.FriendRepository;
+import com.socialApp.Lishare.modules.social.notification.entity.Notification;
 import com.socialApp.Lishare.modules.social.notification.entity.NotificationType;
 import com.socialApp.Lishare.modules.social.notification.service.NotificationService;
+import com.socialApp.Lishare.modules.social.post.entity.Post;
 import com.socialApp.Lishare.modules.social.post.repository.PostRepository;
+import com.socialApp.Lishare.modules.social.share.dto.FeedResponse;
+import com.socialApp.Lishare.modules.social.share.entity.Share;
 import com.socialApp.Lishare.modules.social.share.repository.ShareRepository;
-import com.socialApp.Lishare.modules.platform.user.repository.UserRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Stream;
 
 @Service
@@ -26,21 +29,29 @@ public class ShareServiceImpl implements ShareService {
     private final UserRepo userRepository;
     private final PostRepository postRepository;
     private final NotificationService notificationService;
+    private final FollowRepository followRepository;
+    private final FriendRepository friendRepository;
 
     @Override
-    public Share sharePost(Long userId, Long postId, String caption) {
-
+    @Transactional
+    public Share sharePost(Long userId, Long postId, String caption, boolean notifyFollowers, List<Long> mentionedUserIds, String postValue) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
 
-
         Share share = Share.builder()
                 .user(user)
                 .post(post)
                 .caption(caption)
+                .originalPostId(post.getPostId())
+                .originalAuthorName(post.getAuthorName())
+                .originalContent(post.getContent())
+                .originalImageUrl(post.getImageUrl())
+                .originalMediaType(post.getMediaType())
+                .originalPostDeleted(false)
+                .postValue(normalizePostValue(postValue))
                 .build();
 
         Share savedShare = shareRepository.save(share);
@@ -58,12 +69,15 @@ public class ShareServiceImpl implements ShareService {
                     .build());
         }
 
+        if (notifyFollowers) {
+            notifyFollowersAndFriendsOnShare(savedShare);
+        }
+        notifyMentionedUsers(savedShare, mentionedUserIds);
         return savedShare;
     }
 
     @Override
     public List<FeedResponse> getFullFeed() {
-
         List<Post> posts = postRepository.findAll();
         List<Share> shares = shareRepository.findAllByOrderByCreatedAtDesc();
 
@@ -71,50 +85,67 @@ public class ShareServiceImpl implements ShareService {
                 .map(post -> FeedResponse.builder()
                         .type("POST")
                         .postId(post.getPostId())
+                        .authorId(post.getUser().getUserId())
                         .authorName(post.getAuthorName())
                         .content(post.getContent())
                         .imageUrl(post.getImageUrl())
+                        .mediaType(post.getMediaType())
+                        .reelViewCount(post.getReelViewCount())
                         .createdAt(post.getCreatedAt())
                         .build())
                 .toList();
 
         List<FeedResponse> shareFeed = shares.stream()
-                .map(share -> FeedResponse.builder()
-                        .type("SHARE")
-                        .postId(share.getShareId()) // 🔥 IMPORTANT: unique id
-                        .originalPostId(share.getPost().getPostId())
-                        .authorName(share.getPost().getAuthorName())
-                        .content(share.getPost().getContent())
-                        .imageUrl(share.getPost().getImageUrl())
-                        .sharedByName(
-                                share.getUser().getFirstname() + " " +
-                                        share.getUser().getLastName()
-                        )
-                        .shareCaption(share.getCaption())
-                        .sharedAt(share.getCreatedAt())
-                        .build())
+                .map(share -> {
+                    Post originalPost = share.getPost();
+                    boolean originalDeleted = originalPost == null || share.isOriginalPostDeleted();
+                    Long originalPostId = originalPost != null ? originalPost.getPostId() : share.getOriginalPostId();
+                    String originalAuthor = originalPost != null ? originalPost.getAuthorName() : share.getOriginalAuthorName();
+                    String originalContent = originalPost != null ? originalPost.getContent() : share.getOriginalContent();
+                    String originalImage = originalPost != null ? originalPost.getImageUrl() : share.getOriginalImageUrl();
+                    String mediaType = originalPost != null ? originalPost.getMediaType() : share.getOriginalMediaType();
+                    Long reelViewCount = originalPost != null ? originalPost.getReelViewCount() : 0L;
+
+                    if (originalDeleted && (originalContent == null || originalContent.isBlank())) {
+                        originalContent = "Original post deleted by author";
+                    }
+
+                    return FeedResponse.builder()
+                            .type("SHARE")
+                            .shareId(share.getShareId())
+                            .postId(share.getShareId())
+                            .originalPostId(originalPostId)
+                            .originalPostDeleted(originalDeleted)
+                            .authorId(originalPost != null && originalPost.getUser() != null ? originalPost.getUser().getUserId() : null)
+                            .authorName(originalAuthor)
+                            .content(originalContent)
+                            .imageUrl(originalImage)
+                            .mediaType(mediaType)
+                            .reelViewCount(reelViewCount)
+                            .sharedById(share.getUser().getUserId())
+                            .sharedByName(share.getUser().getFirstname() + " " + share.getUser().getLastName())
+                            .shareCaption(share.getCaption())
+                            .postValue(share.getPostValue())
+                            .sharedAt(share.getCreatedAt())
+                            .build();
+                })
                 .toList();
 
         return Stream.concat(postFeed.stream(), shareFeed.stream())
                 .sorted((a, b) -> {
-                    LocalDateTime timeA = a.getType().equals("SHARE")
-                            ? a.getSharedAt()
-                            : a.getCreatedAt();
-
-                    LocalDateTime timeB = b.getType().equals("SHARE")
-                            ? b.getSharedAt()
-                            : b.getCreatedAt();
-
+                    LocalDateTime timeA = "SHARE".equals(a.getType()) ? a.getSharedAt() : a.getCreatedAt();
+                    LocalDateTime timeB = "SHARE".equals(b.getType()) ? b.getSharedAt() : b.getCreatedAt();
+                    if (timeA == null && timeB == null) return 0;
+                    if (timeA == null) return 1;
+                    if (timeB == null) return -1;
                     return timeB.compareTo(timeA);
                 })
                 .toList();
-
-}
-
+    }
 
     @Override
+    @Transactional
     public void deleteShare(Long userId, Long shareId) {
-
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -124,6 +155,76 @@ public class ShareServiceImpl implements ShareService {
         if (!share.getUser().getUserId().equals(userId)) {
             throw new RuntimeException("You cannot delete this share");
         }
-
         shareRepository.delete(share);
-    }}
+    }
+
+    private void notifyFollowersAndFriendsOnShare(Share share) {
+        User actor = share.getUser();
+        Long actorId = actor.getUserId();
+        Set<Long> audienceUserIds = new LinkedHashSet<>();
+
+        followRepository.findByFollowingUserIdOrderByFollowedAtDesc(actorId)
+                .forEach(follow -> audienceUserIds.add(follow.getFollower().getUserId()));
+
+        List<Friend> acceptedFriends = friendRepository.findAcceptedFriends(actor);
+        for (Friend friend : acceptedFriends) {
+            Long friendId = friend.getSender().getUserId().equals(actorId)
+                    ? friend.getReceiver().getUserId()
+                    : friend.getSender().getUserId();
+            audienceUserIds.add(friendId);
+        }
+
+        for (Long recipientId : audienceUserIds) {
+            if (recipientId.equals(actorId)) continue;
+            User recipient = userRepository.findById(recipientId).orElse(null);
+            if (recipient == null) continue;
+
+            notificationService.publish(Notification.builder()
+                    .user(recipient)
+                    .actorUser(actor)
+                    .type(NotificationType.SYSTEM)
+                    .referenceId(share.getShareId())
+                    .referenceType("SHARE")
+                    .message(actor.getFirstname() + " shared a post")
+                    .read(false)
+                    .build());
+        }
+    }
+
+    private void notifyMentionedUsers(Share share, List<Long> mentionedUserIds) {
+        if (mentionedUserIds == null || mentionedUserIds.isEmpty()) {
+            return;
+        }
+
+        User actor = share.getUser();
+        Long actorId = actor.getUserId();
+        Set<Long> uniqueMentionIds = new LinkedHashSet<>(mentionedUserIds);
+
+        for (Long mentionedUserId : uniqueMentionIds) {
+            if (mentionedUserId == null || mentionedUserId.equals(actorId)) continue;
+            User mentionedUser = userRepository.findById(mentionedUserId).orElse(null);
+            if (mentionedUser == null) continue;
+
+            notificationService.publish(Notification.builder()
+                    .user(mentionedUser)
+                    .actorUser(actor)
+                    .type(NotificationType.SYSTEM)
+                    .referenceId(share.getShareId())
+                    .referenceType("SHARE_MENTION")
+                    .message(actor.getFirstname() + " mentioned you in a shared post")
+                    .read(false)
+                    .build());
+        }
+    }
+
+    private String normalizePostValue(String postValue) {
+        if (postValue == null || postValue.isBlank()) {
+            return "medium";
+        }
+        String normalized = postValue.trim().toLowerCase(Locale.ROOT);
+        if (normalized.equals("top") || normalized.equals("medium") || normalized.equals("low")) {
+            return normalized;
+        }
+        return "medium";
+    }
+}

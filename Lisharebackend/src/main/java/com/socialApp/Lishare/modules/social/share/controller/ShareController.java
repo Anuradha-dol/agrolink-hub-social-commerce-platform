@@ -31,7 +31,10 @@ public class ShareController {
         Share share = shareService.sharePost(
                 user.getUserId(),
                 postId,
-                request != null ? request.getCaption() : null
+                request != null ? request.getCaption() : null,
+                request == null || request.getNotifyFollowers() == null || request.getNotifyFollowers(),
+                request != null ? request.getMentionedUserIds() : null,
+                request != null ? request.getPostValue() : null
         );
 
         ShareResponse response = ShareResponse.builder()
@@ -42,10 +45,11 @@ public class ShareController {
                 )
                 .caption(share.getCaption())
 
-                .originalPostId(share.getPost().getPostId())
-                .originalContent(share.getPost().getContent())
-                .originalImageUrl(share.getPost().getImageUrl())
-                .originalAuthorName(share.getPost().getAuthorName())
+                .originalPostId(share.getOriginalPostId())
+                .originalContent(share.getOriginalContent())
+                .originalImageUrl(share.getOriginalImageUrl())
+                .originalAuthorName(share.getOriginalAuthorName())
+                .postValue(share.getPostValue())
                 .build();
 
         return ResponseEntity.ok(response);

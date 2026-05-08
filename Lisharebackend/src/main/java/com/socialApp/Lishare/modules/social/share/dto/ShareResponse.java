@@ -19,4 +19,5 @@ public class ShareResponse {
     private String originalContent;
     private String originalImageUrl;
     private String originalAuthorName;
+    private String postValue;
 }
