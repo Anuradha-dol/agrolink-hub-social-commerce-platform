@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,6 +24,14 @@ public class UserApiController {
         return ResponseEntity.ok(ApiResponse.success(
                 "Profile fetched",
                 userProfileService.getProfile(user.getUserId())
+        ));
+    }
+
+    @GetMapping("/{userId}/profile")
+    public ResponseEntity<ApiResponse<UserDto.PublicProfileDto>> publicProfile(@PathVariable Long userId) {
+        return ResponseEntity.ok(ApiResponse.success(
+                "Public profile fetched",
+                userProfileService.getPublicProfile(userId)
         ));
     }
 }

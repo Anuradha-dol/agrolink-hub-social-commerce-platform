@@ -32,7 +32,15 @@ public interface UserRepo extends JpaRepository<User, Long> {
     @Query("update User u set u.password= ?2 where u.email = ?1")
     void updatePassword(String email, String password);
 
-    @Query("SELECT u FROM User u WHERE LOWER(u.firstname) LIKE LOWER(CONCAT('%', :query, '%')) AND u.userId <> :excludeId")
+    @Query("""
+            SELECT u FROM User u
+            WHERE u.userId <> :excludeId
+            AND (
+                LOWER(u.firstname) LIKE LOWER(CONCAT('%', :query, '%'))
+                OR LOWER(u.lastName) LIKE LOWER(CONCAT('%', :query, '%'))
+                OR LOWER(u.email) LIKE LOWER(CONCAT('%', :query, '%'))
+            )
+            """)
     List<User> searchUsers(@Param("query") String query, @Param("excludeId") Long excludeId);
 
     Page<User> findByFirstnameContainingIgnoreCaseOrLastNameContainingIgnoreCaseOrEmailContainingIgnoreCase(

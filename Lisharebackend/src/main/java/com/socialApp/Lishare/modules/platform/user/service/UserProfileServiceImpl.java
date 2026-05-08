@@ -198,6 +198,19 @@ public class UserProfileServiceImpl implements UserProfileService {
         );
     }
 
+    @Override
+    public UserDto.PublicProfileDto getPublicProfile(Long userId) {
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return new UserDto.PublicProfileDto(
+                user.getUserId(),
+                user.getFirstname(),
+                user.getLastName(),
+                user.getImageUrl(),
+                user.getCoverImageUrl()
+        );
+    }
+
     @Transactional
     public void deleteUser(Long userId) {
 

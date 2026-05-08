@@ -85,6 +85,8 @@ public class UserDto {
 
     public record UserProfileDto(Long id, String name, String email, String lastName, Role role, String phoneNumber, String tempEmail, String profileImageUrl, String coverImageUrl  ) {}   // new
 
+    public record PublicProfileDto(Long id, String name, String lastName, String profileImageUrl, String coverImageUrl) {}
+
 
 
     public record VerifyCodeDto(

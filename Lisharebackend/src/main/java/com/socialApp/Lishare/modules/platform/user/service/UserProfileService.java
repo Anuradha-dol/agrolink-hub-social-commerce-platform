@@ -7,6 +7,8 @@ public interface UserProfileService {
 
     UserDto.UserProfileDto getProfile(Long userId);
 
+    UserDto.PublicProfileDto getPublicProfile(Long userId);
+
     UserDto.UpdateNameDto updateName(User user, UserDto.UpdateNameDto dto);
 
     UserDto.UpdateEmailDto updateEmail(User user, UserDto.UpdateEmailDto dto);
