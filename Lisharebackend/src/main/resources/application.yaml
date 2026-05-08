@@ -4,8 +4,8 @@ spring:
 
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/bodlyy_db}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:}
+    username: postgres
+    password: Anu@20021214
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -20,8 +20,8 @@ spring:
   mail:
     host: ${MAIL_HOST:smtp.gmail.com}
     port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME:}
-    password: ${MAIL_PASSWORD:}
+    username: anuradhawork123@gmail.com
+    password: umae tfzt zkli wjow
     properties:
       mail:
         smtp:
