@@ -1,0 +1,105 @@
+export const ENDPOINTS = {
+  auth: {
+    register: "/auth/register",
+    login: "/auth/login",
+    refresh: "/auth/refresh",
+    logout: "/auth/logout",
+    verifyOtp: "/auth/verify-code",
+    resendOtp: "/auth/resend-otp"
+  },
+  forgotPassword: {
+    sendOtp: "/forgotpass/send-otp",
+    resendOtp: "/forgotpass/resend-otp",
+    verifyOtp: "/forgotpass/verify-otp",
+    changePassword: "/forgotpass/change-password"
+  },
+  user: {
+    me: "/user/me",
+    updateName: "/user/update-name",
+    updateEmail: "/user/update-email",
+    verifyNewEmail: "/user/verify-new-email",
+    updatePassword: "/user/update-password"
+  },
+  feed: {
+    postsFeed: "/posts/feed",
+    createPost: "/posts/create",
+    deletePost: (postId) => `/posts/delete/${postId}`,
+    commentAdd: (postId) => `/comments/${postId}/add`,
+    commentDelete: (commentId) => `/comments/${commentId}/delete`,
+    comments: (postId) => `/comments/${postId}/all`,
+    reaction: (postId) => `/reactions/${postId}`,
+    reactionCounts: (postId) => `/reactions/${postId}/counts`,
+    share: (postId) => `/shares/${postId}/share`,
+    shareDelete: (shareId) => `/shares/${shareId}`,
+    sharedFeed: "/shares/feed",
+    savePost: (postId) => `/api/posts/${postId}/save`,
+    savedPosts: "/api/posts/saved",
+    reportPost: (postId) => `/api/posts/${postId}/report`
+  },
+  follow: {
+    search: "/follow/search",
+    follow: (userId) => `/follow/${userId}/follow`,
+    unfollow: (userId) => `/follow/${userId}/unfollow`,
+    followers: "/follow/followers",
+    following: "/follow/following",
+    followersCount: "/follow/followers/count",
+    followingCount: "/follow/following/count"
+  },
+  friend: {
+    all: "/api/friends/all",
+    pending: "/api/friends/pending",
+    request: (userId) => `/api/friends/${userId}/request`,
+    accept: (userId) => `/api/friends/${userId}/accept`,
+    reject: (userId) => `/api/friends/${userId}/reject`,
+    unfriend: (userId) => `/api/friends/${userId}/unfriend`
+  },
+  notifications: {
+    list: "/api/notifications",
+    unreadCount: "/api/notifications/unread-count",
+    markRead: (id) => `/api/notifications/${id}/read`,
+    readAll: "/api/notifications/read-all",
+    clearAll: "/api/notifications"
+  },
+  business: {
+    pages: "/api/business/pages",
+    myPages: "/api/business/pages/mine"
+  },
+  products: {
+    list: "/api/products",
+    item: (id) => `/api/products/${id}`,
+    byBusiness: (businessPageId) => `/api/products/business/${businessPageId}`
+  },
+  orders: {
+    create: "/api/orders",
+    mine: "/api/orders/my",
+    business: "/api/orders/business",
+    get: (id) => `/api/orders/${id}`,
+    cancel: (id) => `/api/orders/${id}`,
+    updateStatus: (id) => `/api/orders/${id}/status`
+  },
+  admin: {
+    users: "/api/admin/users",
+    updateRole: (userId) => `/api/admin/users/${userId}/role`,
+    deleteUser: (userId) => `/api/admin/users/${userId}`,
+    stats: "/api/admin/stats",
+    reports: "/api/admin/reports",
+    reportStatus: (reportId) => `/api/admin/reports/${reportId}/status`
+  },
+  chat: {
+    conversations: "/api/chat/conversations",
+    directConversation: (otherUserId) => `/api/chat/conversations/direct/${otherUserId}`,
+    groupConversation: "/api/chat/conversations/group",
+    messages: (conversationId) => `/api/chat/conversations/${conversationId}/messages`,
+    seen: (conversationId) => `/api/chat/conversations/${conversationId}/seen`,
+    addMember: (conversationId) => `/api/chat/conversations/${conversationId}/members`,
+    removeMember: (conversationId, userId) => `/api/chat/conversations/${conversationId}/members/${userId}`,
+    attachments: "/api/chat/attachments",
+    reactions: (messageId) => `/api/chat/messages/${messageId}/reactions`,
+    reaction: (messageId) => `/api/chat/messages/${messageId}/reaction`
+  },
+  userBlocks: {
+    block: (userId) => `/api/users/${userId}/block`,
+    unblock: (userId) => `/api/users/${userId}/block`,
+    list: "/api/users/blocks"
+  }
+};
