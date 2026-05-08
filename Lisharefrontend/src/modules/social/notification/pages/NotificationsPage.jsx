@@ -1,0 +1,78 @@
+import { useEffect, useState } from "react";
+import { notificationService } from "../services/notificationService";
+import LoadingState from "/src/modules/platform/common/components/LoadingState";
+import ErrorState from "/src/modules/platform/common/components/ErrorState";
+import EmptyState from "/src/modules/platform/common/components/EmptyState";
+import { useToast } from "/src/modules/platform/common/hooks/useToast";
+
+export default function NotificationsPage() {
+  const { pushToast } = useToast();
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [page, setPage] = useState(0);
+  const [hasNext, setHasNext] = useState(false);
+
+  const load = async (targetPage = 0) => {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await notificationService.getNotifications({ page: targetPage, size: 20 });
+      const payload = response?.data?.data;
+      setItems(payload?.content || []);
+      setPage(payload?.number || 0);
+      setHasNext(!payload?.last);
+    } catch {
+      setError("Failed to load notifications");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    load(0);
+  }, []);
+
+  const markRead = async (id) => {
+    try {
+      await notificationService.markRead(id);
+      setItems((prev) => prev.map((item) => (item.id === id ? { ...item, read: true } : item)));
+    } catch {
+      pushToast("Failed to update notification", "error");
+    }
+  };
+
+  if (loading) return <LoadingState text="Loading notifications..." />;
+  if (error) return <ErrorState message={error} onRetry={() => load(page)} />;
+
+  return (
+    <div className="card">
+      <h2>Notifications</h2>
+      {items.length === 0 ? <EmptyState title="No notifications yet" /> : null}
+      <ul className="notif-list full-page">
+        {items.map((item) => (
+          <li key={item.id} className={item.read ? "notif-item" : "notif-item unread"}>
+            <div>
+              <p>{item.message}</p>
+              <small>{item.createdAt ? new Date(item.createdAt).toLocaleString() : ""}</small>
+            </div>
+            {!item.read ? (
+              <button className="btn btn-primary" type="button" onClick={() => markRead(item.id)}>
+                Mark Read
+              </button>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+      <div className="pagination-row">
+        <button className="btn btn-secondary" type="button" disabled={page <= 0} onClick={() => load(page - 1)}>
+          Prev
+        </button>
+        <span>Page {page + 1}</span>
+        <button className="btn btn-secondary" type="button" disabled={!hasNext} onClick={() => load(page + 1)}>
+          Next
+        </button>
+      </div>
+    </div>
+  );
+}
