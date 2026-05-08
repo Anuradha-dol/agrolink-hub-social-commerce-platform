@@ -25,6 +25,8 @@ public interface ShareRepository extends JpaRepository<Share, Long> {
 
     List<Share> findByUserOrderByCreatedAtDesc(User user);
 
+    List<Share> findByPostPostId(Long postId);
+
     @Transactional
     @Modifying
     @Query("DELETE FROM Share s WHERE s.user.userId = :userId")

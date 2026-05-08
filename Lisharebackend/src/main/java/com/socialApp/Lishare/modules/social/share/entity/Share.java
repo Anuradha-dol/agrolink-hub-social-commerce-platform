@@ -32,10 +32,31 @@ public class Share {
     private User user;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "post_id", nullable = false)
+    @JoinColumn(name = "post_id")
     private Post post;
 
+    @Column(name = "original_post_id")
+    private Long originalPostId;
+
+    @Column(name = "original_author_name", length = 300)
+    private String originalAuthorName;
+
+    @Column(name = "original_content", length = 2000)
+    private String originalContent;
+
+    @Column(name = "original_image_url", length = 600)
+    private String originalImageUrl;
+
+    @Column(name = "original_media_type", length = 20)
+    private String originalMediaType;
+
+    @Column(name = "original_post_deleted", nullable = false)
+    private boolean originalPostDeleted;
+
     private String caption; // optional
+
+    @Column(name = "post_value", length = 20)
+    private String postValue;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -43,5 +64,8 @@ public class Share {
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
+        if (!this.originalPostDeleted) {
+            this.originalPostDeleted = false;
+        }
     }
 }
