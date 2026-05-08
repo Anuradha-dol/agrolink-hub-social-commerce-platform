@@ -15,6 +15,7 @@ export const ENDPOINTS = {
   },
   user: {
     me: "/user/me",
+    publicProfile: (userId) => `/api/users/${userId}/profile`,
     updateName: "/user/update-name",
     updateEmail: "/user/update-email",
     verifyNewEmail: "/user/verify-new-email",
@@ -96,6 +97,15 @@ export const ENDPOINTS = {
     attachments: "/api/chat/attachments",
     reactions: (messageId) => `/api/chat/messages/${messageId}/reactions`,
     reaction: (messageId) => `/api/chat/messages/${messageId}/reaction`
+  },
+  stories: {
+    create: "/api/stories",
+    feed: "/api/stories/feed",
+    share: (storyId) => `/api/stories/${storyId}/share`,
+    react: (storyId) => `/api/stories/${storyId}/reactions`,
+    view: (storyId) => `/api/stories/${storyId}/view`,
+    reply: (storyId) => `/api/stories/${storyId}/reply`,
+    delete: (storyId) => `/api/stories/${storyId}`
   },
   userBlocks: {
     block: (userId) => `/api/users/${userId}/block`,

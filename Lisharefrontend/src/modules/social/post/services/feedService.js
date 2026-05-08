@@ -7,12 +7,24 @@ export const feedService = {
     axiosInstance.post(ENDPOINTS.feed.createPost, formData, {
       headers: { "Content-Type": "multipart/form-data" }
     }),
+  updatePost: (postId, formData) =>
+    axiosInstance.put(`/posts/update/${postId}`, formData, {
+      headers: { "Content-Type": "multipart/form-data" }
+    }),
   deletePost: (postId) => axiosInstance.delete(ENDPOINTS.feed.deletePost(postId)),
+  markReelView: (postId) => axiosInstance.post(`/posts/${postId}/reel-view`),
   addComment: (postId, content) => axiosInstance.post(ENDPOINTS.feed.commentAdd(postId), { content }),
   getComments: (postId) => axiosInstance.get(ENDPOINTS.feed.comments(postId)),
   react: (postId, type) => axiosInstance.post(ENDPOINTS.feed.reaction(postId), null, { params: { type } }),
   getReactions: (postId) => axiosInstance.get(ENDPOINTS.feed.reactionCounts(postId)),
-  share: (postId, caption) => axiosInstance.post(ENDPOINTS.feed.share(postId), { caption }),
+  share: (postId, caption, options = {}) =>
+    axiosInstance.post(ENDPOINTS.feed.share(postId), {
+      caption,
+      notifyFollowers: options.notifyFollowers ?? true,
+      mentionedUserIds: options.mentionedUserIds || [],
+      postValue: options.postValue || "medium"
+    }),
+  deleteShare: (shareId) => axiosInstance.delete(ENDPOINTS.feed.shareDelete(shareId)),
   savePost: (postId) => axiosInstance.post(ENDPOINTS.feed.savePost(postId)),
   unsavePost: (postId) => axiosInstance.delete(ENDPOINTS.feed.savePost(postId)),
   getSavedPosts: (params = {}) => axiosInstance.get(ENDPOINTS.feed.savedPosts, { params }),

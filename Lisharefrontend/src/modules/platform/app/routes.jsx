@@ -34,6 +34,7 @@ export default function AppRoutes() {
           <Route path="/home" element={<FeedPage />} />
           <Route path="/post" element={<Navigate to="/home" replace />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/profile/:userId" element={<ProfilePage />} />
           <Route path="/settings" element={<Navigate to="/profile" replace />} />
           <Route path="/friends" element={<FriendsPage />} />
           <Route path="/friend" element={<Navigate to="/friends" replace />} />
