@@ -18,9 +18,10 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     // Count all comments including replies
     Long countByPost(Post post);
 
-    @Query("SELECT c FROM Comment c " +
+    @Query("SELECT DISTINCT c FROM Comment c " +
             "LEFT JOIN FETCH c.replies r " +
-            "WHERE c.post.postId = :postId AND c.parentComment IS NULL")
+            "WHERE c.post.postId = :postId AND c.parentComment IS NULL " +
+            "ORDER BY c.createdAt DESC")
     List<Comment> findTopLevelCommentsWithReplies(@Param("postId") Long postId);
 
     @Modifying

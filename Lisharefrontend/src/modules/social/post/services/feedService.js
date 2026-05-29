@@ -14,6 +14,8 @@ export const feedService = {
   deletePost: (postId) => axiosInstance.delete(ENDPOINTS.feed.deletePost(postId)),
   markReelView: (postId) => axiosInstance.post(`/posts/${postId}/reel-view`),
   addComment: (postId, content) => axiosInstance.post(ENDPOINTS.feed.commentAdd(postId), { content }),
+  addReply: (postId, parentCommentId, content) =>
+    axiosInstance.post(ENDPOINTS.feed.commentReply(postId, parentCommentId), { content }),
   getComments: (postId) => axiosInstance.get(ENDPOINTS.feed.comments(postId)),
   react: (postId, type) => axiosInstance.post(ENDPOINTS.feed.reaction(postId), null, { params: { type } }),
   getReactions: (postId) => axiosInstance.get(ENDPOINTS.feed.reactionCounts(postId)),

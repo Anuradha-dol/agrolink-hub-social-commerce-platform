@@ -288,12 +288,35 @@ function shareUserName(user) {
   return `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || user?.email || "Unknown user";
 }
 
+function commentAuthorName(comment) {
+  return comment?.authorName || `${comment?.firstName || ""} ${comment?.lastName || ""}`.trim() || "Member";
+}
+
+function mentionFromName(name = "member") {
+  const cleaned = String(name)
+    .trim()
+    .replace(/[^a-zA-Z0-9_ ]/g, "")
+    .replace(/\s+/g, "");
+  return `@${cleaned || "member"}`;
+}
+
+function formatCommentTime(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+}
+
+function countCommentThread(comments = []) {
+  return comments.reduce((total, comment) => total + 1 + (Array.isArray(comment.replies) ? comment.replies.length : 0), 0);
+}
+
 export default function FeedCard({
   item,
   comments = [],
   reactions = {},
   saved = false,
   currentUserId,
+  currentUserName = "",
   onComment,
   onReact,
   onShare,
@@ -329,6 +352,9 @@ export default function FeedCard({
   const [pickerOpen, setPickerOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [commentComposerOpen, setCommentComposerOpen] = useState(false);
+  const [openReplyId, setOpenReplyId] = useState(null);
+  const [replyDrafts, setReplyDrafts] = useState({});
+  const [commentsExpanded, setCommentsExpanded] = useState(false);
   const [shareComposerOpen, setShareComposerOpen] = useState(false);
   const [selectedReactionKey, setSelectedReactionKey] = useState("");
   const [editingOpen, setEditingOpen] = useState(false);
@@ -336,6 +362,7 @@ export default function FeedCard({
   const [editingFile, setEditingFile] = useState(null);
   const [removeMedia, setRemoveMedia] = useState(false);
   const [savingEdit, setSavingEdit] = useState(false);
+  const [mediaFailed, setMediaFailed] = useState(false);
 
   const pickerRef = useRef(null);
   const menuRef = useRef(null);
@@ -373,13 +400,20 @@ export default function FeedCard({
   const selectedShareAudience = SHARE_AUDIENCES.find((audience) => audience.key === shareAudience) || SHARE_AUDIENCES[0];
   const authorName = isShare ? item.sharedByName : item.authorName;
   const headTimestamp = item.sharedAt || item.createdAt;
+  const visibleComments = commentsExpanded ? comments : comments.slice(0, 3);
+  const hiddenCommentCount = Math.max(0, comments.length - visibleComments.length);
+  const totalCommentCount = countCommentThread(comments);
 
   useEffect(() => {
     setEditingContent(item.content || "");
     setEditingFile(null);
     setRemoveMedia(false);
     setEditingOpen(false);
-  }, [item.postId, item.content]);
+    setOpenReplyId(null);
+    setReplyDrafts({});
+    setCommentsExpanded(false);
+    setMediaFailed(false);
+  }, [item.postId, item.content, item.imageUrl]);
 
   useEffect(() => {
     if (shareDestination === "story" && !canShareToStory) {
@@ -462,6 +496,34 @@ export default function FeedCard({
     await onComment(targetPostId, commentText);
     setCommentText("");
     setCommentComposerOpen(true);
+    setCommentsExpanded(true);
+  };
+
+  const openReplyComposer = (comment) => {
+    const commentId = Number(comment?.commentId || 0);
+    if (!commentId) return;
+    const mention = `${mentionFromName(commentAuthorName(comment))} `;
+    setOpenReplyId(commentId);
+    setReplyDrafts((prev) => ({
+      ...prev,
+      [commentId]: prev[commentId] || mention
+    }));
+    setCommentsExpanded(true);
+  };
+
+  const updateReplyDraft = (commentId, value) => {
+    setReplyDrafts((prev) => ({ ...prev, [commentId]: value }));
+  };
+
+  const submitReply = async (event, comment) => {
+    event.preventDefault();
+    const commentId = Number(comment?.commentId || 0);
+    const draft = replyDrafts[commentId] || "";
+    if (!validTargetPost || !commentId || !draft.trim()) return;
+    await onComment(targetPostId, draft, commentId);
+    setReplyDrafts((prev) => ({ ...prev, [commentId]: "" }));
+    setOpenReplyId(null);
+    setCommentsExpanded(true);
   };
 
   const submitShare = async (event) => {
@@ -716,18 +778,25 @@ export default function FeedCard({
 
       {mediaUrl ? (
         <div className="feed-media-shell">
-          {videoAsset ? (
+          {mediaFailed ? (
+            <div className="feed-media-fallback">
+              <FeedShareIcon />
+              <strong>Media unavailable</strong>
+              <span>The original upload is missing from the server.</span>
+            </div>
+          ) : videoAsset ? (
             <video
               className="feed-video"
               src={mediaUrl}
               controls
               preload="metadata"
+              onError={() => setMediaFailed(true)}
               onPlay={() => {
                 if (validTargetPost && onReelView) onReelView(targetPostId);
               }}
             />
           ) : (
-            <img className="feed-image" src={mediaUrl} alt="Post" />
+            <img className="feed-image" src={mediaUrl} alt="Post" onError={() => setMediaFailed(true)} />
           )}
         </div>
       ) : null}
@@ -885,14 +954,85 @@ export default function FeedCard({
           </form>
 
           {comments.length > 0 ? (
-            <ul className="comment-list premium-comment-list">
-              {comments.slice(0, 4).map((comment) => (
-                <li key={comment.commentId}>
-                  <strong>{comment.authorName || `${comment.firstName || ""} ${comment.lastName || ""}`.trim()}:</strong>{" "}
-                  {comment.content}
-                </li>
-              ))}
-            </ul>
+            <div className="comment-list premium-comment-list" role="list">
+              <div className="thread-summary-row">
+                <span>{totalCommentCount} {totalCommentCount === 1 ? "comment" : "comments"}</span>
+                {hiddenCommentCount > 0 ? (
+                  <button type="button" onClick={() => setCommentsExpanded(true)}>
+                    View {hiddenCommentCount} older {hiddenCommentCount === 1 ? "comment" : "comments"}
+                  </button>
+                ) : null}
+              </div>
+
+              {visibleComments.map((comment) => {
+                const commentId = Number(comment.commentId || 0);
+                const name = commentAuthorName(comment);
+                const mention = mentionFromName(name);
+                const replies = Array.isArray(comment.replies) ? comment.replies : [];
+                const replyDraft = replyDrafts[commentId] || "";
+                return (
+                  <article className="comment-thread-item" role="listitem" key={comment.commentId}>
+                    <div className="comment-bubble-row">
+                      <span className="comment-author-avatar">{initialFromName(name)}</span>
+                      <div className="comment-bubble">
+                        <header>
+                          <strong>{name}</strong>
+                          {comment.createdAt ? <time>{formatCommentTime(comment.createdAt)}</time> : null}
+                        </header>
+                        <p>{comment.content}</p>
+                      </div>
+                    </div>
+
+                    <div className="comment-actions">
+                      <button type="button" className="comment-reply-link" onClick={() => openReplyComposer(comment)}>
+                        Reply to {mention}
+                      </button>
+                      {replies.length > 0 ? <span>{replies.length} {replies.length === 1 ? "reply" : "replies"}</span> : null}
+                    </div>
+
+                    {openReplyId === commentId ? (
+                      <form className="comment-reply-form" onSubmit={(event) => submitReply(event, comment)}>
+                        <span className="comment-author-avatar compact">{initialFromName(currentUserName || authorName)}</span>
+                        <input
+                          value={replyDraft}
+                          onChange={(event) => updateReplyDraft(commentId, event.target.value)}
+                          placeholder={`Reply to ${mention}`}
+                          autoFocus
+                        />
+                        <button className="btn btn-primary" type="submit" disabled={!replyDraft.trim()}>
+                          Reply
+                        </button>
+                      </form>
+                    ) : null}
+
+                    {replies.length > 0 ? (
+                      <div className="comment-replies" role="list" aria-label={`Replies to ${name}`}>
+                        {replies.map((reply) => {
+                          const replyName = commentAuthorName(reply);
+                          const replyContent = String(reply.content || "");
+                          const hasRootMention = replyContent.toLowerCase().startsWith(mention.toLowerCase());
+                          return (
+                            <article className="comment-reply-item" role="listitem" key={reply.commentId}>
+                              <span className="comment-author-avatar compact">{initialFromName(replyName)}</span>
+                              <div className="comment-bubble reply">
+                                <header>
+                                  <strong>{replyName}</strong>
+                                  {reply.createdAt ? <time>{formatCommentTime(reply.createdAt)}</time> : null}
+                                </header>
+                                <p>
+                                  {!hasRootMention ? <><span className="comment-root-mention">{mention}</span>{" "}</> : null}
+                                  {replyContent}
+                                </p>
+                              </div>
+                            </article>
+                          );
+                        })}
+                      </div>
+                    ) : null}
+                  </article>
+                );
+              })}
+            </div>
           ) : null}
         </div>
       ) : null}

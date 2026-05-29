@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { notificationService } from "../services/notificationService";
 import LoadingState from "/src/modules/platform/common/components/LoadingState";
 import ErrorState from "/src/modules/platform/common/components/ErrorState";
@@ -7,6 +8,7 @@ import { useToast } from "/src/modules/platform/common/hooks/useToast";
 
 export default function NotificationsPage() {
   const { pushToast } = useToast();
+  const navigate = useNavigate();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -42,6 +44,15 @@ export default function NotificationsPage() {
     }
   };
 
+  const openNotification = async (item) => {
+    if (!item?.read) {
+      await markRead(item.id);
+    }
+    if (Number(item?.referenceId) > 0 && ["POST", "COMMENT_REPLY"].includes(String(item.referenceType || ""))) {
+      navigate("/home", { state: { openPostId: Number(item.referenceId), mode: "posts" } });
+    }
+  };
+
   if (loading) return <LoadingState text="Loading notifications..." />;
   if (error) return <ErrorState message={error} onRetry={() => load(page)} />;
 
@@ -74,10 +85,11 @@ export default function NotificationsPage() {
         <ul className="notif-list full-page">
           {items.map((item) => (
             <li key={item.id} className={item.read ? "notif-item" : "notif-item unread"}>
-              <div>
+              <button type="button" className="notif-content-button" onClick={() => openNotification(item)}>
+                <span className="notif-type-pill">{String(item.type || "SYSTEM").replace("_", " ")}</span>
                 <p>{item.message}</p>
                 <small>{item.createdAt ? new Date(item.createdAt).toLocaleString() : ""}</small>
-              </div>
+              </button>
               {!item.read ? (
                 <button className="btn btn-primary" type="button" onClick={() => markRead(item.id)}>
                   Mark Read

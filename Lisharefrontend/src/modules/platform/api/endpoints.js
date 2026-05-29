@@ -26,6 +26,7 @@ export const ENDPOINTS = {
     createPost: "/posts/create",
     deletePost: (postId) => `/posts/delete/${postId}`,
     commentAdd: (postId) => `/comments/${postId}/add`,
+    commentReply: (postId, parentCommentId) => `/comments/${postId}/reply/${parentCommentId}`,
     commentDelete: (commentId) => `/comments/${commentId}/delete`,
     comments: (postId) => `/comments/${postId}/all`,
     reaction: (postId) => `/reactions/${postId}`,

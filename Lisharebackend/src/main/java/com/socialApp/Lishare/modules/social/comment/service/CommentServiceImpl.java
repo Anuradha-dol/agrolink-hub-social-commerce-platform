@@ -67,6 +67,9 @@ public class CommentServiceImpl implements CommentService {
                 .orElseThrow(() -> new RuntimeException("Post not found"));
         Comment parent = commentRepository.findById(parentCommentId)
                 .orElseThrow(() -> new RuntimeException("Parent comment not found"));
+        if (!parent.getPost().getPostId().equals(postId)) {
+            throw new RuntimeException("Parent comment does not belong to this post");
+        }
 
         Comment reply = Comment.builder()
                 .user(user)
@@ -83,10 +86,10 @@ public class CommentServiceImpl implements CommentService {
             notificationService.publish(Notification.builder()
                     .user(postOwner)
                     .actorUser(user)
-                    .type(NotificationType.COMMENT)
+                    .type(NotificationType.COMMENT_REPLY)
                     .referenceId(post.getPostId())
                     .referenceType("POST")
-                    .message(user.getFirstname() + " replied on your post")
+                    .message(displayName(user) + " replied to a comment on your post")
                     .read(false)
                     .build());
         }
@@ -96,10 +99,10 @@ public class CommentServiceImpl implements CommentService {
             notificationService.publish(Notification.builder()
                     .user(parentOwner)
                     .actorUser(user)
-                    .type(NotificationType.COMMENT)
-                    .referenceId(parent.getCommentId())
-                    .referenceType("COMMENT")
-                    .message(user.getFirstname() + " replied to your comment")
+                    .type(NotificationType.COMMENT_REPLY)
+                    .referenceId(post.getPostId())
+                    .referenceType("COMMENT_REPLY")
+                    .message(displayName(user) + " replied to your comment on " + displayName(postOwner) + "'s post")
                     .read(false)
                     .build());
         }
@@ -118,7 +121,7 @@ public class CommentServiceImpl implements CommentService {
     public List<Comment> getCommentsByPost(Long postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
-        return commentRepository.findByPostAndParentCommentIsNull(post);
+        return commentRepository.findTopLevelCommentsWithReplies(post.getPostId());
     }
 
     @Override
@@ -131,6 +134,15 @@ public class CommentServiceImpl implements CommentService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
         return commentRepository.countByPost(post);
+    }
+
+    private String displayName(User user) {
+        if (user == null) {
+            return "Someone";
+        }
+        String name = ((user.getFirstname() == null ? "" : user.getFirstname()) + " "
+                + (user.getLastName() == null ? "" : user.getLastName())).trim();
+        return name.isBlank() ? "Someone" : name;
     }
 
 }

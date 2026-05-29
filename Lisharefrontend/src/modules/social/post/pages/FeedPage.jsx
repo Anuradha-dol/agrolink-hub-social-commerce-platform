@@ -445,13 +445,17 @@ export default function FeedPage() {
     }
   };
 
-  const onComment = async (postId, content) => {
+  const onComment = async (postId, content, parentCommentId = null) => {
     try {
-      await feedService.addComment(postId, content);
+      if (parentCommentId) {
+        await feedService.addReply(postId, parentCommentId, content);
+      } else {
+        await feedService.addComment(postId, content);
+      }
       const response = await feedService.getComments(postId);
       setCommentsMap((prev) => ({ ...prev, [postId]: response.data || [] }));
     } catch {
-      pushToast("Failed to add comment", "error");
+      pushToast(parentCommentId ? "Failed to add reply" : "Failed to add comment", "error");
     }
   };
 
@@ -962,6 +966,7 @@ export default function FeedPage() {
             reactions={normalizedMapPostId ? (reactionsMap[normalizedMapPostId] || {}) : {}}
             saved={normalizedMapPostId ? savedPostIds.includes(normalizedMapPostId) : false}
             currentUserId={userId}
+            currentUserName={currentUserStoryName}
             onComment={onComment}
             onReact={onReact}
             onShare={onShare}
@@ -1224,6 +1229,9 @@ export default function FeedPage() {
                   className="rail-explore-grid-thumb"
                   src={toMediaUrl(item.imageUrl)}
                   alt={item.authorName}
+                  onError={(event) => {
+                    event.currentTarget.style.display = "none";
+                  }}
                 />
               ))}
               {feedMediaCandidates.filter((item) => !item.originalPostDeleted).length === 0 && (

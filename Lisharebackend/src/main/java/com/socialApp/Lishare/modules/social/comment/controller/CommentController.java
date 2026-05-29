@@ -91,17 +91,33 @@ public class CommentController {
     }
 
     private CommentResponse mapToDTO(Comment comment) {
+        Comment parent = comment.getParentComment();
+        List<CommentResponse> replies = comment.getReplies() != null
+                ? comment.getReplies().stream().map(this::mapToDTO).toList()
+                : List.of();
+
         return CommentResponse.builder()
                 .commentId(comment.getCommentId())
                 .content(comment.getContent())
-                .authorName(comment.getUser().getFirstname() + " " + comment.getUser().getLastName())
+                .authorId(comment.getUser().getUserId())
+                .authorName(displayName(comment.getUser()))
+                .parentCommentId(parent != null ? parent.getCommentId() : null)
+                .parentAuthorName(parent != null ? displayName(parent.getUser()) : null)
                 // Convert Date -> LocalDateTime
                 .createdAt(comment.getCreatedAt().toInstant()
                         .atZone(ZoneId.systemDefault())
                         .toLocalDateTime())
-                .replies(comment.getReplies() != null ?
-                        comment.getReplies().stream().map(this::mapToDTO).toList()
-                        : List.of())
+                .replyCount(replies.size())
+                .replies(replies)
                 .build();
+    }
+
+    private String displayName(User user) {
+        if (user == null) {
+            return "Unknown";
+        }
+        String name = ((user.getFirstname() == null ? "" : user.getFirstname()) + " "
+                + (user.getLastName() == null ? "" : user.getLastName())).trim();
+        return name.isBlank() ? "Unknown" : name;
     }
 }

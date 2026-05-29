@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { notificationService } from "../services/notificationService";
 import { useRealtimeNotifications } from "../hooks/useRealtimeNotifications";
 import { useAuth } from "/src/modules/platform/app/store";
@@ -16,6 +17,7 @@ function BellIcon() {
 export default function NotificationDropdown() {
   const { user } = useAuth();
   const { pushToast } = useToast();
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -54,6 +56,16 @@ export default function NotificationDropdown() {
       setUnreadCount((prev) => Math.max(0, prev - 1));
     } catch {
       pushToast("Failed to update notification", "error");
+    }
+  };
+
+  const openNotification = async (item) => {
+    if (!item?.read) {
+      await markRead(item.id);
+    }
+    if (Number(item?.referenceId) > 0 && ["POST", "COMMENT_REPLY"].includes(String(item.referenceType || ""))) {
+      navigate("/home", { state: { openPostId: Number(item.referenceId), mode: "posts" } });
+      setOpen(false);
     }
   };
 
@@ -104,10 +116,11 @@ export default function NotificationDropdown() {
             {items.length === 0 ? <li>No notifications</li> : null}
             {items.map((item) => (
               <li key={item.id} className={item.read ? "notif-item" : "notif-item unread"}>
-                <div>
+                <button type="button" className="notif-content-button" onClick={() => openNotification(item)}>
+                  <span className="notif-type-pill">{String(item.type || "SYSTEM").replace("_", " ")}</span>
                   <p>{item.message}</p>
                   <small>{item.createdAt ? new Date(item.createdAt).toLocaleString() : ""}</small>
-                </div>
+                </button>
                 {!item.read ? (
                   <button type="button" className="btn btn-primary" onClick={() => markRead(item.id)}>
                     Mark Read
