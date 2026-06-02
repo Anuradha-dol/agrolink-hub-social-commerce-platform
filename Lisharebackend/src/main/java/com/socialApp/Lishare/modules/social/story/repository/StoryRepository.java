@@ -9,4 +9,6 @@ import java.util.Set;
 
 public interface StoryRepository extends JpaRepository<Story, Long> {
     List<Story> findByUserUserIdInAndExpiresAtAfterOrderByCreatedAtDesc(Set<Long> userIds, LocalDateTime now);
+
+    List<Story> findBySourcePostPostId(Long postId);
 }

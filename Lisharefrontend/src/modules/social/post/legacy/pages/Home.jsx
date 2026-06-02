@@ -661,7 +661,7 @@ export default function Home() {
 
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "#faf7f2" }}>
-      {/* Top Bar with Navigation and Bondly */}
+      {/* Top Bar with Navigation and AgroLink Hub */}
       <Paper
         elevation={0}
         sx={{
@@ -681,7 +681,7 @@ export default function Home() {
                 <HomeIcon />
               </IconButton>
               <Typography variant="h6" fontWeight={600} sx={{ color: "#2196f3" }}>
-                Bondly
+                AgroLink Hub
               </Typography>
             </Box>
             <Stack direction="row" spacing={1} flexWrap="wrap">

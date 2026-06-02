@@ -17,6 +17,9 @@ public class PostResponse {
     private String content;
     private String imageUrl;
     private String mediaType;
+    private String category;
+    private Integer xpAwarded;
+    private Long authorVerifiedXp;
     private Long reelViewCount;
     private String authorName;
     private LocalDateTime createdAt;

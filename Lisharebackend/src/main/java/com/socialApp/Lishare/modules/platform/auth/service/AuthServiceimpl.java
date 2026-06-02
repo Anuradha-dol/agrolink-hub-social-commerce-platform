@@ -55,9 +55,11 @@ public class AuthServiceimpl implements AuthService {
             // Reuse unverified user
             user.setFirstname(registerRequest.firstname());
             user.setLastName(registerRequest.lastName());
+            user.setUsername(clean(registerRequest.username()));
             user.setPassword(passwordEncoder.encode(registerRequest.password()));
-            user.setPhoneNumber(registerRequest.phoneNumber());
-            user.setTempEmail(registerRequest.tempEmail());
+            user.setPhoneNumber(clean(registerRequest.phoneNumber()));
+            user.setBackupEmail(clean(registerRequest.tempEmail()));
+            applyOptionalProfileFields(user, registerRequest);
             user.setRole(
                     registerRequest.role() != null
                             ? registerRequest.role()
@@ -71,10 +73,12 @@ public class AuthServiceimpl implements AuthService {
             user = new User();
             user.setFirstname(registerRequest.firstname());
             user.setLastName(registerRequest.lastName());
+            user.setUsername(clean(registerRequest.username()));
             user.setEmail(registerRequest.email());
             user.setPassword(passwordEncoder.encode(registerRequest.password()));
-            user.setPhoneNumber(registerRequest.phoneNumber());
-            user.setTempEmail(registerRequest.tempEmail());
+            user.setPhoneNumber(clean(registerRequest.phoneNumber()));
+            user.setBackupEmail(clean(registerRequest.tempEmail()));
+            applyOptionalProfileFields(user, registerRequest);
             user.setRole(
                     registerRequest.role() != null
                             ? registerRequest.role()
@@ -84,13 +88,18 @@ public class AuthServiceimpl implements AuthService {
             user.setIsVerified(false);
         }
 
-        //  Validate phone number uniqueness
-        if (user.getPhoneNumber() == null || user.getPhoneNumber().isBlank()) {
-            throw new RuntimeException("Phone number is required");
+        //  Validate optional username and phone uniqueness
+        if (user.getUsername() != null && !user.getUsername().isBlank()) {
+            Optional<User> usernameExists = userRepo.findByUsernameIgnoreCase(user.getUsername());
+            if (usernameExists.isPresent() && !usernameExists.get().getEmail().equals(user.getEmail())) {
+                throw new RuntimeException("Username already in use");
+            }
         }
-        Optional<User> phoneExists = userRepo.findByPhoneNumber(user.getPhoneNumber());
-        if (phoneExists.isPresent() && !phoneExists.get().getEmail().equals(user.getEmail())) {
-            throw new RuntimeException("Phone number already registered");
+        if (user.getPhoneNumber() != null && !user.getPhoneNumber().isBlank()) {
+            Optional<User> phoneExists = userRepo.findByPhoneNumber(user.getPhoneNumber());
+            if (phoneExists.isPresent() && !phoneExists.get().getEmail().equals(user.getEmail())) {
+                throw new RuntimeException("Phone number already registered");
+            }
         }
 
         //  Generate 6-digit verification code
@@ -134,10 +143,27 @@ public class AuthServiceimpl implements AuthService {
                 .firstname(savedUser.getFirstname())
                 .email(savedUser.getEmail())
                 .phoneNumber(savedUser.getPhoneNumber())
-                .tempEmail(savedUser.getTempEmail())
+                .tempEmail(savedUser.getBackupEmail())
                 .message("User registered successfully! Verification email sent.")
                 .success(true)
                 .build();
+    }
+
+    private String clean(String value) {
+        if (value == null) {
+            return null;
+        }
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private void applyOptionalProfileFields(User user, UserDto.RegisterRequest registerRequest) {
+        user.setBio(clean(registerRequest.bio()));
+        user.setLocation(clean(registerRequest.location()));
+        user.setPreferredLanguage(clean(registerRequest.preferredLanguage()));
+        user.setWebsite(clean(registerRequest.website()));
+        user.setInterests(clean(registerRequest.interests()));
+        user.setHobbies(clean(registerRequest.hobbies()));
     }
 
 

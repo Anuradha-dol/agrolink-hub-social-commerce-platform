@@ -1,6 +1,7 @@
 package com.socialApp.Lishare.modules.platform.user.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.socialApp.Lishare.modules.platform.common.enums.AccountModerationStatus;
 import com.socialApp.Lishare.modules.platform.auth.entity.ForgotPassword;
 import com.socialApp.Lishare.modules.platform.common.enums.Role;
 import com.socialApp.Lishare.modules.social.comment.entity.Comment;
@@ -51,6 +52,9 @@ public class User implements UserDetails {
     @Column(nullable = false, unique = true, length = 150)
     private String email;
 
+    @Column(length = 80, unique = true)
+    private String username;
+
     @Column(length = 20, unique = true)
     private String phoneNumber;
 
@@ -96,9 +100,38 @@ public class User implements UserDetails {
     @Column(unique = false)
     private String tempEmail;
 
+    @Column(length = 150)
+    private String backupEmail;
+
+    @Column(length = 280)
+    private String bio;
+
+    @Column(length = 120)
+    private String location;
+
+    @Column(length = 80)
+    private String preferredLanguage;
+
+    @Column(length = 180)
+    private String website;
+
+    @Column(length = 500)
+    private String interests;
+
+    @Column(length = 500)
+    private String hobbies;
+
     @Enumerated(EnumType.STRING)
     @Column(length = 50, nullable = false)
     private Role role;
+
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(length = 30)
+    private AccountModerationStatus moderationStatus = AccountModerationStatus.ACTIVE;
+
+    @Column(length = 1000)
+    private String moderationMessage;
 
     @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Friend> sentFriends;
@@ -150,7 +183,7 @@ public class User implements UserDetails {
     @Override
     @JsonIgnore
     public boolean isAccountNonLocked() {
-        return true;
+        return moderationStatus == null || moderationStatus != AccountModerationStatus.SUSPENDED;
     }
 
     @Override
@@ -162,5 +195,12 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return isVerified;
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        if (moderationStatus == null) {
+            moderationStatus = AccountModerationStatus.ACTIVE;
+        }
     }
 }

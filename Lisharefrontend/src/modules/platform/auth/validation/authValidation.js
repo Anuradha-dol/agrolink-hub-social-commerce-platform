@@ -4,7 +4,6 @@ export function validateSignup(values) {
   if (!values.lastName?.trim()) errors.lastName = "Last name is required";
   if (!values.email?.trim()) errors.email = "Email is required";
   if (!values.password || values.password.length < 6) errors.password = "Password must be at least 6 characters";
-  if (!values.phoneNumber?.trim()) errors.phoneNumber = "Phone number is required";
   return errors;
 }
 

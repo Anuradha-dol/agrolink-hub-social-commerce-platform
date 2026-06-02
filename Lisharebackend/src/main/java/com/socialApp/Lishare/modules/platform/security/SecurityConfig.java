@@ -1,6 +1,7 @@
 package com.socialApp.Lishare.modules.platform.security;
 
 import lombok.RequiredArgsConstructor;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,7 +29,7 @@ public class SecurityConfig {
     private final JWTAuthFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
 
-    @Value("${app.cors.allowed-origins:http://localhost:5173}")
+    @Value("${app.cors.allowed-origins:http://localhost:[*],http://127.0.0.1:[*]}")
     private String allowedOrigins;
 
     private List<String> resolveAllowedOrigins() {
@@ -44,7 +45,7 @@ public class SecurityConfig {
         http
                 .cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration corsConfiguration = new CorsConfiguration();
-                    corsConfiguration.setAllowedOrigins(resolveAllowedOrigins());
+                    corsConfiguration.setAllowedOriginPatterns(resolveAllowedOrigins());
                     corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
                     corsConfiguration.setAllowedHeaders(List.of("*"));
                     corsConfiguration.setAllowCredentials(true);
@@ -52,6 +53,10 @@ public class SecurityConfig {
                     return corsConfiguration;
                 }))
                 .csrf(AbstractHttpConfigurer::disable)
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint((request, response, authException) ->
+                                response.sendError(HttpServletResponse.SC_UNAUTHORIZED))
+                )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/auth/register",
@@ -67,6 +72,8 @@ public class SecurityConfig {
                                 "/api/auth/refresh",
                                 "/api/auth/logout",
                                 "/forgotpass/**",
+                                "/ws",
+                                "/ws/**",
                                 "/error"
                         ).permitAll()
                         .requestMatchers(HttpMethod.GET, "/reviews/**", "/uploads/**", "/api/products/**", "/api/business/pages/**").permitAll()

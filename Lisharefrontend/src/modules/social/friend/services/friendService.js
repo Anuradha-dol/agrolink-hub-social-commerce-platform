@@ -3,6 +3,7 @@ import { ENDPOINTS } from "/src/modules/platform/api/endpoints";
 
 export const friendService = {
   getFriends: () => axiosInstance.get(ENDPOINTS.friend.all),
+  getFriendsForUser: (userId) => axiosInstance.get(ENDPOINTS.friend.allForUser(userId)),
   getPending: () => axiosInstance.get(ENDPOINTS.friend.pending),
   request: (userId) => axiosInstance.post(ENDPOINTS.friend.request(userId)),
   accept: (userId) => axiosInstance.post(ENDPOINTS.friend.accept(userId)),

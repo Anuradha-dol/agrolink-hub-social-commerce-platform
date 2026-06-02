@@ -41,4 +41,16 @@ public interface CalendarEventRepository extends JpaRepository<CalendarEvent, Lo
             @Param("to") LocalDateTime to,
             Pageable pageable
     );
+
+    @Query("""
+            SELECT COUNT(e)
+            FROM CalendarEvent e
+            WHERE e.owner.userId = :userId
+              AND e.cancelled = false
+              AND e.startsAt >= :from
+            """)
+    long countMyUpcomingEvents(
+            @Param("userId") Long userId,
+            @Param("from") LocalDateTime from
+    );
 }

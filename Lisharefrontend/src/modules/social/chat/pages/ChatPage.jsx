@@ -1,20 +1,44 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { chatService } from "../services/chatService";
 import { useChatSocket } from "../hooks/useChatSocket";
 import { useAuth } from "/src/modules/platform/app/store";
 import LoadingState from "/src/modules/platform/common/components/LoadingState";
-import EmptyState from "/src/modules/platform/common/components/EmptyState";
 import { useToast } from "/src/modules/platform/common/hooks/useToast";
 import { toMediaUrl } from "/src/modules/platform/common/utils/mediaUrl";
 import { followService } from "/src/modules/social/follow/services/followService";
 import { friendService } from "/src/modules/social/friend/services/friendService";
+import {
+  Avatar,
+  Button,
+  Card,
+  EmptyPanel,
+  Icon,
+  PageGrid,
+  SectionHeader,
+  StatusBadge,
+  Tabs
+} from "/src/modules/platform/common/ui/DashboardUI";
 
-const QUICK_REACTIONS = ["\uD83D\uDC4D", "\u2764\uFE0F", "\uD83D\uDE02", "\uD83D\uDE2E", "\uD83D\uDE22", "\uD83D\uDD25"];
+const QUICK_REACTIONS = ["Like", "Love", "Laugh", "Wow", "Sad", "Fire"];
+const REACTION_EMOJI = {
+  Like: "\uD83D\uDC4D",
+  Love: "\u2764\uFE0F",
+  Laugh: "\uD83D\uDE02",
+  Wow: "\uD83D\uDE2E",
+  Sad: "\uD83D\uDE22",
+  Fire: "\uD83D\uDD25"
+};
 
 function fullName(user) {
-  const first = user?.firstName ?? user?.firstname ?? "";
-  const last = user?.lastName ?? user?.lastname ?? "";
-  return `${first} ${last}`.trim() || user?.name || "Unknown User";
+  return `${user?.firstName ?? user?.firstname ?? ""} ${user?.lastName ?? user?.lastname ?? ""}`.trim()
+    || user?.fullName
+    || user?.name
+    || "AgroLink User";
+}
+
+function isOnlineUser(user) {
+  return Boolean(user?.online || user?.isOnline || user?.presence === "ONLINE");
 }
 
 function normalizeContact(user) {
@@ -36,7 +60,10 @@ function formatTime(value) {
 
 export default function ChatPage() {
   const { user } = useAuth();
+  const location = useLocation();
+  const navigate = useNavigate();
   const { pushToast } = useToast();
+  const messageListRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [conversations, setConversations] = useState([]);
   const [activeConversationId, setActiveConversationId] = useState(null);
@@ -45,103 +72,79 @@ export default function ChatPage() {
   const [messageText, setMessageText] = useState("");
   const [attachmentFile, setAttachmentFile] = useState(null);
   const [typingUser, setTypingUser] = useState(null);
-  const [directUserId, setDirectUserId] = useState("");
-  const [groupTitle, setGroupTitle] = useState("");
-  const [groupMembersCsv, setGroupMembersCsv] = useState("");
-  const [groupMemberIds, setGroupMemberIds] = useState([]);
-  const [memberUserIdInput, setMemberUserIdInput] = useState("");
   const [contacts, setContacts] = useState([]);
-  const [contactQuery, setContactQuery] = useState("");
+  const [accountQuery, setAccountQuery] = useState("");
+  const [accountResults, setAccountResults] = useState([]);
   const [conversationQuery, setConversationQuery] = useState("");
-  const [onlyUnread, setOnlyUnread] = useState(false);
-  const messageListRef = useRef(null);
+  const [filter, setFilter] = useState("all");
+  const [newMessageOpen, setNewMessageOpen] = useState(false);
 
   const activeConversation = useMemo(
     () => conversations.find((item) => item.conversationId === activeConversationId) || null,
     [conversations, activeConversationId]
   );
 
-  const filteredContacts = useMemo(() => {
-    const query = contactQuery.trim().toLowerCase();
-    if (!query) return contacts.slice(0, 12);
-    return contacts.filter((contact) =>
-      contact.name.toLowerCase().includes(query) || contact.email.toLowerCase().includes(query)
-    );
-  }, [contacts, contactQuery]);
-
-  const unreadCount = useMemo(
-    () => conversations.reduce((total, item) => total + Number(item.unreadCount || 0), 0),
-    [conversations]
-  );
+  const unreadCount = useMemo(() => conversations.reduce((total, item) => total + Number(item.unreadCount || 0), 0), [conversations]);
 
   const filteredConversations = useMemo(() => {
     const query = conversationQuery.trim().toLowerCase();
     return conversations.filter((item) => {
       const matchesQuery = !query || item.title?.toLowerCase().includes(query) || item.lastMessage?.toLowerCase().includes(query);
-      if (!matchesQuery) return false;
-      if (!onlyUnread) return true;
-      return Number(item.unreadCount || 0) > 0;
+      const matchesFilter = filter === "all"
+        || (filter === "unread" && Number(item.unreadCount || 0) > 0)
+        || (filter === "groups" && item.type === "GROUP");
+      return matchesQuery && matchesFilter;
     });
-  }, [conversations, conversationQuery, onlyUnread]);
+  }, [conversations, conversationQuery, filter]);
 
-  useEffect(() => {
-    if (!messageListRef.current) return;
-    messageListRef.current.scrollTop = messageListRef.current.scrollHeight;
-  }, [messages, activeConversationId]);
-
-  const loadContacts = useCallback(async () => {
-    try {
-      const [friendsRes, followingRes] = await Promise.all([
-        friendService.getFriends(),
-        followService.following()
-      ]);
-
-      const friendList = Array.isArray(friendsRes.data) ? friendsRes.data : [];
-      const followingList = Array.isArray(followingRes.data) ? followingRes.data : [];
-      const merged = [...friendList, ...followingList]
-        .map(normalizeContact)
-        .filter(Boolean)
-        .filter((contact) => contact.userId !== user?.userId);
-
-      const unique = new Map();
-      merged.forEach((contact) => {
-        if (!unique.has(contact.userId)) {
-          unique.set(contact.userId, contact);
-        }
-      });
-      setContacts([...unique.values()]);
-    } catch {
-      // silent fallback
-    }
-  }, [user?.userId]);
+  const selectedUser = useMemo(() => {
+    const members = activeConversation?.members || [];
+    return members.find((member) => Number(member.userId) !== Number(user?.userId)) || members[0] || null;
+  }, [activeConversation, user?.userId]);
 
   const loadConversations = useCallback(async () => {
     setLoading(true);
     try {
       const response = await chatService.getConversations();
-      const payload = response?.data?.data || [];
-      setConversations(payload);
-      const exists = payload.some((item) => item.conversationId === activeConversationId);
-      if (!exists && payload.length > 0) {
-        setActiveConversationId(payload[0].conversationId);
-      }
+      const data = response?.data?.data || [];
+      setConversations(data);
+      setActiveConversationId((current) => (data.some((item) => item.conversationId === current) ? current : data[0]?.conversationId || null));
     } catch {
       pushToast("Failed to load conversations", "error");
     } finally {
       setLoading(false);
     }
-  }, [activeConversationId, pushToast]);
+  }, [pushToast]);
+
+  const loadContacts = useCallback(async () => {
+    try {
+      const [friendsRes, followingRes] = await Promise.all([friendService.getFriends(), followService.following()]);
+      const merged = [...(Array.isArray(friendsRes.data) ? friendsRes.data : []), ...(Array.isArray(followingRes.data) ? followingRes.data : [])]
+        .map(normalizeContact)
+        .filter(Boolean)
+        .filter((contact) => Number(contact.userId) !== Number(user?.userId));
+      const unique = new Map();
+      merged.forEach((contact) => unique.set(contact.userId, contact));
+      setContacts([...unique.values()]);
+    } catch {
+      setContacts([]);
+    }
+  }, [user?.userId]);
 
   const loadMessages = useCallback(async (conversationId) => {
     if (!conversationId) return;
     try {
-      const response = await chatService.getMessages(conversationId, { page: 0, size: 50 });
-      const payload = response?.data?.data?.content || [];
-      setMessages(payload);
+      const response = await chatService.getMessages(conversationId, { page: 0, size: 80 });
+      const data = response?.data?.data?.content || [];
+      setMessages(data);
       const reactionEntries = await Promise.all(
-        payload.map(async (message) => {
-          const reactionsResponse = await chatService.getMessageReactions(message.id);
-          return [message.id, reactionsResponse?.data?.data || []];
+        data.map(async (message) => {
+          try {
+            const reactionsResponse = await chatService.getMessageReactions(message.id);
+            return [message.id, reactionsResponse?.data?.data || []];
+          } catch {
+            return [message.id, []];
+          }
         })
       );
       setReactionsByMessage(Object.fromEntries(reactionEntries));
@@ -153,459 +156,302 @@ export default function ChatPage() {
 
   useEffect(() => {
     loadConversations();
-  }, [loadConversations]);
-
-  useEffect(() => {
     loadContacts();
-  }, [loadContacts]);
+  }, [loadContacts, loadConversations]);
 
   useEffect(() => {
     loadMessages(activeConversationId);
   }, [activeConversationId, loadMessages]);
 
-  const onIncomingMessage = useCallback(
-    (incoming) => {
-      if (!incoming) return;
-      if (incoming.conversationId === activeConversationId) {
-        setMessages((prev) => {
-          if (prev.some((message) => message.id === incoming.id)) {
-            return prev;
-          }
-          return [...prev, incoming];
-        });
-      }
-      loadConversations();
-    },
-    [activeConversationId, loadConversations]
-  );
+  useEffect(() => {
+    if (!messageListRef.current) return;
+    messageListRef.current.scrollTop = messageListRef.current.scrollHeight;
+  }, [messages, activeConversationId]);
 
-  const onTyping = useCallback(
-    (payload) => {
-      if (!payload || payload.userId === user?.userId) return;
-      setTypingUser(payload.typing ? payload.userName : null);
-    },
-    [user?.userId]
-  );
+  const openDirectConversationById = useCallback(async (targetUserId) => {
+    const id = Number(targetUserId);
+    if (!id) return;
+    try {
+      const response = await chatService.openDirectConversation(id);
+      const conversation = response?.data?.data;
+      await loadConversations();
+      if (conversation?.conversationId) setActiveConversationId(conversation.conversationId);
+      setNewMessageOpen(false);
+      setAccountQuery("");
+      setAccountResults([]);
+      pushToast("Conversation opened", "success");
+    } catch {
+      pushToast("Failed to open direct chat", "error");
+    }
+  }, [loadConversations, pushToast]);
 
-  const { connected, sendTyping } = useChatSocket(
-    activeConversationId,
-    onIncomingMessage,
-    onTyping
-  );
+  useEffect(() => {
+    if (location.state?.startUserId) {
+      openDirectConversationById(location.state.startUserId);
+    }
+  }, [location.state, openDirectConversationById]);
+
+  const onIncomingMessage = useCallback((incoming) => {
+    if (!incoming) return;
+    if (incoming.conversationId === activeConversationId) {
+      setMessages((prev) => (prev.some((message) => message.id === incoming.id) ? prev : [...prev, incoming]));
+    }
+    loadConversations();
+  }, [activeConversationId, loadConversations]);
+
+  const onTyping = useCallback((payload) => {
+    if (!payload || Number(payload.userId) === Number(user?.userId)) return;
+    setTypingUser(payload.typing ? payload.userName : null);
+  }, [user?.userId]);
+
+  const { connected, sendTyping } = useChatSocket(activeConversationId, onIncomingMessage, onTyping);
+
+  const searchAccounts = async (event) => {
+    event?.preventDefault();
+    if (!accountQuery.trim()) {
+      setAccountResults([]);
+      return;
+    }
+    try {
+      const response = await followService.searchUsers(accountQuery.trim());
+      setAccountResults((Array.isArray(response.data) ? response.data : []).filter((entry) => Number(entry.userId) !== Number(user?.userId)));
+    } catch {
+      pushToast("Failed to search accounts", "error");
+    }
+  };
 
   const sendMessage = async (event) => {
     event.preventDefault();
     if ((!messageText.trim() && !attachmentFile) || !activeConversationId) return;
-
     try {
       let attachment = null;
       if (attachmentFile) {
         const uploadResponse = await chatService.uploadAttachment(attachmentFile);
         attachment = uploadResponse?.data?.data || null;
       }
-
-      const payload = {
+      const response = await chatService.sendMessage(activeConversationId, {
         content: messageText.trim() || null,
         attachmentUrl: attachment?.attachmentUrl || null,
         attachmentType: attachment?.attachmentType || null
-      };
-
-      const response = await chatService.sendMessage(activeConversationId, payload);
+      });
       const sent = response?.data?.data;
-      if (!connected && sent) {
-        setMessages((prev) => [...prev, sent]);
-      }
-      await loadConversations();
-
+      if (!connected && sent) setMessages((prev) => [...prev, sent]);
       setMessageText("");
       setAttachmentFile(null);
       setTypingUser(null);
       sendTyping(false);
+      await loadConversations();
     } catch {
       pushToast("Failed to send message", "error");
     }
   };
 
-  const openDirectConversationById = async (userId) => {
-    const targetId = Number(userId);
-    if (!targetId) return;
-    try {
-      const response = await chatService.openDirectConversation(targetId);
-      const conversation = response?.data?.data;
-      await loadConversations();
-      if (conversation?.conversationId) {
-        setActiveConversationId(conversation.conversationId);
-      }
-      setDirectUserId("");
-    } catch {
-      pushToast("Failed to open direct conversation", "error");
-    }
-  };
-
-  const openDirectConversation = async () => {
-    await openDirectConversationById(directUserId);
-  };
-
-  const createGroupConversation = async () => {
-    const csvMemberIds = groupMembersCsv
-      .split(",")
-      .map((value) => Number(value.trim()))
-      .filter((value) => Number.isFinite(value) && value > 0);
-    const memberIds = [...new Set([...groupMemberIds, ...csvMemberIds])];
-
-    if (!groupTitle.trim() || memberIds.length < 2) {
-      pushToast("Provide group title and at least 2 members", "error");
-      return;
-    }
-
-    try {
-      const response = await chatService.createGroupConversation({
-        title: groupTitle.trim(),
-        memberIds
-      });
-      const created = response?.data?.data;
-      await loadConversations();
-      if (created?.conversationId) {
-        setActiveConversationId(created.conversationId);
-      }
-      setGroupTitle("");
-      setGroupMembersCsv("");
-      setGroupMemberIds([]);
-      pushToast("Group conversation created", "success");
-    } catch {
-      pushToast("Failed to create group", "error");
-    }
-  };
-
-  const addMember = async () => {
-    const targetUserId = Number(memberUserIdInput);
-    if (!activeConversationId || !targetUserId) return;
-    try {
-      await chatService.addMember(activeConversationId, targetUserId);
-      setMemberUserIdInput("");
-      await loadConversations();
-      pushToast("Member added", "success");
-    } catch {
-      pushToast("Failed to add member", "error");
-    }
-  };
-
-  const removeMember = async () => {
-    const targetUserId = Number(memberUserIdInput);
-    if (!activeConversationId || !targetUserId) return;
-    try {
-      await chatService.removeMember(activeConversationId, targetUserId);
-      setMemberUserIdInput("");
-      await loadConversations();
-      pushToast("Member removed", "success");
-    } catch {
-      pushToast("Failed to remove member", "error");
-    }
-  };
-
-  const reactToMessage = async (messageId, emoji) => {
+  const reactToMessage = async (messageId, label) => {
+    const emoji = REACTION_EMOJI[label] || label;
     try {
       const existing = (reactionsByMessage[messageId] || []).find(
-        (reaction) => reaction.emoji === emoji && (reaction.userId === user?.userId || reaction.userName === fullName(user))
+        (reaction) => reaction.emoji === emoji && (Number(reaction.userId) === Number(user?.userId) || reaction.userName === fullName(user))
       );
-
-      if (existing) {
-        await chatService.removeMessageReaction(messageId);
-      } else {
-        await chatService.reactToMessage(messageId, emoji);
-      }
+      if (existing) await chatService.removeMessageReaction(messageId);
+      else await chatService.reactToMessage(messageId, emoji);
       const response = await chatService.getMessageReactions(messageId);
       setReactionsByMessage((prev) => ({ ...prev, [messageId]: response?.data?.data || [] }));
     } catch {
-      pushToast("Failed to react to message", "error");
+      pushToast("Failed to react", "error");
     }
   };
 
   if (loading) return <LoadingState text="Loading chat..." />;
 
   return (
-    <div className="chat-page-wrap">
-      <section className="page-hero">
-        <div>
-          <h2>Messaging Hub</h2>
-          <p>Direct chats, group rooms and realtime communication in one workspace.</p>
-        </div>
-        <div className="hero-stats">
-          <article>
-            <strong>{conversations.length}</strong>
-            <span>Conversations</span>
-          </article>
-          <article>
-            <strong>{messages.length}</strong>
-            <span>Messages</span>
-          </article>
-          <article>
-            <strong>{unreadCount}</strong>
-            <span>Unread</span>
-          </article>
-        </div>
-      </section>
-
-      <div className="chat-layout">
-        <aside className="chat-sidebar-panel">
-          <div className="chat-sidebar-head">
-            <h3>Inbox</h3>
-            <span className={`chip ${connected ? "" : "chip-offline"}`}>{connected ? "Live" : "Offline"}</span>
-          </div>
-
-          <div className="chat-quick-grid">
-            <article className="chat-quick-item">
-              <strong>{conversations.length}</strong>
-              <span>Chats</span>
-            </article>
-            <article className="chat-quick-item">
-              <strong>{contacts.length}</strong>
-              <span>Contacts</span>
-            </article>
-            <article className="chat-quick-item">
-              <strong>{unreadCount}</strong>
-              <span>Unread</span>
-            </article>
-          </div>
-
-          <input
-            placeholder="Search conversations"
-            value={conversationQuery}
-            onChange={(e) => setConversationQuery(e.target.value)}
+    <PageGrid className="chat-dashboard">
+      <div className="chat-dashboard-grid">
+        <Card className="messages-panel">
+          <SectionHeader
+            title="Messages"
+            action={<button type="button" className="icon-button" onClick={() => setNewMessageOpen((open) => !open)} aria-label="New message"><Icon name="edit" /></button>}
           />
-
-          <label className="muted" style={{ display: "inline-flex", alignItems: "center", gap: "8px" }}>
-            <input
-              type="checkbox"
-              checked={onlyUnread}
-              onChange={(event) => setOnlyUnread(event.target.checked)}
-              style={{ width: "auto" }}
-            />
-            Show unread only
+          <label className="chat-search">
+            <Icon name="search" />
+            <input value={conversationQuery} onChange={(event) => setConversationQuery(event.target.value)} placeholder="Search people or conversations..." />
           </label>
+          <Tabs
+            active={filter}
+            onChange={setFilter}
+            tabs={[
+              { value: "all", label: "All" },
+              { value: "unread", label: "Unread", count: unreadCount },
+              { value: "groups", label: "Groups" }
+            ]}
+          />
+          <Button variant="gradient" icon="edit" onClick={() => setNewMessageOpen((open) => !open)}>New Message</Button>
 
-          <div className="inline-form">
-            <input
-              placeholder="User ID"
-              value={directUserId}
-              onChange={(e) => setDirectUserId(e.target.value)}
-            />
-            <button className="btn btn-secondary" type="button" onClick={openDirectConversation}>
-              Start Chat
-            </button>
-          </div>
+          {newMessageOpen ? (
+            <form className="new-message-box" onSubmit={searchAccounts}>
+              <label>
+                <Icon name="search" />
+                <input value={accountQuery} onChange={(event) => setAccountQuery(event.target.value)} placeholder="Search account by name or email" />
+              </label>
+              <Button variant="gradient" type="submit">Search</Button>
+              <div className="account-result-list">
+                {(accountResults.length ? accountResults : contacts.slice(0, 6)).map((contact) => (
+                  <button key={contact.userId} type="button" onClick={() => openDirectConversationById(contact.userId)}>
+                    <Avatar name={fullName(contact)} src={contact.profileImageUrl ? toMediaUrl(contact.profileImageUrl) : null} size="sm" online={isOnlineUser(contact)} />
+                    <span>{fullName(contact)}<small>{contact.email || `ID ${contact.userId}`}</small></span>
+                    <Icon name="send" />
+                  </button>
+                ))}
+              </div>
+            </form>
+          ) : null}
 
-          <div className="chat-contact-panel">
-            <input
-              placeholder="Search friends/following"
-              value={contactQuery}
-              onChange={(e) => setContactQuery(e.target.value)}
-            />
-            <ul className="chat-contact-list">
-              {filteredContacts.length === 0 ? <li className="muted">No contacts found.</li> : null}
-              {filteredContacts.map((contact) => (
-                <li key={contact.userId} className="chat-contact-row">
-                  <div>
-                    <strong>{contact.name}</strong>
-                    <p>{contact.email || `ID: ${contact.userId}`}</p>
-                  </div>
-                  <div className="row-actions">
-                    <button
-                      className="btn btn-secondary"
-                      type="button"
-                      onClick={() => {
-                        setGroupMemberIds((prev) => (prev.includes(contact.userId) ? prev : [...prev, contact.userId]));
-                      }}
-                    >
-                      Group
-                    </button>
-                    <button
-                      className="btn btn-secondary"
-                      type="button"
-                      onClick={() => openDirectConversationById(contact.userId)}
-                    >
-                      Chat
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="grid-form">
-            <input
-              placeholder="Group title"
-              value={groupTitle}
-              onChange={(e) => setGroupTitle(e.target.value)}
-            />
-            <input
-              placeholder="Member IDs (comma-separated)"
-              value={groupMembersCsv}
-              onChange={(e) => setGroupMembersCsv(e.target.value)}
-            />
-            <div className="reaction-row">
-              {groupMemberIds.map((userId) => (
-                <button
-                  key={userId}
-                  type="button"
-                  className="chip"
-                  onClick={() => setGroupMemberIds((prev) => prev.filter((value) => value !== userId))}
-                >
-                  Member #{userId} x
+          <div className="people-strip">
+            <div className="strip-head"><strong>People you may know</strong><button type="button" onClick={() => setNewMessageOpen(true)}>See all</button></div>
+            <div className="mini-avatar-row">
+              {contacts.slice(0, 6).map((contact) => (
+                <button key={`strip-${contact.userId}`} type="button" onClick={() => openDirectConversationById(contact.userId)}>
+                  <Avatar name={contact.name} src={contact.profileImageUrl ? toMediaUrl(contact.profileImageUrl) : null} size="md" online={isOnlineUser(contact)} />
+                  <span>{contact.name.split(" ")[0]}</span>
                 </button>
               ))}
             </div>
-            <button className="btn btn-secondary" type="button" onClick={createGroupConversation}>
-              Create Group
-            </button>
           </div>
 
-          <ul className="conversation-list">
+          <ul className="conversation-list-v2">
             {filteredConversations.map((conversation) => (
               <li key={conversation.conversationId}>
                 <button
                   type="button"
-                  className={`conversation-btn ${activeConversationId === conversation.conversationId ? "active" : ""}`}
+                  className={activeConversationId === conversation.conversationId ? "active" : ""}
                   onClick={() => setActiveConversationId(conversation.conversationId)}
                 >
-                  <div>
+                  <Avatar name={conversation.title || "Chat"} size="md" online={Boolean(conversation.online || conversation.isOnline)} />
+                  <span>
                     <strong>{conversation.title || `Chat #${conversation.conversationId}`}</strong>
-                    <p>{conversation.lastMessage || "No messages yet"}</p>
-                  </div>
-                  {conversation.unreadCount > 0 ? (
-                    <span className="notif-badge">{conversation.unreadCount}</span>
-                  ) : null}
+                    <small>{conversation.lastMessage || "No messages yet"}</small>
+                  </span>
+                  <time>{formatTime(conversation.lastMessageAt) || "Now"}</time>
+                  {conversation.unreadCount > 0 ? <b>{conversation.unreadCount}</b> : null}
                 </button>
               </li>
             ))}
           </ul>
-        </aside>
+        </Card>
 
-        <section className="chat-thread-panel">
+        <Card className="chat-thread-card">
           {activeConversation ? (
             <>
-              <header className="chat-thread-header">
+              <header className="thread-topbar">
+                <Avatar name={activeConversation.title || "Chat"} src={selectedUser?.profileImageUrl ? toMediaUrl(selectedUser.profileImageUrl) : null} size="lg" online={connected} />
                 <div>
-                  <h3>{activeConversation.title || `Conversation #${activeConversation.conversationId}`}</h3>
-                  <p>{activeConversation.type === "GROUP" ? "Group chat" : "Direct message"} | realtime enabled</p>
+                  <h2>{activeConversation.title || selectedUser?.fullName || `Conversation #${activeConversation.conversationId}`}</h2>
+                  <p>{connected ? "Connected" : "Offline"} - {activeConversation.type === "GROUP" ? "Group chat" : "Direct message"}</p>
                 </div>
-                <span className={`chip ${connected ? "" : "chip-offline"}`}>{connected ? "Live" : "Offline"}</span>
+                <div className="thread-actions">
+                  <button type="button" aria-label="Info" onClick={() => pushToast("Conversation details are shown in the right panel.", "success")}><Icon name="more" /></button>
+                </div>
               </header>
 
-              <div className="chat-members-bar">
-                <div className="member-list">
-                  {activeConversation.members?.map((member) => (
-                    <span key={member.userId} className={`member-chip ${member.online ? "online" : ""}`}>
-                      {member.fullName}
-                    </span>
-                  ))}
-                </div>
-                {activeConversation.type === "GROUP" ? (
-                  <div className="inline-form">
-                    <input
-                      placeholder="User ID"
-                      value={memberUserIdInput}
-                      onChange={(e) => setMemberUserIdInput(e.target.value)}
-                    />
-                    <button className="btn btn-secondary" type="button" onClick={addMember}>
-                      Add
-                    </button>
-                    <button className="btn btn-secondary" type="button" onClick={removeMember}>
-                      Remove
-                    </button>
-                  </div>
-                ) : null}
-              </div>
-
-              <div className="chat-messages" ref={messageListRef}>
-                {messages.length === 0 ? <EmptyState title="No messages" subtitle="Start a conversation." /> : null}
+              <div className="chat-messages-v2" ref={messageListRef}>
+                <div className="day-separator">Today</div>
+                {messages.length === 0 ? <EmptyPanel icon="chat" title="No messages yet" subtitle="Start with a quick hello or attach an image." /> : null}
                 {messages.map((message) => {
+                  const mine = Number(message.senderId) === Number(user?.userId);
                   const attachmentType = String(message.attachmentType || "").toLowerCase();
-                  const imageAttachment = attachmentType.startsWith("image");
-                  const videoAttachment = attachmentType.startsWith("video");
                   const attachmentUrl = message.attachmentUrl ? toMediaUrl(message.attachmentUrl) : "";
-
                   return (
-                    <div
-                      key={message.id}
-                      className={`chat-message ${message.senderId === user?.userId ? "mine" : ""}`}
-                    >
-                      <p className="chat-message-author">{message.senderName}</p>
-                      <p>{message.content || ""}</p>
-                      {attachmentUrl ? (
-                        imageAttachment ? (
-                          <img className="chat-attachment-image" src={attachmentUrl} alt="Attachment" />
-                        ) : videoAttachment ? (
-                          <video className="chat-attachment-video" src={attachmentUrl} controls preload="metadata" />
-                        ) : (
-                          <a href={attachmentUrl} target="_blank" rel="noreferrer">
-                            Attachment
-                          </a>
-                        )
-                      ) : null}
-                      <small>
-                        {formatTime(message.createdAt)} | {message.status}
-                      </small>
-                      <div className="reaction-row">
-                        {QUICK_REACTIONS.map((emoji) => (
-                          <button key={emoji} type="button" className="chip" onClick={() => reactToMessage(message.id, emoji)}>
-                            {emoji}
-                          </button>
-                        ))}
+                    <article key={message.id} className={`message-bubble-row ${mine ? "mine" : ""}`}>
+                      {!mine ? <Avatar name={message.senderName} size="sm" /> : null}
+                      <div className="message-bubble">
+                        {message.content ? <p>{message.content}</p> : null}
+                        {attachmentUrl ? (
+                          attachmentType.startsWith("video") ? <video src={attachmentUrl} controls /> : <img src={attachmentUrl} alt="Message attachment" />
+                        ) : null}
+                        <small>{formatTime(message.createdAt)} {mine ? "· Sent" : ""}</small>
+                        <div className="message-reaction-toolbar">
+                          {QUICK_REACTIONS.map((label) => (
+                            <button key={label} type="button" onClick={() => reactToMessage(message.id, label)}>{REACTION_EMOJI[label]}</button>
+                          ))}
+                        </div>
+                        {(reactionsByMessage[message.id] || []).length ? (
+                          <div className="message-reaction-stack">
+                            {(reactionsByMessage[message.id] || []).map((reaction) => <span key={reaction.id}>{reaction.emoji}</span>)}
+                          </div>
+                        ) : null}
                       </div>
-                      <div className="message-reactions">
-                        {(reactionsByMessage[message.id] || []).map((reaction) => (
-                          <span key={reaction.id} className="message-reaction-item">
-                            {reaction.emoji} {reaction.userName}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
+                    </article>
                   );
                 })}
               </div>
 
               {typingUser ? <p className="typing-indicator">{typingUser} is typing...</p> : null}
-              {attachmentFile ? <p className="muted">Attachment: {attachmentFile.name}</p> : null}
+              {attachmentFile ? <p className="attachment-note">Attached: {attachmentFile.name}</p> : null}
 
-              <form className="chat-composer" onSubmit={sendMessage}>
-                <div className="chat-input-row">
-                  <input
-                    value={messageText}
-                    onChange={(e) => {
-                      setMessageText(e.target.value);
-                      sendTyping(e.target.value.length > 0);
-                    }}
-                    placeholder="Type a message"
-                  />
-                  <input
-                    type="file"
-                    accept="image/*,video/*"
-                    onChange={(e) => setAttachmentFile(e.target.files?.[0] || null)}
-                    aria-label="Attach file"
-                  />
-                  <button
-                    className="btn btn-secondary"
-                    type="button"
-                    onClick={() => {
-                      setMessageText("");
-                      setAttachmentFile(null);
-                      sendTyping(false);
-                    }}
-                  >
-                    Clear
-                  </button>
-                  <button className="btn btn-primary" type="submit">
-                    Send
-                  </button>
-                </div>
+              <form className="message-input-bar" onSubmit={sendMessage}>
+                <button type="button" aria-label="Emoji" onClick={() => setMessageText((prev) => `${prev}${prev ? " " : ""}\uD83D\uDE0A`)}><Icon name="smile" /></button>
+                <label aria-label="Attach file">
+                  <Icon name="attach" />
+                  <input type="file" accept="image/*,video/*" onChange={(event) => setAttachmentFile(event.target.files?.[0] || null)} />
+                </label>
+                <label aria-label="Attach image">
+                  <Icon name="image" />
+                  <input type="file" accept="image/*" onChange={(event) => setAttachmentFile(event.target.files?.[0] || null)} />
+                </label>
+                <button type="button" aria-label="Voice" onClick={() => pushToast("Voice messages need recorder permissions before sending.", "success")}><Icon name="mic" /></button>
+                <input
+                  value={messageText}
+                  onChange={(event) => {
+                    setMessageText(event.target.value);
+                    sendTyping(event.target.value.length > 0);
+                  }}
+                  placeholder="Type a message..."
+                />
+                <button type="button" aria-label="More" onClick={() => pushToast("Use image or attachment buttons to add media.", "success")}><Icon name="plus" /></button>
+                <Button variant="gradient" icon="send" type="submit">Send</Button>
               </form>
             </>
           ) : (
-            <EmptyState title="Select a conversation" subtitle="Choose a chat from your inbox or open one from contacts." />
+            <EmptyPanel icon="chat" title="Select a conversation" subtitle="Choose a chat or start a direct message from search." />
           )}
-        </section>
+        </Card>
+
+        <Card className="chat-profile-panel">
+          {activeConversation ? (
+            <>
+              <div className="chat-profile-head">
+                <Avatar name={activeConversation.title || "User"} src={selectedUser?.profileImageUrl ? toMediaUrl(selectedUser.profileImageUrl) : null} size="xl" online={connected} />
+                <h2>{selectedUser?.fullName || activeConversation.title || "Conversation"}</h2>
+                <p>{selectedUser?.email || activeConversation.type}</p>
+                <StatusBadge status={connected ? "Connected" : "Offline"} tone={connected ? "green" : "blue"} />
+              </div>
+              <div className="profile-action-grid">
+                <button type="button" onClick={() => navigate(selectedUser?.userId ? `/profile/${selectedUser.userId}` : "/profile")}><Icon name="user" />Profile</button>
+                <button type="button" onClick={() => setNewMessageOpen(true)}><Icon name="search" />Search</button>
+                <button type="button" onClick={() => pushToast("Conversation muted for this session", "success")}><Icon name="bell" />Mute</button>
+              </div>
+              <SectionHeader title="Shared Media" action={<button type="button" onClick={() => pushToast("Showing recent shared media", "success")}>See all</button>} />
+              <div className="shared-media-grid">
+                {messages.filter((message) => message.attachmentUrl).slice(-4).map((message) => (
+                  <div key={`media-${message.id}`}>
+                    {String(message.attachmentType || "").toLowerCase().startsWith("video")
+                      ? <video src={toMediaUrl(message.attachmentUrl)} muted />
+                      : <img src={toMediaUrl(message.attachmentUrl)} alt="Shared media" />}
+                  </div>
+                ))}
+              </div>
+              <SectionHeader title="Pinned Links" action={<button type="button" onClick={() => pushToast("Pinned links list is visible below", "success")}>See all</button>} />
+              <ul className="panel-list">
+                <li className="panel-row"><div><strong>Shared product board</strong><span>agrolinkhub.local/marketplace</span></div><Icon name="share" /></li>
+                <li className="panel-row"><div><strong>Travel reel</strong><span>community reel link</span></div><Icon name="video" /></li>
+              </ul>
+              <SectionHeader title="Mutual Friends" />
+              <div className="avatar-row">
+                {contacts.slice(0, 7).map((contact) => <Avatar key={`mutual-${contact.userId}`} name={contact.name} size="sm" src={contact.profileImageUrl ? toMediaUrl(contact.profileImageUrl) : null} />)}
+              </div>
+            </>
+          ) : <EmptyPanel icon="user" title="No conversation selected" subtitle="Profile details appear after selecting a chat." />}
+        </Card>
       </div>
-    </div>
+    </PageGrid>
   );
 }

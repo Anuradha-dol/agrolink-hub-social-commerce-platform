@@ -52,6 +52,17 @@ public class CommentController {
         return ResponseEntity.ok(response);
     }
 
+    // Update comment (only by owner)
+    @PutMapping("/{commentId}/update")
+    public ResponseEntity<CommentResponse> updateComment(
+            @AuthenticationPrincipal User user,
+            @PathVariable Long commentId,
+            @Valid @RequestBody CommentRequest request) {
+
+        Comment updated = commentService.updateComment(user.getUserId(), commentId, request.getContent());
+        return ResponseEntity.ok(mapToDTO(updated));
+    }
+
     // Delete comment (only by owner)
     @DeleteMapping("/{commentId}/delete")
     public ResponseEntity<String> deleteComment(

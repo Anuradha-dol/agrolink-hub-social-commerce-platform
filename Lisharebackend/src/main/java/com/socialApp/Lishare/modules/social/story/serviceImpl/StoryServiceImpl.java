@@ -2,6 +2,7 @@ package com.socialApp.Lishare.modules.social.story.serviceImpl;
 
 import com.socialApp.Lishare.modules.platform.user.entity.User;
 import com.socialApp.Lishare.modules.platform.user.repository.UserRepo;
+import com.socialApp.Lishare.modules.platform.storage.UploadPathResolver;
 import com.socialApp.Lishare.modules.social.chat.dto.ConversationSummaryResponse;
 import com.socialApp.Lishare.modules.social.chat.dto.MessageRequest;
 import com.socialApp.Lishare.modules.social.chat.service.ChatConversationService;
@@ -23,13 +24,13 @@ import com.socialApp.Lishare.modules.social.story.repository.StoryRepository;
 import com.socialApp.Lishare.modules.social.story.repository.StoryViewRepository;
 import com.socialApp.Lishare.modules.social.story.service.StoryService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -46,9 +47,7 @@ public class StoryServiceImpl implements StoryService {
     private final FriendRepository friendRepository;
     private final ChatConversationService chatConversationService;
     private final NotificationService notificationService;
-
-    @Value("${file.upload-dir}")
-    private String uploadDir;
+    private final UploadPathResolver uploadPathResolver;
 
     @Override
     @Transactional
@@ -339,9 +338,6 @@ public class StoryServiceImpl implements StoryService {
 
     private String saveMedia(MultipartFile file) {
         try {
-            File folder = new File(uploadDir).getAbsoluteFile();
-            if (!folder.exists()) folder.mkdirs();
-
             String originalFilename = file.getOriginalFilename();
             String extension = "";
             if (originalFilename != null) {
@@ -351,7 +347,12 @@ public class StoryServiceImpl implements StoryService {
                 }
             }
             String filename = UUID.randomUUID() + extension;
-            File destination = new File(folder, filename);
+            Path folder = uploadPathResolver.ensurePrimaryUploadPath();
+            Path destinationPath = folder.resolve(filename).normalize();
+            if (!destinationPath.startsWith(folder)) {
+                throw new IllegalArgumentException("Invalid story media path");
+            }
+            File destination = destinationPath.toFile();
             file.transferTo(destination);
             return "/uploads/" + filename;
         } catch (IOException exception) {

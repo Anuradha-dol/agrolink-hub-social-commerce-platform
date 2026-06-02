@@ -61,7 +61,7 @@ public class ForgotPasswordController {
                                           HttpServletResponse response) {
 
         String email = request.get("email");
-        String tempEmail = request.get("tempEmail");
+        String tempEmail = request.get("backupEmail") != null ? request.get("backupEmail") : request.get("tempEmail");
         String phoneNumber = request.get("phoneNumber");
 
         // 🔹 At least 2 of 3 must be provided
@@ -80,7 +80,7 @@ public class ForgotPasswordController {
                 .filter(u -> {
                     int match = 0;
                     if (email != null && email.equals(u.getEmail())) match++;
-                    if (tempEmail != null && tempEmail.equals(u.getTempEmail())) match++;
+                    if (tempEmail != null && (tempEmail.equals(u.getBackupEmail()) || tempEmail.equals(u.getTempEmail()))) match++;
                     if (phoneNumber != null && phoneNumber.equals(u.getPhoneNumber())) match++;
                     return match >= 2;
                 })
@@ -109,7 +109,7 @@ public class ForgotPasswordController {
 
         // 🔹 Determine recovery channel based on rules
         boolean emailVerified = email != null && email.equals(user.getEmail());
-        boolean tempEmailVerified = tempEmail != null && tempEmail.equals(user.getTempEmail());
+        boolean tempEmailVerified = tempEmail != null && (tempEmail.equals(user.getBackupEmail()) || tempEmail.equals(user.getTempEmail()));
         boolean phoneVerified = phoneNumber != null && phoneNumber.equals(user.getPhoneNumber());
 
         RecoveryChannel recoveryChannel;
@@ -127,7 +127,7 @@ public class ForgotPasswordController {
         // 🔹 Send OTP
         switch (recoveryChannel) {
             case EMAIL -> sendOtpEmail(user.getEmail(), otp);
-            case BACKUP_EMAIL -> sendOtpEmail(user.getTempEmail(), otp);
+            case BACKUP_EMAIL -> sendOtpEmail(resolveBackupEmail(user), otp);
             case PHONE -> sendOtpSms(user.getPhoneNumber(), otp);
         }
 
@@ -188,7 +188,7 @@ public class ForgotPasswordController {
         RecoveryChannel recoveryChannel = fp.getRecoveryChannel();
         switch (recoveryChannel) {
             case EMAIL -> sendOtpEmail(user.getEmail(), newOtp);
-            case BACKUP_EMAIL -> sendOtpEmail(user.getTempEmail(), newOtp);
+            case BACKUP_EMAIL -> sendOtpEmail(resolveBackupEmail(user), newOtp);
             case PHONE -> sendOtpSms(user.getPhoneNumber(), newOtp);
         }
 
@@ -284,6 +284,13 @@ public class ForgotPasswordController {
     private void sendOtpSms(String phoneNumber, int otp) {
         // Implement your SMS provider logic here
         System.out.println("Send OTP " + otp + " to phone " + phoneNumber);
+    }
+
+    private String resolveBackupEmail(User user) {
+        if (user.getBackupEmail() != null && !user.getBackupEmail().isBlank()) {
+            return user.getBackupEmail();
+        }
+        return user.getTempEmail();
     }
 
     private String getEmailFromCookie(HttpServletRequest request) {

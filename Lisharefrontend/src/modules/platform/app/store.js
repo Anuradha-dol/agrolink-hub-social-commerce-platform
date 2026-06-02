@@ -1,8 +1,31 @@
 import { createContext, createElement, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 import axiosInstance from "/src/modules/platform/api/axiosInstance";
 import { ENDPOINTS } from "/src/modules/platform/api/endpoints";
 
 const AuthContext = createContext(null);
+const AUTH_SESSION_KEY = "lishare-auth-session";
+const PUBLIC_AUTH_PATHS = new Set(["/", "/login", "/signup", "/verify", "/forgot-password"]);
+
+function hasKnownSession() {
+  try {
+    return window.localStorage.getItem(AUTH_SESSION_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+function rememberSession(active) {
+  try {
+    if (active) {
+      window.localStorage.setItem(AUTH_SESSION_KEY, "true");
+    } else {
+      window.localStorage.removeItem(AUTH_SESSION_KEY);
+    }
+  } catch {
+    // Storage can be unavailable in private or restricted browser contexts.
+  }
+}
 
 function normalizeUser(payload) {
   if (!payload || typeof payload !== "object") return null;
@@ -32,6 +55,7 @@ function normalizeUser(payload) {
 }
 
 export function AuthProvider({ children }) {
+  const location = useLocation();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const setNormalizedUser = useCallback((payload) => {
@@ -39,25 +63,35 @@ export function AuthProvider({ children }) {
   }, []);
 
   const fetchCurrentUser = useCallback(async () => {
+    setLoading(true);
     try {
       const { data } = await axiosInstance.get(ENDPOINTS.user.me);
       setNormalizedUser(data);
+      rememberSession(true);
     } catch {
       setNormalizedUser(null);
+      rememberSession(false);
     } finally {
       setLoading(false);
     }
   }, [setNormalizedUser]);
 
   useEffect(() => {
+    if (PUBLIC_AUTH_PATHS.has(location.pathname) && !hasKnownSession()) {
+      setNormalizedUser(null);
+      setLoading(false);
+      return;
+    }
+
     fetchCurrentUser();
-  }, [fetchCurrentUser]);
+  }, [fetchCurrentUser, location.pathname, setNormalizedUser]);
 
   const logout = useCallback(async () => {
     try {
       await axiosInstance.post(ENDPOINTS.auth.logout);
     } finally {
       setNormalizedUser(null);
+      rememberSession(false);
     }
   }, [setNormalizedUser]);
 

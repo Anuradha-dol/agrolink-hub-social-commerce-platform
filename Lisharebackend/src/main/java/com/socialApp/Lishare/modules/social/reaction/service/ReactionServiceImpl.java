@@ -11,6 +11,7 @@ import com.socialApp.Lishare.modules.social.notification.service.NotificationSer
 import com.socialApp.Lishare.modules.social.post.entity.Post;
 import com.socialApp.Lishare.modules.social.post.repository.PostRepository;
 import com.socialApp.Lishare.modules.social.reaction.dto.LikeActionResponse;
+import com.socialApp.Lishare.modules.social.reaction.dto.ReactionUserResponse;
 import com.socialApp.Lishare.modules.social.reaction.entity.Reaction;
 import com.socialApp.Lishare.modules.social.reaction.repository.ReactionRepository;
 import lombok.RequiredArgsConstructor;
@@ -102,6 +103,40 @@ public class ReactionServiceImpl implements ReactionService {
             counts.put(type, reactionRepository.countByPostAndType(post, type));
         }
         return counts;
+    }
+
+    @Override
+    public List<ReactionUserResponse> getReactionUsers(Long postId) {
+        Post post = postRepo.findById(postId).orElseThrow();
+
+        return reactionRepository.findByPost(post).stream()
+                .sorted((a, b) -> {
+                    Date dateA = a.getCreatedAt();
+                    Date dateB = b.getCreatedAt();
+                    if (dateA == null && dateB == null) return 0;
+                    if (dateA == null) return 1;
+                    if (dateB == null) return -1;
+                    return dateB.compareTo(dateA);
+                })
+                .map(this::toReactionUserResponse)
+                .toList();
+    }
+
+    private ReactionUserResponse toReactionUserResponse(Reaction reaction) {
+        User user = reaction.getUser();
+        String name = user == null
+                ? "Unknown user"
+                : (user.getFirstname() + " " + user.getLastName()).trim();
+
+        return ReactionUserResponse.builder()
+                .reactionId(reaction.getReactionId())
+                .userId(user != null ? user.getUserId() : null)
+                .name(name.isBlank() ? "Unknown user" : name)
+                .email(user != null ? user.getEmail() : null)
+                .profileImageUrl(user != null ? user.getImageUrl() : null)
+                .type(reaction.getType())
+                .createdAt(reaction.getCreatedAt())
+                .build();
     }
 
     private void notifyFollowersAndFriendsOnReaction(User actor, Post post, String reactionType) {

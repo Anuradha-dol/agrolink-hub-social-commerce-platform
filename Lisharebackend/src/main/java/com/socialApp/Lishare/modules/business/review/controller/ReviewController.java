@@ -26,7 +26,7 @@ public class ReviewController {
         return ResponseEntity.ok(reviewService.getAllReviews());
     }
 
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAnyRole('USER','BUSINESS')")
     @GetMapping("/gets")
     public ResponseEntity<List<Review>> getMyReviews(
             @AuthenticationPrincipal User loggedUser) {
@@ -38,7 +38,7 @@ public class ReviewController {
 
 
     // 2️⃣ Create review (only logged-in user)
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAnyRole('USER','BUSINESS')")
     @PostMapping
     public ResponseEntity<Review> createReview(
             @AuthenticationPrincipal User loggedUser,
@@ -55,7 +55,7 @@ public class ReviewController {
     }
 
     // 3️⃣ Update review (owner only)
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAnyRole('USER','BUSINESS')")
     @PutMapping("/{id}")
     public ResponseEntity<Review> updateReview(
             @AuthenticationPrincipal User loggedUser,
@@ -67,7 +67,7 @@ public class ReviewController {
     }
 
     // 4️⃣ Delete review (owner only)
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAnyRole('USER','BUSINESS')")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteReview(
             @AuthenticationPrincipal User loggedUser,

@@ -107,7 +107,7 @@ export default function Login() {
     >
       <Container maxWidth="lg">
         <Grid container spacing={4} alignItems="center">
-          {/* Left side - Bondly welcome with icons */}
+          {/* Left side - AgroLink Hub welcome with icons */}
           <Grid item xs={12} md={6}>
             <Fade in timeout={800}>
               <Box sx={{ textAlign: { xs: "center", md: "left" } }}>
@@ -125,7 +125,7 @@ export default function Login() {
                     lineHeight: 1.2,
                   }}
                 >
-                  Bondly
+                AgroLink Hub
                 </Typography>
                 <Typography variant="h5" sx={{ color: "#333", fontWeight: 600, mb: 3 }}>
                   Connect, share, and grow together
@@ -149,7 +149,7 @@ export default function Login() {
                   ))}
                 </Box>
                 <Typography variant="body2" sx={{ color: "#999" }}>
-                  Join 10M+ users already connecting on Bondly.
+                Join farmers, businesses, and communities already connecting on AgroLink Hub.
                 </Typography>
               </Box>
             </Fade>
@@ -298,7 +298,7 @@ export default function Login() {
                 </Box>
 
                 <Typography align="center" sx={{ mt: 3, color: "#666" }}>
-                  New to Bondly?{" "}
+                New to AgroLink Hub?{" "}
                   <Button
                     component={Link}
                     to="/signup"
@@ -314,7 +314,7 @@ export default function Login() {
 
         {/* Footer */}
         <Typography variant="caption" display="block" align="center" sx={{ mt: 4, color: "#666" }}>
-          © {new Date().getFullYear()} Bondly. All rights reserved.
+        © {new Date().getFullYear()} AgroLink Hub. All rights reserved.
         </Typography>
       </Container>
     </Box>

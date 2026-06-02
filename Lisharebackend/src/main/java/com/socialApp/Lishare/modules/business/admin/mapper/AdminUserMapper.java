@@ -1,6 +1,7 @@
 package com.socialApp.Lishare.modules.business.admin.mapper;
 
 import com.socialApp.Lishare.modules.business.admin.dto.AdminUserResponse;
+import com.socialApp.Lishare.modules.platform.common.enums.AccountModerationStatus;
 import com.socialApp.Lishare.modules.platform.user.entity.User;
 import org.springframework.stereotype.Component;
 
@@ -15,7 +16,9 @@ public class AdminUserMapper {
                 user.getEmail(),
                 user.getPhoneNumber(),
                 user.getRole(),
-                user.getIsVerified()
+                user.getIsVerified(),
+                user.getModerationStatus() == null ? AccountModerationStatus.ACTIVE : user.getModerationStatus(),
+                user.getModerationMessage()
         );
     }
 }

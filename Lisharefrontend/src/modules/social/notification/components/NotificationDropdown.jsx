@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { notificationService } from "../services/notificationService";
 import { useRealtimeNotifications } from "../hooks/useRealtimeNotifications";
@@ -14,10 +14,54 @@ function BellIcon() {
   );
 }
 
+function CheckIcon() {
+  return (
+    <svg className="notif-action-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="m5 12 4 4 10-10" />
+    </svg>
+  );
+}
+
+function TrashIcon() {
+  return (
+    <svg className="notif-action-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M4 7h16M10 11v6M14 11v6M6 7l1 14h10l1-14M9 7V4h6v3" />
+    </svg>
+  );
+}
+
+function extractPageContent(response) {
+  const payload = response?.data?.data ?? response?.data ?? {};
+  if (Array.isArray(payload)) return payload;
+  return Array.isArray(payload.content) ? payload.content : [];
+}
+
+function extractUnreadCount(response) {
+  const payload = response?.data?.data ?? response?.data ?? {};
+  return Number(payload.unreadCount ?? payload.count ?? payload ?? 0) || 0;
+}
+
+function notificationRoute(item) {
+  const referenceId = Number(item?.referenceId || 0);
+  const referenceType = String(item?.referenceType || item?.type || "").toUpperCase();
+
+  if (referenceType === "USER" && referenceId > 0) return { to: `/profile/${referenceId}` };
+  if (referenceType === "ORDER" || referenceType === "ORDER_STATUS") return { to: "/orders" };
+  if (referenceType === "CHAT_MESSAGE" || referenceType === "MESSAGE") return { to: "/chat" };
+  if (referenceType === "CALENDAR_EVENT" || referenceType === "EVENT_REMINDER") return { to: "/calendar" };
+  if (["POST", "COMMENT_REPLY", "SHARE", "SHARE_MENTION", "STORY"].includes(referenceType)) {
+    return referenceId > 0 && ["POST", "COMMENT_REPLY"].includes(referenceType)
+      ? { to: "/home", state: { openPostId: referenceId, mode: "posts" } }
+      : { to: "/home" };
+  }
+  return null;
+}
+
 export default function NotificationDropdown() {
   const { user } = useAuth();
   const { pushToast } = useToast();
   const navigate = useNavigate();
+  const lastRealtimeIdsRef = useRef(new Set());
   const [open, setOpen] = useState(false);
   const [items, setItems] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -30,30 +74,53 @@ export default function NotificationDropdown() {
         notificationService.getUnreadCount()
       ]);
 
-      const notificationsData = notificationsRes?.data?.data?.content || [];
-      const unreadData = unreadRes?.data?.data?.unreadCount || 0;
-      setItems(notificationsData);
-      setUnreadCount(unreadData);
+      setItems(extractPageContent(notificationsRes));
+      setUnreadCount(extractUnreadCount(unreadRes));
     } catch {
-      // silent fallback
+      // Websocket and manual refresh continue to recover when the API comes back.
     }
   }, [user?.userId]);
 
   useEffect(() => {
     load();
+    const intervalId = window.setInterval(load, 15000);
+    const refresh = () => load();
+    window.addEventListener("focus", refresh);
+    window.addEventListener("lishare-notifications-refresh", refresh);
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", refresh);
+      window.removeEventListener("lishare-notifications-refresh", refresh);
+    };
   }, [load]);
 
-  useRealtimeNotifications(user?.userId, (notification) => {
-    setItems((prev) => [notification, ...prev].slice(0, 20));
-    setUnreadCount((prev) => prev + 1);
-    pushToast(notification.message, "success");
-  });
+  const handleRealtimeNotification = useCallback((notification) => {
+    if (!notification?.id) {
+      load();
+      return;
+    }
+
+    const notificationId = String(notification.id);
+    if (lastRealtimeIdsRef.current.has(notificationId)) return;
+    lastRealtimeIdsRef.current.add(notificationId);
+    if (lastRealtimeIdsRef.current.size > 80) {
+      lastRealtimeIdsRef.current = new Set([...lastRealtimeIdsRef.current].slice(-40));
+    }
+
+    setItems((prev) => [notification, ...prev.filter((item) => String(item.id) !== notificationId)].slice(0, 20));
+    if (!notification.read) setUnreadCount((prev) => prev + 1);
+    if (notification.message) pushToast(notification.message, "success");
+  }, [load, pushToast]);
+
+  const { connected } = useRealtimeNotifications(user?.userId, handleRealtimeNotification);
 
   const markRead = async (id) => {
     try {
       await notificationService.markRead(id);
       setItems((prev) => prev.map((item) => (item.id === id ? { ...item, read: true } : item)));
       setUnreadCount((prev) => Math.max(0, prev - 1));
+      window.dispatchEvent(new Event("lishare-notifications-refresh"));
     } catch {
       pushToast("Failed to update notification", "error");
     }
@@ -63,8 +130,10 @@ export default function NotificationDropdown() {
     if (!item?.read) {
       await markRead(item.id);
     }
-    if (Number(item?.referenceId) > 0 && ["POST", "COMMENT_REPLY"].includes(String(item.referenceType || ""))) {
-      navigate("/home", { state: { openPostId: Number(item.referenceId), mode: "posts" } });
+
+    const route = notificationRoute(item);
+    if (route) {
+      navigate(route.to, route.state ? { state: route.state } : undefined);
       setOpen(false);
     }
   };
@@ -74,6 +143,7 @@ export default function NotificationDropdown() {
       await notificationService.readAll();
       setItems((prev) => prev.map((item) => ({ ...item, read: true })));
       setUnreadCount(0);
+      window.dispatchEvent(new Event("lishare-notifications-refresh"));
     } catch {
       pushToast("Failed to mark all as read", "error");
     }
@@ -84,6 +154,7 @@ export default function NotificationDropdown() {
       await notificationService.clearAll();
       setItems([]);
       setUnreadCount(0);
+      window.dispatchEvent(new Event("lishare-notifications-refresh"));
     } catch {
       pushToast("Failed to clear notifications", "error");
     }
@@ -93,27 +164,29 @@ export default function NotificationDropdown() {
 
   return (
     <div className="notif-dropdown">
-      <button type="button" className="btn btn-secondary notif-button" onClick={() => setOpen((prev) => !prev)}>
+      <button type="button" className="notif-button" onClick={() => setOpen((prev) => !prev)} aria-label="Notifications" title="Notifications">
         <BellIcon />
-        Notifications
         {unreadCount > 0 ? <span className="notif-badge">{unreadBadge}</span> : null}
       </button>
 
       {open ? (
         <div className="notif-panel">
           <div className="notif-panel-header">
-            <h4>Notifications</h4>
-            <div className="row-actions">
-              <button type="button" className="btn btn-secondary" onClick={markAllRead}>
-                Read All
+            <div>
+              <h4>Notifications</h4>
+              <small className={connected ? "notif-live-state connected" : "notif-live-state"}>{connected ? "Live" : "Syncing"}</small>
+            </div>
+            <div className="notif-panel-actions">
+              <button type="button" className="notif-panel-icon-btn" onClick={markAllRead} aria-label="Mark all notifications read" title="Read all">
+                <CheckIcon />
               </button>
-              <button type="button" className="btn btn-secondary" onClick={clearAll}>
-                Clear
+              <button type="button" className="notif-panel-icon-btn danger" onClick={clearAll} aria-label="Clear notifications" title="Clear">
+                <TrashIcon />
               </button>
             </div>
           </div>
           <ul className="notif-list">
-            {items.length === 0 ? <li>No notifications</li> : null}
+            {items.length === 0 ? <li className="notif-empty-row">No notifications</li> : null}
             {items.map((item) => (
               <li key={item.id} className={item.read ? "notif-item" : "notif-item unread"}>
                 <button type="button" className="notif-content-button" onClick={() => openNotification(item)}>
@@ -122,8 +195,8 @@ export default function NotificationDropdown() {
                   <small>{item.createdAt ? new Date(item.createdAt).toLocaleString() : ""}</small>
                 </button>
                 {!item.read ? (
-                  <button type="button" className="btn btn-primary" onClick={() => markRead(item.id)}>
-                    Mark Read
+                  <button type="button" className="notif-mark-btn" onClick={() => markRead(item.id)} aria-label="Mark notification read" title="Mark read">
+                    <CheckIcon />
                   </button>
                 ) : null}
               </li>

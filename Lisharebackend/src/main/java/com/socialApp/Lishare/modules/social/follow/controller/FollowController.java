@@ -42,13 +42,7 @@ public class FollowController {
     public ResponseEntity<List<FollowResponse>> getFollowers(@AuthenticationPrincipal User user) {
         List<FollowResponse> response = followService.getFollowers(user.getUserId())
                 .stream()
-                .map(u -> FollowResponse.builder()
-                        .userId(u.getUserId())
-                        .firstName(u.getFirstname())
-                        .lastName(u.getLastName())
-                        .email(u.getEmail())
-                        .isFollowing(followService.isFollowing(user.getUserId(), u.getUserId()))
-                        .build())
+                .map(u -> toFollowResponse(user.getUserId(), u))
                 .toList();
         return ResponseEntity.ok(response);
     }
@@ -57,13 +51,31 @@ public class FollowController {
     public ResponseEntity<List<FollowResponse>> getFollowing(@AuthenticationPrincipal User user) {
         List<FollowResponse> response = followService.getFollowing(user.getUserId())
                 .stream()
-                .map(u -> FollowResponse.builder()
-                        .userId(u.getUserId())
-                        .firstName(u.getFirstname())
-                        .lastName(u.getLastName())
-                        .email(u.getEmail())
-                        .isFollowing(true)
-                        .build())
+                .map(u -> toFollowResponse(user.getUserId(), u))
+                .toList();
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{userId}/followers")
+    public ResponseEntity<List<FollowResponse>> getFollowersForUser(
+            @AuthenticationPrincipal User user,
+            @PathVariable Long userId) {
+
+        List<FollowResponse> response = followService.getFollowers(userId)
+                .stream()
+                .map(u -> toFollowResponse(user.getUserId(), u))
+                .toList();
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{userId}/following")
+    public ResponseEntity<List<FollowResponse>> getFollowingForUser(
+            @AuthenticationPrincipal User user,
+            @PathVariable Long userId) {
+
+        List<FollowResponse> response = followService.getFollowing(userId)
+                .stream()
+                .map(u -> toFollowResponse(user.getUserId(), u))
                 .toList();
         return ResponseEntity.ok(response);
     }
@@ -78,6 +90,16 @@ public class FollowController {
         return ResponseEntity.ok(followService.getFollowingCount(user.getUserId()));
     }
 
+    @GetMapping("/{userId}/followers/count")
+    public ResponseEntity<Long> getFollowersCountForUser(@PathVariable Long userId) {
+        return ResponseEntity.ok(followService.getFollowersCount(userId));
+    }
+
+    @GetMapping("/{userId}/following/count")
+    public ResponseEntity<Long> getFollowingCountForUser(@PathVariable Long userId) {
+        return ResponseEntity.ok(followService.getFollowingCount(userId));
+    }
+
     @GetMapping("/search")
     public ResponseEntity<List<FollowResponse>> searchUsers(
             @RequestParam String query,
@@ -87,16 +109,21 @@ public class FollowController {
 
         // Map to FollowResponse so frontend can use isFollowing
         List<FollowResponse> response = users.stream()
-                .map(u -> FollowResponse.builder()
-                        .userId(u.getUserId())
-                        .firstName(u.getFirstname())
-                        .lastName(u.getLastName())
-                        .email(u.getEmail())
-                        .isFollowing(followService.isFollowing(user.getUserId(), u.getUserId()))
-                        .build())
+                .map(u -> toFollowResponse(user.getUserId(), u))
                 .toList();
 
         return ResponseEntity.ok(response);
+    }
+
+    private FollowResponse toFollowResponse(Long currentUserId, User targetUser) {
+        return FollowResponse.builder()
+                .userId(targetUser.getUserId())
+                .firstName(targetUser.getFirstname())
+                .lastName(targetUser.getLastName())
+                .email(targetUser.getEmail())
+                .profileImageUrl(targetUser.getImageUrl())
+                .isFollowing(followService.isFollowing(currentUserId, targetUser.getUserId()))
+                .build();
     }
 
 }

@@ -188,7 +188,7 @@ export default function SupportAdmin() {
           </Avatar>
           <Box>
             <Typography variant="h4" sx={{ fontWeight: 700, color: BLUE }}>
-              Bondly Support
+              AgroLink Hub Support
             </Typography>
             <Typography variant="subtitle1" sx={{ color: ROSE }}>
               {questions.length} conversation{questions.length !== 1 ? "s" : ""}
@@ -276,7 +276,7 @@ export default function SupportAdmin() {
                         }}
                       >
                         <ResponseInput
-                          placeholder="Reply as Bondly..."
+                          placeholder="Reply as AgroLink Hub..."
                           value={responseText[q.id] || ""}
                           onChange={(e) =>
                             setResponseText({ ...responseText, [q.id]: e.target.value })

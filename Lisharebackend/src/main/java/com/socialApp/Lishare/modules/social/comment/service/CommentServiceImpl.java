@@ -111,6 +111,17 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
+    public Comment updateComment(Long userId, Long commentId, String content) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new RuntimeException("Comment not found"));
+        if (!comment.getUser().getUserId().equals(userId)) {
+            throw new RuntimeException("Cannot update others' comments");
+        }
+        comment.setContent(content);
+        return commentRepository.save(comment);
+    }
+
+    @Override
     public void deleteComment(Long commentId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new RuntimeException("Comment not found"));

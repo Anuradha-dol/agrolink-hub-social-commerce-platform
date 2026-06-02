@@ -1,12 +1,31 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { notificationService } from "../services/notificationService";
+import { useRealtimeNotifications } from "../hooks/useRealtimeNotifications";
 import LoadingState from "/src/modules/platform/common/components/LoadingState";
 import ErrorState from "/src/modules/platform/common/components/ErrorState";
 import EmptyState from "/src/modules/platform/common/components/EmptyState";
+import { useAuth } from "/src/modules/platform/app/store";
 import { useToast } from "/src/modules/platform/common/hooks/useToast";
 
+function notificationRoute(item) {
+  const referenceId = Number(item?.referenceId || 0);
+  const referenceType = String(item?.referenceType || item?.type || "").toUpperCase();
+
+  if (referenceType === "USER" && referenceId > 0) return { to: `/profile/${referenceId}` };
+  if (referenceType === "ORDER" || referenceType === "ORDER_STATUS") return { to: "/orders" };
+  if (referenceType === "CHAT_MESSAGE" || referenceType === "MESSAGE") return { to: "/chat" };
+  if (referenceType === "CALENDAR_EVENT" || referenceType === "EVENT_REMINDER") return { to: "/calendar" };
+  if (["POST", "COMMENT_REPLY", "SHARE", "SHARE_MENTION", "STORY"].includes(referenceType)) {
+    return referenceId > 0 && ["POST", "COMMENT_REPLY"].includes(referenceType)
+      ? { to: "/home", state: { openPostId: referenceId, mode: "posts" } }
+      : { to: "/home" };
+  }
+  return null;
+}
+
 export default function NotificationsPage() {
+  const { user } = useAuth();
   const { pushToast } = useToast();
   const navigate = useNavigate();
   const [items, setItems] = useState([]);
@@ -15,30 +34,49 @@ export default function NotificationsPage() {
   const [page, setPage] = useState(0);
   const [hasNext, setHasNext] = useState(false);
 
-  const load = async (targetPage = 0) => {
-    setLoading(true);
+  const load = useCallback(async (targetPage = 0, showLoading = true) => {
+    if (showLoading) setLoading(true);
     setError("");
     try {
       const response = await notificationService.getNotifications({ page: targetPage, size: 20 });
-      const payload = response?.data?.data;
-      setItems(payload?.content || []);
-      setPage(payload?.number || 0);
-      setHasNext(!payload?.last);
+      const payload = response?.data?.data ?? response?.data ?? {};
+      setItems(Array.isArray(payload.content) ? payload.content : []);
+      setPage(Number(payload.number || 0));
+      setHasNext(!payload.last);
     } catch {
       setError("Failed to load notifications");
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     load(0);
-  }, []);
+    const intervalId = window.setInterval(() => load(0, false), 15000);
+    const refresh = () => load(0, false);
+    window.addEventListener("focus", refresh);
+    window.addEventListener("lishare-notifications-refresh", refresh);
+
+    return () => {
+      window.clearInterval(intervalId);
+      window.removeEventListener("focus", refresh);
+      window.removeEventListener("lishare-notifications-refresh", refresh);
+    };
+  }, [load]);
+
+  useRealtimeNotifications(user?.userId, (notification) => {
+    if (!notification?.id) {
+      load(0, false);
+      return;
+    }
+    setItems((prev) => [notification, ...prev.filter((item) => String(item.id) !== String(notification.id))].slice(0, 20));
+  });
 
   const markRead = async (id) => {
     try {
       await notificationService.markRead(id);
       setItems((prev) => prev.map((item) => (item.id === id ? { ...item, read: true } : item)));
+      window.dispatchEvent(new Event("lishare-notifications-refresh"));
     } catch {
       pushToast("Failed to update notification", "error");
     }
@@ -48,8 +86,10 @@ export default function NotificationsPage() {
     if (!item?.read) {
       await markRead(item.id);
     }
-    if (Number(item?.referenceId) > 0 && ["POST", "COMMENT_REPLY"].includes(String(item.referenceType || ""))) {
-      navigate("/home", { state: { openPostId: Number(item.referenceId), mode: "posts" } });
+
+    const route = notificationRoute(item);
+    if (route) {
+      navigate(route.to, route.state ? { state: route.state } : undefined);
     }
   };
 
@@ -91,7 +131,7 @@ export default function NotificationsPage() {
                 <small>{item.createdAt ? new Date(item.createdAt).toLocaleString() : ""}</small>
               </button>
               {!item.read ? (
-                <button className="btn btn-primary" type="button" onClick={() => markRead(item.id)}>
+                <button className="btn btn-primary notif-page-mark-btn" type="button" onClick={() => markRead(item.id)}>
                   Mark Read
                 </button>
               ) : null}

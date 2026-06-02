@@ -10,5 +10,6 @@ public class FollowResponse {
     private String firstName;
     private String lastName;
     private String email;
+    private String profileImageUrl;
     private boolean isFollowing;
 }

@@ -1,5 +1,6 @@
 package com.socialApp.Lishare.modules.business.admin.dto;
 
+import com.socialApp.Lishare.modules.platform.common.enums.AccountModerationStatus;
 import com.socialApp.Lishare.modules.platform.common.enums.Role;
 
 public record AdminUserResponse(
@@ -9,5 +10,7 @@ public record AdminUserResponse(
         String email,
         String phoneNumber,
         Role role,
-        Boolean verified
+        Boolean verified,
+        AccountModerationStatus moderationStatus,
+        String moderationMessage
 ) {}

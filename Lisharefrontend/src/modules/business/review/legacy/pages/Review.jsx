@@ -115,7 +115,7 @@ export default function Review() {
       }}
     >
       <Container maxWidth="md" sx={{ px: { xs: 2, sm: 3 } }}>
-        {/* Header Card with Home Button and Bondly branding */}
+        {/* Header card with home button and AgroLink Hub branding */}
         <Paper
           elevation={4}
           sx={{

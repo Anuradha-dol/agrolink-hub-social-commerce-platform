@@ -3,6 +3,7 @@ package com.socialApp.Lishare.modules.social.post.service;
 import com.socialApp.Lishare.modules.platform.user.entity.User;
 import com.socialApp.Lishare.modules.platform.user.repository.UserBlockRepository;
 import com.socialApp.Lishare.modules.platform.user.repository.UserRepo;
+import com.socialApp.Lishare.modules.platform.storage.UploadPathResolver;
 import com.socialApp.Lishare.modules.social.follow.entity.Follow;
 import com.socialApp.Lishare.modules.social.follow.repository.FollowRepository;
 import com.socialApp.Lishare.modules.social.friend.entity.Friend;
@@ -10,18 +11,25 @@ import com.socialApp.Lishare.modules.social.friend.repository.FriendRepository;
 import com.socialApp.Lishare.modules.social.notification.entity.Notification;
 import com.socialApp.Lishare.modules.social.notification.entity.NotificationType;
 import com.socialApp.Lishare.modules.social.notification.service.NotificationService;
+import com.socialApp.Lishare.modules.social.comment.repository.CommentRepository;
 import com.socialApp.Lishare.modules.social.post.entity.Post;
+import com.socialApp.Lishare.modules.social.post.repository.PostReportRepository;
 import com.socialApp.Lishare.modules.social.post.repository.PostRepository;
+import com.socialApp.Lishare.modules.social.post.repository.SavedPostRepository;
+import com.socialApp.Lishare.modules.social.post.support.PostXpPolicy;
+import com.socialApp.Lishare.modules.social.reaction.repository.ReactionRepository;
 import com.socialApp.Lishare.modules.social.share.entity.Share;
 import com.socialApp.Lishare.modules.social.share.repository.ShareRepository;
+import com.socialApp.Lishare.modules.social.story.entity.Story;
+import com.socialApp.Lishare.modules.social.story.repository.StoryRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -33,27 +41,33 @@ public class PostServiceImpl implements PostService {
     private final UserRepo userRepository;
     private final UserBlockRepository userBlockRepository;
     private final ShareRepository shareRepository;
+    private final SavedPostRepository savedPostRepository;
+    private final PostReportRepository postReportRepository;
+    private final StoryRepository storyRepository;
+    private final ReactionRepository reactionRepository;
+    private final CommentRepository commentRepository;
     private final FollowRepository followRepository;
     private final FriendRepository friendRepository;
     private final NotificationService notificationService;
-
-    @Value("${file.upload-dir}")
-    private String uploadDir;
+    private final UploadPathResolver uploadPathResolver;
 
     @Override
     @Transactional
-    public Post createPost(Long userId, String content, MultipartFile imageFile) {
+    public Post createPost(Long userId, String content, MultipartFile imageFile, String category) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         String mediaUrl = saveMedia(imageFile);
         String mediaType = resolveMediaType(imageFile, mediaUrl);
+        String normalizedCategory = normalizeCategory(category);
 
         Post post = Post.builder()
                 .user(user)
                 .content(content != null ? content.trim() : "")
                 .imageUrl(mediaUrl)
                 .mediaType(mediaType)
+                .category(normalizedCategory)
+                .xpAwarded(PostXpPolicy.xpForCategory(normalizedCategory))
                 .createdAt(LocalDateTime.now())
                 .reelViewCount(0L)
                 .build();
@@ -122,6 +136,17 @@ public class PostServiceImpl implements PostService {
             shareRepository.saveAll(linkedShares);
         }
 
+        List<Story> sourceStories = storyRepository.findBySourcePostPostId(postId);
+        if (!sourceStories.isEmpty()) {
+            sourceStories.forEach(story -> story.setSourcePost(null));
+            storyRepository.saveAll(sourceStories);
+        }
+
+        savedPostRepository.deleteByPostPostId(postId);
+        postReportRepository.deleteByPostPostId(postId);
+        reactionRepository.deleteAllByPostId(postId);
+        commentRepository.deleteRepliesByPostId(postId);
+        commentRepository.deleteTopLevelByPostId(postId);
         postRepository.delete(post);
     }
 
@@ -181,9 +206,6 @@ public class PostServiceImpl implements PostService {
         }
 
         try {
-            File folder = new File(uploadDir).getAbsoluteFile();
-            if (!folder.exists()) folder.mkdirs();
-
             String originalFilename = file.getOriginalFilename();
             String extension = "";
             if (originalFilename != null) {
@@ -193,7 +215,12 @@ public class PostServiceImpl implements PostService {
                 }
             }
             String filename = UUID.randomUUID() + extension;
-            File destination = new File(folder, filename);
+            Path folder = uploadPathResolver.ensurePrimaryUploadPath();
+            Path destinationPath = folder.resolve(filename).normalize();
+            if (!destinationPath.startsWith(folder)) {
+                throw new IllegalArgumentException("Invalid media path");
+            }
+            File destination = destinationPath.toFile();
             file.transferTo(destination);
             return "/uploads/" + filename;
         } catch (IOException exception) {
@@ -219,6 +246,28 @@ public class PostServiceImpl implements PostService {
             return "IMAGE";
         }
         return null;
+    }
+
+    private String normalizeCategory(String category) {
+        if (category == null || category.isBlank()) {
+            throw new IllegalArgumentException("Post category is required");
+        }
+
+        String normalized = category.trim().toUpperCase(Locale.ROOT).replace("-", "_").replace(" ", "_");
+        Set<String> allowedCategories = Set.of(
+                "GENERAL",
+                "EDUCATION",
+                "FUNNY",
+                "NEWS",
+                "BUSINESS",
+                "LIFESTYLE",
+                "TECH",
+                "OTHER"
+        );
+        if (!allowedCategories.contains(normalized)) {
+            throw new IllegalArgumentException("Unsupported post category");
+        }
+        return normalized;
     }
 
     private void notifyFollowersAndFriendsOnPost(Post post) {

@@ -31,7 +31,8 @@ function isVideoAsset(url = "") {
 }
 
 function reactionByKey(key) {
-  return REACTIONS.find((reaction) => reaction.key === key) || REACTIONS[0];
+  const normalizedKey = String(key || "").toLowerCase();
+  return REACTIONS.find((reaction) => reaction.key === normalizedKey) || REACTIONS[0];
 }
 
 function KebabIcon() {
@@ -92,6 +93,28 @@ function SmileIcon() {
     <svg className="feed-tool-icon" viewBox="0 0 24 24" aria-hidden="true">
       <circle cx="12" cy="12" r="8.2" />
       <path d="M8.8 10h.1M15.1 10h.1M8.4 14.2c.9 1 2.1 1.5 3.6 1.5s2.7-.5 3.6-1.5" />
+    </svg>
+  );
+}
+
+function ImageIcon() {
+  return (
+    <svg className="feed-tool-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <rect x="4" y="5" width="16" height="14" rx="2.4" />
+      <circle cx="9" cy="10" r="1.5" />
+      <path d="m7 17 4.2-4.2 2.4 2.4 2-2L20 17" />
+    </svg>
+  );
+}
+
+function GifIcon() {
+  return <span className="feed-gif-icon" aria-hidden="true">GIF</span>;
+}
+
+function ChevronDownIcon() {
+  return (
+    <svg className="feed-chevron-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="m7 9 5 5 5-5" />
     </svg>
   );
 }
@@ -310,14 +333,49 @@ function countCommentThread(comments = []) {
   return comments.reduce((total, comment) => total + 1 + (Array.isArray(comment.replies) ? comment.replies.length : 0), 0);
 }
 
+function normalizeCategory(category) {
+  return String(category || "GENERAL").trim().toUpperCase() || "GENERAL";
+}
+
+function categoryLabel(category) {
+  return normalizeCategory(category)
+    .toLowerCase()
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (character) => character.toUpperCase());
+}
+
+function categoryTone(category) {
+  const normalized = normalizeCategory(category);
+  if (normalized === "EDUCATION" || normalized === "NEWS") return "green";
+  if (normalized === "BUSINESS" || normalized === "TECH") return "silver";
+  if (normalized === "FUNNY" || normalized === "LIFESTYLE") return "gold";
+  return "neutral";
+}
+
+function badgeForAuthorXp(xp) {
+  const value = Number(xp || 0);
+  if (value >= 1000) return { tone: "gold", label: "Platinum XP" };
+  if (value >= 500) return { tone: "gold", label: "Gold XP" };
+  if (value >= 100) return { tone: "silver", label: "Silver XP" };
+  return null;
+}
+
+function hasVerifiedAuthorBadge(item, isShare) {
+  const verifiedXp = Number(isShare ? item?.sharedByVerifiedXp : item?.authorVerifiedXp);
+  return Boolean(isShare ? item?.sharedByVerified : item?.authorVerified) || verifiedXp >= 100;
+}
+
 export default function FeedCard({
   item,
   comments = [],
   reactions = {},
+  reactionUsers = [],
   saved = false,
   currentUserId,
   currentUserName = "",
   onComment,
+  onUpdateComment,
+  onDeleteComment,
   onReact,
   onShare,
   onDelete,
@@ -354,8 +412,14 @@ export default function FeedCard({
   const [commentComposerOpen, setCommentComposerOpen] = useState(false);
   const [openReplyId, setOpenReplyId] = useState(null);
   const [replyDrafts, setReplyDrafts] = useState({});
+  const [editingCommentId, setEditingCommentId] = useState(null);
+  const [editingCommentText, setEditingCommentText] = useState("");
+  const [commentActionBusy, setCommentActionBusy] = useState("");
+  const [openCommentMenuId, setOpenCommentMenuId] = useState(null);
+  const [deleteConfirmCommentId, setDeleteConfirmCommentId] = useState(null);
   const [commentsExpanded, setCommentsExpanded] = useState(false);
   const [shareComposerOpen, setShareComposerOpen] = useState(false);
+  const [reactionUsersOpen, setReactionUsersOpen] = useState(false);
   const [selectedReactionKey, setSelectedReactionKey] = useState("");
   const [editingOpen, setEditingOpen] = useState(false);
   const [editingContent, setEditingContent] = useState(item.content || "");
@@ -373,12 +437,13 @@ export default function FeedCard({
   const originalPostDeleted = Boolean(item.originalPostDeleted);
   const targetPostId = isShare ? item.originalPostId : item.postId;
   const validTargetPost = Number(targetPostId) > 0 && !originalPostDeleted;
-  const mediaUrl = item.imageUrl ? toMediaUrl(item.imageUrl) : "";
+  const mediaUrl = !originalPostDeleted && item.imageUrl ? toMediaUrl(item.imageUrl) : "";
   const videoAsset = (item.mediaType || "").toUpperCase() === "VIDEO" || isVideoAsset(item.imageUrl || "");
   const canEditPost = !isShare && Number(item.authorId) === Number(currentUserId);
   const canDeletePost = canEditPost;
   const canDeleteShare = isShare && Number(item.sharedById) === Number(currentUserId);
   const canShareToStory = Boolean(validTargetPost && mediaUrl);
+  const displayContent = originalPostDeleted ? "" : String(item.content || "").trim();
   const sharePreviewTitle = (item.content || "").trim() || (videoAsset ? "Shared reel" : "Shared post");
   const sharePreviewType = videoAsset ? "Reel" : "Post";
 
@@ -386,6 +451,15 @@ export default function FeedCard({
     () => Object.values(reactions || {}).reduce((total, value) => total + Number(value || 0), 0),
     [reactions]
   );
+  const postCategory = normalizeCategory(item.category);
+  const postCategoryLabel = categoryLabel(postCategory);
+  const authorXp = Number(isShare ? item?.sharedByVerifiedXp : item?.authorVerifiedXp);
+  const authorXpBadge = badgeForAuthorXp(authorXp);
+  const educationBadge = {
+    tone: authorXpBadge?.tone || categoryTone(postCategory),
+    label: authorXpBadge?.label || postCategoryLabel
+  };
+  const authorVerified = hasVerifiedAuthorBadge(item, isShare);
 
   const reactionSummary = useMemo(
     () => Object.entries(reactions || {})
@@ -403,6 +477,17 @@ export default function FeedCard({
   const visibleComments = commentsExpanded ? comments : comments.slice(0, 3);
   const hiddenCommentCount = Math.max(0, comments.length - visibleComments.length);
   const totalCommentCount = countCommentThread(comments);
+  const reactionSummaryText = totalReactions
+    ? selectedReactionKey
+      ? totalReactions > 1
+        ? `You and ${totalReactions - 1} ${totalReactions - 1 === 1 ? "other" : "others"}`
+        : "You reacted"
+      : `${totalReactions} ${totalReactions === 1 ? "reaction" : "reactions"}`
+    : "Be first to react";
+  const realReactionUsers = Array.isArray(reactionUsers) ? reactionUsers : [];
+  const reactionAvatarUsers = realReactionUsers
+    .filter((reactionUser) => Number(reactionUser?.userId) > 0 || reactionUser?.name)
+    .slice(0, 3);
 
   useEffect(() => {
     setEditingContent(item.content || "");
@@ -411,6 +496,11 @@ export default function FeedCard({
     setEditingOpen(false);
     setOpenReplyId(null);
     setReplyDrafts({});
+    setEditingCommentId(null);
+    setEditingCommentText("");
+    setCommentActionBusy("");
+    setOpenCommentMenuId(null);
+    setDeleteConfirmCommentId(null);
     setCommentsExpanded(false);
     setMediaFailed(false);
   }, [item.postId, item.content, item.imageUrl]);
@@ -483,6 +573,10 @@ export default function FeedCard({
       if (shareAudienceRef.current && !shareAudienceRef.current.contains(event.target)) {
         setShareAudienceOpen(false);
       }
+      if (event.target instanceof Element && !event.target.closest(".comment-menu-wrap")) {
+        setOpenCommentMenuId(null);
+        setDeleteConfirmCommentId(null);
+      }
     };
     document.addEventListener("mousedown", onPointerDown);
     return () => {
@@ -524,6 +618,112 @@ export default function FeedCard({
     setReplyDrafts((prev) => ({ ...prev, [commentId]: "" }));
     setOpenReplyId(null);
     setCommentsExpanded(true);
+  };
+
+  const beginEditComment = (comment) => {
+    const commentId = Number(comment?.commentId || 0);
+    if (!commentId) return;
+    setEditingCommentId(commentId);
+    setEditingCommentText(String(comment?.content || ""));
+    setOpenReplyId(null);
+    setOpenCommentMenuId(null);
+    setDeleteConfirmCommentId(null);
+    setCommentsExpanded(true);
+  };
+
+  const cancelEditComment = () => {
+    setEditingCommentId(null);
+    setEditingCommentText("");
+  };
+
+  const submitCommentEdit = async (event, comment) => {
+    event.preventDefault();
+    const commentId = Number(comment?.commentId || 0);
+    const cleanText = editingCommentText.trim();
+    if (!validTargetPost || !commentId || !cleanText || !onUpdateComment) return;
+    setCommentActionBusy(`edit-${commentId}`);
+    try {
+      await onUpdateComment(targetPostId, commentId, cleanText);
+      setEditingCommentId(null);
+      setEditingCommentText("");
+    } finally {
+      setCommentActionBusy("");
+    }
+  };
+
+  const deleteComment = async (comment) => {
+    const commentId = Number(comment?.commentId || 0);
+    if (!validTargetPost || !commentId || !onDeleteComment) return;
+    setCommentActionBusy(`delete-${commentId}`);
+    try {
+      await onDeleteComment(targetPostId, commentId);
+    } finally {
+      setCommentActionBusy("");
+      setOpenCommentMenuId(null);
+      setDeleteConfirmCommentId(null);
+    }
+  };
+
+  const toggleCommentMenu = (commentId) => {
+    setDeleteConfirmCommentId(null);
+    setOpenCommentMenuId((currentId) => (currentId === commentId ? null : commentId));
+  };
+
+  const renderCommentMenu = (comment, label = "Comment options") => {
+    const commentId = Number(comment?.commentId || 0);
+    const canManage = Number(comment?.authorId) === Number(currentUserId);
+    if (!commentId || !canManage) return null;
+    const isOpen = openCommentMenuId === commentId;
+    const confirmingDelete = deleteConfirmCommentId === commentId;
+    const deleting = commentActionBusy === `delete-${commentId}`;
+
+    return (
+      <div className="comment-menu-wrap">
+        <button
+          type="button"
+          className={`comment-menu-trigger ${isOpen ? "active" : ""}`.trim()}
+          onClick={() => toggleCommentMenu(commentId)}
+          aria-label={label}
+          aria-haspopup="menu"
+          aria-expanded={isOpen}
+        >
+          <KebabIcon />
+        </button>
+        {isOpen ? (
+          <div className={`comment-action-menu ${confirmingDelete ? "confirming" : ""}`.trim()} role="menu">
+            {confirmingDelete ? (
+              <>
+                <strong>Delete comment?</strong>
+                <p>This removes it from the post.</p>
+                <div className="comment-delete-actions">
+                  <button type="button" onClick={() => setDeleteConfirmCommentId(null)} disabled={deleting}>
+                    Cancel
+                  </button>
+                  <button type="button" className="danger" onClick={() => deleteComment(comment)} disabled={deleting}>
+                    {deleting ? "Deleting..." : "Delete"}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <button type="button" role="menuitem" onClick={() => beginEditComment(comment)}>
+                  Edit comment
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  className="danger"
+                  onClick={() => setDeleteConfirmCommentId(commentId)}
+                  disabled={deleting}
+                >
+                  Delete comment
+                </button>
+              </>
+            )}
+          </div>
+        ) : null}
+      </div>
+    );
   };
 
   const submitShare = async (event) => {
@@ -680,7 +880,10 @@ export default function FeedCard({
               }}
             >
               {isShare ? `${item.sharedByName} shared` : item.authorName}
-              <VerifiedIcon />
+              {authorVerified ? <VerifiedIcon /> : null}
+              <span className={`learning-xp-badge ${educationBadge.tone}`}>
+                {educationBadge.label}
+              </span>
             </button>
             <p className="feed-time feed-time-row">
               {headTimestamp ? new Date(headTimestamp).toLocaleString() : ""}
@@ -764,17 +967,17 @@ export default function FeedCard({
 
       {originalPostDeleted ? (
         <div className="deleted-post-note">
-          Original post deleted by author.
+          This content is unavailable because the original post was deleted by the author.
         </div>
       ) : null}
 
-      {item.postValue ? (
-        <span className={`feed-post-value-chip value-${String(item.postValue).toLowerCase()}`}>
-          {String(item.postValue).toUpperCase()} value
-        </span>
+      {displayContent ? (
+        <p className="feed-content">{renderContentWithHashtags(displayContent, onHashtagClick)}</p>
       ) : null}
 
-      <p className="feed-content">{renderContentWithHashtags(item.content, onHashtagClick)}</p>
+      <span className={`feed-post-value-chip learning-value-chip ${educationBadge.tone}`}>
+        {postCategoryLabel}
+      </span>
 
       {mediaUrl ? (
         <div className="feed-media-shell">
@@ -894,25 +1097,134 @@ export default function FeedCard({
         </div>
 
         <div className="reaction-total premium-reaction-total">
-          {reactionSummary.length > 0 ? (
-            <div className="reaction-summary-icons">
-              {reactionSummary.map((reaction) => (
-                <span key={reaction.key} className="reaction-summary-icon" title={`${reaction.label}: ${reaction.count}`}>
-                  <ReactionIcon type={reaction.key} />
-                </span>
-              ))}
-            </div>
-          ) : null}
-          <strong>{totalReactions}</strong>
-          <span>Reactions</span>
+          <span className="reaction-avatar-stack" aria-hidden="true">
+            {reactionAvatarUsers.map((reactionUser, index) => (
+              <span key={`${reactionUser.userId || reactionUser.name}-${index}`} className={`reaction-avatar-mini reaction-avatar-mini-${index + 1}`}>
+                {reactionUser.profileImageUrl ? (
+                  <img src={toMediaUrl(reactionUser.profileImageUrl)} alt="" />
+                ) : (
+                  initialFromName(reactionUser.name)
+                )}
+              </span>
+            ))}
+          </span>
+          <span className="reaction-total-copy">
+            <strong>{totalReactions}</strong>
+            <span>Reactions</span>
+            <button type="button" onClick={() => setReactionUsersOpen(true)} disabled={!validTargetPost || totalReactions === 0}>View</button>
+          </span>
         </div>
       </div>
+
+      <div className="feed-engagement-summary">
+        <button
+          type="button"
+          className="feed-reaction-summary"
+          onClick={() => (totalReactions > 0 ? setReactionUsersOpen(true) : setPickerOpen(true))}
+          disabled={!validTargetPost}
+        >
+          <span className="feed-reaction-bubbles" aria-hidden="true">
+            {(reactionSummary.length ? reactionSummary : [{ key: "love", label: "Love", count: 0 }, { key: "like", label: "Like", count: 0 }]).slice(0, 2).map((reaction) => (
+              <span key={`summary-${reaction.key}`} className={`feed-reaction-bubble ${reaction.key}`}>
+                <ReactionIcon type={reaction.key} />
+              </span>
+            ))}
+          </span>
+          <strong>{reactionSummaryText}</strong>
+        </button>
+        <button
+          type="button"
+          className="feed-comment-summary"
+          onClick={() => {
+            setCommentComposerOpen(true);
+            setCommentsExpanded(true);
+            window.setTimeout(() => commentInputRef.current?.focus(), 0);
+          }}
+        >
+          <span>{totalCommentCount} {totalCommentCount === 1 ? "Comment" : "Comments"}</span>
+          <ChevronDownIcon />
+        </button>
+      </div>
+
+      {reactionUsersOpen ? createPortal(
+        <div className="reaction-users-overlay" onMouseDown={() => setReactionUsersOpen(false)}>
+          <section className="reaction-users-card reaction-users-modal-card" onMouseDown={(event) => event.stopPropagation()}>
+            <header className="reaction-users-head">
+              <div>
+                <span className="reaction-users-head-icon">
+                  <ReactionIcon type="like" />
+                </span>
+                <h3>People who reacted</h3>
+                <p>{totalReactions} {totalReactions === 1 ? "person" : "people"}</p>
+              </div>
+              <button type="button" className="share-panel-close" onClick={() => setReactionUsersOpen(false)} aria-label="Close reactions">
+                <ShareCloseIcon />
+              </button>
+            </header>
+            <div className="reaction-users-filter-row" aria-label="Reaction summary">
+              <button type="button" className="active">All <strong>{totalReactions}</strong></button>
+              {reactionSummary.map((reaction) => (
+                <button key={`filter-${reaction.key}`} type="button">
+                  <ReactionIcon type={reaction.key} />
+                  {reaction.label}
+                  <strong>{reaction.count}</strong>
+                </button>
+              ))}
+            </div>
+            {realReactionUsers.length ? (
+              <div className="reaction-users-list">
+                {realReactionUsers.map((reactionUser, index) => {
+                  const reaction = reactionByKey(reactionUser.type);
+                  const reactionUserId = Number(reactionUser.userId || 0);
+                  return (
+                    <article key={`${reactionUser.reactionId || reactionUser.userId || reactionUser.name}-${index}`} className="reaction-user-row">
+                      <button
+                        type="button"
+                        className="reaction-user-profile"
+                        onClick={() => {
+                          if (reactionUserId) {
+                            setReactionUsersOpen(false);
+                            onAuthorClick?.(reactionUserId);
+                          }
+                        }}
+                        disabled={!reactionUserId}
+                      >
+                        <span className="reaction-user-avatar">
+                          {reactionUser.profileImageUrl ? (
+                            <img src={toMediaUrl(reactionUser.profileImageUrl)} alt="" />
+                          ) : (
+                            initialFromName(reactionUser.name)
+                          )}
+                          <i className={`reaction-user-mini-type ${reaction.key}`}>
+                            <ReactionIcon type={reaction.key} />
+                          </i>
+                        </span>
+                        <span>
+                          <strong>{reactionUser.name || "Unknown user"}</strong>
+                          <small>{reactionUser.email || "AgroLink member"}</small>
+                        </span>
+                      </button>
+                      <span className={`reaction-user-type ${reaction.key}`}>
+                        <ReactionIcon type={reaction.key} />
+                        {reaction.label}
+                      </span>
+                    </article>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="reaction-users-empty">No reaction users found for this post.</p>
+            )}
+          </section>
+        </div>,
+        document.querySelector(".shell.shell-home-theme") || document.querySelector(".shell") || document.body
+      ) : null}
 
       {validTargetPost || comments.length > 0 ? (
         <div className="feed-thread-shell">
           <form onSubmit={submitComment} className="inline-form feed-inline-form premium-inline-form">
             <span className="feed-comment-avatar">
-              {(authorName || "U").slice(0, 1).toUpperCase()}
+              {(currentUserName || authorName || "U").slice(0, 1).toUpperCase()}
               <span className="feed-avatar-online" aria-hidden="true" />
             </span>
             <input
@@ -930,6 +1242,24 @@ export default function FeedCard({
                 aria-label="Add emoji"
               >
                 <SmileIcon />
+              </button>
+              <button
+                type="button"
+                className="feed-tool-button"
+                onClick={() => insertCommentText(" [photo] ")}
+                aria-label="Add image"
+                disabled={!validTargetPost}
+              >
+                <ImageIcon />
+              </button>
+              <button
+                type="button"
+                className="feed-tool-button gif-tool-button"
+                onClick={() => insertCommentText(" GIF ")}
+                aria-label="Add GIF"
+                disabled={!validTargetPost}
+              >
+                <GifIcon />
               </button>
               {commentToolMenu ? (
                 <span className="feed-tool-popover comment-tool-popover">
@@ -970,16 +1300,36 @@ export default function FeedCard({
                 const mention = mentionFromName(name);
                 const replies = Array.isArray(comment.replies) ? comment.replies : [];
                 const replyDraft = replyDrafts[commentId] || "";
+                const isEditingComment = editingCommentId === commentId;
                 return (
                   <article className="comment-thread-item" role="listitem" key={comment.commentId}>
                     <div className="comment-bubble-row">
                       <span className="comment-author-avatar">{initialFromName(name)}</span>
                       <div className="comment-bubble">
-                        <header>
-                          <strong>{name}</strong>
-                          {comment.createdAt ? <time>{formatCommentTime(comment.createdAt)}</time> : null}
+                        <header className="comment-bubble-header">
+                          <span className="comment-author-meta">
+                            <strong>{name}</strong>
+                            {comment.createdAt ? <time>{formatCommentTime(comment.createdAt)}</time> : null}
+                          </span>
+                          {renderCommentMenu(comment, "Comment options")}
                         </header>
-                        <p>{comment.content}</p>
+                        {isEditingComment ? (
+                          <form className="comment-edit-form" onSubmit={(event) => submitCommentEdit(event, comment)}>
+                            <input
+                              value={editingCommentText}
+                              onChange={(event) => setEditingCommentText(event.target.value)}
+                              autoFocus
+                            />
+                            <button type="submit" disabled={!editingCommentText.trim() || commentActionBusy === `edit-${commentId}`}>
+                              Save
+                            </button>
+                            <button type="button" onClick={cancelEditComment}>
+                              Cancel
+                            </button>
+                          </form>
+                        ) : (
+                          <p>{comment.content}</p>
+                        )}
                       </div>
                     </div>
 
@@ -1011,18 +1361,39 @@ export default function FeedCard({
                           const replyName = commentAuthorName(reply);
                           const replyContent = String(reply.content || "");
                           const hasRootMention = replyContent.toLowerCase().startsWith(mention.toLowerCase());
+                          const replyId = Number(reply.commentId || 0);
+                          const isEditingReply = editingCommentId === replyId;
                           return (
                             <article className="comment-reply-item" role="listitem" key={reply.commentId}>
                               <span className="comment-author-avatar compact">{initialFromName(replyName)}</span>
                               <div className="comment-bubble reply">
-                                <header>
-                                  <strong>{replyName}</strong>
-                                  {reply.createdAt ? <time>{formatCommentTime(reply.createdAt)}</time> : null}
+                                <header className="comment-bubble-header">
+                                  <span className="comment-author-meta">
+                                    <strong>{replyName}</strong>
+                                    {reply.createdAt ? <time>{formatCommentTime(reply.createdAt)}</time> : null}
+                                  </span>
+                                  {renderCommentMenu(reply, "Reply options")}
                                 </header>
-                                <p>
-                                  {!hasRootMention ? <><span className="comment-root-mention">{mention}</span>{" "}</> : null}
-                                  {replyContent}
-                                </p>
+                                {isEditingReply ? (
+                                  <form className="comment-edit-form" onSubmit={(event) => submitCommentEdit(event, reply)}>
+                                    <input
+                                      value={editingCommentText}
+                                      onChange={(event) => setEditingCommentText(event.target.value)}
+                                      autoFocus
+                                    />
+                                    <button type="submit" disabled={!editingCommentText.trim() || commentActionBusy === `edit-${replyId}`}>
+                                      Save
+                                    </button>
+                                    <button type="button" onClick={cancelEditComment}>
+                                      Cancel
+                                    </button>
+                                  </form>
+                                ) : (
+                                  <p>
+                                    {!hasRootMention ? <><span className="comment-root-mention">{mention}</span>{" "}</> : null}
+                                    {replyContent}
+                                  </p>
+                                )}
                               </div>
                             </article>
                           );

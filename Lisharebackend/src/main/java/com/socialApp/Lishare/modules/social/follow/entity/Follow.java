@@ -35,7 +35,6 @@ public class Follow {
     private User following;
 
     @Builder.Default
-    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "followed_at")
     private Date followedAt = new Date();
 }

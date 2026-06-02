@@ -60,11 +60,19 @@ public class FriendController {
         List<User> friends = friendService.getFriends(user.getUserId());
 
         List<FriendResponse> responses = friends.stream()
-                .map(f -> FriendResponse.builder()
-                        .userId(f.getUserId())
-                        .firstName(f.getFirstname())
-                        .lastName(f.getLastName())
-                        .build())
+                .map(this::toFriendResponse)
+                .toList();
+
+        return ResponseEntity.ok(responses);
+    }
+
+    @GetMapping("/{userId}/all")
+    public ResponseEntity<List<FriendResponse>> getFriendsForUser(@PathVariable Long userId) {
+
+        List<User> friends = friendService.getFriends(userId);
+
+        List<FriendResponse> responses = friends.stream()
+                .map(this::toFriendResponse)
                 .toList();
 
         return ResponseEntity.ok(responses);
@@ -76,13 +84,19 @@ public class FriendController {
         List<User> pending = friendService.getPendingRequests(user.getUserId());
 
         List<FriendResponse> responses = pending.stream()
-                .map(f -> FriendResponse.builder()
-                        .userId(f.getUserId())
-                        .firstName(f.getFirstname())
-                        .lastName(f.getLastName())
-                        .build())
+                .map(this::toFriendResponse)
                 .toList();
 
         return ResponseEntity.ok(responses);
+    }
+
+    private FriendResponse toFriendResponse(User user) {
+        return FriendResponse.builder()
+                .userId(user.getUserId())
+                .firstName(user.getFirstname())
+                .lastName(user.getLastName())
+                .email(user.getEmail())
+                .profileImageUrl(user.getImageUrl())
+                .build();
     }
 }

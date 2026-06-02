@@ -10,6 +10,7 @@ import com.socialApp.Lishare.modules.social.notification.entity.NotificationType
 import com.socialApp.Lishare.modules.social.notification.service.NotificationService;
 import com.socialApp.Lishare.modules.social.post.entity.Post;
 import com.socialApp.Lishare.modules.social.post.repository.PostRepository;
+import com.socialApp.Lishare.modules.social.post.support.PostXpPolicy;
 import com.socialApp.Lishare.modules.social.share.dto.FeedResponse;
 import com.socialApp.Lishare.modules.social.share.entity.Share;
 import com.socialApp.Lishare.modules.social.share.repository.ShareRepository;
@@ -90,6 +91,9 @@ public class ShareServiceImpl implements ShareService {
                         .content(post.getContent())
                         .imageUrl(post.getImageUrl())
                         .mediaType(post.getMediaType())
+                        .category(resolvePostCategory(post))
+                        .xpAwarded(resolvePostXp(post))
+                        .authorVerifiedXp(calculateVerifiedXp(post.getUser()))
                         .reelViewCount(post.getReelViewCount())
                         .createdAt(post.getCreatedAt())
                         .build())
@@ -104,10 +108,21 @@ public class ShareServiceImpl implements ShareService {
                     String originalContent = originalPost != null ? originalPost.getContent() : share.getOriginalContent();
                     String originalImage = originalPost != null ? originalPost.getImageUrl() : share.getOriginalImageUrl();
                     String mediaType = originalPost != null ? originalPost.getMediaType() : share.getOriginalMediaType();
+                    String category = originalPost != null ? resolvePostCategory(originalPost) : null;
+                    Integer xpAwarded = originalPost != null ? resolvePostXp(originalPost) : null;
+                    Long authorVerifiedXp = originalPost != null && originalPost.getUser() != null
+                            ? calculateVerifiedXp(originalPost.getUser())
+                            : null;
                     Long reelViewCount = originalPost != null ? originalPost.getReelViewCount() : 0L;
 
-                    if (originalDeleted && (originalContent == null || originalContent.isBlank())) {
-                        originalContent = "Original post deleted by author";
+                    if (originalDeleted) {
+                        originalContent = null;
+                        originalImage = null;
+                        mediaType = null;
+                        category = null;
+                        xpAwarded = null;
+                        authorVerifiedXp = null;
+                        reelViewCount = 0L;
                     }
 
                     return FeedResponse.builder()
@@ -121,6 +136,10 @@ public class ShareServiceImpl implements ShareService {
                             .content(originalContent)
                             .imageUrl(originalImage)
                             .mediaType(mediaType)
+                            .category(category)
+                            .xpAwarded(xpAwarded)
+                            .authorVerifiedXp(authorVerifiedXp)
+                            .sharedByVerifiedXp(calculateVerifiedXp(share.getUser()))
                             .reelViewCount(reelViewCount)
                             .sharedById(share.getUser().getUserId())
                             .sharedByName(share.getUser().getFirstname() + " " + share.getUser().getLastName())
@@ -226,5 +245,25 @@ public class ShareServiceImpl implements ShareService {
             return normalized;
         }
         return "medium";
+    }
+
+    private long calculateVerifiedXp(User user) {
+        if (user == null) {
+            return 0L;
+        }
+        return postRepository.findByUser(user).stream()
+                .mapToLong(this::resolvePostXp)
+                .sum();
+    }
+
+    private int resolvePostXp(Post post) {
+        if (post.getXpAwarded() != null && post.getXpAwarded() > 0) {
+            return post.getXpAwarded();
+        }
+        return PostXpPolicy.xpForCategory(post.getCategory());
+    }
+
+    private String resolvePostCategory(Post post) {
+        return post.getCategory() == null || post.getCategory().isBlank() ? "GENERAL" : post.getCategory();
     }
 }

@@ -1,23 +1,21 @@
 package com.socialApp.Lishare.modules.platform.config;
 
-import org.springframework.beans.factory.annotation.Value;
+import com.socialApp.Lishare.modules.platform.storage.UploadPathResolver;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 @Configuration
+@RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
 
-    @Value("${file.upload-dir:uploads}")
-    private String uploadDir;
+    private final UploadPathResolver uploadPathResolver;
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+        uploadPathResolver.ensurePrimaryUploadPath();
         registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:" + uploadPath + "/");
+                .addResourceLocations(uploadPathResolver.resourceLocations());
     }
 }

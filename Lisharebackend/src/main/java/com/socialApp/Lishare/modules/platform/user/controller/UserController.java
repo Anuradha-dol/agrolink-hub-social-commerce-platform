@@ -4,9 +4,9 @@ import com.socialApp.Lishare.modules.platform.user.service.UserProfileService;
 import com.socialApp.Lishare.modules.platform.user.dto.UserDto;
 import com.socialApp.Lishare.modules.platform.user.entity.User;
 import com.socialApp.Lishare.modules.platform.user.repository.UserRepo;
+import com.socialApp.Lishare.modules.platform.storage.UploadPathResolver;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -17,7 +17,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.UUID;
 
 @RestController
@@ -27,9 +26,7 @@ public class UserController {
 
     private final UserProfileService userProfileService;
     private final UserRepo userRepo;
-
-    @Value("${file.upload-dir:uploads}")
-    private String uploadDir;
+    private final UploadPathResolver uploadPathResolver;
 
     // Update name
     @PutMapping("/update-name")
@@ -39,6 +36,14 @@ public class UserController {
 
         userProfileService.updateName(loggedUser, dto);
         return ResponseEntity.ok("Name updated successfully");
+    }
+
+    @PutMapping("/profile-details")
+    public ResponseEntity<UserDto.UserProfileDto> updateProfileDetails(
+            @AuthenticationPrincipal User loggedUser,
+            @Valid @RequestBody UserDto.UpdateProfileDetailsDto dto) {
+
+        return ResponseEntity.ok(userProfileService.updateProfileDetails(loggedUser, dto));
     }
 
     // Update email (send OTP)
@@ -90,8 +95,7 @@ public class UserController {
         return ResponseEntity.ok(userProfileService.getUserHome(loggedUser.getUserId()));
     }
 
-    @PostMapping("/delete")
-    @DeleteMapping("/delete")
+    @RequestMapping(path = "/delete", method = {RequestMethod.POST, RequestMethod.DELETE})
     public ResponseEntity<String> deleteAccount(
             @AuthenticationPrincipal User loggedUser,
             @Valid @RequestBody UserDto.DeleteAccountDto dto) {
@@ -166,8 +170,7 @@ public class UserController {
 
         String filename = prefix + "_" + userId + "_" + UUID.randomUUID() + extension;
 
-        Path uploadBase = Paths.get(uploadDir).toAbsolutePath().normalize();
-        Files.createDirectories(uploadBase);
+        Path uploadBase = uploadPathResolver.ensurePrimaryUploadPath();
         Path uploadPath = uploadBase.resolve(filename).normalize();
 
         if (!uploadPath.startsWith(uploadBase)) {

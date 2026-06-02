@@ -1,108 +1,156 @@
 import { useEffect, useMemo, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { friendService } from "../services/friendService";
 import { followService } from "/src/modules/social/follow/services/followService";
 import { feedService } from "/src/modules/social/post/services/feedService";
-import { toMediaUrl } from "/src/modules/platform/common/utils/mediaUrl";
 import { useAuth } from "/src/modules/platform/app/store";
 import LoadingState from "/src/modules/platform/common/components/LoadingState";
 import { useToast } from "/src/modules/platform/common/hooks/useToast";
+import { toMediaUrl } from "/src/modules/platform/common/utils/mediaUrl";
+import {
+  Avatar,
+  Button,
+  Card,
+  EmptyPanel,
+  Icon,
+  OverviewHero,
+  PageGrid,
+  SectionHeader,
+  StatusBadge,
+  Tabs,
+  UserCard
+} from "/src/modules/platform/common/ui/DashboardUI";
 
 const VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov", ".m4v", ".ogg", ".avi"];
 
 function fullName(user) {
-  const first = user?.firstName ?? user?.firstname ?? "";
-  const last = user?.lastName ?? user?.lastname ?? "";
-  return `${first} ${last}`.trim() || user?.name || "Unknown user";
-}
-
-function initials(name) {
-  const parts = String(name).trim().split(/\s+/).filter(Boolean);
-  const first = parts[0]?.[0] || "U";
-  const second = parts[1]?.[0] || "";
-  return `${first}${second}`.toUpperCase();
+  return `${user?.firstName ?? user?.firstname ?? ""} ${user?.lastName ?? user?.lastname ?? ""}`.trim()
+    || user?.name
+    || user?.email
+    || "AgroLink User";
 }
 
 function isVideoAsset(url = "") {
-  const normalized = String(url).toLowerCase().split("?")[0];
-  return VIDEO_EXTENSIONS.some((ext) => normalized.endsWith(ext));
+  return VIDEO_EXTENSIONS.some((ext) => String(url).toLowerCase().split("?")[0].endsWith(ext));
 }
 
 function resolveAuthorId(item) {
-  const candidates = [
-    item?.authorId,
-    item?.userId,
-    item?.ownerId,
-    item?.originalAuthorId,
-    item?.sharedById
-  ];
-  const resolved = candidates.find((value) => Number(value) > 0);
-  return resolved ? Number(resolved) : null;
+  return [item?.authorId, item?.userId, item?.ownerId, item?.originalAuthorId, item?.sharedById]
+    .find((value) => Number(value) > 0) || null;
 }
 
-function buildCreatorIndex(feedItems = []) {
+function targetPostIdForItem(item) {
+  const postId = item?.type === "SHARE" ? item?.originalPostId : item?.postId;
+  return Number(postId) > 0 && !item?.originalPostDeleted ? Number(postId) : null;
+}
+
+function totalReactions(counts = {}) {
+  return Object.values(counts || {}).reduce((total, value) => total + Number(value || 0), 0);
+}
+
+function buildCreatorIndex(feedItems = [], reactionCountsByPostId = {}) {
   const map = new Map();
-
   feedItems.forEach((item) => {
-    const authorId = resolveAuthorId(item);
+    const targetPostId = targetPostIdForItem(item);
+    if (!targetPostId) return;
+    const authorId = Number(resolveAuthorId(item));
     if (!authorId) return;
-
+    const reactionCount = totalReactions(reactionCountsByPostId[targetPostId]);
+    const createdAt = item.sharedAt || item.createdAt || "";
     const existing = map.get(authorId) || {
       userId: authorId,
       name: item.authorName || item.sharedByName || `User ${authorId}`,
       email: item.authorEmail || "",
-      profileImageUrl: item.authorProfilePic || item.authorProfileImage || item.profileImageUrl || "",
+      profileImageUrl: item.authorProfilePic || item.profileImageUrl || "",
+      role: "Creator",
+      mutual: 0,
       media: [],
-      postCount: 0
+      postCount: 0,
+      reactionCount: 0,
+      topPost: null
     };
-
     existing.postCount += 1;
-    if (item.imageUrl && existing.media.length < 4) {
-      existing.media.push(item.imageUrl);
+    existing.reactionCount += reactionCount;
+    if (item.imageUrl && existing.media.length < 5) existing.media.push(item.imageUrl);
+    const topPostCandidate = {
+      postId: targetPostId,
+      imageUrl: item.imageUrl || "",
+      mediaType: item.mediaType || "",
+      content: item.content || "",
+      createdAt,
+      reactionCount
+    };
+    if (
+      !existing.topPost
+      || reactionCount > Number(existing.topPost.reactionCount || 0)
+      || (reactionCount === Number(existing.topPost.reactionCount || 0) && new Date(createdAt) > new Date(existing.topPost.createdAt || 0))
+    ) {
+      existing.topPost = topPostCandidate;
     }
-
     map.set(authorId, existing);
   });
+  return [...map.values()];
+}
 
-  return map;
+function hasVerifiedBadge(user) {
+  return Boolean(user?.profileVerified || user?.verifiedBadge || Number(user?.verifiedXp || 0) >= 100);
+}
+
+function isOnlineUser(user) {
+  return Boolean(user?.online || user?.isOnline || user?.presence === "ONLINE");
 }
 
 export default function FriendsPage() {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const { pushToast } = useToast();
+  const [loading, setLoading] = useState(true);
+  const [tab, setTab] = useState("discover");
+  const [peopleFilter, setPeopleFilter] = useState("People");
+  const [query, setQuery] = useState("");
   const [friends, setFriends] = useState([]);
   const [pending, setPending] = useState([]);
-  const [followingIds, setFollowingIds] = useState([]);
-  const [pendingIds, setPendingIds] = useState([]);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [followers, setFollowers] = useState([]);
+  const [following, setFollowing] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
-  const [creatorIndex, setCreatorIndex] = useState({});
-  const [selectedProfile, setSelectedProfile] = useState(null);
+  const [creators, setCreators] = useState([]);
   const [requestedIds, setRequestedIds] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [busyId, setBusyId] = useState("");
+
+  const followingIds = useMemo(() => following.map((item) => Number(item.userId)), [following]);
+  const friendIds = useMemo(() => friends.map((item) => Number(item.userId)), [friends]);
+  const pendingIds = useMemo(() => pending.map((item) => Number(item.userId)), [pending]);
 
   const loadData = async () => {
     setLoading(true);
     try {
-      const [friendsRes, pendingRes, followingRes, feedRes] = await Promise.all([
+      const [friendsRes, pendingRes, followersRes, followingRes, feedRes] = await Promise.all([
         friendService.getFriends(),
         friendService.getPending(),
+        followService.followers(),
         followService.following(),
         feedService.getFeed()
       ]);
-
-      const followingList = Array.isArray(followingRes.data) ? followingRes.data : [];
-      const friendsList = Array.isArray(friendsRes.data) ? friendsRes.data : [];
-      const pendingList = Array.isArray(pendingRes.data) ? pendingRes.data : [];
+      setFriends(Array.isArray(friendsRes.data) ? friendsRes.data : []);
+      setPending(Array.isArray(pendingRes.data) ? pendingRes.data : []);
+      setFollowers(Array.isArray(followersRes.data) ? followersRes.data : []);
+      setFollowing(Array.isArray(followingRes.data) ? followingRes.data : []);
       const feedItems = Array.isArray(feedRes.data) ? feedRes.data : [];
-      const creatorMap = buildCreatorIndex(feedItems);
-
-      setFriends(friendsList);
-      setPending(pendingList);
-      setFollowingIds(followingList.map((user) => user.userId));
-      setPendingIds(pendingList.map((u) => u.userId));
-      setCreatorIndex(Object.fromEntries(creatorMap.entries()));
+      const targetPostIds = [...new Set(feedItems.map(targetPostIdForItem).filter(Boolean))];
+      const reactionEntries = await Promise.all(
+        targetPostIds.map(async (postId) => {
+          try {
+            const response = await feedService.getReactions(postId);
+            return [postId, response.data || {}];
+          } catch {
+            return [postId, {}];
+          }
+        })
+      );
+      setCreators(buildCreatorIndex(feedItems, Object.fromEntries(reactionEntries)));
     } catch {
-      pushToast("Failed to load friends", "error");
+      pushToast("Failed to load network", "error");
     } finally {
       setLoading(false);
     }
@@ -112,268 +160,347 @@ export default function FriendsPage() {
     loadData();
   }, []);
 
-  const discoverSuggestions = useMemo(() => {
-    const connectedUserIds = new Set([
-      user?.userId,
-      ...friends.map((friend) => friend.userId),
-      ...followingIds
-    ]);
+  useEffect(() => {
+    const urlQuery = new URLSearchParams(location.search).get("query") || "";
+    if (!urlQuery.trim()) return;
+    let active = true;
+    setQuery(urlQuery);
+    followService.searchUsers(urlQuery.trim())
+      .then((response) => {
+        if (!active) return;
+        const data = Array.isArray(response.data) ? response.data : [];
+        setSearchResults(data.filter((item) => Number(item.userId) !== Number(user?.userId)));
+        setTab("discover");
+      })
+      .catch(() => {
+        if (active) pushToast("Failed to search users", "error");
+      });
+    return () => {
+      active = false;
+    };
+  }, [location.search, pushToast, user?.userId]);
 
-    return Object.values(creatorIndex)
-      .filter((item) => !connectedUserIds.has(item.userId))
-      .sort((a, b) => b.postCount - a.postCount)
-      .slice(0, 18);
-  }, [creatorIndex, friends, followingIds, user?.userId]);
+  const discoverUsers = useMemo(() => {
+    const connected = new Set([Number(user?.userId), ...friendIds, ...followingIds]);
+    const base = searchResults.length ? searchResults : creators;
+    return base
+      .filter((item) => Number(item.userId) > 0 && !connected.has(Number(item.userId)))
+      .map((item) => ({
+        ...item,
+        displayName: fullName(item),
+        handle: item.email || `@${String(fullName(item)).toLowerCase().replace(/[^a-z0-9]+/g, "")}`,
+        role: item.role || (item.postCount ? "Creator" : "Community member"),
+        mutual: Number(item.mutual || item.mutualFriends || 0)
+      }));
+  }, [creators, friendIds, followingIds, searchResults, user?.userId]);
 
-  const discoverResults = searchResults.length > 0 ? searchResults : discoverSuggestions;
+  const filteredDiscoverUsers = useMemo(() => {
+    if (peopleFilter === "Creators") {
+      return discoverUsers.filter((item) => item.postCount > 0 || String(item.role || "").toLowerCase().includes("creator"));
+    }
+    if (peopleFilter === "Mutuals") {
+      return discoverUsers.filter((item) => Number(item.mutual || item.mutualFriends || 0) > 0);
+    }
+    if (peopleFilter === "Verified") {
+      return discoverUsers.filter(hasVerifiedBadge);
+    }
+    return discoverUsers;
+  }, [discoverUsers, peopleFilter]);
 
-  const search = async (event) => {
+  const runSearch = async (event) => {
     event?.preventDefault();
-    if (!searchQuery.trim()) {
+    if (!query.trim()) {
       setSearchResults([]);
       return;
     }
-
     try {
-      const response = await followService.searchUsers(searchQuery);
-      const payload = Array.isArray(response.data) ? response.data : [];
-      const enriched = payload.map((entry) => {
-        const indexed = creatorIndex[entry.userId] || {};
-        return {
-          ...entry,
-          media: indexed.media || [],
-          postCount: indexed.postCount || 0
-        };
-      }).filter((entry) => Number(entry.userId) > 0 && entry.userId !== user?.userId);
-      setSearchResults(enriched);
+      const response = await followService.searchUsers(query.trim());
+      const data = Array.isArray(response.data) ? response.data : [];
+      setSearchResults(data.filter((item) => Number(item.userId) !== Number(user?.userId)));
+      setTab("discover");
     } catch {
       pushToast("Failed to search users", "error");
     }
   };
 
-  const accept = async (userId) => {
+  const followToggle = async (targetId) => {
+    setBusyId(`follow-${targetId}`);
     try {
-      await friendService.accept(userId);
-      pushToast("Friend request accepted", "success");
-      loadData();
-    } catch {
-      pushToast("Failed to accept friend request", "error");
-    }
-  };
-
-  const reject = async (userId) => {
-    try {
-      await friendService.reject(userId);
-      pushToast("Friend request rejected", "success");
-      loadData();
-    } catch {
-      pushToast("Failed to reject friend request", "error");
-    }
-  };
-
-  const followToggle = async (userId) => {
-    try {
-      if (followingIds.includes(userId)) {
-        await followService.unfollow(userId);
+      if (followingIds.includes(Number(targetId))) {
+        await followService.unfollow(targetId);
+        pushToast("Unfollowed", "success");
       } else {
-        await followService.follow(userId);
+        await followService.follow(targetId);
+        pushToast("Followed", "success");
       }
       await loadData();
     } catch {
-      pushToast("Failed to update follow status", "error");
+      pushToast("Failed to update follow", "error");
+    } finally {
+      setBusyId("");
     }
   };
 
-  const sendFriendRequest = async (userId) => {
+  const sendRequest = async (targetId) => {
+    setBusyId(`request-${targetId}`);
     try {
-      await friendService.request(userId);
-      setRequestedIds((prev) => (prev.includes(userId) ? prev : [...prev, userId]));
+      await friendService.request(targetId);
+      setRequestedIds((prev) => (prev.includes(targetId) ? prev : [...prev, targetId]));
       pushToast("Friend request sent", "success");
-      loadData();
+      await loadData();
     } catch {
-      pushToast("Failed to send friend request", "error");
+      pushToast("Failed to send request", "error");
+    } finally {
+      setBusyId("");
     }
   };
 
-  const unfriend = async (userId) => {
-    if (!window.confirm("Remove this friend?")) return;
+  const accept = async (targetId) => {
+    setBusyId(`accept-${targetId}`);
     try {
-      await friendService.unfriend(userId);
-      pushToast("Friend removed", "success");
-      loadData();
+      await friendService.accept(targetId);
+      pushToast("Request accepted", "success");
+      await loadData();
     } catch {
-      pushToast("Failed to unfriend", "error");
+      pushToast("Failed to accept request", "error");
+    } finally {
+      setBusyId("");
     }
+  };
+
+  const reject = async (targetId) => {
+    setBusyId(`reject-${targetId}`);
+    try {
+      await friendService.reject(targetId);
+      pushToast("Request ignored", "success");
+      await loadData();
+    } catch {
+      pushToast("Failed to ignore request", "error");
+    } finally {
+      setBusyId("");
+    }
+  };
+
+  const unfriend = async (targetId) => {
+    if (!window.confirm("Remove this friend?")) return;
+    setBusyId(`unfriend-${targetId}`);
+    try {
+      await friendService.unfriend(targetId);
+      pushToast("Friend removed", "success");
+      await loadData();
+    } catch {
+      pushToast("Failed to remove friend", "error");
+    } finally {
+      setBusyId("");
+    }
+  };
+
+  const openChat = (targetId) => {
+    navigate("/chat", { state: { startUserId: targetId } });
+  };
+
+  const openProfile = (targetId) => {
+    const normalizedId = Number(targetId);
+    if (!normalizedId) return;
+    navigate(normalizedId === Number(user?.userId) ? "/profile" : `/profile/${normalizedId}`);
+  };
+
+  const openSuggestedPost = (creator) => {
+    const postId = Number(creator?.topPost?.postId || 0);
+    if (!postId) return;
+    navigate("/home", {
+      state: {
+        openPostId: postId,
+        mode: isVideoAsset(creator?.topPost?.imageUrl || "") || String(creator?.topPost?.mediaType || "").toUpperCase() === "VIDEO" ? "reels" : "posts"
+      }
+    });
   };
 
   if (loading) return <LoadingState text="Loading friends..." />;
 
   return (
-    <div className="friends-page">
-      <section className="page-hero">
-        <div>
-          <h2>Friends & Network</h2>
-          <p>Grow your circle, manage requests and keep your social graph active.</p>
-        </div>
-        <div className="hero-stats">
-          <article>
-            <strong>{friends.length}</strong>
-            <span>Friends</span>
-          </article>
-          <article>
-            <strong>{pending.length}</strong>
-            <span>Pending</span>
-          </article>
-          <article>
-            <strong>{discoverSuggestions.length}</strong>
-            <span>Suggestions</span>
-          </article>
-        </div>
-      </section>
+    <PageGrid className="friends-dashboard">
+      <OverviewHero
+        icon="users"
+        eyebrow="Friends & Network"
+        title="Grow your circle, manage requests and keep your social graph active."
+        subtitle="Search people, discover creators, review requests, and jump into conversations from one clean workspace."
+        stats={[
+          { label: "Friends", value: friends.length, trend: "Active network" },
+          { label: "Pending", value: pending.length, trend: "Awaiting review" },
+          { label: "Followers", value: followers.length, trend: "Audience" },
+          { label: "Following", value: following.length, trend: "Creators" }
+        ]}
+      />
 
-      <section className="card">
-        <h2>Discover People</h2>
-        <form className="friend-search-bar" onSubmit={search}>
-          <input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search users by name or email"
-          />
-          <div className="friend-search-actions">
-            <button className="btn btn-primary" type="submit">Search</button>
-            <button className="btn btn-secondary" type="button" onClick={() => { setSearchQuery(""); setSearchResults([]); }}>
-              Reset
-            </button>
-          </div>
+      <Card className="network-discovery-card">
+        <Tabs
+          active={tab}
+          onChange={setTab}
+          tabs={[
+            { value: "discover", label: "Discover", icon: "search", count: filteredDiscoverUsers.length },
+            { value: "requests", label: "Requests", icon: "bell", count: pending.length },
+            { value: "followers", label: "Followers", icon: "users", count: followers.length },
+            { value: "following", label: "Following", icon: "user", count: following.length },
+            { value: "friends", label: "Friends", icon: "chat", count: friends.length }
+          ]}
+        />
+
+        <form className="network-search-row" onSubmit={runSearch}>
+          <label>
+            <Icon name="search" />
+            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search friends, followers, or users by name or email" />
+          </label>
+          <Button variant="gradient" icon="search" type="submit">Search</Button>
+          <Button onClick={() => { setQuery(""); setSearchResults([]); }}>Reset</Button>
         </form>
 
-        {selectedProfile ? (
-          <article className="profile-preview-card">
-            <div className="profile-preview-head">
-              <div className="discover-avatar">{initials(fullName(selectedProfile))}</div>
-              <div>
-                <strong>{fullName(selectedProfile)}</strong>
-                <p className="muted">{selectedProfile.email || `User ID: ${selectedProfile.userId}`}</p>
-              </div>
+        <div className="filter-pills">
+          {["People", "Creators", "Mutuals", "Verified"].map((item, index) => (
+            <button key={item} type="button" className={peopleFilter === item ? "active" : ""} onClick={() => setPeopleFilter(item)}>
+              <Icon name={index === 0 ? "user" : index === 3 ? "check" : "spark"} />
+              {item}
+            </button>
+          ))}
+        </div>
+
+        {tab === "discover" ? (
+          filteredDiscoverUsers.length ? (
+            <div className="people-card-grid">
+              {filteredDiscoverUsers.slice(0, 8).map((entry) => {
+                const requested = requestedIds.includes(entry.userId) || pendingIds.includes(Number(entry.userId));
+                return (
+                  <UserCard
+                    key={entry.userId}
+                    user={entry}
+                    onClick={() => openProfile(entry.userId)}
+                    primaryAction={
+                      <Button
+                        icon="users"
+                        variant="gradient"
+                        disabled={requested || busyId === `request-${entry.userId}`}
+                        onClick={() => sendRequest(entry.userId)}
+                      >
+                        {requested ? "Requested" : "Add Friend"}
+                      </Button>
+                    }
+                    secondaryAction={
+                      <Button
+                        icon="user"
+                        disabled={busyId === `follow-${entry.userId}`}
+                        onClick={() => followToggle(entry.userId)}
+                      >
+                        {followingIds.includes(Number(entry.userId)) ? "Unfollow" : "Follow"}
+                      </Button>
+                    }
+                  />
+                );
+              })}
             </div>
-            <p className="muted">
-              {selectedProfile.postCount || 0} recent post{(selectedProfile.postCount || 0) === 1 ? "" : "s"} in discover feed
-            </p>
-            {selectedProfile.media?.length ? (
-              <div className="reels-grid">
-                {selectedProfile.media.slice(0, 3).map((media, index) => (
-                  <div key={`${selectedProfile.userId}-${index}`} className="suggestion-media">
-                    {isVideoAsset(media) ? (
-                      <video src={toMediaUrl(media)} controls preload="metadata" />
-                    ) : (
-                      <img src={toMediaUrl(media)} alt={fullName(selectedProfile)} />
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : null}
-          </article>
+          ) : (
+            <EmptyPanel icon="users" title="No suggestions found" subtitle="Try searching by name or email." />
+          )
         ) : null}
 
-        <ul className="discover-grid">
-          {discoverResults.map((entry) => {
-            const userData = {
-              ...entry,
-              firstName: entry.firstName ?? entry.firstname ?? entry.name?.split(" ")?.[0] ?? "",
-              lastName: entry.lastName ?? entry.lastname ?? entry.name?.split(" ")?.slice(1).join(" ") ?? ""
-            };
-            const media = entry.media || [];
-            const topMedia = media[0] || "";
-            const hasMedia = Boolean(topMedia);
-            const following = followingIds.includes(entry.userId);
-            const requestSent = pendingIds.includes(entry.userId) || requestedIds.includes(entry.userId);
-
-            return (
-            <li key={entry.userId} className="discover-card">
-              <div className="suggestion-media">
-                {hasMedia ? (
-                  isVideoAsset(topMedia) ? (
-                    <video src={toMediaUrl(topMedia)} preload="metadata" muted controls />
-                  ) : (
-                    <img src={toMediaUrl(topMedia)} alt={fullName(userData)} />
-                  )
-                ) : (
-                  <div className="discover-avatar" style={{ width: "100%", height: "176px", borderRadius: 0 }}>
-                    {initials(fullName(userData))}
+        {tab === "requests" ? (
+          pending.length ? (
+            <div className="request-list">
+              {pending.map((entry) => (
+                <article key={entry.userId} className="request-row">
+                  <Avatar name={fullName(entry)} src={entry.profileImageUrl ? toMediaUrl(entry.profileImageUrl) : null} online={isOnlineUser(entry)} />
+                  <div>
+                    <strong>{fullName(entry)}</strong>
+                    <p>{entry.email || "Wants to connect"} · {entry.mutualFriends || 0} mutual friends</p>
+                    <div className="avatar-row">
+                      {[0, 1, 2].map((item) => <Avatar key={item} name={`${fullName(entry)}${item}`} size="xs" />)}
+                    </div>
                   </div>
-                )}
-                <span className="suggestion-badge">{hasMedia && isVideoAsset(topMedia) ? "Video" : "Photo"}</span>
-              </div>
-              <div className="discover-body">
-                <strong>{fullName(userData)}</strong>
-                <p>{entry.email || `User ID: ${entry.userId}`}</p>
-                <div className="discover-metrics">
-                  <span className="chip">{entry.postCount || 0} posts</span>
-                  <span className="chip">{following ? "Following" : "Not Following"}</span>
+                  <Button variant="gradient" disabled={busyId === `accept-${entry.userId}`} onClick={() => accept(entry.userId)}>Accept</Button>
+                  <Button disabled={busyId === `reject-${entry.userId}`} onClick={() => reject(entry.userId)}>Ignore</Button>
+                </article>
+              ))}
+            </div>
+          ) : <EmptyPanel icon="bell" title="No pending requests" subtitle="New requests will appear here." />
+        ) : null}
+
+        {["followers", "following", "friends"].includes(tab) ? (
+          <div className="account-list-grid">
+            {(tab === "followers" ? followers : tab === "following" ? following : friends).map((entry) => (
+              <article key={entry.userId} className="account-row-card">
+                <Avatar name={fullName(entry)} src={entry.profileImageUrl ? toMediaUrl(entry.profileImageUrl) : null} online={isOnlineUser(entry)} />
+                <div>
+                  <strong>{fullName(entry)}{hasVerifiedBadge(entry) ? <StatusBadge status="Verified XP" tone="blue" /> : null}</strong>
+                  <p>{entry.email || `@${String(fullName(entry)).toLowerCase().replace(/[^a-z0-9]+/g, "")}`}</p>
                 </div>
-              </div>
-              <div className="row-actions discover-actions">
-                <button className="btn btn-secondary" type="button" onClick={() => setSelectedProfile(userData)}>
-                  View
-                </button>
-                <button className="btn btn-secondary" type="button" onClick={() => followToggle(entry.userId)}>
-                  {following ? "Unfollow" : "Follow"}
-                </button>
-                <button
-                  className="btn btn-primary"
-                  type="button"
-                  onClick={() => sendFriendRequest(entry.userId)}
-                  disabled={requestSent}
-                >
-                  {requestSent ? "Requested" : "Add Friend"}
-                </button>
-              </div>
-            </li>
-          );
-          })}
-        </ul>
-      </section>
+                <StatusBadge status={tab === "friends" ? "Friend" : tab} tone="blue" />
+                <Button icon="chat" onClick={() => openChat(entry.userId)}>Chat</Button>
+                <Button icon="user" onClick={() => openProfile(entry.userId)}>Profile</Button>
+                {tab === "following" ? (
+                  <Button
+                    variant="danger"
+                    icon="user"
+                    disabled={busyId === `follow-${entry.userId}`}
+                    onClick={() => followToggle(entry.userId)}
+                  >
+                    Unfollow
+                  </Button>
+                ) : null}
+                {tab === "followers" ? (
+                  <Button
+                    icon="user"
+                    disabled={busyId === `follow-${entry.userId}`}
+                    onClick={() => followToggle(entry.userId)}
+                  >
+                    {entry.isFollowing ? "Unfollow" : "Follow"}
+                  </Button>
+                ) : null}
+                {tab === "friends" ? <Button variant="danger" icon="trash" onClick={() => unfriend(entry.userId)}>Remove</Button> : null}
+              </article>
+            ))}
+          </div>
+        ) : null}
+      </Card>
 
-      <section className="card">
-        <h2>Pending Requests</h2>
-        <ul className="user-list">
-          {pending.map((user) => (
-            <li key={user.userId} className="user-row">
-              <div className="row-identity">
-                <span className="user-mini-avatar">{initials(fullName(user))}</span>
-                <strong>{fullName(user)}</strong>
-              </div>
-              <div className="row-actions">
-                <button className="btn btn-primary" type="button" onClick={() => accept(user.userId)}>
-                  Accept
+      <div className="friends-bottom-grid">
+        <Card>
+          <SectionHeader title="Suggested from your network" subtitle="Posts and reels from creators with strong engagement." />
+          <div className="suggested-media-grid">
+            {creators.slice(0, 3).map((creator) => {
+              const media = creator.topPost?.imageUrl || creator.media?.[0];
+              return (
+                <button key={`media-${creator.userId}`} type="button" className="suggested-media-card" onClick={() => openSuggestedPost(creator)}>
+                  <div>
+                    {media ? (
+                      isVideoAsset(media) ? <video src={toMediaUrl(media)} muted /> : <img src={toMediaUrl(media)} alt={creator.name} />
+                    ) : <Icon name="image" />}
+                  </div>
+                  <strong>{creator.name}</strong>
+                  <span><Icon name="image" /> {creator.postCount} post{creator.postCount === 1 ? "" : "s"}</span>
+                  <span><Icon name="heart" /> {Number(creator.topPost?.reactionCount || 0)} reaction{Number(creator.topPost?.reactionCount || 0) === 1 ? "" : "s"}</span>
                 </button>
-                <button className="btn btn-secondary" type="button" onClick={() => reject(user.userId)}>
-                  Reject
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </section>
+              );
+            })}
+          </div>
+        </Card>
 
-      <section className="card">
-        <h2>Friends</h2>
-        <ul className="user-list">
-          {friends.map((user) => (
-            <li key={user.userId} className="user-row">
-              <div className="row-identity">
-                <span className="user-mini-avatar">{initials(fullName(user))}</span>
-                <strong>{fullName(user)}</strong>
-              </div>
-              <div className="row-actions">
-                <button className="btn btn-secondary" type="button" onClick={() => unfriend(user.userId)}>
-                  Unfriend
+        <Card>
+          <SectionHeader title="Your Friends" subtitle="Quick profile and chat actions." />
+          <ul className="panel-list">
+            {friends.slice(0, 6).map((entry, index) => (
+              <li key={`friend-side-${entry.userId}`} className="panel-row friend-side-row">
+                <Avatar name={fullName(entry)} size="sm" online={isOnlineUser(entry)} />
+                <div>
+                  <strong>{fullName(entry)}</strong>
+                  <span>{isOnlineUser(entry) ? "Online" : "Friend"}</span>
+                </div>
+                <button type="button" className="icon-button" onClick={() => openChat(entry.userId)} aria-label="Open chat">
+                  <Icon name="chat" />
                 </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </section>
-    </div>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      </div>
+    </PageGrid>
   );
 }

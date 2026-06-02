@@ -4,6 +4,7 @@ import com.socialApp.Lishare.modules.platform.user.entity.User;
 import com.socialApp.Lishare.modules.social.post.dto.PostResponse;
 import com.socialApp.Lishare.modules.social.post.entity.Post;
 import com.socialApp.Lishare.modules.social.post.service.PostService;
+import com.socialApp.Lishare.modules.social.post.support.PostXpPolicy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -23,7 +24,8 @@ public class PostController {
     public ResponseEntity<PostResponse> createPost(
             @AuthenticationPrincipal User user,
             @RequestParam(value = "content", required = false, defaultValue = "") String content,
-            @RequestParam(value = "image", required = false) MultipartFile image
+            @RequestParam(value = "image", required = false) MultipartFile image,
+            @RequestParam(value = "category", required = false) String category
     ) {
         if (user == null) {
             return ResponseEntity.status(401).body(null);
@@ -32,7 +34,7 @@ public class PostController {
             return ResponseEntity.badRequest().body(null);
         }
 
-        Post post = postService.createPost(user.getUserId(), content, image);
+        Post post = postService.createPost(user.getUserId(), content, image, category);
         return ResponseEntity.ok(toResponse(post));
     }
 
@@ -98,10 +100,30 @@ public class PostController {
                 .content(post.getContent())
                 .imageUrl(post.getImageUrl())
                 .mediaType(post.getMediaType())
+                .category(resolvePostCategory(post))
+                .xpAwarded(resolvePostXp(post))
+                .authorVerifiedXp(calculateVerifiedXp(post.getUser()))
                 .reelViewCount(post.getReelViewCount())
                 .authorName(post.getUser().getFirstname() + " " + post.getUser().getLastName())
                 .createdAt(post.getCreatedAt())
                 .editedAt(post.getEditedAt())
                 .build();
+    }
+
+    private long calculateVerifiedXp(User user) {
+        return postService.getPostsByUser(user.getUserId()).stream()
+                .mapToLong(this::resolvePostXp)
+                .sum();
+    }
+
+    private int resolvePostXp(Post post) {
+        if (post.getXpAwarded() != null && post.getXpAwarded() > 0) {
+            return post.getXpAwarded();
+        }
+        return PostXpPolicy.xpForCategory(post.getCategory());
+    }
+
+    private String resolvePostCategory(Post post) {
+        return post.getCategory() == null || post.getCategory().isBlank() ? "GENERAL" : post.getCategory();
     }
 }

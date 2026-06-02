@@ -34,7 +34,7 @@ import {
 import { styled, alpha } from "@mui/material/styles";
 import api from "/src/legacy/api";
 
-// Custom Step Icon with Bondly colors
+// Custom step icon with AgroLink Hub colors
 const StepIconRoot = styled("div")(({ theme, ownerState }) => ({
   backgroundColor: ownerState.completed
     ? theme.palette.success.main
@@ -475,7 +475,7 @@ export default function ForgotPassword() {
         </Paper>
 
         <Typography variant="caption" display="block" align="center" sx={{ mt: 3, color: "#666" }}>
-          © {new Date().getFullYear()} Bondly. All rights reserved.
+          © {new Date().getFullYear()} AgroLink Hub. All rights reserved.
         </Typography>
       </Container>
     </Box>

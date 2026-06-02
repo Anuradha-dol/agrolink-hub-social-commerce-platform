@@ -17,9 +17,15 @@ export const ENDPOINTS = {
     me: "/user/me",
     publicProfile: (userId) => `/api/users/${userId}/profile`,
     updateName: "/user/update-name",
+    updateProfileDetails: "/user/profile-details",
     updateEmail: "/user/update-email",
     verifyNewEmail: "/user/verify-new-email",
-    updatePassword: "/user/update-password"
+    updatePassword: "/user/update-password",
+    deleteAccount: "/user/delete",
+    requestDeleteOtp: "/user/delete-forgot-request",
+    verifyDeleteOtp: "/user/delete-forgot-verify",
+    uploadProfileImage: "/user/upload-profile-image",
+    uploadCoverImage: "/user/upload-cover-image"
   },
   feed: {
     postsFeed: "/posts/feed",
@@ -27,10 +33,12 @@ export const ENDPOINTS = {
     deletePost: (postId) => `/posts/delete/${postId}`,
     commentAdd: (postId) => `/comments/${postId}/add`,
     commentReply: (postId, parentCommentId) => `/comments/${postId}/reply/${parentCommentId}`,
+    commentUpdate: (commentId) => `/comments/${commentId}/update`,
     commentDelete: (commentId) => `/comments/${commentId}/delete`,
     comments: (postId) => `/comments/${postId}/all`,
     reaction: (postId) => `/reactions/${postId}`,
     reactionCounts: (postId) => `/reactions/${postId}/counts`,
+    reactionUsers: (postId) => `/reactions/${postId}/users`,
     share: (postId) => `/shares/${postId}/share`,
     shareDelete: (shareId) => `/shares/${shareId}`,
     sharedFeed: "/shares/feed",
@@ -44,11 +52,16 @@ export const ENDPOINTS = {
     unfollow: (userId) => `/follow/${userId}/unfollow`,
     followers: "/follow/followers",
     following: "/follow/following",
+    followersForUser: (userId) => `/follow/${userId}/followers`,
+    followingForUser: (userId) => `/follow/${userId}/following`,
     followersCount: "/follow/followers/count",
-    followingCount: "/follow/following/count"
+    followingCount: "/follow/following/count",
+    followersCountForUser: (userId) => `/follow/${userId}/followers/count`,
+    followingCountForUser: (userId) => `/follow/${userId}/following/count`
   },
   friend: {
     all: "/api/friends/all",
+    allForUser: (userId) => `/api/friends/${userId}/all`,
     pending: "/api/friends/pending",
     request: (userId) => `/api/friends/${userId}/request`,
     accept: (userId) => `/api/friends/${userId}/accept`,
@@ -82,10 +95,25 @@ export const ENDPOINTS = {
   admin: {
     users: "/api/admin/users",
     updateRole: (userId) => `/api/admin/users/${userId}/role`,
+    updateModeration: (userId) => `/api/admin/users/${userId}/moderation`,
     deleteUser: (userId) => `/api/admin/users/${userId}`,
     stats: "/api/admin/stats",
     reports: "/api/admin/reports",
     reportStatus: (reportId) => `/api/admin/reports/${reportId}/status`
+  },
+  reviews: {
+    list: "/reviews",
+    mine: "/reviews/gets",
+    create: "/reviews",
+    update: (id) => `/reviews/${id}`,
+    delete: (id) => `/reviews/${id}`
+  },
+  support: {
+    list: "/support",
+    mine: "/support/my",
+    create: "/support",
+    respond: (id) => `/support/${id}/respond`,
+    delete: (id) => `/support/${id}`
   },
   chat: {
     conversations: "/api/chat/conversations",

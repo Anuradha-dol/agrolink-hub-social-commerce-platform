@@ -39,7 +39,6 @@ public class Friend {
     @Enumerated(EnumType.STRING)
     private FriendStatus status;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at")
     private Date createdAt;
 

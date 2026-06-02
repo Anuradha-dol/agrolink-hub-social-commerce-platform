@@ -161,7 +161,8 @@ export default function LandingPage() {
   useEffect(() => {
     const fetchReviews = async () => {
       try {
-        const res = await fetch("http://localhost:9091/reviews");
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:4041";
+        const res = await fetch(`${apiBaseUrl}/reviews`);
         const data = await res.json();
         setReviews(data);
       } catch (err) {
@@ -174,7 +175,7 @@ export default function LandingPage() {
   }, []);
 
   const fallbackTestimonials = [
-    { username: "Alex Johnson", rating: 5, comment: "Bondly has completely changed how I connect with friends. The feed is so engaging!", createdAt: new Date().toISOString() },
+    { username: "Alex Johnson", rating: 5, comment: "AgroLink Hub has completely changed how I connect with friends. The feed is so engaging!", createdAt: new Date().toISOString() },
     { username: "Maria Garcia", rating: 5, comment: "I love sharing photos and seeing what my friends are up to. It's like Instagram but better!", createdAt: new Date().toISOString() },
     { username: "James Smith", rating: 4, comment: "Great community features. The chat and reactions are spot on.", createdAt: new Date().toISOString() },
     { username: "Emily Davis", rating: 5, comment: "Finally a platform that values real connections. Highly recommended!", createdAt: new Date().toISOString() },
@@ -240,7 +241,7 @@ export default function LandingPage() {
           <Box sx={{ display: "flex", alignItems: "center", flexGrow: 1 }}>
             <FavoriteIcon sx={{ mr: 1, color: "#e91e63" }} />
             <Typography variant="h6" sx={{ fontWeight: 700, color: "#2196f3", letterSpacing: "-0.5px" }}>
-              Bondly
+              AgroLink Hub
             </Typography>
           </Box>
           {!isMobile && (
@@ -298,7 +299,7 @@ export default function LandingPage() {
                   </Box>
                 </Typography>
                 <Typography variant="h6" paragraph sx={{ color: "#666", fontWeight: 400, maxWidth: 500 }}>
-                  Bondly is your new social space – share moments, discover friends, and be part of a vibrant community.
+                  AgroLink Hub is your agriculture social space - share moments, discover markets, and connect with a vibrant community.
                 </Typography>
                 <StyledButton
                   variant="contained"
@@ -375,7 +376,7 @@ export default function LandingPage() {
             align="center"
             sx={{ fontWeight: 700, color: "#333", mb: 2, letterSpacing: "-1px" }}
           >
-            Why Bondly?
+            Why AgroLink Hub?
           </Typography>
           <Typography variant="h6" align="center" sx={{ color: "#666", mb: 8, fontWeight: 400 }}>
             Discover the tools that make socializing fun and meaningful
@@ -468,7 +469,7 @@ export default function LandingPage() {
               <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                 <FavoriteIcon sx={{ mr: 1, color: "#e91e63" }} />
                 <Typography variant="h6" sx={{ fontWeight: 700, color: "#2196f3" }}>
-                  Bondly
+                  AgroLink Hub
                 </Typography>
               </Box>
               <Typography variant="body2" sx={{ color: "#aaa" }}>
@@ -510,7 +511,7 @@ export default function LandingPage() {
         <DialogTitle sx={{ color: "#e91e63" }}>Privacy Policy</DialogTitle>
         <DialogContent>
           <DialogContentText sx={{ color: "#666" }}>
-            At Bondly, we value your privacy. This policy outlines how we collect, use, and protect your information. We do not share your personal data with third parties without your consent. For more details, please contact us.
+            At AgroLink Hub, we value your privacy. This policy outlines how we collect, use, and protect your information. We do not share your personal data with third parties without your consent. For more details, please contact us.
           </DialogContentText>
         </DialogContent>
         <DialogActions>

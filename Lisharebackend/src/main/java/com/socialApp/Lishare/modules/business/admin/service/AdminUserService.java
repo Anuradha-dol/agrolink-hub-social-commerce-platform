@@ -2,6 +2,8 @@ package com.socialApp.Lishare.modules.business.admin.service;
 
 import com.socialApp.Lishare.modules.business.admin.dto.AdminDashboardStatsResponse;
 import com.socialApp.Lishare.modules.business.admin.dto.AdminUserResponse;
+import com.socialApp.Lishare.modules.business.admin.dto.DeleteUserRequest;
+import com.socialApp.Lishare.modules.business.admin.dto.UpdateUserModerationRequest;
 import com.socialApp.Lishare.modules.business.admin.dto.UpdateUserRoleRequest;
 import org.springframework.data.domain.Page;
 
@@ -10,7 +12,9 @@ public interface AdminUserService {
 
     AdminUserResponse updateUserRole(Long userId, UpdateUserRoleRequest request);
 
-    void deleteUser(Long userId);
+    AdminUserResponse updateUserModeration(Long userId, UpdateUserModerationRequest request);
+
+    void deleteUser(Long userId, DeleteUserRequest request);
 
     AdminDashboardStatsResponse getDashboardStats();
 }

@@ -2,6 +2,8 @@ package com.socialApp.Lishare.modules.business.admin.controller;
 
 import com.socialApp.Lishare.modules.business.admin.dto.AdminDashboardStatsResponse;
 import com.socialApp.Lishare.modules.business.admin.dto.AdminUserResponse;
+import com.socialApp.Lishare.modules.business.admin.dto.DeleteUserRequest;
+import com.socialApp.Lishare.modules.business.admin.dto.UpdateUserModerationRequest;
 import com.socialApp.Lishare.modules.business.admin.dto.UpdateUserRoleRequest;
 import com.socialApp.Lishare.modules.business.admin.service.AdminUserService;
 import com.socialApp.Lishare.modules.platform.common.response.ApiResponse;
@@ -37,9 +39,20 @@ public class AdminUserController {
         return ResponseEntity.ok(ApiResponse.success("User role updated", service.updateUserRole(userId, request)));
     }
 
+    @PutMapping("/users/{userId}/moderation")
+    public ResponseEntity<ApiResponse<AdminUserResponse>> updateModeration(
+            @PathVariable Long userId,
+            @Valid @RequestBody UpdateUserModerationRequest request
+    ) {
+        return ResponseEntity.ok(ApiResponse.success("User moderation updated", service.updateUserModeration(userId, request)));
+    }
+
     @DeleteMapping("/users/{userId}")
-    public ResponseEntity<ApiResponse<Void>> deleteUser(@PathVariable Long userId) {
-        service.deleteUser(userId);
+    public ResponseEntity<ApiResponse<Void>> deleteUser(
+            @PathVariable Long userId,
+            @Valid @RequestBody DeleteUserRequest request
+    ) {
+        service.deleteUser(userId, request);
         return ResponseEntity.ok(ApiResponse.success("User deleted successfully", null));
     }
 

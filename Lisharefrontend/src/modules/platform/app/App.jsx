@@ -6,7 +6,7 @@ import ToastHost from "/src/modules/platform/common/components/ToastHost";
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <ToastProvider>
         <AuthProvider>
           <AppRoutes />

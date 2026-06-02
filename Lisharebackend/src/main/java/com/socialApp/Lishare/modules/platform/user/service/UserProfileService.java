@@ -11,6 +11,8 @@ public interface UserProfileService {
 
     UserDto.UpdateNameDto updateName(User user, UserDto.UpdateNameDto dto);
 
+    UserDto.UserProfileDto updateProfileDetails(User user, UserDto.UpdateProfileDetailsDto dto);
+
     UserDto.UpdateEmailDto updateEmail(User user, UserDto.UpdateEmailDto dto);
 
     void verifyNewEmail(User user, String otp);

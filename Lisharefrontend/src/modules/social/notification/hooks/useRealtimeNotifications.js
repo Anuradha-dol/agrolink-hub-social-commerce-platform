@@ -5,10 +5,25 @@ const wsUrl = import.meta.env.VITE_WS_URL || "ws://localhost:4041/ws";
 
 export function useRealtimeNotifications(userId, onNotification) {
   const clientRef = useRef(null);
+  const onNotificationRef = useRef(onNotification);
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
-    if (!userId) return;
+    onNotificationRef.current = onNotification;
+  }, [onNotification]);
+
+  useEffect(() => {
+    if (!userId) return undefined;
+
+    let subscriptions = [];
+    const handleMessage = (message) => {
+      try {
+        const payload = JSON.parse(message.body);
+        onNotificationRef.current?.(payload);
+      } catch {
+        // Ignore malformed websocket payloads; polling fallback will resync.
+      }
+    };
 
     const client = new Client({
       brokerURL: wsUrl,
@@ -17,17 +32,15 @@ export function useRealtimeNotifications(userId, onNotification) {
       heartbeatOutgoing: 10000,
       onConnect: () => {
         setConnected(true);
-        client.subscribe(`/topic/notifications/${userId}`, (message) => {
-          try {
-            const payload = JSON.parse(message.body);
-            onNotification?.(payload);
-          } catch {
-            // ignore parse issues
-          }
-        });
+        subscriptions.forEach((subscription) => subscription.unsubscribe());
+        subscriptions = [
+          client.subscribe(`/topic/notifications/${userId}`, handleMessage),
+          client.subscribe("/user/queue/notifications", handleMessage)
+        ];
       },
       onDisconnect: () => setConnected(false),
-      onStompError: () => setConnected(false)
+      onStompError: () => setConnected(false),
+      onWebSocketClose: () => setConnected(false)
     });
 
     client.activate();
@@ -35,10 +48,12 @@ export function useRealtimeNotifications(userId, onNotification) {
 
     return () => {
       setConnected(false);
+      subscriptions.forEach((subscription) => subscription.unsubscribe());
+      subscriptions = [];
       if (clientRef.current) clientRef.current.deactivate();
       clientRef.current = null;
     };
-  }, [userId, onNotification]);
+  }, [userId]);
 
   return { connected };
 }

@@ -41,7 +41,6 @@ public class Comment {
     @Column(length = 1000)
     private String content;
 
-    @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at")
     private Date createdAt;
 

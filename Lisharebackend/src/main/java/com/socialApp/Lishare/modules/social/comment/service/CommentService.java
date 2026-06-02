@@ -12,6 +12,7 @@ import java.util.Optional;
 public interface CommentService {
     Comment addComment(Long userId, Long postId, String content);
     Comment addReply(Long userId, Long postId, Long parentCommentId, String content);
+    Comment updateComment(Long userId, Long commentId, String content);
     void deleteComment(Long commentId);
     List<Comment> getCommentsByPost(Long postId);
     Long countCommentsByPost(Long postId);

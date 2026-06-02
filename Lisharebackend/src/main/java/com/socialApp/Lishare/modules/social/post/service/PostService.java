@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface PostService {
 
-    Post createPost(Long userId, String content, MultipartFile imageFile);
+    Post createPost(Long userId, String content, MultipartFile imageFile, String category);
 
     Post updatePost(Long userId, Long postId, String content, MultipartFile imageFile, boolean removeMedia);
 

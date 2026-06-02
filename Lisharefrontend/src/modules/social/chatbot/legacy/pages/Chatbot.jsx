@@ -1,6 +1,6 @@
 // src/components/Chatbot.jsx
 import { useState } from "react";
-import axios from "axios";
+import axiosInstance from "/src/modules/platform/api/axiosInstance";
 import {
   Box,
   Paper,
@@ -87,7 +87,7 @@ export default function Chatbot() {
     setIsTyping(true);
 
     try {
-      const res = await axios.post("http://localhost:9091/api/chat", { message: text });
+      const res = await axiosInstance.post("/api/chat", { message: text });
       setMessages((prev) => [...prev, { sender: "bot", text: res.data.reply }]);
     } catch (err) {
       console.error(err);
@@ -105,10 +105,10 @@ export default function Chatbot() {
         </Avatar>
         <Box>
           <Typography variant="subtitle1" sx={{ fontWeight: 600, color: "#333" }}>
-            Bondly Assistant
+            AgroLink Hub Assistant
           </Typography>
           <Typography variant="caption" sx={{ color: "#666" }}>
-            Online • 24/7 support
+            Knowledge base assistant
           </Typography>
         </Box>
       </Header>
@@ -156,8 +156,8 @@ export default function Chatbot() {
 
       {/* Quick reply buttons */}
       <Box sx={{ px: 2, pb: 1, display: "flex", gap: 1, flexWrap: "wrap" }}>
-        <QuickReplyButton size="small" onClick={() => sendMessage("Tell me about Bondly")}>
-          About Bondly
+        <QuickReplyButton size="small" onClick={() => sendMessage("Tell me about AgroLink Hub")}>
+          About AgroLink Hub
         </QuickReplyButton>
         <QuickReplyButton size="small" onClick={() => sendMessage("How to connect with friends")}>
           Connect

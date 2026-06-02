@@ -1,21 +1,47 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useRef, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import agroLinkHubLogo from "/src/assets/branding/agrolink-hub-logo.svg";
 import { authService } from "../services/authService";
 import { useToast } from "/src/modules/platform/common/hooks/useToast";
 
 export default function VerifyOtpPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { pushToast } = useToast();
-  const [code, setCode] = useState("");
+  const inputRefs = useRef([]);
+  const [digits, setDigits] = useState(Array(6).fill(""));
   const [loading, setLoading] = useState(false);
+  const code = digits.join("");
+  const email = location.state?.email || "your email";
+
+  const setDigit = (index, value) => {
+    const nextValue = value.replace(/\D/g, "").slice(-1);
+    setDigits((prev) => {
+      const next = [...prev];
+      next[index] = nextValue;
+      return next;
+    });
+    if (nextValue && index < 5) inputRefs.current[index + 1]?.focus();
+  };
+
+  const handlePaste = (event) => {
+    const pasted = event.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+    if (!pasted) return;
+    event.preventDefault();
+    setDigits(Array.from({ length: 6 }, (_, index) => pasted[index] || ""));
+    inputRefs.current[Math.min(pasted.length, 6) - 1]?.focus();
+  };
 
   const verify = async (event) => {
     event.preventDefault();
-    if (!code.trim()) return;
+    if (code.length !== 6) {
+      pushToast("Enter the 6-digit verification code", "error");
+      return;
+    }
 
     setLoading(true);
     try {
-      const { data } = await authService.verifyOtp({ verifyCode: code.trim() });
+      const { data } = await authService.verifyOtp({ verifyCode: code });
       if (!data?.success) {
         pushToast(data?.message || "Verification failed", "error");
         return;
@@ -39,19 +65,36 @@ export default function VerifyOtpPage() {
   };
 
   return (
-    <div className="auth-page">
-      <form className="auth-card" onSubmit={verify}>
-        <span className="auth-badge">Security Verification</span>
-        <h1>Verify Email</h1>
-        <p>Enter the OTP sent to your email.</p>
-        <input value={code} onChange={(e) => setCode(e.target.value)} placeholder="6-digit OTP" maxLength={6} />
-        <button className="btn btn-primary" type="submit" disabled={loading}>
-          {loading ? "Verifying..." : "Verify"}
-        </button>
-        <button className="btn btn-secondary" type="button" onClick={resend}>
-          Resend OTP
-        </button>
+    <main className="auth-ref-page auth-verify-ref">
+      <Link className="auth-brand-ref" to="/" aria-label="AgroLink Hub home">
+        <img src={agroLinkHubLogo} alt="" />
+        <span><strong>AgroLink Hub</strong><small>Connect. Share. Sell.</small></span>
+      </Link>
+
+      <form className="auth-verify-card" onSubmit={verify}>
+        <span className="auth-security-orb">OK</span>
+        <h1>Verify your account</h1>
+        <p>We sent a 6-digit verification code to <strong>{email}</strong></p>
+        <div className="otp-grid" onPaste={handlePaste}>
+          {digits.map((digit, index) => (
+            <input
+              key={`otp-${index}`}
+              ref={(node) => { inputRefs.current[index] = node; }}
+              value={digit}
+              onChange={(event) => setDigit(index, event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Backspace" && !digits[index] && index > 0) inputRefs.current[index - 1]?.focus();
+              }}
+              inputMode="numeric"
+              maxLength={1}
+              aria-label={`Verification digit ${index + 1}`}
+            />
+          ))}
+        </div>
+        <p className="auth-expiry">Code expires soon</p>
+        <button className="auth-gradient-btn" type="submit" disabled={loading}>{loading ? "Verifying..." : "Verify & Continue"}</button>
+        <button className="auth-text-button" type="button" onClick={resend}>Did not receive the code? Resend code</button>
       </form>
-    </div>
+    </main>
   );
 }

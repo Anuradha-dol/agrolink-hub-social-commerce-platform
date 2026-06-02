@@ -19,6 +19,10 @@ public class FeedResponse {
     private String content;
     private String imageUrl;
     private String mediaType;
+    private String category;
+    private Integer xpAwarded;
+    private Long authorVerifiedXp;
+    private Long sharedByVerifiedXp;
     private Long reelViewCount;
     private LocalDateTime createdAt;
 

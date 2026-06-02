@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -67,7 +68,12 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public ResponseEntity<AuthResponse> refresh(HttpServletRequest request, HttpServletResponse response) {
-        return ResponseEntity.ok(authService.refreshSession(request, response));
+        AuthResponse authResponse = authService.refreshSession(request, response);
+        if (!authResponse.isSuccess()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(authResponse);
+        }
+
+        return ResponseEntity.ok(authResponse);
     }
 
     @PostMapping("/logout")

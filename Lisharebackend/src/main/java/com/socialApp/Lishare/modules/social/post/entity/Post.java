@@ -4,6 +4,7 @@ import com.socialApp.Lishare.modules.social.comment.entity.Comment;
 import com.socialApp.Lishare.modules.social.reaction.entity.Reaction;
 import com.socialApp.Lishare.modules.social.share.entity.Share;
 import com.socialApp.Lishare.modules.platform.user.entity.User;
+import com.socialApp.Lishare.modules.social.post.support.PostXpPolicy;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.OnDelete;
@@ -46,6 +47,12 @@ public class Post {
     @Column(length = 20)
     private String mediaType;
 
+    @Column(length = 40)
+    private String category;
+
+    @Column(name = "xp_awarded")
+    private Integer xpAwarded;
+
     @Column(name = "reel_view_count", nullable = false, columnDefinition = "BIGINT DEFAULT 0")
     private Long reelViewCount;
 
@@ -72,6 +79,12 @@ public class Post {
         this.createdAt = LocalDateTime.now();
         if (this.reelViewCount == null) {
             this.reelViewCount = 0L;
+        }
+        if (this.category == null || this.category.isBlank()) {
+            this.category = "GENERAL";
+        }
+        if (this.xpAwarded == null || this.xpAwarded < 1) {
+            this.xpAwarded = PostXpPolicy.xpForCategory(this.category);
         }
     }
 

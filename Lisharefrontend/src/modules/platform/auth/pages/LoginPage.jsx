@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import agroLinkHubLogo from "/src/assets/branding/agrolink-hub-logo.svg";
 import { authService } from "../services/authService";
 import { validateLogin } from "../validation/authValidation";
 import { useAuth } from "/src/modules/platform/app/store";
@@ -10,13 +11,13 @@ export default function LoginPage() {
   const location = useLocation();
   const { refreshUser } = useAuth();
   const { pushToast } = useToast();
-  const [form, setForm] = useState({ email: "", password: "" });
+  const [form, setForm] = useState({ email: "", password: "", remember: false });
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
 
   const onChange = (event) => {
-    const { name, value } = event.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = event.target;
+    setForm((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
   };
 
   const onSubmit = async (event) => {
@@ -27,7 +28,7 @@ export default function LoginPage() {
 
     setSubmitting(true);
     try {
-      const { data } = await authService.login(form);
+      const { data } = await authService.login({ email: form.email, password: form.password });
       if (!data?.success) {
         pushToast(data?.message || "Login failed", "error");
         return;
@@ -44,29 +45,53 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="auth-page">
-      <form className="auth-card" onSubmit={onSubmit}>
-        <span className="auth-badge">Welcome Back</span>
-        <h1>Welcome Back</h1>
-        <p>Login to continue.</p>
+    <main className="auth-ref-page auth-login-ref">
+      <Link className="auth-brand-ref" to="/" aria-label="AgroLink Hub home">
+        <img src={agroLinkHubLogo} alt="" />
+        <span><strong>AgroLink Hub</strong><small>Connect. Share. Sell.</small></span>
+      </Link>
+      <Link className="auth-top-link" to="/signup">Create account</Link>
 
-        <label htmlFor="login-email">Email</label>
-        <input id="login-email" name="email" type="email" value={form.email} onChange={onChange} />
-        {errors.email ? <span className="field-error">{errors.email}</span> : null}
-
-        <label htmlFor="login-password">Password</label>
-        <input id="login-password" name="password" type="password" value={form.password} onChange={onChange} />
-        {errors.password ? <span className="field-error">{errors.password}</span> : null}
-
-        <button className="btn btn-primary" type="submit" disabled={submitting}>
-          {submitting ? "Signing in..." : "Sign In"}
-        </button>
-
-        <div className="auth-links">
-          <Link to="/signup">Create account</Link>
-          <Link to="/forgot-password">Forgot password?</Link>
+      <section className="auth-login-card">
+        <div className="auth-card-logo">
+          <img src={agroLinkHubLogo} alt="" />
+          <h1>AgroLink <span>Hub</span></h1>
+          <p>Connect. Share. Sell. Grow Together.</p>
         </div>
-      </form>
-    </div>
+        <form onSubmit={onSubmit} className="auth-login-form">
+          <div className="auth-step-title centered">
+            <div>
+              <h2>Welcome back</h2>
+              <p>Sign in to continue to your account.</p>
+            </div>
+          </div>
+          <label className="auth-field-ref">
+            <span>Email</span>
+            <input name="email" type="email" value={form.email} onChange={onChange} placeholder="youremail@example.com" />
+            {errors.email ? <small className="field-error">{errors.email}</small> : null}
+          </label>
+          <label className="auth-field-ref">
+            <span>Password</span>
+            <input name="password" type="password" value={form.password} onChange={onChange} placeholder="Enter your password" />
+            {errors.password ? <small className="field-error">{errors.password}</small> : null}
+          </label>
+          <div className="auth-login-row">
+            <label className="auth-check-row"><input name="remember" type="checkbox" checked={form.remember} onChange={onChange} /><span>Remember me</span></label>
+            <Link to="/forgot-password">Forgot password?</Link>
+          </div>
+          <button className="auth-gradient-btn" type="submit" disabled={submitting}>
+            {submitting ? "Signing in..." : "Sign In"}
+          </button>
+          <p className="auth-bottom-link">Do not have an account? <Link to="/signup">Create account</Link></p>
+        </form>
+      </section>
+
+      <div className="login-photo-grid" aria-hidden="true">
+        <span className="login-photo photo-a" />
+        <span className="login-photo photo-b" />
+        <span className="login-photo photo-c" />
+        <span className="login-photo photo-d" />
+      </div>
+    </main>
   );
 }

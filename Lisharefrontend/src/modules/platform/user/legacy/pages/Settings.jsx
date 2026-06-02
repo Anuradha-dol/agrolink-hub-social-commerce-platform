@@ -1,329 +1,481 @@
-// src/App.jsx
-import React, { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "/src/modules/platform/app/store";
+import { userService } from "/src/modules/platform/user/services/userService";
+import { useToast } from "/src/modules/platform/common/hooks/useToast";
+import { toMediaUrl } from "/src/modules/platform/common/utils/mediaUrl";
+import {
+  Avatar,
+  Button,
+  Card,
+  Icon,
+  PageGrid,
+  SectionHeader,
+  StatusBadge
+} from "/src/modules/platform/common/ui/DashboardUI";
 
-const BASE_URL = "http://localhost:9091"; // your backend
+const INTEREST_OPTIONS = ["Funny", "News", "Education", "Business", "Lifestyle", "Marketplace", "Community", "Farming", "Technology", "Sports"];
 
-export default function App() {
-  const [user, setUser] = useState({});
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
+function unwrapProfile(response) {
+  return response?.data?.data ?? response?.data ?? {};
+}
 
-  // Forms
+function splitCsv(value = "") {
+  if (Array.isArray(value)) return value.filter(Boolean);
+  return String(value || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function displayName(profile = {}) {
+  return `${profile.firstName || profile.firstname || profile.name || ""} ${profile.lastName || ""}`.trim() || "AgroLink member";
+}
+
+function compactRole(role = "") {
+  return String(role || "ROLE_USER").replace("ROLE_", "").replace("_", " ");
+}
+
+export default function SettingsPage() {
+  const { user, refreshUser, logout } = useAuth();
+  const { pushToast } = useToast();
+  const navigate = useNavigate();
+  const [profile, setProfile] = useState(user || {});
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState("");
   const [nameForm, setNameForm] = useState({ name: "", lastName: "" });
-  const [emailForm, setEmailForm] = useState({ newEmail: "", otp: "" });
-  const [passwordForm, setPasswordForm] = useState({
-    currentPassword: "",
-    newPassword: "",
-    confirmPassword: "",
+  const [profileDetailsForm, setProfileDetailsForm] = useState({
+    username: "",
+    phoneNumber: "",
+    backupEmail: "",
+    bio: "",
+    location: "",
+    preferredLanguage: "",
+    website: "",
+    interests: [],
+    hobbies: "",
+    hobbyInput: ""
   });
-  const [deleteForm, setDeleteForm] = useState({ currentPassword: "" });
-  const [deleteOtpForm, setDeleteOtpForm] = useState({ otp: "" });
+  const [emailForm, setEmailForm] = useState({ newEmail: "", otp: "" });
+  const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
+  const [deleteForm, setDeleteForm] = useState({ currentPassword: "", otp: "" });
 
-  const [profileFile, setProfileFile] = useState(null);
-  const [coverFile, setCoverFile] = useState(null);
+  const profileName = displayName(profile);
+  const roleLabel = compactRole(profile?.role || user?.role);
+  const avatarUrl = profile?.profileImageUrl || profile?.imageUrl;
+  const interests = splitCsv(profileDetailsForm.interests);
 
-  // Fetch user profile
+  const completionItems = useMemo(() => [
+    { label: "Profile image", done: Boolean(avatarUrl) },
+    { label: "Bio", done: Boolean(profileDetailsForm.bio.trim()) },
+    { label: "Location", done: Boolean(profileDetailsForm.location.trim()) },
+    { label: "Backup email", done: Boolean(profileDetailsForm.backupEmail.trim()) }
+  ], [avatarUrl, profileDetailsForm.backupEmail, profileDetailsForm.bio, profileDetailsForm.location]);
+
+  const hydrateForms = (nextProfile = {}) => {
+    setNameForm({
+      name: nextProfile.firstName || nextProfile.firstname || nextProfile.name || "",
+      lastName: nextProfile.lastName || ""
+    });
+    setProfileDetailsForm({
+      username: nextProfile.username || "",
+      phoneNumber: nextProfile.phoneNumber || "",
+      backupEmail: nextProfile.backupEmail || nextProfile.tempEmail || "",
+      bio: nextProfile.bio || "",
+      location: nextProfile.location || "",
+      preferredLanguage: nextProfile.preferredLanguage || "",
+      website: nextProfile.website || "",
+      interests: splitCsv(nextProfile.interests),
+      hobbies: splitCsv(nextProfile.hobbies).join(", "),
+      hobbyInput: ""
+    });
+  };
+
   useEffect(() => {
-    fetch(BASE_URL + "/user/me", { credentials: "include" })
-      .then((res) => res.json())
-      .then((data) => {
-        setUser(data);
-        setNameForm({ name: data.firstName || "", lastName: data.lastName || "" });
-      })
-      .catch(() => setError("Failed to fetch user profile"));
-  }, []);
+    const load = async () => {
+      setLoading(true);
+      try {
+        const response = await userService.getMe();
+        const nextProfile = unwrapProfile(response);
+        setProfile(nextProfile);
+        hydrateForms(nextProfile);
+      } catch {
+        const fallback = user || {};
+        setProfile(fallback);
+        hydrateForms(fallback);
+        pushToast("Failed to refresh settings profile", "error");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const showMessage = (msg, isError = false) => {
-    if (isError) {
-      setError(msg);
-      setMessage("");
-    } else {
-      setMessage(msg);
-      setError("");
-    }
-    setTimeout(() => {
-      setMessage("");
-      setError("");
-    }, 4000);
+    load();
+  }, [pushToast, user]);
+
+  const updateProfileDetailsField = (field, value) => {
+    setProfileDetailsForm((previous) => ({ ...previous, [field]: value }));
   };
 
-  // --- Handlers ---
-  const updateName = async () => {
-    setLoading(true);
+  const toggleInterest = (interest) => {
+    setProfileDetailsForm((previous) => ({
+      ...previous,
+      interests: previous.interests.includes(interest)
+        ? previous.interests.filter((item) => item !== interest)
+        : [...previous.interests, interest]
+    }));
+  };
+
+  const addHobby = () => {
+    const hobby = profileDetailsForm.hobbyInput.trim();
+    if (!hobby) return;
+    const current = splitCsv(profileDetailsForm.hobbies);
+    if (current.includes(hobby)) {
+      updateProfileDetailsField("hobbyInput", "");
+      return;
+    }
+    setProfileDetailsForm((previous) => ({
+      ...previous,
+      hobbies: [...current, hobby].join(", "),
+      hobbyInput: ""
+    }));
+  };
+
+  const removeHobby = (hobby) => {
+    setProfileDetailsForm((previous) => ({
+      ...previous,
+      hobbies: splitCsv(previous.hobbies).filter((item) => item !== hobby).join(", ")
+    }));
+  };
+
+  const updateName = async (event) => {
+    event.preventDefault();
+    if (!nameForm.name.trim() || !nameForm.lastName.trim()) {
+      pushToast("First name and last name are required", "error");
+      return;
+    }
+    setSaving("name");
     try {
-      const res = await fetch(BASE_URL + "/user/update-name", {
-        method: "PUT",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(nameForm),
-      });
-      const data = await res.text();
-      showMessage(data);
-      setUser({ ...user, firstName: nameForm.name, lastName: nameForm.lastName });
-    } catch {
-      showMessage("Failed to update name", true);
+      await userService.updateName(nameForm);
+      await refreshUser();
+      setProfile((previous) => ({ ...previous, name: nameForm.name, firstName: nameForm.name, lastName: nameForm.lastName }));
+      pushToast("Name updated", "success");
+    } catch (error) {
+      pushToast(error?.response?.data?.message || "Failed to update name", "error");
     } finally {
-      setLoading(false);
+      setSaving("");
     }
   };
 
-  const requestEmailUpdate = async () => {
-    setLoading(true);
+  const updateDetails = async (event) => {
+    event.preventDefault();
+    const optionalValue = (value) => {
+      const cleaned = String(value || "").trim();
+      return cleaned || null;
+    };
+    setSaving("details");
     try {
-      const res = await fetch(BASE_URL + "/user/update-email", {
-        method: "PUT",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ newEmail: emailForm.newEmail }),
-      });
-      const data = await res.text();
-      showMessage(data);
-    } catch {
-      showMessage("Failed to request email update", true);
+      const payload = {
+        username: optionalValue(profileDetailsForm.username),
+        phoneNumber: optionalValue(profileDetailsForm.phoneNumber),
+        backupEmail: optionalValue(profileDetailsForm.backupEmail),
+        bio: optionalValue(profileDetailsForm.bio),
+        location: optionalValue(profileDetailsForm.location),
+        preferredLanguage: optionalValue(profileDetailsForm.preferredLanguage),
+        website: optionalValue(profileDetailsForm.website),
+        interests: profileDetailsForm.interests.join(","),
+        hobbies: optionalValue(profileDetailsForm.hobbies)
+      };
+      const response = await userService.updateProfileDetails(payload);
+      const nextProfile = unwrapProfile(response);
+      setProfile((previous) => ({ ...previous, ...nextProfile, ...payload }));
+      await refreshUser();
+      pushToast("Profile details updated", "success");
+    } catch (error) {
+      pushToast(error?.response?.data?.message || "Failed to update profile details", "error");
     } finally {
-      setLoading(false);
+      setSaving("");
+    }
+  };
+
+  const sendEmailOtp = async (event) => {
+    event.preventDefault();
+    if (!emailForm.newEmail.includes("@")) {
+      pushToast("Enter a valid email", "error");
+      return;
+    }
+    setSaving("email");
+    try {
+      await userService.updateEmail({ newEmail: emailForm.newEmail.trim() });
+      pushToast("OTP sent to new email", "success");
+    } catch (error) {
+      pushToast(error?.response?.data?.message || "Failed to request email OTP", "error");
+    } finally {
+      setSaving("");
     }
   };
 
   const verifyEmail = async () => {
-    setLoading(true);
+    if (!emailForm.otp.trim()) {
+      pushToast("OTP is required", "error");
+      return;
+    }
+    setSaving("verify-email");
     try {
-      const res = await fetch(BASE_URL + `/user/verify-new-email?otp=${emailForm.otp}`, {
-        method: "POST",
-        credentials: "include",
-      });
-      const data = await res.text();
-      showMessage(data);
-      // Navigate to login after successful email verification
-      setTimeout(() => {
-        window.location.href = "/login";
-      }, 1000);
-    } catch {
-      showMessage("Failed to verify email", true);
+      await userService.verifyNewEmail(emailForm.otp.trim());
+      await refreshUser();
+      setEmailForm({ newEmail: "", otp: "" });
+      pushToast("Email updated", "success");
+    } catch (error) {
+      pushToast(error?.response?.data?.message || "Failed to verify email", "error");
     } finally {
-      setLoading(false);
+      setSaving("");
     }
   };
 
-  const updatePassword = async () => {
-    setLoading(true);
+  const updatePassword = async (event) => {
+    event.preventDefault();
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      pushToast("New passwords do not match", "error");
+      return;
+    }
+    if (passwordForm.newPassword.length < 6) {
+      pushToast("Password must be at least 6 characters", "error");
+      return;
+    }
+    setSaving("password");
     try {
-      const res = await fetch(BASE_URL + "/user/update-password", {
-        method: "PUT",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(passwordForm),
-      });
-      const data = await res.text();
-      showMessage(data);
-      // Navigate to login after successful password update
-      setTimeout(() => {
-        window.location.href = "/login";
-      }, 1000);
-    } catch {
-      showMessage("Failed to update password", true);
+      await userService.updatePassword(passwordForm);
+      setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
+      pushToast("Password updated", "success");
+    } catch (error) {
+      pushToast(error?.response?.data?.message || "Failed to update password", "error");
     } finally {
-      setLoading(false);
+      setSaving("");
     }
   };
 
-  const deleteAccount = async () => {
-    setLoading(true);
+  const deleteAccountWithPassword = async (event) => {
+    event.preventDefault();
+    if (!deleteForm.currentPassword.trim()) {
+      pushToast("Current password is required", "error");
+      return;
+    }
+    if (!window.confirm("Delete your account permanently? This cannot be undone.")) return;
+    setSaving("delete");
     try {
-      const res = await fetch(BASE_URL + "/user/delete", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(deleteForm),
-      });
-      const data = await res.text();
-      showMessage(data);
-      // Navigate to login after successful account deletion
-      setTimeout(() => {
-        window.location.href = "/login";
-      }, 1000);
-    } catch {
-      showMessage("Failed to delete account", true);
+      await userService.deleteAccount({ currentPassword: deleteForm.currentPassword });
+      await logout();
+      navigate("/login", { replace: true });
+    } catch (error) {
+      pushToast(error?.response?.data?.message || "Failed to delete account", "error");
     } finally {
-      setLoading(false);
+      setSaving("");
     }
   };
 
   const requestDeleteOtp = async () => {
-    setLoading(true);
+    setSaving("delete-otp");
     try {
-      const res = await fetch(BASE_URL + "/user/delete-forgot-request", {
-        method: "POST",
-        credentials: "include",
-      });
-      const data = await res.text();
-      showMessage(data);
-    } catch {
-      showMessage("Failed to request delete OTP", true);
+      await userService.requestDeleteOtp();
+      pushToast("Delete OTP sent to your registered email", "success");
+    } catch (error) {
+      pushToast(error?.response?.data?.message || "Failed to request delete OTP", "error");
     } finally {
-      setLoading(false);
+      setSaving("");
     }
   };
 
   const verifyDeleteOtp = async () => {
-    setLoading(true);
+    if (!deleteForm.otp.trim()) {
+      pushToast("Delete OTP is required", "error");
+      return;
+    }
+    if (!window.confirm("Verify OTP and delete your account permanently?")) return;
+    setSaving("verify-delete");
     try {
-      const res = await fetch(BASE_URL + "/user/delete-forgot-verify", {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(deleteOtpForm),
-      });
-      const data = await res.text();
-      showMessage(data);
-      // Navigate to login after successful OTP deletion
-      setTimeout(() => {
-        window.location.href = "/login";
-      }, 1000);
-    } catch {
-      showMessage("Failed to verify delete OTP", true);
+      await userService.verifyDeleteOtp({ otp: deleteForm.otp.trim() });
+      await logout();
+      navigate("/login", { replace: true });
+    } catch (error) {
+      pushToast(error?.response?.data?.message || "Failed to verify delete OTP", "error");
     } finally {
-      setLoading(false);
+      setSaving("");
     }
   };
 
-  const uploadFile = async (file, endpoint) => {
-    if (!file) return;
-    setUploading(true);
-    const formData = new FormData();
-    formData.append("file", file);
-    try {
-      const res = await fetch(BASE_URL + endpoint, {
-        method: "POST",
-        credentials: "include",
-        body: formData,
-      });
-      const data = await res.text();
-      showMessage("Upload successful!");
-      // Refresh user profile
-      const profile = await fetch(BASE_URL + "/user/me", { credentials: "include" });
-      setUser(await profile.json());
-    } catch {
-      showMessage("Upload failed", true);
-    } finally {
-      setUploading(false);
-    }
-  };
+  if (loading) {
+    return (
+      <PageGrid className="settings-dashboard">
+        <Card className="settings-loading-card">Loading settings...</Card>
+      </PageGrid>
+    );
+  }
 
   return (
-    <div style={{
-      minHeight: "100vh",
-      background: "linear-gradient(135deg, #FADCD9, #BFD8FF, #FFF5E1)",
-      paddingBottom: 50
-    }}>
-      <div style={{ maxWidth: 900, margin: "0 auto", background: "#fff", borderRadius: 10, overflow: "hidden", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
-        
-        {/* Cover and profile section */}
-        <div style={{ position: "relative" }}>
-          {user.coverImageUrl ? (
-            <img
-              src={BASE_URL + user.coverImageUrl}
-              alt="Cover"
-              style={{ width: "100%", height: 250, objectFit: "cover" }}
-            />
-          ) : (
-            <div style={{ width: "100%", height: 250, backgroundColor: "#ccc" }} />
-          )}
-
-          {user.profileImageUrl && (
-            <img
-              src={BASE_URL + user.profileImageUrl}
-              alt="Profile"
-              style={{
-                width: 150,
-                height: 150,
-                borderRadius: "50%",
-                objectFit: "cover",
-                border: "5px solid #fff",
-                position: "absolute",
-                bottom: -75,
-                left: "50%",
-                transform: "translateX(-50%)",
-                backgroundColor: "#fff"
-              }}
-            />
-          )}
+    <PageGrid className="settings-dashboard">
+      <Card className="settings-hero-card">
+        <div className="settings-hero-copy">
+          <span className="auth-badge">Private Settings</span>
+          <h2>Account settings that match your profile workflow.</h2>
+          <p>Update identity, optional profile details, login email, password, and account safety from one protected page.</p>
         </div>
-
-        {/* Name */}
-        <div style={{ textAlign: "center", paddingTop: 90 }}>
-          <h2>{user.firstName} {user.lastName}</h2>
-        </div>
-
-        {/* Messages */}
-        <div style={{ textAlign: "center" }}>
-          {message && <div style={{ color: "green" }}>{message}</div>}
-          {error && <div style={{ color: "red" }}>{error}</div>}
-        </div>
-
-        <div style={{ padding: 20 }}>
-          {/* Upload Profile / Cover */}
-          <div style={{ marginBottom: 30, textAlign: "center" }}>
-            <input type="file" onChange={(e) => setProfileFile(e.target.files[0])} />
-            <button onClick={() => uploadFile(profileFile, "/user/upload-profile-image")} disabled={uploading} style={{ marginLeft: 10 }}>Upload Profile</button>
-            <br /><br />
-            <input type="file" onChange={(e) => setCoverFile(e.target.files[0])} />
-            <button onClick={() => uploadFile(coverFile, "/user/upload-cover-image")} disabled={uploading} style={{ marginLeft: 10 }}>Upload Cover</button>
-          </div>
-
-          {/* Update Name */}
-          <div style={{ marginBottom: 30 }}>
-            <h3>Update Name</h3>
-            <input type="text" placeholder="First Name" value={nameForm.name}
-                   onChange={(e) => setNameForm({ ...nameForm, name: e.target.value })} style={{ marginRight: 10 }} />
-            <input type="text" placeholder="Last Name" value={nameForm.lastName}
-                   onChange={(e) => setNameForm({ ...nameForm, lastName: e.target.value })} />
-            <button onClick={updateName} disabled={loading} style={{ marginLeft: 10 }}>Save Name</button>
-          </div>
-
-          {/* Update Email */}
-          <div style={{ marginBottom: 30 }}>
-            <h3>Update Email</h3>
-            <input type="email" placeholder="New Email" value={emailForm.newEmail}
-                   onChange={(e) => setEmailForm({ ...emailForm, newEmail: e.target.value })} style={{ marginRight: 10 }} />
-            <button onClick={requestEmailUpdate} disabled={loading}>Request OTP</button>
-            <br /><br />
-            <input type="text" placeholder="OTP" value={emailForm.otp}
-                   onChange={(e) => setEmailForm({ ...emailForm, otp: e.target.value })} style={{ marginRight: 10 }} />
-            <button onClick={verifyEmail} disabled={loading}>Verify Email</button>
-          </div>
-
-          {/* Update Password */}
-          <div style={{ marginBottom: 30 }}>
-            <h3>Update Password</h3>
-            <input type="password" placeholder="Current Password" value={passwordForm.currentPassword}
-                   onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })} style={{ marginRight: 10 }} />
-            <input type="password" placeholder="New Password" value={passwordForm.newPassword}
-                   onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })} style={{ marginRight: 10 }} />
-            <input type="password" placeholder="Confirm Password" value={passwordForm.confirmPassword}
-                   onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })} />
-            <button onClick={updatePassword} disabled={loading} style={{ marginLeft: 10 }}>Update Password</button>
-          </div>
-
-          {/* Delete Account */}
+        <div className="settings-profile-summary">
+          <Avatar name={profileName} src={avatarUrl ? toMediaUrl(avatarUrl) : null} size="xl" online />
           <div>
-            <h3>Delete Account</h3>
-            <input type="password" placeholder="Current Password" value={deleteForm.currentPassword}
-                   onChange={(e) => setDeleteForm({ currentPassword: e.target.value })} style={{ marginRight: 10 }} />
-            <button onClick={deleteAccount} disabled={loading}>Delete Account</button>
-            <div style={{ marginTop: 10 }}>
-              <p>Or via OTP:</p>
-              <button onClick={requestDeleteOtp} disabled={loading} style={{ marginRight: 10 }}>Request Delete OTP</button>
-              <input type="text" placeholder="OTP" value={deleteOtpForm.otp}
-                     onChange={(e) => setDeleteOtpForm({ otp: e.target.value })} style={{ marginRight: 10 }} />
-              <button onClick={verifyDeleteOtp} disabled={loading}>Verify & Delete</button>
-            </div>
+            <strong>{profileName}</strong>
+            <span>{profile?.email || "No email"}</span>
+            <StatusBadge status={roleLabel} tone={profile?.role === "ROLE_ADMIN" ? "purple" : "green"} />
+          </div>
+        </div>
+      </Card>
+
+      <div className="settings-layout">
+        <main className="settings-main">
+          <Card className="settings-card">
+            <SectionHeader title="Display Name" subtitle="This name appears across posts, stories, marketplace, and admin workflows." />
+            <form className="form-grid settings-form-grid" onSubmit={updateName}>
+              <input className="ui-field" value={nameForm.name} onChange={(event) => setNameForm((previous) => ({ ...previous, name: event.target.value }))} placeholder="First name" />
+              <input className="ui-field" value={nameForm.lastName} onChange={(event) => setNameForm((previous) => ({ ...previous, lastName: event.target.value }))} placeholder="Last name" />
+              <Button variant="gradient" icon="check" type="submit" disabled={saving === "name"}>
+                {saving === "name" ? "Saving..." : "Save Name"}
+              </Button>
+            </form>
+          </Card>
+
+          <Card className="settings-card">
+            <SectionHeader title="Profile Details" subtitle="These fields are optional. Signup does not force users to complete them." />
+            <form className="form-grid settings-profile-form" onSubmit={updateDetails}>
+              <div className="settings-two-grid">
+                <input className="ui-field" value={profileDetailsForm.username} onChange={(event) => updateProfileDetailsField("username", event.target.value)} placeholder="Username" />
+                <input className="ui-field" value={profileDetailsForm.phoneNumber} onChange={(event) => updateProfileDetailsField("phoneNumber", event.target.value)} placeholder="Phone number" />
+              </div>
+              <div className="settings-two-grid">
+                <input className="ui-field" type="email" value={profileDetailsForm.backupEmail} onChange={(event) => updateProfileDetailsField("backupEmail", event.target.value)} placeholder="Backup email" />
+                <select className="ui-field" value={profileDetailsForm.preferredLanguage} onChange={(event) => updateProfileDetailsField("preferredLanguage", event.target.value)}>
+                  <option value="">Preferred language</option>
+                  <option value="English">English</option>
+                  <option value="Sinhala">Sinhala</option>
+                  <option value="Tamil">Tamil</option>
+                </select>
+              </div>
+              <div className="settings-two-grid">
+                <input className="ui-field" value={profileDetailsForm.location} onChange={(event) => updateProfileDetailsField("location", event.target.value)} placeholder="Location" />
+                <input className="ui-field" value={profileDetailsForm.website} onChange={(event) => updateProfileDetailsField("website", event.target.value)} placeholder="Website" />
+              </div>
+              <textarea className="ui-field" rows={4} maxLength={280} value={profileDetailsForm.bio} onChange={(event) => updateProfileDetailsField("bio", event.target.value)} placeholder="Bio" />
+              <div className="settings-interest-grid">
+                {INTEREST_OPTIONS.map((interest) => (
+                  <button key={interest} type="button" className={profileDetailsForm.interests.includes(interest) ? "active" : ""} onClick={() => toggleInterest(interest)}>
+                    {interest}
+                  </button>
+                ))}
+              </div>
+              <div className="profile-hobby-editor settings-hobby-editor">
+                {splitCsv(profileDetailsForm.hobbies).map((hobby) => (
+                  <button key={hobby} type="button" onClick={() => removeHobby(hobby)}>
+                    {hobby} <span aria-hidden="true">x</span>
+                  </button>
+                ))}
+                <input
+                  value={profileDetailsForm.hobbyInput}
+                  onChange={(event) => updateProfileDetailsField("hobbyInput", event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      addHobby();
+                    }
+                  }}
+                  placeholder="Add hobby..."
+                />
+              </div>
+              <Button variant="gradient" icon="check" type="submit" disabled={saving === "details"}>
+                {saving === "details" ? "Saving..." : "Save Profile Details"}
+              </Button>
+            </form>
+          </Card>
+
+          <div className="settings-account-grid">
+            <Card className="settings-card">
+              <SectionHeader title="Update Email" subtitle="A verification OTP is required before the email changes." />
+              <form className="form-grid" onSubmit={sendEmailOtp}>
+                <input className="ui-field" type="email" value={emailForm.newEmail} onChange={(event) => setEmailForm((previous) => ({ ...previous, newEmail: event.target.value }))} placeholder="New email" />
+                <Button variant="gradient" icon="send" type="submit" disabled={saving === "email"}>
+                  {saving === "email" ? "Sending..." : "Send OTP"}
+                </Button>
+                <div className="inline-action-row settings-inline-field">
+                  <input className="ui-field" value={emailForm.otp} onChange={(event) => setEmailForm((previous) => ({ ...previous, otp: event.target.value }))} placeholder="OTP code" />
+                  <Button icon="check" onClick={verifyEmail} disabled={saving === "verify-email"}>
+                    {saving === "verify-email" ? "Verifying..." : "Verify"}
+                  </Button>
+                </div>
+              </form>
+            </Card>
+
+            <Card className="settings-card">
+              <SectionHeader title="Update Password" subtitle="Keep your account secure with a strong password." />
+              <form className="form-grid" onSubmit={updatePassword}>
+                <input className="ui-field" type="password" value={passwordForm.currentPassword} onChange={(event) => setPasswordForm((previous) => ({ ...previous, currentPassword: event.target.value }))} placeholder="Current password" />
+                <input className="ui-field" type="password" value={passwordForm.newPassword} onChange={(event) => setPasswordForm((previous) => ({ ...previous, newPassword: event.target.value }))} placeholder="New password" />
+                <input className="ui-field" type="password" value={passwordForm.confirmPassword} onChange={(event) => setPasswordForm((previous) => ({ ...previous, confirmPassword: event.target.value }))} placeholder="Confirm password" />
+                <Button variant="gradient" icon="check" type="submit" disabled={saving === "password"}>
+                  {saving === "password" ? "Updating..." : "Update Password"}
+                </Button>
+              </form>
+            </Card>
           </div>
 
-        </div>
+          <Card className="settings-card settings-danger-card">
+            <SectionHeader title="Danger Zone" subtitle="Delete your own account with password confirmation or email OTP." action={<StatusBadge status="Protected" tone="red" />} />
+            <form className="form-grid settings-danger-grid" onSubmit={deleteAccountWithPassword}>
+              <input className="ui-field" type="password" value={deleteForm.currentPassword} onChange={(event) => setDeleteForm((previous) => ({ ...previous, currentPassword: event.target.value }))} placeholder="Current password" />
+              <Button variant="danger" icon="trash" type="submit" disabled={saving === "delete"}>
+                {saving === "delete" ? "Deleting..." : "Delete Account"}
+              </Button>
+            </form>
+            <div className="settings-delete-otp-row">
+              <Button icon="send" onClick={requestDeleteOtp} disabled={saving === "delete-otp"}>
+                {saving === "delete-otp" ? "Sending..." : "Request Delete OTP"}
+              </Button>
+              <input className="ui-field" value={deleteForm.otp} onChange={(event) => setDeleteForm((previous) => ({ ...previous, otp: event.target.value }))} placeholder="Delete OTP" />
+              <Button variant="danger" icon="check" onClick={verifyDeleteOtp} disabled={saving === "verify-delete"}>
+                {saving === "verify-delete" ? "Deleting..." : "Verify & Delete"}
+              </Button>
+            </div>
+          </Card>
+        </main>
+
+        <aside className="settings-side">
+          <Card className="settings-side-card">
+            <SectionHeader title="Account Overview" action={<Icon name="settings" />} />
+            <div className="settings-account-metadata">
+              <span><strong>Role</strong>{roleLabel}</span>
+              <span><strong>Email</strong>{profile?.email || "Not available"}</span>
+              <span><strong>XP</strong>{Number(profile?.verifiedXp || 0).toLocaleString()}</span>
+              <span><strong>Interests</strong>{interests.length || 0}</span>
+            </div>
+          </Card>
+
+          <Card className="settings-side-card">
+            <SectionHeader title="Profile Completion" subtitle="Optional details can always be updated after signup." />
+            <div className="settings-check-list">
+              {completionItems.map((item) => (
+                <span key={item.label} className={item.done ? "done" : ""}>
+                  <Icon name={item.done ? "check" : "plus"} />
+                  {item.label}
+                </span>
+              ))}
+            </div>
+            <Button icon="user" onClick={() => navigate("/profile")}>Open Profile</Button>
+          </Card>
+
+          {profile?.moderationMessage ? (
+            <Card className="settings-side-card settings-moderation-card">
+              <SectionHeader title="Admin Message" action={<StatusBadge status={profile?.moderationStatus || "Message"} tone="orange" />} />
+              <p>{profile.moderationMessage}</p>
+            </Card>
+          ) : null}
+        </aside>
       </div>
-    </div>
+    </PageGrid>
   );
 }

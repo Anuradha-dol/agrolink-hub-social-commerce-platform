@@ -50,7 +50,7 @@ import {
 import { alpha } from "@mui/material/styles";
 import api from "/src/legacy/api";
 
-const backendBaseUrl = "http://localhost:9091";
+const backendBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:4041";
 
 // Reaction icon mapping
 const reactionIcons = {
@@ -765,7 +765,7 @@ export default function ProfilePage() {
         <HomeIcon />
       </IconButton>
       <Typography variant="h6" fontWeight={600} sx={{ color: "#2196f3" }}>
-        Bondly
+        AgroLink Hub
       </Typography>
     </Box>
             <Typography variant="subtitle1" sx={{ color: "#e91e63", fontWeight: 500 }}>

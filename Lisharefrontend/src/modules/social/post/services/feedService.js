@@ -16,9 +16,12 @@ export const feedService = {
   addComment: (postId, content) => axiosInstance.post(ENDPOINTS.feed.commentAdd(postId), { content }),
   addReply: (postId, parentCommentId, content) =>
     axiosInstance.post(ENDPOINTS.feed.commentReply(postId, parentCommentId), { content }),
+  updateComment: (commentId, content) => axiosInstance.put(ENDPOINTS.feed.commentUpdate(commentId), { content }),
+  deleteComment: (commentId) => axiosInstance.delete(ENDPOINTS.feed.commentDelete(commentId)),
   getComments: (postId) => axiosInstance.get(ENDPOINTS.feed.comments(postId)),
   react: (postId, type) => axiosInstance.post(ENDPOINTS.feed.reaction(postId), null, { params: { type } }),
   getReactions: (postId) => axiosInstance.get(ENDPOINTS.feed.reactionCounts(postId)),
+  getReactionUsers: (postId) => axiosInstance.get(ENDPOINTS.feed.reactionUsers(postId)),
   share: (postId, caption, options = {}) =>
     axiosInstance.post(ENDPOINTS.feed.share(postId), {
       caption,

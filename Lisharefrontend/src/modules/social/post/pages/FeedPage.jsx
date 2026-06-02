@@ -16,12 +16,21 @@ import { useAuth } from "/src/modules/platform/app/store";
 const CHAT_PRODUCT_NAME = "PulseChat";
 const VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov", ".m4v", ".ogg", ".avi"];
 const HASHTAG_PATTERN = /#[a-zA-Z0-9_]+/g;
-const STORY_CAPTION_EMOJIS = ["😊", "🔥", "💗", "✨", "👏", "😂"];
+const STORY_CAPTION_EMOJIS = ["\u{1F60A}", "\u{1F525}", "\u{1F497}", "\u{2728}", "\u{1F44F}", "\u{1F602}"];
 const STORY_REACTIONS = [
-  { key: "like", label: "Like", emoji: "👍" },
-  { key: "love", label: "Love", emoji: "💗" },
-  { key: "fire", label: "Fire", emoji: "🔥" },
-  { key: "wow", label: "Wow", emoji: "😮" }
+  { key: "like", label: "Like", emoji: "\u{1F44D}" },
+  { key: "love", label: "Love", emoji: "\u{1F497}" },
+  { key: "fire", label: "Fire", emoji: "\u{1F525}" },
+  { key: "wow", label: "Wow", emoji: "\u{1F62E}" }
+];
+const POST_REPORT_REASONS = [
+  { value: "CATEGORY_FAKE", label: "Fake or wrong category" },
+  { value: "UNRELATED_CATEGORY", label: "Post does not match selected category" },
+  { value: "VIOLENCE", label: "Violence or unsafe content" },
+  { value: "HATE_SPEECH", label: "Hate speech or harassment" },
+  { value: "SPAM", label: "Spam or scam" },
+  { value: "BUSINESS_ISSUE", label: "Business or product problem" },
+  { value: "OTHER", label: "Other reason" }
 ];
 
 function FeedIcon({ name, className = "" }) {
@@ -30,8 +39,20 @@ function FeedIcon({ name, className = "" }) {
     bolt: (
       <path d="M13 2 5 13h5l-1 9 8-11h-5z" />
     ),
+    sparkle: (
+      <>
+        <path d="M12 3.5 13.6 8 18 9.6 13.6 11.2 12 15.7 10.4 11.2 6 9.6 10.4 8 12 3.5z" />
+        <path d="M18.5 14.5 19.2 16.5 21.2 17.2 19.2 17.9 18.5 19.9 17.8 17.9 15.8 17.2 17.8 16.5 18.5 14.5z" />
+      </>
+    ),
     chat: (
       <path d="M4 5h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H9l-5 4v-4H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z" />
+    ),
+    stories: (
+      <>
+        <path d="M5 5.5h5.5a3 3 0 0 1 3 3V19a3 3 0 0 0-3-3H5z" />
+        <path d="M19 5.5h-5.5a3 3 0 0 0-3 3V19a3 3 0 0 1 3-3H19z" />
+      </>
     ),
     posts: (
       <>
@@ -119,6 +140,13 @@ function FeedIcon({ name, className = "" }) {
         <path d="M12 7.5V12l3 2" />
       </>
     ),
+    calendar: (
+      <>
+        <rect x="4" y="5.5" width="16" height="14" rx="2" />
+        <path d="M8 3.5v4M16 3.5v4M4 10h16" />
+        <path d="M8 13h3M13 13h3M8 16h3" />
+      </>
+    ),
     comment: (
       <path d="M5.5 17.4a7.5 7.5 0 1 1 3.1 2.1L4 20.2l1.5-2.8z" />
     ),
@@ -134,6 +162,7 @@ function FeedIcon({ name, className = "" }) {
         <path d="M19 10h-7a7 7 0 0 0-7 7v1" />
       </>
     ),
+
     trash: (
       <>
         <path d="M4 7h16" />
@@ -201,6 +230,11 @@ function storyOwnerName(story) {
   return `${first} ${last}`.trim() || "Unknown";
 }
 
+function isLiveStory(story) {
+  const type = String(story?.storyType || story?.type || "").toUpperCase();
+  return Boolean(story?.isLive || story?.live || story?.liveNow || type === "LIVE");
+}
+
 function extractAuthorId(item) {
   const candidates = [item?.authorId, item?.userId, item?.ownerId, item?.sharedById, item?.originalAuthorId];
   const resolved = candidates.find((value) => Number(value) > 0);
@@ -242,6 +276,31 @@ function formatTrendCount(count) {
   return String(numeric);
 }
 
+function trendBucketIndex(value) {
+  const date = new Date(value || Date.now());
+  if (Number.isNaN(date.getTime())) return -1;
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  start.setDate(start.getDate() - 6);
+  const itemDay = new Date(date);
+  itemDay.setHours(0, 0, 0, 0);
+  const index = Math.floor((itemDay.getTime() - start.getTime()) / (24 * 60 * 60 * 1000));
+  return index >= 0 && index < 7 ? index : -1;
+}
+
+function trendSharePercent(count, total) {
+  return total ? Math.round((Number(count || 0) / total) * 100) : 0;
+}
+
+function trendSparklinePoints(buckets = []) {
+  const max = Math.max(1, ...buckets.map((value) => Number(value || 0)));
+  return buckets.map((value, pointIndex) => {
+    const x = pointIndex * 10;
+    const y = 18 - (Number(value || 0) / max) * 14;
+    return `${x},${Math.max(4, Math.min(18, y)).toFixed(1)}`;
+  }).join(" ");
+}
+
 function extractHashtags(content = "") {
   return [...String(content || "").matchAll(HASHTAG_PATTERN)].map((match) => match[0]);
 }
@@ -279,6 +338,7 @@ export default function FeedPage() {
   const [feed, setFeed] = useState([]);
   const [commentsMap, setCommentsMap] = useState({});
   const [reactionsMap, setReactionsMap] = useState({});
+  const [reactionUsersMap, setReactionUsersMap] = useState({});
   const [savedPostIds, setSavedPostIds] = useState([]);
   const [savedPosts, setSavedPosts] = useState([]);
   const [suggestedUsers, setSuggestedUsers] = useState([]);
@@ -293,6 +353,7 @@ export default function FeedPage() {
   const [storySourceMode, setStorySourceMode] = useState("upload");
   const [storyFile, setStoryFile] = useState(null);
   const [storyCaption, setStoryCaption] = useState("");
+  const [storyPrivacy, setStoryPrivacy] = useState("public");
   const [storySourcePostId, setStorySourcePostId] = useState("");
   const [storyHours, setStoryHours] = useState("24");
   const [alsoAddStoryToFeed, setAlsoAddStoryToFeed] = useState(false);
@@ -302,6 +363,8 @@ export default function FeedPage() {
   const [storyReply, setStoryReply] = useState("");
   const [sendingStoryReply, setSendingStoryReply] = useState(false);
   const [sharingStory, setSharingStory] = useState(false);
+  const [reportDraft, setReportDraft] = useState({ postId: null, reason: "CATEGORY_FAKE", details: "" });
+  const [reportSubmitting, setReportSubmitting] = useState(false);
 
   const userId = Number(user?.userId || 0);
   const currentUserStoryName = `${user?.firstname || user?.firstName || ""} ${user?.lastName || user?.lastname || ""}`.trim()
@@ -337,10 +400,11 @@ export default function FeedPage() {
 
       const targetPostIds = [
         ...new Set(
-          feedList
-            .map((item) => (item.type === "SHARE" ? item.originalPostId : item.postId))
-            .filter((postId, index) => Number(postId) > 0 && !feedList[index]?.originalPostDeleted)
-            .map((postId) => Number(postId))
+          feedList.flatMap((item) => {
+            if (item?.originalPostDeleted) return [];
+            const postId = item.type === "SHARE" ? item.originalPostId : item.postId;
+            return Number(postId) > 0 ? [Number(postId)] : [];
+          })
         )
       ];
 
@@ -366,8 +430,20 @@ export default function FeedPage() {
         })
       );
 
+      const reactionUserEntries = await Promise.all(
+        targetPostIds.map(async (postId) => {
+          try {
+            const response = await feedService.getReactionUsers(postId);
+            return [postId, Array.isArray(response.data) ? response.data : []];
+          } catch {
+            return [postId, []];
+          }
+        })
+      );
+
       setCommentsMap(Object.fromEntries(commentEntries));
       setReactionsMap(Object.fromEntries(reactionEntries));
+      setReactionUsersMap(Object.fromEntries(reactionUserEntries));
     } catch (loadError) {
       setError(loadError?.response?.data?.message || "Failed to load feed");
     } finally {
@@ -459,11 +535,40 @@ export default function FeedPage() {
     }
   };
 
+  const onUpdateComment = async (postId, commentId, content) => {
+    try {
+      await feedService.updateComment(commentId, content);
+      const response = await feedService.getComments(postId);
+      setCommentsMap((prev) => ({ ...prev, [postId]: response.data || [] }));
+      pushToast("Comment updated", "success");
+    } catch {
+      pushToast("Failed to update comment", "error");
+    }
+  };
+
+  const onDeleteComment = async (postId, commentId) => {
+    try {
+      await feedService.deleteComment(commentId);
+      const response = await feedService.getComments(postId);
+      setCommentsMap((prev) => ({ ...prev, [postId]: response.data || [] }));
+      pushToast("Comment deleted", "success");
+    } catch {
+      pushToast("Failed to delete comment", "error");
+    }
+  };
+
   const onReact = async (postId, type) => {
     try {
       await feedService.react(postId, type);
-      const response = await feedService.getReactions(postId);
-      setReactionsMap((prev) => ({ ...prev, [postId]: response.data || {} }));
+      const [countsResponse, usersResponse] = await Promise.all([
+        feedService.getReactions(postId),
+        feedService.getReactionUsers(postId)
+      ]);
+      setReactionsMap((prev) => ({ ...prev, [postId]: countsResponse.data || {} }));
+      setReactionUsersMap((prev) => ({
+        ...prev,
+        [postId]: Array.isArray(usersResponse.data) ? usersResponse.data : []
+      }));
     } catch {
       pushToast("Failed to react", "error");
     }
@@ -606,14 +711,25 @@ export default function FeedPage() {
     }, 120);
   }, []);
 
-  const onReport = async (postId) => {
-    const reason = window.prompt("Why are you reporting this post?");
-    if (!reason || !reason.trim()) return;
+  const onReport = (postId) => {
+    setReportDraft({ postId, reason: "CATEGORY_FAKE", details: "" });
+  };
+
+  const submitPostReport = async (event) => {
+    event.preventDefault();
+    const reasonLabel = POST_REPORT_REASONS.find((item) => item.value === reportDraft.reason)?.label || reportDraft.reason;
+    const details = reportDraft.details.trim();
+    const reasonText = details ? `${reasonLabel}: ${details}` : reasonLabel;
+    if (!reportDraft.postId || !reasonText.trim()) return;
+    setReportSubmitting(true);
     try {
-      await feedService.reportPost(postId, reason.trim());
+      await feedService.reportPost(reportDraft.postId, reasonText.trim());
+      setReportDraft({ postId: null, reason: "CATEGORY_FAKE", details: "" });
       pushToast("Post reported", "success");
     } catch {
       pushToast("Failed to report post", "error");
+    } finally {
+      setReportSubmitting(false);
     }
   };
 
@@ -711,23 +827,27 @@ export default function FeedPage() {
 
   const trendingHashtags = useMemo(() => {
     const counter = new Map();
-    feed.forEach((item) => {
-      extractHashtags(item.content).forEach((tag) => {
+    const addTags = (content, createdAt) => {
+      extractHashtags(content).forEach((tag) => {
         const key = tag.toLowerCase();
-        const existing = counter.get(key) || { tag, count: 0 };
+        const existing = counter.get(key) || { tag, count: 0, buckets: Array.from({ length: 7 }, () => 0) };
         existing.count += 1;
+        const bucketIndex = trendBucketIndex(createdAt);
+        if (bucketIndex >= 0) existing.buckets[bucketIndex] += 1;
         counter.set(key, existing);
       });
-    });
-    stories.forEach((story) => {
-      extractHashtags(story.caption).forEach((tag) => {
-        const key = tag.toLowerCase();
-        const existing = counter.get(key) || { tag, count: 0 };
-        existing.count += 1;
-        counter.set(key, existing);
-      });
-    });
-    return [...counter.values()].sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag));
+    };
+
+    feed.forEach((item) => addTags(item.content, item.createdAt || item.sharedAt));
+    stories.forEach((story) => addTags(story.caption, story.createdAt));
+
+    const sorted = [...counter.values()].sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag));
+    const totalUses = sorted.reduce((sum, item) => sum + Number(item.count || 0), 0);
+    return sorted.map((item) => ({
+      ...item,
+      sharePercent: trendSharePercent(item.count, totalUses),
+      sparklinePoints: trendSparklinePoints(item.buckets)
+    }));
   }, [feed, stories]);
 
   const suggestions = useMemo(() => {
@@ -753,6 +873,11 @@ export default function FeedPage() {
     [trendPanelOpen, trendVisibleCount, trendingHashtags]
   );
 
+  const maxTrendCount = useMemo(
+    () => Math.max(1, ...trendingHashtags.map((item) => Number(item.count || 0))),
+    [trendingHashtags]
+  );
+
   const hasMoreTrends = trendPanelOpen && trendVisibleCount < trendingHashtags.length;
 
   const savedFeedPosts = useMemo(
@@ -768,10 +893,18 @@ export default function FeedPage() {
   const selectedStory = viewingStoryIndex >= 0 ? stories[viewingStoryIndex] : null;
   const selectedStoryIsOwn = Boolean(selectedStory && userId && Number(selectedStory.ownerUserId) === userId);
 
+  useEffect(() => {
+    if (!selectedStory) return;
+    window.setTimeout(() => {
+      document.querySelector(".story-viewer-overlay")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 40);
+  }, [selectedStory]);
+
   const resetStoryComposer = useCallback(() => {
     setStorySourceMode("upload");
     setStoryFile(null);
     setStoryCaption("");
+    setStoryPrivacy("public");
     setStorySourcePostId("");
     setStoryHours("24");
     setAlsoAddStoryToFeed(false);
@@ -782,6 +915,23 @@ export default function FeedPage() {
     if (creatingStory) return;
     resetStoryComposer();
     setStoryComposerOpen(false);
+  };
+
+  const saveStoryDraft = () => {
+    if (creatingStory) return;
+    try {
+      window.localStorage.setItem("lishare-story-draft", JSON.stringify({
+        storySourceMode,
+        storyCaption,
+        storySourcePostId,
+        storyHours,
+        alsoAddStoryToFeed,
+        savedAt: new Date().toISOString()
+      }));
+      pushToast("Story draft saved", "success");
+    } catch {
+      pushToast("Failed to save story draft", "error");
+    }
   };
 
   const appendStoryCaptionToken = (token) => {
@@ -825,6 +975,8 @@ export default function FeedPage() {
         formData.append("caption", trimmedCaption);
       }
       formData.append("expiresInHours", storyHours || "24");
+      formData.append("privacy", storyPrivacy);
+      formData.append("notifyFollowers", storyPrivacy === "private" ? "false" : "true");
 
       if (storySourceMode === "upload") {
         if (!storyFile) {
@@ -843,27 +995,29 @@ export default function FeedPage() {
       await storyService.createStory(formData);
 
       let feedPublished = false;
-      let feedPublishFailed = false;
+      let feedPublishFailed = "";
       if (shouldAddToFeed) {
         try {
           const feedFormData = new FormData();
           const isVideoFeedItem = Boolean(storyFeedFile?.type?.startsWith("video"));
           feedFormData.append("content", trimmedCaption || (isVideoFeedItem ? "Shared a reel" : "Shared a photo"));
+          feedFormData.append("category", "GENERAL");
           feedFormData.append("image", storyFeedFile);
           await feedService.createPost(feedFormData);
           feedPublished = true;
-        } catch {
-          feedPublishFailed = true;
+        } catch (feedErrorResponse) {
+          feedPublishFailed = feedErrorResponse?.response?.data?.message || feedErrorResponse?.response?.data || "Feed publish failed";
         }
       }
 
       resetStoryComposer();
       setStoryComposerOpen(false);
       if (feedPublishFailed) {
-        pushToast("Story published, but feed publish failed", "error");
+        pushToast(`Story published, but feed publish failed: ${feedPublishFailed}`, "error");
       } else {
         pushToast(feedPublished ? "Story published and added to feed" : "Story published", "success");
       }
+      window.dispatchEvent(new Event("lishare-notifications-refresh"));
       await Promise.all([loadStories(), feedPublished ? loadFeed() : Promise.resolve()]);
     } catch (errorResponse) {
       pushToast(errorResponse?.response?.data?.message || "Failed to create story", "error");
@@ -964,10 +1118,13 @@ export default function FeedPage() {
             item={item}
             comments={normalizedMapPostId ? (commentsMap[normalizedMapPostId] || []) : []}
             reactions={normalizedMapPostId ? (reactionsMap[normalizedMapPostId] || {}) : {}}
+            reactionUsers={normalizedMapPostId ? (reactionUsersMap[normalizedMapPostId] || []) : []}
             saved={normalizedMapPostId ? savedPostIds.includes(normalizedMapPostId) : false}
             currentUserId={userId}
             currentUserName={currentUserStoryName}
             onComment={onComment}
+            onUpdateComment={onUpdateComment}
+            onDeleteComment={onDeleteComment}
             onReact={onReact}
             onShare={onShare}
             onDelete={onDelete}
@@ -992,7 +1149,7 @@ export default function FeedPage() {
       <section className="premium-feed-banner">
         <div className="premium-feed-banner-left">
           <div>
-            <h2>Bondly Social Feed</h2>
+            <h2>AgroLink Hub Feed</h2>
             <p>
               Premium social workspace with
               clean posts and reels flow.
@@ -1021,7 +1178,10 @@ export default function FeedPage() {
           <section className="feed-stories-card">
             <header className="feed-section-head">
               <div>
-                <h3>Stories</h3>
+                <h3>
+                  <FeedIcon name="stories" className="story-section-icon" />
+                  Stories
+                </h3>
                 <p>Manual stories only. Replies are delivered to {CHAT_PRODUCT_NAME}.</p>
               </div>
               <div className="row-actions">
@@ -1060,7 +1220,7 @@ export default function FeedPage() {
                       <img src={toMediaUrl(story.mediaUrl)} alt={storyOwnerName(story)} />
                     )}
                   </span>
-                  {index === 0 ? <span className="story-live-badge">LIVE</span> : null}
+                  {isLiveStory(story) ? <span className="story-live-badge">LIVE</span> : null}
                   <small>{storyOwnerName(story)}</small>
                 </button>
               ))}
@@ -1094,17 +1254,19 @@ export default function FeedPage() {
             <main className="feed-main-column">
               <PostComposer onSubmit={onCreatePost} submitting={submittingPost} />
 
-              {activeMode === "posts"
-                ? renderFeedCards(
-                  posts,
-                  selectedHashtag ? `No posts for ${selectedHashtag}` : "No posts yet",
-                  "Posts section shows image/text posts only."
-                )
-                : renderFeedCards(
-                  reels,
-                  selectedHashtag ? `No reels for ${selectedHashtag}` : "No reels yet",
-                  "Reels section shows video posts only."
-                )}
+              <div className="feed-post-scroll">
+                {activeMode === "posts"
+                  ? renderFeedCards(
+                    posts,
+                    selectedHashtag ? `No posts for ${selectedHashtag}` : "No posts yet",
+                    "Posts section shows image/text posts only."
+                  )
+                  : renderFeedCards(
+                    reels,
+                    selectedHashtag ? `No reels for ${selectedHashtag}` : "No reels yet",
+                    "Reels section shows video posts only."
+                  )}
+              </div>
             </main>
           </div>
         </div>
@@ -1118,19 +1280,27 @@ export default function FeedPage() {
             </header>
             <div className="trend-list">
               {trendingHashtags.length === 0 ? <p className="muted">No hashtags yet.</p> : null}
-              {visibleTrendingHashtags.slice(0, trendPanelOpen ? visibleTrendingHashtags.length : 5).map(({ tag, count }, index) => (
+              {visibleTrendingHashtags.slice(0, trendPanelOpen ? visibleTrendingHashtags.length : 5).map(({ tag, count, sharePercent, sparklinePoints }, index) => (
                 <button
                   key={tag}
                   type="button"
                   className={`trend-row ${index === 0 ? "featured" : ""} ${selectedHashtag.toLowerCase() === tag.toLowerCase() ? "active" : ""}`}
                   onClick={() => selectHashtag(tag)}
-                  title={`${count} use${count === 1 ? "" : "s"}`}
+                  title={`${count} use${count === 1 ? "" : "s"} - ${sharePercent}% of hashtag activity`}
                 >
-                  <span className="trend-dot-indicator" />
-                  <span className="trend-tag-text">{tag}</span>
-                  <span className="trend-count">
-                    {formatTrendCount(count)} posts
-                    <svg className="trend-wave-icon" viewBox="0 0 60 20" aria-hidden="true"><polyline points="0,14 10,6 20,14 30,6 40,14 50,6 60,14" /></svg>
+                  <span className="trend-hash-badge">
+                    <FeedIcon name="hashtag" />
+                  </span>
+                  <span className="trend-copy">
+                    <span className="trend-tag-text">{tag}</span>
+                    <span className="trend-count">{formatTrendCount(count)} uses</span>
+                  </span>
+                  <span className="trend-growth">{sharePercent}%</span>
+                  <svg className="trend-mini-chart" viewBox="0 0 60 22" aria-hidden="true">
+                    <polyline points={sparklinePoints} />
+                  </svg>
+                  <span className="trend-analysis-bar" aria-hidden="true">
+                    <span style={{ width: `${Math.max(12, (Number(count || 0) / maxTrendCount) * 100)}%` }} />
                   </span>
                 </button>
               ))}
@@ -1196,18 +1366,10 @@ export default function FeedPage() {
               }}
               aria-label="Explore Reels"
             >
-              {reels[0]?.imageUrl ? (
-                <video
-                  className="rail-explore-thumb"
-                  src={toMediaUrl(reels[0].imageUrl)}
-                  muted
-                  playsInline
-                />
-              ) : (
-                <div className="rail-explore-thumb-placeholder">
-                  <span>▶</span>
-                </div>
-              )}
+              <div className="rail-explore-thumb-placeholder">
+                <FeedIcon name="play" />
+                <span>Open reels</span>
+              </div>
             </button>
           </section>
 
@@ -1248,7 +1410,23 @@ export default function FeedPage() {
         <div className="story-create-overlay" onClick={closeStoryComposer}>
           <section className="story-create-card" onClick={(event) => event.stopPropagation()}>
             <header className="story-create-head">
-              <h3>Create Story</h3>
+              <div className="story-create-title-group">
+                <span className="story-create-title-icon">
+                  <FeedIcon name="sparkle" />
+                </span>
+                <div className="story-create-title-copy">
+                  <h3>Create Story</h3>
+                  <p>Share your moments, inspire the world</p>
+                </div>
+              </div>
+              <div className="story-create-head-art" aria-hidden="true">
+                <span className="story-create-art-card">
+                  <FeedIcon name="posts" />
+                </span>
+                <span className="story-create-art-play">
+                  <FeedIcon name="play" />
+                </span>
+              </div>
               <button type="button" className="story-create-close" onClick={closeStoryComposer} aria-label="Close create story">
                 <FeedIcon name="close" />
               </button>
@@ -1293,9 +1471,9 @@ export default function FeedPage() {
                   </span>
                   <strong>{storyFile ? storyFile.name : "Choose image or video"}</strong>
                   <small>Drag & drop or click to browse</small>
-                  <em>JPG, PNG, MP4 or MOV · Max 100MB</em>
+                  <em>JPG, PNG, MP4 or MOV - Max 100MB</em>
                   </label>
-                  <label className="story-create-feed-toggle">
+                  <label className={`story-create-feed-toggle ${alsoAddStoryToFeed ? "active" : ""}`}>
                     <input
                       type="checkbox"
                       checked={alsoAddStoryToFeed}
@@ -1357,10 +1535,23 @@ export default function FeedPage() {
                     className={storyHours === hours ? "active" : ""}
                     onClick={() => setStoryHours(hours)}
                   >
+                    <FeedIcon name="clock" />
                     {hours}h
                   </button>
                 ))}
               </div>
+
+              <label className="story-create-privacy">
+                <span>
+                  <strong>Privacy</strong>
+                  <small>Choose who can view this story.</small>
+                </span>
+                <select value={storyPrivacy} onChange={(event) => setStoryPrivacy(event.target.value)}>
+                  <option value="public">Public</option>
+                  <option value="friends">Friends</option>
+                  <option value="private">Only me</option>
+                </select>
+              </label>
 
               <div className="story-create-body">
                 <div className="story-create-fields">
@@ -1408,7 +1599,7 @@ export default function FeedPage() {
                     <span>{currentUserStoryName.slice(0, 1).toUpperCase()}</span>
                     <div>
                       <strong>{currentUserStoryName}</strong>
-                      <small>{storyHours}h</small>
+                      <small>{storyHours}h - {storyPrivacy}</small>
                     </div>
                   </header>
                   <div className="story-phone-media">
@@ -1433,16 +1624,62 @@ export default function FeedPage() {
               </div>
 
               <footer className="story-create-footer">
-                <button className="story-create-cancel" type="button" onClick={closeStoryComposer} disabled={creatingStory}>
+                <button className="story-create-cancel story-draft-btn" type="button" onClick={closeStoryComposer} disabled={creatingStory}>
+                  <FeedIcon name="close" />
                   Cancel
                 </button>
-                <button className="story-create-publish" type="submit" disabled={creatingStory}>
+                <button className="story-create-publish story-schedule-btn" type="submit" disabled={creatingStory}>
                   <FeedIcon name="paperPlane" />
                   {creatingStory ? "Publishing..." : "Publish Story"}
                 </button>
               </footer>
             </form>
           </section>
+        </div>,
+        document.querySelector(".shell.shell-home-theme") || document.querySelector(".shell") || document.body
+      ) : null}
+
+      {reportDraft.postId && typeof document !== "undefined" ? createPortal(
+        <div className="feed-modal-overlay report-dialog-overlay" onClick={() => setReportDraft({ postId: null, reason: "CATEGORY_FAKE", details: "" })}>
+          <form className="feed-modal-card report-dialog-card" onSubmit={submitPostReport} onClick={(event) => event.stopPropagation()}>
+            <header className="reaction-users-head">
+              <div>
+                <h3>Report Post</h3>
+                <p>Choose the real reason so admin can review it fairly.</p>
+              </div>
+              <button
+                type="button"
+                className="share-panel-close"
+                onClick={() => setReportDraft({ postId: null, reason: "CATEGORY_FAKE", details: "" })}
+                aria-label="Close report dialog"
+              >
+                <FeedIcon name="close" />
+              </button>
+            </header>
+            <label className="report-dialog-field">
+              Reason
+              <select
+                value={reportDraft.reason}
+                onChange={(event) => setReportDraft((previous) => ({ ...previous, reason: event.target.value }))}
+              >
+                {POST_REPORT_REASONS.map((reason) => (
+                  <option key={reason.value} value={reason.value}>{reason.label}</option>
+                ))}
+              </select>
+            </label>
+            <label className="report-dialog-field">
+              Details
+              <textarea
+                rows={5}
+                value={reportDraft.details}
+                onChange={(event) => setReportDraft((previous) => ({ ...previous, details: event.target.value }))}
+                placeholder="Example: post category says News, but the content is unrelated / spam / unsafe..."
+              />
+            </label>
+            <button className="btn btn-primary" type="submit" disabled={reportSubmitting}>
+              {reportSubmitting ? "Sending..." : "Send Report"}
+            </button>
+          </form>
         </div>,
         document.querySelector(".shell.shell-home-theme") || document.querySelector(".shell") || document.body
       ) : null}
