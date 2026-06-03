@@ -3,6 +3,8 @@ package com.socialApp.Lishare.modules.platform.common.enums;
 public enum Role{
     ROLE_USER,
     ROLE_ADMIN,
-    ROLE_BUSINESS
+    ROLE_BUSINESS,
+    ROLE_FARMER,
+    ROLE_CREATOR
 }
 

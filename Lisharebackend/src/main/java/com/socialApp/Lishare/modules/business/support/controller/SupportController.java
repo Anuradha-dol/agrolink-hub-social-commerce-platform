@@ -21,7 +21,7 @@ public class SupportController {
     private final SupportService supportService;
 
     // ================= USER =================
-    @PreAuthorize("hasAnyRole('USER','BUSINESS')")
+    @PreAuthorize("hasAnyRole('USER','BUSINESS','FARMER','CREATOR')")
     @PostMapping
     public ResponseEntity<SupportQuestion> createQuestion(
             @AuthenticationPrincipal User user,
@@ -33,7 +33,7 @@ public class SupportController {
         return ResponseEntity.ok(supportService.createQuestion(question));
     }
 
-    @PreAuthorize("hasAnyRole('USER','BUSINESS')")
+    @PreAuthorize("hasAnyRole('USER','BUSINESS','FARMER','CREATOR')")
     @GetMapping("/my")
     public ResponseEntity<List<SupportQuestion>> getMyQuestions(
             @AuthenticationPrincipal User user) {
@@ -41,7 +41,7 @@ public class SupportController {
         return ResponseEntity.ok(supportService.getUserQuestions(user.getUserId()));
     }
 
-    @PreAuthorize("hasAnyRole('USER','BUSINESS')")
+    @PreAuthorize("hasAnyRole('USER','BUSINESS','FARMER','CREATOR')")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteQuestion(
             @AuthenticationPrincipal User user,

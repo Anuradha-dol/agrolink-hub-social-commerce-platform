@@ -20,7 +20,7 @@ public class ProductController {
 
     private final ProductService service;
 
-    @PreAuthorize("hasRole('BUSINESS')")
+    @PreAuthorize("hasAnyRole('BUSINESS','FARMER')")
     @PostMapping
     public ResponseEntity<ApiResponse<ProductResponse>> create(
             @AuthenticationPrincipal User user,
@@ -29,7 +29,7 @@ public class ProductController {
         return ResponseEntity.ok(ApiResponse.success("Product created", service.createProduct(user.getUserId(), request)));
     }
 
-    @PreAuthorize("hasRole('BUSINESS')")
+    @PreAuthorize("hasAnyRole('BUSINESS','FARMER')")
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<ProductResponse>> update(
             @AuthenticationPrincipal User user,
@@ -39,7 +39,7 @@ public class ProductController {
         return ResponseEntity.ok(ApiResponse.success("Product updated", service.updateProduct(user.getUserId(), id, request)));
     }
 
-    @PreAuthorize("hasRole('BUSINESS')")
+    @PreAuthorize("hasAnyRole('BUSINESS','FARMER')")
     @DeleteMapping("/{id}")
     public ResponseEntity<ApiResponse<Void>> delete(
             @AuthenticationPrincipal User user,

@@ -42,7 +42,7 @@ public class OrderController {
         );
     }
 
-    @PreAuthorize("hasRole('BUSINESS')")
+    @PreAuthorize("hasAnyRole('BUSINESS','FARMER')")
     @GetMapping("/business")
     public ResponseEntity<ApiResponse<Page<OrderResponse>>> businessOrders(
             @AuthenticationPrincipal User user,
@@ -64,7 +64,7 @@ public class OrderController {
         );
     }
 
-    @PreAuthorize("hasRole('BUSINESS')")
+    @PreAuthorize("hasAnyRole('BUSINESS','FARMER')")
     @PutMapping("/{orderId}/status")
     public ResponseEntity<ApiResponse<OrderResponse>> updateStatus(
             @AuthenticationPrincipal User user,

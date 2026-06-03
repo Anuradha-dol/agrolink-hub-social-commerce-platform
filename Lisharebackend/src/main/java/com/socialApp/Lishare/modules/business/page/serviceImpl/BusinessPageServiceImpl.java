@@ -78,8 +78,8 @@ public class BusinessPageServiceImpl implements BusinessPageService {
         User owner = userRepo.findById(ownerId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        if (owner.getRole() != Role.ROLE_BUSINESS) {
-            throw new RuntimeException("Only business accounts can create business pages");
+        if (owner.getRole() != Role.ROLE_BUSINESS && owner.getRole() != Role.ROLE_FARMER) {
+            throw new RuntimeException("Only business or farmer seller accounts can create business pages");
         }
         return owner;
     }

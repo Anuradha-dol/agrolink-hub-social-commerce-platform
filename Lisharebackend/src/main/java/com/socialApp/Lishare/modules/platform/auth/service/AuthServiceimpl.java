@@ -60,11 +60,7 @@ public class AuthServiceimpl implements AuthService {
             user.setPhoneNumber(clean(registerRequest.phoneNumber()));
             user.setBackupEmail(clean(registerRequest.tempEmail()));
             applyOptionalProfileFields(user, registerRequest);
-            user.setRole(
-                    registerRequest.role() != null
-                            ? registerRequest.role()
-                            : Role.ROLE_USER
-            );
+            user.setRole(resolveSignupRole(registerRequest.role()));
 
             user.setIsVerified(false);
 
@@ -79,11 +75,7 @@ public class AuthServiceimpl implements AuthService {
             user.setPhoneNumber(clean(registerRequest.phoneNumber()));
             user.setBackupEmail(clean(registerRequest.tempEmail()));
             applyOptionalProfileFields(user, registerRequest);
-            user.setRole(
-                    registerRequest.role() != null
-                            ? registerRequest.role()
-                            : Role.ROLE_USER
-            );
+            user.setRole(resolveSignupRole(registerRequest.role()));
 
             user.setIsVerified(false);
         }
@@ -144,6 +136,7 @@ public class AuthServiceimpl implements AuthService {
                 .email(savedUser.getEmail())
                 .phoneNumber(savedUser.getPhoneNumber())
                 .tempEmail(savedUser.getBackupEmail())
+                .role(savedUser.getRole())
                 .message("User registered successfully! Verification email sent.")
                 .success(true)
                 .build();
@@ -164,6 +157,16 @@ public class AuthServiceimpl implements AuthService {
         user.setWebsite(clean(registerRequest.website()));
         user.setInterests(clean(registerRequest.interests()));
         user.setHobbies(clean(registerRequest.hobbies()));
+    }
+
+    private Role resolveSignupRole(Role requestedRole) {
+        if (requestedRole == null) {
+            return Role.ROLE_USER;
+        }
+        return switch (requestedRole) {
+            case ROLE_USER, ROLE_BUSINESS, ROLE_FARMER, ROLE_CREATOR -> requestedRole;
+            case ROLE_ADMIN -> throw new RuntimeException("Admin accounts cannot be created from public signup");
+        };
     }
 
 

@@ -4,7 +4,14 @@ import { adminService } from "../services/adminService";
 import LoadingState from "/src/modules/platform/common/components/LoadingState";
 import { useToast } from "/src/modules/platform/common/hooks/useToast";
 
-const ROLES = ["ROLE_USER", "ROLE_BUSINESS", "ROLE_ADMIN"];
+const ROLES = ["ROLE_USER", "ROLE_BUSINESS", "ROLE_FARMER", "ROLE_CREATOR", "ROLE_ADMIN"];
+const ROLE_LABELS = {
+  ROLE_USER: "User",
+  ROLE_BUSINESS: "Business Seller",
+  ROLE_FARMER: "Farmer Seller",
+  ROLE_CREATOR: "Creator",
+  ROLE_ADMIN: "Admin"
+};
 const MODERATION_STATUSES = ["ACTIVE", "WARNED", "SUSPENDED"];
 const REPORT_STATUSES = ["OPEN", "REVIEWED", "RESOLVED", "REJECTED"];
 const REPORT_STATUS_LABELS = {
@@ -151,7 +158,7 @@ export default function AdminDashboardPage() {
   };
 
   const roleBreakdown = useMemo(() => {
-    const counts = { ROLE_USER: 0, ROLE_BUSINESS: 0, ROLE_ADMIN: 0 };
+    const counts = Object.fromEntries(ROLES.map((role) => [role, 0]));
     users.forEach((item) => {
       counts[item.role] = (counts[item.role] || 0) + 1;
     });
@@ -160,18 +167,14 @@ export default function AdminDashboardPage() {
 
   const routeRoleFilter = useMemo(() => {
     if (pathname.includes("/admin/business-users")) return "ROLE_BUSINESS";
+    if (pathname.includes("/admin/farmers")) return "ROLE_FARMER";
+    if (pathname.includes("/admin/creators")) return "ROLE_CREATOR";
     if (pathname.includes("/admin/admins")) return "ROLE_ADMIN";
     if (pathname.includes("/admin/users")) return "ROLE_USER";
     return "";
   }, [pathname]);
 
-  const userSectionTitle = routeRoleFilter === "ROLE_BUSINESS"
-    ? "Business Users"
-    : routeRoleFilter === "ROLE_ADMIN"
-      ? "Admins"
-      : routeRoleFilter === "ROLE_USER"
-        ? "Users"
-        : "Users";
+  const userSectionTitle = routeRoleFilter ? `${ROLE_LABELS[routeRoleFilter] || "User"} Accounts` : "Users";
 
   const filteredUsers = useMemo(() => {
     const query = userSearch.trim().toLowerCase();
@@ -220,6 +223,8 @@ export default function AdminDashboardPage() {
       <section className="admin-role-grid">
         <Link className={`card admin-role-card ${routeRoleFilter === "ROLE_USER" ? "active" : ""}`} to="/admin/users" id="admin-users-role"><span>Users</span><strong>{roleBreakdown.ROLE_USER || 0}</strong><p>Regular community accounts</p></Link>
         <Link className={`card admin-role-card ${routeRoleFilter === "ROLE_BUSINESS" ? "active" : ""}`} to="/admin/business-users" id="admin-business-users"><span>Business Users</span><strong>{roleBreakdown.ROLE_BUSINESS || 0}</strong><p>Marketplace and seller accounts</p></Link>
+        <Link className={`card admin-role-card ${routeRoleFilter === "ROLE_FARMER" ? "active" : ""}`} to="/admin/farmers" id="admin-farmer-users"><span>Farmer Sellers</span><strong>{roleBreakdown.ROLE_FARMER || 0}</strong><p>Farm produce and livestock sellers</p></Link>
+        <Link className={`card admin-role-card ${routeRoleFilter === "ROLE_CREATOR" ? "active" : ""}`} to="/admin/creators" id="admin-creator-users"><span>Creators</span><strong>{roleBreakdown.ROLE_CREATOR || 0}</strong><p>Content creator accounts</p></Link>
         <Link className={`card admin-role-card ${routeRoleFilter === "ROLE_ADMIN" ? "active" : ""}`} to="/admin/admins" id="admin-admin-users"><span>Admins</span><strong>{roleBreakdown.ROLE_ADMIN || 0}</strong><p>Platform command accounts</p></Link>
       </section>
 
@@ -255,7 +260,7 @@ export default function AdminDashboardPage() {
                     <select value={user.role} onChange={(e) => updateRole(user.userId, e.target.value)}>
                       {ROLES.map((role) => (
                         <option key={role} value={role}>
-                          {role.replace("ROLE_", "")}
+                          {ROLE_LABELS[role] || role.replace("ROLE_", "")}
                         </option>
                       ))}
                     </select>

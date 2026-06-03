@@ -55,7 +55,7 @@ export default function AppRoutes() {
           <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="/calendar" element={<CalendarPage />} />
 
-          <Route element={<RoleRoute allowedRoles={["ROLE_BUSINESS"]} />}>
+          <Route element={<RoleRoute allowedRoles={["ROLE_BUSINESS", "ROLE_FARMER"]} />}>
             <Route path="/business" element={<BusinessPage />} />
           </Route>
 
@@ -63,6 +63,8 @@ export default function AppRoutes() {
             <Route path="/admin" element={<AdminDashboardPage />} />
             <Route path="/admin/users" element={<AdminDashboardPage />} />
             <Route path="/admin/business-users" element={<AdminDashboardPage />} />
+            <Route path="/admin/farmers" element={<AdminDashboardPage />} />
+            <Route path="/admin/creators" element={<AdminDashboardPage />} />
             <Route path="/admin/admins" element={<AdminDashboardPage />} />
             <Route path="/admin/moderation" element={<AdminDashboardPage />} />
             <Route path="/admin/support" element={<AdminDashboardPage />} />

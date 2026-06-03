@@ -49,7 +49,7 @@ export default function OrdersPage() {
   const [modal, setModal] = useState(null);
   const [busy, setBusy] = useState("");
 
-  const isBusiness = role === "ROLE_BUSINESS";
+  const isBusiness = role === "ROLE_BUSINESS" || role === "ROLE_FARMER";
 
   const load = async () => {
     setLoading(true);

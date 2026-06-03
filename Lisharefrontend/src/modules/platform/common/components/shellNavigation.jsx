@@ -32,13 +32,13 @@ export const NAVIGATION_SECTIONS = [
     title: "Private",
     items: [
       { to: "/settings", label: "Settings", icon: "settings" },
-      { to: "/support", label: "Problem Reports", icon: "support", roles: ["ROLE_USER", "ROLE_BUSINESS"] }
+      { to: "/support", label: "Problem Reports", icon: "support", roles: ["ROLE_USER", "ROLE_BUSINESS", "ROLE_FARMER", "ROLE_CREATOR"] }
     ]
   },
   {
     title: "Business",
     items: [
-      { to: "/business", label: "Business Page", icon: "business", roles: ["ROLE_BUSINESS"] }
+      { to: "/business", label: "Business Page", icon: "business", roles: ["ROLE_BUSINESS", "ROLE_FARMER"] }
     ]
   },
   {
@@ -47,6 +47,8 @@ export const NAVIGATION_SECTIONS = [
       { to: "/admin", label: "Command Center", icon: "admin", roles: ["ROLE_ADMIN"] },
       { to: "/admin/users", label: "Users", icon: "profile", roles: ["ROLE_ADMIN"] },
       { to: "/admin/business-users", label: "Business Users", icon: "business", roles: ["ROLE_ADMIN"] },
+      { to: "/admin/farmers", label: "Farmer Sellers", icon: "marketplace", roles: ["ROLE_ADMIN"] },
+      { to: "/admin/creators", label: "Creators", icon: "analytics", roles: ["ROLE_ADMIN"] },
       { to: "/admin/admins", label: "Admins", icon: "admin", roles: ["ROLE_ADMIN"] },
       { to: "/admin/moderation", label: "Content Moderation", icon: "analytics", roles: ["ROLE_ADMIN"] },
       { to: "/admin/support", label: "Support Tickets", icon: "support", roles: ["ROLE_ADMIN"] }
@@ -70,6 +72,8 @@ export const PAGE_META = [
   { key: "/business", title: "Business", subtitle: "Page management and product publishing" },
   { key: "/admin/users", title: "Admin Users", subtitle: "Regular account management and deletion notices" },
   { key: "/admin/business-users", title: "Business Users", subtitle: "Seller and marketplace account management" },
+  { key: "/admin/farmers", title: "Farmer Sellers", subtitle: "Farm seller account management" },
+  { key: "/admin/creators", title: "Creators", subtitle: "Creator account management" },
   { key: "/admin/admins", title: "Admin Accounts", subtitle: "Platform command user management" },
   { key: "/admin/moderation", title: "Content Moderation", subtitle: "Reported content review and fair outcomes" },
   { key: "/admin/support", title: "Support Tickets", subtitle: "Problem reports and admin responses" },

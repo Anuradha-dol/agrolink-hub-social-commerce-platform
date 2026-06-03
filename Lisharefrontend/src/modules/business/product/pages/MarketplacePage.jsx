@@ -80,7 +80,7 @@ export default function MarketplacePage() {
   const [imagePreview, setImagePreview] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const isBusiness = role === "ROLE_BUSINESS";
+  const isBusiness = role === "ROLE_BUSINESS" || role === "ROLE_FARMER";
 
   const loadProducts = async () => {
     setLoading(true);

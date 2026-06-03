@@ -87,7 +87,7 @@ public class UserController {
     }
 
     // Get home/dashboard
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasAnyRole('USER','BUSINESS','FARMER','CREATOR')")
     @GetMapping("/home")
     public ResponseEntity<UserDto.UserHomeDto> getHome(
             @AuthenticationPrincipal User loggedUser) {

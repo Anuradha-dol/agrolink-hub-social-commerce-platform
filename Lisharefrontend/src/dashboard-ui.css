@@ -13040,7 +13040,7 @@ body.route-is-changing .shell-content::before {
 
 .admin-role-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 14px;
 }
 
@@ -17993,6 +17993,23 @@ body.route-is-changing .shell-content::before {
   display: none !important;
 }
 
+.auth-signup-step-1 .signup-step1-special-card {
+  width: 100%;
+  margin-top: auto;
+}
+
+.auth-signup-step-1 .signup-step1-special-card strong {
+  font-size: clamp(0.82rem, 1.55vh, 0.94rem);
+  line-height: 1.25;
+  font-weight: 950;
+}
+
+.auth-signup-step-1 .signup-step1-special-card span {
+  font-size: clamp(0.7rem, 1.25vh, 0.8rem);
+  line-height: 1.35;
+  font-weight: 650;
+}
+
 @media (max-width: 1360px), (max-height: 760px) {
   .auth-signup-step-2 .signup-story-panel,
   .auth-signup-step-2 .signup-visual-panel,
@@ -18086,6 +18103,7 @@ body.route-is-changing .shell-content::before {
   .auth-signup-ref .auth-step-title p,
   .auth-signup-step-2 .signup-step2-title p,
   .auth-signup-step-3 .auth-step-title p,
+  .auth-signup-step-1 .signup-step1-special-card,
   .auth-signup-ref .optional-note-card span,
   .auth-signup-ref .signup-privacy-note,
   .auth-signup-ref .auth-bottom-link {
@@ -18228,6 +18246,48 @@ body.route-is-changing .shell-content::before {
   }
 }
 
+/* Signup brand consistency: same logo lockup on all three steps. */
+.auth-signup-ref .auth-brand-ref,
+.auth-signup-step-1 .auth-brand-ref,
+.auth-signup-step-2 .auth-brand-ref,
+.auth-signup-step-3 .auth-brand-ref {
+  top: clamp(14px, 2.6vh, 24px) !important;
+  left: clamp(14px, 2.4vw, 28px) !important;
+  gap: 12px !important;
+}
+
+.auth-signup-ref .auth-brand-ref img,
+.auth-signup-step-1 .auth-brand-ref img,
+.auth-signup-step-2 .auth-brand-ref img,
+.auth-signup-step-3 .auth-brand-ref img {
+  width: clamp(46px, 6.2vh, 54px) !important;
+  height: clamp(46px, 6.2vh, 54px) !important;
+  border-radius: 16px !important;
+  background: #ffffff !important;
+  box-shadow: 0 12px 28px rgba(15, 28, 48, 0.1) !important;
+}
+
+.auth-signup-ref .auth-brand-ref strong,
+.auth-signup-step-1 .auth-brand-ref strong,
+.auth-signup-step-2 .auth-brand-ref strong,
+.auth-signup-step-3 .auth-brand-ref strong {
+  color: var(--agro-ink) !important;
+  font-size: clamp(1.08rem, 2.3vh, 1.32rem) !important;
+  line-height: 1 !important;
+  letter-spacing: -0.03em !important;
+  font-weight: 950 !important;
+}
+
+.auth-signup-ref .auth-brand-ref small,
+.auth-signup-step-1 .auth-brand-ref small,
+.auth-signup-step-2 .auth-brand-ref small,
+.auth-signup-step-3 .auth-brand-ref small {
+  margin-top: 4px !important;
+  color: #416071 !important;
+  font-size: clamp(0.72rem, 1.45vh, 0.88rem) !important;
+  font-weight: 800 !important;
+}
+
 /* Signup top action consistency: same login control on all three steps. */
 .auth-signup-ref .auth-signup-top-actions,
 .auth-signup-step-1 .auth-signup-top-actions,
@@ -18270,10 +18330,126 @@ body.route-is-changing .shell-content::before {
 }
 
 @media (max-width: 760px) {
+  .auth-signup-ref .auth-brand-ref,
+  .auth-signup-step-1 .auth-brand-ref,
+  .auth-signup-step-2 .auth-brand-ref,
+  .auth-signup-step-3 .auth-brand-ref {
+    gap: 8px !important;
+  }
+
   .auth-signup-ref .auth-signup-top-actions span,
   .auth-signup-step-1 .auth-signup-top-actions span,
   .auth-signup-step-2 .auth-signup-top-actions span,
   .auth-signup-step-3 .auth-signup-top-actions span {
     display: none !important;
+  }
+
+  .auth-signup-ref .auth-brand-ref img,
+  .auth-signup-step-1 .auth-brand-ref img,
+  .auth-signup-step-2 .auth-brand-ref img,
+  .auth-signup-step-3 .auth-brand-ref img {
+    width: 42px !important;
+    height: 42px !important;
+  }
+}
+
+/* Signup step 2 consistency: aligned role cards and non-overlapping select icons. */
+.auth-signup-step-2 .persona-role-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+}
+
+.auth-signup-step-2 .persona-role-grid .signup-role-card {
+  min-height: clamp(104px, 15vh, 118px) !important;
+  display: grid !important;
+  grid-template-rows: 30px auto auto !important;
+  align-content: center !important;
+  justify-items: center !important;
+  gap: 5px !important;
+  border-radius: 12px !important;
+  padding: 18px 14px 13px !important;
+}
+
+.auth-signup-step-2 .persona-role-grid .signup-role-card .role-radio {
+  top: 15px !important;
+  left: 15px !important;
+  width: 16px !important;
+  height: 16px !important;
+}
+
+.auth-signup-step-2 .persona-role-grid .signup-role-card .role-card-icon,
+.auth-signup-step-2 .persona-role-grid .signup-role-card.active .role-card-icon {
+  width: 30px !important;
+  height: 30px !important;
+  align-self: center !important;
+  justify-self: center !important;
+  margin: 0 !important;
+}
+
+.auth-signup-step-2 .persona-role-grid .signup-role-card strong {
+  margin-top: 0 !important;
+  text-align: center !important;
+}
+
+.auth-signup-step-2 .persona-role-grid .signup-role-card small {
+  max-width: 135px !important;
+  text-align: center !important;
+}
+
+.auth-signup-step-2 .signup-profile-selects .signup-icon-control {
+  min-height: 52px !important;
+  border-radius: 12px !important;
+}
+
+.auth-signup-step-2 .signup-profile-selects .signup-icon-control select {
+  min-height: 52px !important;
+  padding: 0 42px 0 52px !important;
+  color: #172033 !important;
+  font-size: 0.86rem !important;
+  font-weight: 850 !important;
+}
+
+.auth-signup-step-2 .signup-profile-selects .signup-control-icon {
+  left: 20px !important;
+  width: 17px !important;
+  height: 17px !important;
+}
+
+@media (max-width: 760px) {
+  .auth-signup-step-2 .persona-role-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Sign-in 4K collage background. */
+:root {
+  --agro-auth-signin-collage-image: url("./assets/backgrounds/signup-auth-collage-bg-4k.jpg");
+}
+
+.auth-login-ref {
+  min-height: 100svh !important;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.04) 24%, rgba(255, 255, 255, 0.06) 50%, rgba(255, 255, 255, 0.04) 76%, rgba(255, 255, 255, 0.2) 100%),
+    var(--agro-auth-signin-collage-image) center / cover no-repeat !important;
+}
+
+.auth-login-ref::before,
+.auth-login-ref::after,
+.auth-login-ref .login-photo-grid {
+  display: none !important;
+}
+
+.auth-login-ref .auth-login-card {
+  width: min(500px, calc(100vw - 40px)) !important;
+  border: 1px solid rgba(224, 234, 246, 0.96) !important;
+  border-radius: 28px !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+  box-shadow: 0 28px 90px rgba(15, 28, 48, 0.18) !important;
+  backdrop-filter: blur(18px) saturate(126%) !important;
+}
+
+@media (max-width: 760px) {
+  .auth-login-ref {
+    background-position: center top !important;
   }
 }

@@ -57,7 +57,7 @@ const PERSONA_OPTIONS = [
   },
   {
     id: "farmer",
-    role: "ROLE_BUSINESS",
+    role: "ROLE_FARMER",
     title: "Farmer Seller",
     text: "Sell farm produce or livestock.",
     accent: "leaf",
@@ -65,7 +65,7 @@ const PERSONA_OPTIONS = [
   },
   {
     id: "creator",
-    role: "ROLE_USER",
+    role: "ROLE_CREATOR",
     title: "Creator",
     text: "Create content and grow audience.",
     accent: "gold",
@@ -180,21 +180,34 @@ export default function SignupPage() {
   const toggleInterest = (interest) => {
     setForm((prev) => {
       const exists = prev.interests.includes(interest);
+      const hobbyExists = prev.hobbies.some((item) => item.toLowerCase() === interest.toLowerCase());
       return {
         ...prev,
-        interests: exists ? prev.interests.filter((item) => item !== interest) : [...prev.interests, interest]
+        interests: exists ? prev.interests.filter((item) => item !== interest) : [...prev.interests, interest],
+        hobbies: exists
+          ? prev.hobbies.filter((item) => item.toLowerCase() !== interest.toLowerCase())
+          : hobbyExists
+            ? prev.hobbies
+            : [...prev.hobbies, interest]
       };
     });
   };
 
   const removeHobby = (hobby) => {
-    setForm((prev) => ({ ...prev, hobbies: prev.hobbies.filter((item) => item !== hobby) }));
+    setForm((prev) => ({
+      ...prev,
+      hobbies: prev.hobbies.filter((item) => item !== hobby),
+      interests: prev.interests.filter((item) => item.toLowerCase() !== hobby.toLowerCase())
+    }));
   };
 
   const addHobby = () => {
     const next = form.hobbyInput.trim();
-    if (!next || form.hobbies.includes(next)) return;
-    setForm((prev) => ({ ...prev, hobbies: [...prev.hobbies, next], hobbyInput: "" }));
+    if (!next) return;
+    setForm((prev) => {
+      const exists = prev.hobbies.some((item) => item.toLowerCase() === next.toLowerCase());
+      return { ...prev, hobbies: exists ? prev.hobbies : [...prev.hobbies, next], hobbyInput: "" };
+    });
   };
 
   const validateStepOne = () => {
@@ -218,7 +231,7 @@ export default function SignupPage() {
     }
 
     const pendingHobby = form.hobbyInput.trim();
-    const hobbies = pendingHobby && !form.hobbies.includes(pendingHobby)
+    const hobbies = pendingHobby && !form.hobbies.some((item) => item.toLowerCase() === pendingHobby.toLowerCase())
       ? [...form.hobbies, pendingHobby]
       : form.hobbies;
 
@@ -355,6 +368,11 @@ export default function SignupPage() {
               <span>I agree to the <b>Terms of Service</b> and <b>Privacy Policy</b>.</span>
             </label>
             {errors.acceptedTerms ? <small className="field-error">{errors.acceptedTerms}</small> : null}
+
+            <div className="optional-note-card signup-step1-special-card" aria-label="Account setup note">
+              <strong>Great start. Your account is protected from step one.</strong>
+              <span>Finish your profile later and update settings anytime.</span>
+            </div>
           </section>
         ) : null}
 

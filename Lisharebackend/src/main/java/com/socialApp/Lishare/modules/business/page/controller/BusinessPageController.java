@@ -20,7 +20,7 @@ public class BusinessPageController {
 
     private final BusinessPageService service;
 
-    @PreAuthorize("hasRole('BUSINESS')")
+    @PreAuthorize("hasAnyRole('BUSINESS','FARMER')")
     @PostMapping
     public ResponseEntity<ApiResponse<BusinessPageResponse>> createPage(
             @AuthenticationPrincipal User user,
@@ -29,7 +29,7 @@ public class BusinessPageController {
         return ResponseEntity.ok(ApiResponse.success("Business page created", service.createPage(user.getUserId(), request)));
     }
 
-    @PreAuthorize("hasRole('BUSINESS')")
+    @PreAuthorize("hasAnyRole('BUSINESS','FARMER')")
     @PutMapping("/{pageId}")
     public ResponseEntity<ApiResponse<BusinessPageResponse>> updatePage(
             @AuthenticationPrincipal User user,
@@ -39,7 +39,7 @@ public class BusinessPageController {
         return ResponseEntity.ok(ApiResponse.success("Business page updated", service.updatePage(user.getUserId(), pageId, request)));
     }
 
-    @PreAuthorize("hasRole('BUSINESS')")
+    @PreAuthorize("hasAnyRole('BUSINESS','FARMER')")
     @DeleteMapping("/{pageId}")
     public ResponseEntity<ApiResponse<Void>> deactivatePage(
             @AuthenticationPrincipal User user,
@@ -57,7 +57,7 @@ public class BusinessPageController {
         return ResponseEntity.ok(ApiResponse.success("Business pages fetched", service.getPublicPages(page, size)));
     }
 
-    @PreAuthorize("hasRole('BUSINESS')")
+    @PreAuthorize("hasAnyRole('BUSINESS','FARMER')")
     @GetMapping("/mine")
     public ResponseEntity<ApiResponse<Page<BusinessPageResponse>>> myPages(
             @AuthenticationPrincipal User user,
