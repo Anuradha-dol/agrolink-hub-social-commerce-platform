@@ -17646,7 +17646,7 @@ body.route-is-changing .shell-content::before {
   pointer-events: none !important;
   border-radius: 0 !important;
   background-repeat: no-repeat !important;
-  filter: saturate(1.04) contrast(0.98) !important;
+  filter: saturate(1.16) contrast(1.07) brightness(1.02) !important;
 }
 
 .auth-signup-step-1.auth-signup-ref::before,
@@ -17658,7 +17658,7 @@ body.route-is-changing .shell-content::before {
   width: min(48vw, 720px) !important;
   height: 100% !important;
   background-size: cover !important;
-  opacity: 0.34 !important;
+  opacity: 0.6 !important;
 }
 
 .auth-signup-step-1.auth-signup-ref::before,
@@ -17690,13 +17690,13 @@ body.route-is-changing .shell-content::before {
   right: 0 !important;
   bottom: 0 !important;
   width: 100% !important;
-  height: min(46vh, 390px) !important;
-  opacity: 0.32 !important;
-  background-image: url("./assets/backgrounds/agrolink-farm-support-hero.png") !important;
+  height: min(42vh, 360px) !important;
+  opacity: 0.68 !important;
+  background-image: url("./assets/backgrounds/signup-step2-panorama.png") !important;
   background-position: center bottom !important;
   background-size: cover !important;
-  -webkit-mask-image: linear-gradient(0deg, #000 0%, rgba(0, 0, 0, 0.78) 44%, transparent 100%) !important;
-  mask-image: linear-gradient(0deg, #000 0%, rgba(0, 0, 0, 0.78) 44%, transparent 100%) !important;
+  -webkit-mask-image: linear-gradient(0deg, #000 0%, rgba(0, 0, 0, 0.88) 52%, transparent 100%) !important;
+  mask-image: linear-gradient(0deg, #000 0%, rgba(0, 0, 0, 0.88) 52%, transparent 100%) !important;
 }
 
 .auth-signup-step-2.auth-signup-ref::after {
@@ -17726,12 +17726,12 @@ body.route-is-changing .shell-content::before {
   .auth-signup-step-3.auth-signup-ref::before,
   .auth-signup-step-3.auth-signup-ref::after {
     width: min(56vw, 520px) !important;
-    opacity: 0.22 !important;
+    opacity: 0.44 !important;
   }
 
   .auth-signup-step-2.auth-signup-ref::before {
-    height: min(40vh, 300px) !important;
-    opacity: 0.2 !important;
+    height: min(38vh, 290px) !important;
+    opacity: 0.52 !important;
   }
 }
 
@@ -17742,6 +17742,56 @@ body.route-is-changing .shell-content::before {
   .auth-signup-step-2.auth-signup-ref::after,
   .auth-signup-step-3.auth-signup-ref::before,
   .auth-signup-step-3.auth-signup-ref::after {
-    opacity: 0.12 !important;
+    opacity: 0.27 !important;
+  }
+}
+
+/* Signup top action consistency: same login control on all three steps. */
+.auth-signup-ref .auth-signup-top-actions,
+.auth-signup-step-1 .auth-signup-top-actions,
+.auth-signup-step-2 .auth-signup-top-actions,
+.auth-signup-step-3 .auth-signup-top-actions {
+  top: clamp(12px, 2.4vh, 22px) !important;
+  right: clamp(12px, 2.4vw, 28px) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+  color: #172033 !important;
+  font-size: clamp(0.72rem, 1.45vh, 0.86rem) !important;
+  font-weight: 850 !important;
+}
+
+.auth-signup-ref .auth-signup-top-actions a,
+.auth-signup-step-1 .auth-signup-top-actions a,
+.auth-signup-step-2 .auth-signup-top-actions a,
+.auth-signup-step-3 .auth-signup-top-actions a {
+  min-height: clamp(40px, 6.2vh, 52px) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: 1px solid rgba(176, 194, 216, 0.86) !important;
+  border-radius: 14px !important;
+  padding: 0 clamp(16px, 2.4vw, 24px) !important;
+  color: #07162f !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  box-shadow: 0 12px 28px rgba(15, 28, 48, 0.08) !important;
+  font-size: clamp(0.78rem, 1.55vh, 0.94rem) !important;
+  font-weight: 950 !important;
+  text-decoration: none !important;
+}
+
+.auth-signup-ref .auth-signup-top-actions a::before,
+.auth-signup-step-1 .auth-signup-top-actions a::before,
+.auth-signup-step-2 .auth-signup-top-actions a::before,
+.auth-signup-step-3 .auth-signup-top-actions a::before {
+  display: none !important;
+}
+
+@media (max-width: 760px) {
+  .auth-signup-ref .auth-signup-top-actions span,
+  .auth-signup-step-1 .auth-signup-top-actions span,
+  .auth-signup-step-2 .auth-signup-top-actions span,
+  .auth-signup-step-3 .auth-signup-top-actions span {
+    display: none !important;
   }
 }
