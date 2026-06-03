@@ -22879,3 +22879,283 @@ body.route-is-changing .shell.shell-app-blue .shell-content::before {
 .shell.shell-home-theme .composer-tool-row .composer-tool-button:nth-child(n+5) .composer-tool-label {
   display: inline-block !important;
 }
+
+/* Story display reference: large portrait cards with top media, gradient arc, and avatar overlap. */
+.shell.shell-home-theme:not(.shell-app-blue) .feed-stories-card {
+  min-height: 256px !important;
+  padding: 22px 20px 24px !important;
+  border-radius: 24px !important;
+  background:
+    radial-gradient(circle at 10% 22%, rgba(22, 185, 111, 0.07), transparent 28%),
+    radial-gradient(circle at 88% 18%, rgba(37, 99, 235, 0.05), transparent 30%),
+    #ffffff !important;
+  box-shadow: 0 24px 58px rgba(23, 38, 74, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.92) !important;
+}
+
+.shell.shell-home-theme .feed-stories-card::before {
+  display: none !important;
+}
+
+.shell.shell-home-theme .feed-stories-card::after {
+  content: "›" !important;
+  position: absolute !important;
+  z-index: 3 !important;
+  right: 13px !important;
+  top: 55% !important;
+  width: 50px !important;
+  height: 50px !important;
+  display: grid !important;
+  place-items: center !important;
+  border: 1px solid rgba(219, 231, 245, 0.96) !important;
+  border-radius: 999px !important;
+  color: #53637e !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+  box-shadow: 0 16px 32px rgba(23, 38, 74, 0.12) !important;
+  font-size: 2.1rem !important;
+  font-weight: 850 !important;
+  line-height: 1 !important;
+  transform: translateY(-50%) !important;
+  pointer-events: none !important;
+}
+
+.shell.shell-home-theme .feed-stories-card .feed-section-head {
+  margin-bottom: 18px !important;
+}
+
+.shell.shell-home-theme .feed-stories-card .feed-section-head h3 {
+  font-size: 1.12rem !important;
+}
+
+.shell.shell-home-theme .premium-stories-row {
+  gap: 16px !important;
+  align-items: stretch !important;
+  padding: 0 52px 2px 0 !important;
+}
+
+.shell.shell-home-theme .story-add-card,
+.shell.shell-home-theme .story-thumb-card {
+  width: 128px !important;
+  min-width: 128px !important;
+  min-height: 170px !important;
+  border-radius: 21px !important;
+}
+
+.shell.shell-home-theme .story-add-card {
+  align-content: center !important;
+  gap: 18px !important;
+  padding: 22px 12px !important;
+  border: 0 !important;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(255, 255, 255, 0.96), transparent 28%),
+    linear-gradient(145deg, #eefbff 0%, #ecfff5 72%, #f6fbff 100%) !important;
+  box-shadow: 0 16px 32px rgba(17, 94, 89, 0.08) !important;
+}
+
+.shell.shell-home-theme .story-add-icon {
+  width: 76px !important;
+  height: 76px !important;
+  margin-top: 0 !important;
+  border: 2.5px dashed #24b8c1 !important;
+  color: #13a5b2 !important;
+  background: rgba(255, 255, 255, 0.58) !important;
+}
+
+.shell.shell-home-theme .story-add-icon .feed-inline-icon {
+  width: 34px !important;
+  height: 34px !important;
+  color: #16a6b6 !important;
+  stroke-width: 1.8 !important;
+}
+
+.shell.shell-home-theme .story-thumb-card {
+  position: relative !important;
+  width: 126px !important;
+  min-width: 126px !important;
+  min-height: 166px !important;
+  align-content: start !important;
+  gap: 0 !important;
+  padding: 10px !important;
+  border: 0 !important;
+  border-radius: 27px !important;
+  background:
+    linear-gradient(180deg, rgba(251, 252, 237, 0.96), rgba(255, 255, 255, 0.98)) !important;
+  box-shadow: 0 16px 30px rgba(23, 38, 74, 0.11) !important;
+  overflow: visible !important;
+}
+
+.shell.shell-home-theme .story-thumb-card::before {
+  content: "" !important;
+  position: absolute !important;
+  z-index: 3 !important;
+  inset: 5px 5px auto 5px !important;
+  height: 95px !important;
+  border: solid 5px transparent !important;
+  border-bottom: 0 !important;
+  border-radius: 24px 24px 0 0 !important;
+  background:
+    linear-gradient(112deg, #b9f84d 0%, #32e59f 24%, #1687ff 58%, #8558ff 100%) border-box !important;
+  -webkit-mask:
+    linear-gradient(#000 0 0) padding-box,
+    linear-gradient(#000 0 0) border-box !important;
+  -webkit-mask-composite: xor !important;
+  mask-composite: exclude !important;
+  pointer-events: none !important;
+}
+
+.shell.shell-home-theme .story-thumb-card::after {
+  display: none !important;
+}
+
+.shell.shell-home-theme .story-ring {
+  position: relative !important;
+  width: 106px !important;
+  height: 142px !important;
+  padding: 0 !important;
+  border-radius: 21px !important;
+  background: transparent !important;
+  box-shadow: 0 13px 24px rgba(23, 38, 74, 0.14) !important;
+  overflow: hidden !important;
+}
+
+.shell.shell-home-theme .story-ring.viewed {
+  background: transparent !important;
+}
+
+.shell.shell-home-theme .story-ring::before {
+  content: none !important;
+  display: none !important;
+}
+
+.shell.shell-home-theme .story-ring.viewed::before {
+  content: none !important;
+  display: none !important;
+}
+
+.shell.shell-home-theme .story-ring img,
+.shell.shell-home-theme .story-ring video {
+  position: relative !important;
+  z-index: 1 !important;
+  width: 100% !important;
+  height: 100% !important;
+  border: 0 !important;
+  border-radius: inherit !important;
+  object-fit: cover !important;
+  box-shadow: none !important;
+}
+
+.shell.shell-home-theme .story-owner-avatar {
+  position: absolute !important;
+  z-index: 4 !important;
+  left: 50% !important;
+  top: 112px !important;
+  width: 44px !important;
+  height: 44px !important;
+  display: grid !important;
+  place-items: center !important;
+  border: 4px solid #ffffff !important;
+  border-radius: 999px !important;
+  background: linear-gradient(135deg, var(--agro-feed-green), var(--agro-feed-blue)) !important;
+  box-shadow: 0 12px 18px rgba(23, 38, 74, 0.14) !important;
+  color: #ffffff !important;
+  font-size: 0.92rem !important;
+  font-weight: 950 !important;
+  letter-spacing: 0.02em !important;
+  transform: translateX(-50%) !important;
+  overflow: hidden !important;
+}
+
+.shell.shell-home-theme .story-owner-avatar img {
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+  object-fit: cover !important;
+}
+
+.shell.shell-home-theme .story-avatar-initial {
+  width: 100% !important;
+  height: 100% !important;
+  display: grid !important;
+  place-items: center !important;
+  line-height: 1 !important;
+  background:
+    radial-gradient(circle at 26% 20%, rgba(255, 255, 255, 0.5), transparent 32%),
+    linear-gradient(135deg, var(--agro-feed-green), var(--agro-feed-blue)) !important;
+}
+
+.shell.shell-home-theme .story-owner-avatar::after {
+  content: none !important;
+  display: none !important;
+}
+
+.story-viewer-avatar,
+.shell .story-viewer-avatar,
+.shell.shell-home-theme .story-viewer-avatar {
+  position: relative !important;
+  display: grid !important;
+  place-items: center !important;
+  border-radius: 999px !important;
+  overflow: hidden !important;
+}
+
+.story-viewer-avatar img,
+.shell .story-viewer-avatar img,
+.shell.shell-home-theme .story-viewer-avatar img {
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+  object-fit: cover !important;
+  border-radius: inherit !important;
+}
+
+.story-viewer-avatar.has-image,
+.shell .story-viewer-avatar.has-image,
+.shell.shell-home-theme .story-viewer-avatar.has-image {
+  background: #ffffff !important;
+}
+
+.story-viewer-verified,
+.shell .story-viewer-verified,
+.shell.shell-home-theme .story-viewer-verified {
+  z-index: 2 !important;
+}
+
+.shell.shell-home-theme .story-thumb-card small {
+  display: none !important;
+}
+
+.shell.shell-home-theme .story-add-card small {
+  max-width: 108px !important;
+  color: #1a2b47 !important;
+  font-size: 0.76rem !important;
+  font-weight: 950 !important;
+}
+
+.shell.shell-home-theme .story-live-badge {
+  display: none !important;
+}
+
+@media (max-width: 760px) {
+  .shell.shell-home-theme:not(.shell-app-blue) .feed-stories-card {
+    min-height: 236px !important;
+    padding: 18px 14px 20px !important;
+  }
+
+  .shell.shell-home-theme .story-add-card,
+  .shell.shell-home-theme .story-thumb-card {
+    width: 112px !important;
+    min-width: 112px !important;
+    min-height: 148px !important;
+    padding: 8px !important;
+  }
+
+  .shell.shell-home-theme .story-ring {
+    width: 96px !important;
+    height: 132px !important;
+  }
+
+  .shell.shell-home-theme .story-owner-avatar {
+    top: 98px !important;
+    width: 40px !important;
+    height: 40px !important;
+  }
+}

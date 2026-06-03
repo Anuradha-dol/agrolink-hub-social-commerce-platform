@@ -262,6 +262,7 @@ public class StoryServiceImpl implements StoryService {
                 .id(story.getId())
                 .ownerUserId(story.getUser().getUserId())
                 .ownerName(ownerName(story.getUser()))
+                .ownerProfileImageUrl(story.getUser().getImageUrl())
                 .mediaUrl(story.getMediaUrl())
                 .mediaType(story.getMediaType())
                 .caption(story.getCaption())

@@ -10,6 +10,7 @@ public record StoryResponse(
         Long id,
         Long ownerUserId,
         String ownerName,
+        String ownerProfileImageUrl,
         String mediaUrl,
         String mediaType,
         String caption,

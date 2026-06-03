@@ -7,6 +7,7 @@ import { feedService } from "../services/feedService";
 import { storyService } from "../services/storyService";
 import { chatService } from "../../chat/services/chatService";
 import { followService } from "../../follow/services/followService";
+import { userService } from "/src/modules/platform/user/services/userService";
 import ErrorState from "/src/modules/platform/common/components/ErrorState";
 import EmptyState from "/src/modules/platform/common/components/EmptyState";
 import { useToast } from "/src/modules/platform/common/hooks/useToast";
@@ -230,6 +231,21 @@ function storyOwnerName(story) {
   return `${first} ${last}`.trim() || "Unknown";
 }
 
+function storyOwnerProfileImageUrl(story) {
+  const candidates = [
+    story?.ownerProfileImageUrl,
+    story?.profileImageUrl,
+    story?.ownerImageUrl,
+    story?.authorProfileImageUrl,
+    story?.userProfileImageUrl
+  ];
+  return candidates.find((value) => typeof value === "string" && value.trim()) || "";
+}
+
+function storyOwnerInitial(story) {
+  return storyOwnerName(story).slice(0, 1).toUpperCase() || "U";
+}
+
 function isLiveStory(story) {
   const type = String(story?.storyType || story?.type || "").toUpperCase();
   return Boolean(story?.isLive || story?.live || story?.liveNow || type === "LIVE");
@@ -252,6 +268,7 @@ function normalizeStory(story) {
     ...story,
     id: Number(story?.id || 0),
     ownerUserId: Number(story?.ownerUserId || 0),
+    ownerProfileImageUrl: storyOwnerProfileImageUrl(story),
     mediaType: String(story?.mediaType || "IMAGE").toUpperCase(),
     resharedFromStoryId: story?.resharedFromStoryId ? Number(story.resharedFromStoryId) : null,
     resharedFromOwnerId: story?.resharedFromOwnerId ? Number(story.resharedFromOwnerId) : null,
@@ -262,6 +279,35 @@ function normalizeStory(story) {
 
 function extractApiPayload(response) {
   return response?.data?.data ?? response?.data ?? null;
+}
+
+async function hydrateStoryOwnerProfileImages(stories = []) {
+  const ownerIds = [...new Set(
+    stories
+      .filter((story) => !storyOwnerProfileImageUrl(story) && Number(story?.ownerUserId) > 0)
+      .map((story) => Number(story.ownerUserId))
+  )];
+
+  if (!ownerIds.length) return stories;
+
+  const profileEntries = await Promise.all(ownerIds.map(async (ownerId) => {
+    try {
+      const response = await userService.getPublicProfile(ownerId);
+      const profile = extractApiPayload(response);
+      return [ownerId, profile?.profileImageUrl || ""];
+    } catch {
+      return [ownerId, ""];
+    }
+  }));
+
+  const profileImageByOwnerId = new Map(profileEntries.filter(([, profileImageUrl]) => profileImageUrl));
+  if (!profileImageByOwnerId.size) return stories;
+
+  return stories.map((story) => {
+    if (storyOwnerProfileImageUrl(story)) return story;
+    const ownerProfileImageUrl = profileImageByOwnerId.get(Number(story.ownerUserId));
+    return ownerProfileImageUrl ? { ...story, ownerProfileImageUrl } : story;
+  });
 }
 
 function normalizeHashtag(tag = "") {
@@ -376,7 +422,7 @@ export default function FeedPage() {
       const response = await storyService.getFeedStories();
       const payload = extractApiPayload(response);
       const list = Array.isArray(payload) ? payload.map(normalizeStory) : [];
-      setStories(list);
+      setStories(await hydrateStoryOwnerProfileImages(list));
     } catch {
       setStories([]);
     }
@@ -892,6 +938,7 @@ export default function FeedPage() {
 
   const selectedStory = viewingStoryIndex >= 0 ? stories[viewingStoryIndex] : null;
   const selectedStoryIsOwn = Boolean(selectedStory && userId && Number(selectedStory.ownerUserId) === userId);
+  const selectedStoryAvatarUrl = selectedStory ? storyOwnerProfileImageUrl(selectedStory) : "";
 
   useEffect(() => {
     if (!selectedStory) return;
@@ -943,7 +990,14 @@ export default function FeedPage() {
 
   const replaceStory = useCallback((updatedStory) => {
     setStories((previous) =>
-      previous.map((story) => (Number(story.id) === Number(updatedStory.id) ? normalizeStory(updatedStory) : story))
+      previous.map((story) => {
+        if (Number(story.id) !== Number(updatedStory.id)) return story;
+
+        const normalizedStory = normalizeStory(updatedStory);
+        return storyOwnerProfileImageUrl(normalizedStory)
+          ? normalizedStory
+          : { ...normalizedStory, ownerProfileImageUrl: storyOwnerProfileImageUrl(story) };
+      })
     );
   }, []);
 
@@ -1207,24 +1261,35 @@ export default function FeedPage() {
                 </article>
               ) : null}
 
-              {stories.map((story, index) => (
-                <button
-                  key={story.id}
-                  type="button"
-                  className="story-thumb-card"
-                  onClick={() => openStory(index)}
-                >
-                  <span className={`story-ring ${story.viewedByCurrentUser ? "viewed" : ""}`}>
-                    {story.mediaType === "VIDEO" ? (
-                      <video src={toMediaUrl(story.mediaUrl)} muted />
-                    ) : (
-                      <img src={toMediaUrl(story.mediaUrl)} alt={storyOwnerName(story)} />
-                    )}
-                  </span>
-                  {isLiveStory(story) ? <span className="story-live-badge">LIVE</span> : null}
-                  <small>{storyOwnerName(story)}</small>
-                </button>
-              ))}
+              {stories.map((story, index) => {
+                const ownerAvatarUrl = storyOwnerProfileImageUrl(story);
+
+                return (
+                  <button
+                    key={story.id}
+                    type="button"
+                    className="story-thumb-card"
+                    onClick={() => openStory(index)}
+                  >
+                    <span className={`story-ring ${story.viewedByCurrentUser ? "viewed" : ""}`}>
+                      {story.mediaType === "VIDEO" ? (
+                        <video src={toMediaUrl(story.mediaUrl)} muted />
+                      ) : (
+                        <img src={toMediaUrl(story.mediaUrl)} alt={storyOwnerName(story)} />
+                      )}
+                    </span>
+                    <span className={`story-owner-avatar ${ownerAvatarUrl ? "has-image" : ""}`} aria-hidden="true">
+                      {ownerAvatarUrl ? (
+                        <img src={toMediaUrl(ownerAvatarUrl)} alt="" />
+                      ) : (
+                        <span className="story-avatar-initial">{storyOwnerInitial(story)}</span>
+                      )}
+                    </span>
+                    {isLiveStory(story) ? <span className="story-live-badge">LIVE</span> : null}
+                    <small>{storyOwnerName(story)}</small>
+                  </button>
+                );
+              })}
             </div>
           </section>
 
@@ -1711,8 +1776,12 @@ export default function FeedPage() {
             </div>
 
             <header className="story-viewer-head">
-              <span className="story-viewer-avatar">
-                {storyOwnerName(selectedStory).slice(0, 1).toUpperCase()}
+              <span className={`story-viewer-avatar ${selectedStoryAvatarUrl ? "has-image" : ""}`}>
+                {selectedStoryAvatarUrl ? (
+                  <img src={toMediaUrl(selectedStoryAvatarUrl)} alt="" />
+                ) : (
+                  storyOwnerInitial(selectedStory)
+                )}
                 <span className="story-viewer-verified" aria-hidden="true" />
               </span>
               <div>
