@@ -25,6 +25,7 @@ public class FeedResponse {
     private Long sharedByVerifiedXp;
     private Long reelViewCount;
     private LocalDateTime createdAt;
+    private String authorProfileImageUrl;
 
     // For SHARE
     private Long shareId;
@@ -32,6 +33,7 @@ public class FeedResponse {
     private Boolean originalPostDeleted;
     private String sharedByName;
     private Long sharedById;
+    private String sharedByProfileImageUrl;
     private String shareCaption;
     private String postValue;
     private LocalDateTime sharedAt;

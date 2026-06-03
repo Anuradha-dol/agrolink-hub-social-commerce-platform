@@ -307,6 +307,33 @@ function initialFromName(name = "U") {
   return String(name || "U").trim().slice(0, 1).toUpperCase() || "U";
 }
 
+function firstNonEmptyString(...values) {
+  return values.find((value) => typeof value === "string" && value.trim()) || "";
+}
+
+function cardAuthorProfileImageUrl(item, isShare) {
+  if (isShare) {
+    return firstNonEmptyString(
+      item?.sharedByProfileImageUrl,
+      item?.sharedByProfilePic,
+      item?.sharedByImageUrl,
+      item?.sharerProfileImageUrl,
+      item?.sharedBy?.profileImageUrl,
+      item?.sharedBy?.imageUrl
+    );
+  }
+
+  return firstNonEmptyString(
+    item?.authorProfileImageUrl,
+    item?.authorProfilePic,
+    item?.authorImageUrl,
+    item?.profileImageUrl,
+    item?.userProfileImageUrl,
+    item?.author?.profileImageUrl,
+    item?.author?.imageUrl
+  );
+}
+
 function shareUserName(user) {
   return `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || user?.email || "Unknown user";
 }
@@ -459,6 +486,7 @@ export default function FeedCard({
   const [removeMedia, setRemoveMedia] = useState(false);
   const [savingEdit, setSavingEdit] = useState(false);
   const [mediaFailed, setMediaFailed] = useState(false);
+  const [avatarFailed, setAvatarFailed] = useState(false);
 
   const pickerRef = useRef(null);
   const menuRef = useRef(null);
@@ -520,6 +548,8 @@ export default function FeedCard({
   const reactionAvatarUsers = realReactionUsers
     .filter((reactionUser) => Number(reactionUser?.userId) > 0 || reactionUser?.name)
     .slice(0, 3);
+  const authorProfileImageUrl = cardAuthorProfileImageUrl(item, isShare);
+  const authorAvatarUrl = !avatarFailed && authorProfileImageUrl ? toMediaUrl(authorProfileImageUrl) : "";
 
   useEffect(() => {
     setEditingContent(item.content || "");
@@ -536,6 +566,10 @@ export default function FeedCard({
     setCommentsExpanded(false);
     setMediaFailed(false);
   }, [item.postId, item.content, item.imageUrl]);
+
+  useEffect(() => {
+    setAvatarFailed(false);
+  }, [authorProfileImageUrl, item.postId, item.shareId]);
 
   useEffect(() => {
     if (shareDestination === "story" && !canShareToStory) {
@@ -893,13 +927,17 @@ export default function FeedCard({
         <div className="feed-card-author-wrap">
           <button
             type="button"
-            className="feed-avatar-badge feed-author-button"
+            className={`feed-avatar-badge feed-author-button ${authorAvatarUrl ? "has-image" : ""}`}
             onClick={() => {
               const profileUserId = isShare ? item.sharedById : item.authorId;
               if (profileUserId) onAuthorClick?.(profileUserId);
             }}
           >
-            {(authorName || "U").slice(0, 1).toUpperCase()}
+            {authorAvatarUrl ? (
+              <img src={authorAvatarUrl} alt="" onError={() => setAvatarFailed(true)} />
+            ) : (
+              (authorName || "U").slice(0, 1).toUpperCase()
+            )}
             <span className="feed-avatar-online" aria-hidden="true" />
           </button>
           <div>
@@ -1006,10 +1044,6 @@ export default function FeedCard({
       {displayContent ? (
         <p className="feed-content">{renderContentWithHashtags(displayContent, onHashtagClick)}</p>
       ) : null}
-
-      <span className={`feed-post-value-chip learning-value-chip ${educationBadge.tone}`}>
-        {postCategoryLabel}
-      </span>
 
       {mediaUrl ? (
         <div className="feed-media-shell">

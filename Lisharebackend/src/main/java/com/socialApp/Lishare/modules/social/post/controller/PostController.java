@@ -105,6 +105,7 @@ public class PostController {
                 .authorVerifiedXp(calculateVerifiedXp(post.getUser()))
                 .reelViewCount(post.getReelViewCount())
                 .authorName(post.getUser().getFirstname() + " " + post.getUser().getLastName())
+                .authorProfileImageUrl(post.getUser().getImageUrl())
                 .createdAt(post.getCreatedAt())
                 .editedAt(post.getEditedAt())
                 .build();

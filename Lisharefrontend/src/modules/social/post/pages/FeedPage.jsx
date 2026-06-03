@@ -242,6 +242,31 @@ function storyOwnerProfileImageUrl(story) {
   return candidates.find((value) => typeof value === "string" && value.trim()) || "";
 }
 
+function feedAuthorProfileImageUrl(item) {
+  const candidates = [
+    item?.authorProfileImageUrl,
+    item?.authorProfilePic,
+    item?.authorImageUrl,
+    item?.profileImageUrl,
+    item?.userProfileImageUrl,
+    item?.author?.profileImageUrl,
+    item?.author?.imageUrl
+  ];
+  return candidates.find((value) => typeof value === "string" && value.trim()) || "";
+}
+
+function feedSharedByProfileImageUrl(item) {
+  const candidates = [
+    item?.sharedByProfileImageUrl,
+    item?.sharedByProfilePic,
+    item?.sharedByImageUrl,
+    item?.sharerProfileImageUrl,
+    item?.sharedBy?.profileImageUrl,
+    item?.sharedBy?.imageUrl
+  ];
+  return candidates.find((value) => typeof value === "string" && value.trim()) || "";
+}
+
 function storyOwnerInitial(story) {
   return storyOwnerName(story).slice(0, 1).toUpperCase() || "U";
 }
@@ -308,6 +333,40 @@ async function hydrateStoryOwnerProfileImages(stories = []) {
     const ownerProfileImageUrl = profileImageByOwnerId.get(Number(story.ownerUserId));
     return ownerProfileImageUrl ? { ...story, ownerProfileImageUrl } : story;
   });
+}
+
+async function hydrateFeedProfileImages(items = []) {
+  const ids = new Set();
+
+  items.forEach((item) => {
+    if (!feedAuthorProfileImageUrl(item) && Number(item?.authorId) > 0) {
+      ids.add(Number(item.authorId));
+    }
+    if (String(item?.type || "").toUpperCase() === "SHARE" && !feedSharedByProfileImageUrl(item) && Number(item?.sharedById) > 0) {
+      ids.add(Number(item.sharedById));
+    }
+  });
+
+  if (!ids.size) return items;
+
+  const profileEntries = await Promise.all([...ids].map(async (profileUserId) => {
+    try {
+      const response = await userService.getPublicProfile(profileUserId);
+      const profile = extractApiPayload(response);
+      return [profileUserId, profile?.profileImageUrl || profile?.imageUrl || ""];
+    } catch {
+      return [profileUserId, ""];
+    }
+  }));
+
+  const profileImageByUserId = new Map(profileEntries.filter(([, profileImageUrl]) => profileImageUrl));
+  if (!profileImageByUserId.size) return items;
+
+  return items.map((item) => ({
+    ...item,
+    authorProfileImageUrl: feedAuthorProfileImageUrl(item) || profileImageByUserId.get(Number(item.authorId)) || item.authorProfileImageUrl,
+    sharedByProfileImageUrl: feedSharedByProfileImageUrl(item) || profileImageByUserId.get(Number(item.sharedById)) || item.sharedByProfileImageUrl
+  }));
 }
 
 function normalizeHashtag(tag = "") {
@@ -437,7 +496,7 @@ export default function FeedPage() {
         feedService.getSavedPosts({ page: 0, size: 100 })
       ]);
 
-      const feedList = Array.isArray(feedRes?.data) ? feedRes.data : [];
+      const feedList = await hydrateFeedProfileImages(Array.isArray(feedRes?.data) ? feedRes.data : []);
       setFeed(feedList);
 
       const savedItems = savedRes?.data?.data?.content || [];
@@ -806,6 +865,7 @@ export default function FeedPage() {
         authorName: item.authorName || item.sharedByName || "User",
         content: item.content || "Media post",
         imageUrl: item.imageUrl,
+        mediaType: item.mediaType,
         originalPostDeleted: Boolean(item.originalPostDeleted)
       }))
       .filter((item) => Number(item.sourcePostId) > 0 && !item.originalPostDeleted)
@@ -869,6 +929,16 @@ export default function FeedPage() {
   const posts = useMemo(
     () => hashtagFilteredFeed.filter((item) => !isVideoItem(item)),
     [hashtagFilteredFeed]
+  );
+
+  const railReelCandidates = useMemo(
+    () => feedMediaCandidates.filter((item) => isVideoItem(item)).slice(0, 4),
+    [feedMediaCandidates]
+  );
+
+  const railImageCandidates = useMemo(
+    () => feedMediaCandidates.filter((item) => !isVideoItem(item)).slice(0, 4),
+    [feedMediaCandidates]
   );
 
   const trendingHashtags = useMemo(() => {
@@ -1413,7 +1483,7 @@ export default function FeedPage() {
           </section>
 
           {/* Explore Reels */}
-          <section className="feed-side-panel rail-card rail-explore-card">
+          <section className="feed-side-panel rail-card rail-explore-card rail-explore-reels">
             <div className="rail-explore-content">
               <div className="rail-explore-icon-wrap">
                 <FeedIcon name="reels" />
@@ -1432,15 +1502,36 @@ export default function FeedPage() {
               }}
               aria-label="Explore Reels"
             >
-              <div className="rail-explore-thumb-placeholder">
-                <FeedIcon name="play" />
-                <span>Open reels</span>
-              </div>
+              <span className="rail-explore-grid rail-explore-reel-grid">
+                {railReelCandidates.length > 0 ? railReelCandidates.map((item) => (
+                  <span key={`explore-reel-${item.sourcePostId}-${item.imageUrl}`} className="rail-explore-reel-thumb">
+                    <video
+                      className="rail-explore-grid-thumb rail-explore-reel-video"
+                      src={toMediaUrl(item.imageUrl)}
+                      muted
+                      playsInline
+                      preload="metadata"
+                      aria-label={item.authorName}
+                      onError={(event) => {
+                        event.currentTarget.style.display = "none";
+                      }}
+                    />
+                    <span className="rail-reel-play-badge" aria-hidden="true">
+                      <FeedIcon name="play" />
+                    </span>
+                  </span>
+                )) : (
+                  <span className="rail-explore-grid-empty rail-explore-reel-empty">
+                    <FeedIcon name="reels" />
+                    <span>Open reels</span>
+                  </span>
+                )}
+              </span>
             </button>
           </section>
 
           {/* Explore Images */}
-          <section className="feed-side-panel rail-card rail-explore-card">
+          <section className="feed-side-panel rail-card rail-explore-card rail-explore-images">
             <div className="rail-explore-content">
               <div className="rail-explore-icon-wrap">
                 <FeedIcon name="posts" />
@@ -1451,7 +1542,7 @@ export default function FeedPage() {
               </div>
             </div>
             <div className="rail-explore-grid">
-              {feedMediaCandidates.filter((item) => !item.originalPostDeleted).slice(0, 4).map((item) => (
+              {railImageCandidates.map((item) => (
                 <img
                   key={`explore-img-${item.sourcePostId}`}
                   className="rail-explore-grid-thumb"
@@ -1462,7 +1553,7 @@ export default function FeedPage() {
                   }}
                 />
               ))}
-              {feedMediaCandidates.filter((item) => !item.originalPostDeleted).length === 0 && (
+              {railImageCandidates.length === 0 && (
                 <div className="rail-explore-grid-empty">
                   <FeedIcon name="posts" />
                 </div>

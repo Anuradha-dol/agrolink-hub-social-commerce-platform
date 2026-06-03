@@ -22,6 +22,7 @@ public class PostResponse {
     private Long authorVerifiedXp;
     private Long reelViewCount;
     private String authorName;
+    private String authorProfileImageUrl;
     private LocalDateTime createdAt;
     private LocalDateTime editedAt;
     private List<CommentResponse> comments; // all comments including replies

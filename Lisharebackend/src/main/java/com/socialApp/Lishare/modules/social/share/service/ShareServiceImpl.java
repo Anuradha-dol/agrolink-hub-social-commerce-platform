@@ -95,6 +95,7 @@ public class ShareServiceImpl implements ShareService {
                         .xpAwarded(resolvePostXp(post))
                         .authorVerifiedXp(calculateVerifiedXp(post.getUser()))
                         .reelViewCount(post.getReelViewCount())
+                        .authorProfileImageUrl(post.getUser().getImageUrl())
                         .createdAt(post.getCreatedAt())
                         .build())
                 .toList();
@@ -114,6 +115,9 @@ public class ShareServiceImpl implements ShareService {
                             ? calculateVerifiedXp(originalPost.getUser())
                             : null;
                     Long reelViewCount = originalPost != null ? originalPost.getReelViewCount() : 0L;
+                    String originalAuthorProfileImage = originalPost != null && originalPost.getUser() != null
+                            ? originalPost.getUser().getImageUrl()
+                            : null;
 
                     if (originalDeleted) {
                         originalContent = null;
@@ -123,6 +127,7 @@ public class ShareServiceImpl implements ShareService {
                         xpAwarded = null;
                         authorVerifiedXp = null;
                         reelViewCount = 0L;
+                        originalAuthorProfileImage = null;
                     }
 
                     return FeedResponse.builder()
@@ -141,8 +146,10 @@ public class ShareServiceImpl implements ShareService {
                             .authorVerifiedXp(authorVerifiedXp)
                             .sharedByVerifiedXp(calculateVerifiedXp(share.getUser()))
                             .reelViewCount(reelViewCount)
+                            .authorProfileImageUrl(originalAuthorProfileImage)
                             .sharedById(share.getUser().getUserId())
                             .sharedByName(share.getUser().getFirstname() + " " + share.getUser().getLastName())
+                            .sharedByProfileImageUrl(share.getUser().getImageUrl())
                             .shareCaption(share.getCaption())
                             .postValue(share.getPostValue())
                             .sharedAt(share.getCreatedAt())
