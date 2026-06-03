@@ -90,6 +90,36 @@ function savedItemTitle(post, video) {
   ) || (video ? "Saved reel" : "Saved post");
 }
 
+function listFromResponse(response) {
+  const data = payload(response);
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.content)) return data.content;
+  if (Array.isArray(response?.data?.content)) return response.data.content;
+  return [];
+}
+
+function postIdForItem(post) {
+  return Number(post?.postId || post?.id || post?.originalPostId || 0);
+}
+
+function postAuthorId(post) {
+  return Number(
+    post?.authorId ||
+    post?.userId ||
+    post?.ownerId ||
+    post?.createdById ||
+    post?.user?.userId ||
+    post?.user?.id ||
+    post?.author?.userId ||
+    post?.author?.id ||
+    0
+  );
+}
+
+function authoredPostTitle(post, video) {
+  return truncateText(post?.content || post?.title, 54) || (video ? "My reel" : "My post");
+}
+
 function formatProfileDate(value) {
   if (!value) return "Recently saved";
   const date = new Date(value);
@@ -144,6 +174,8 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState("");
   const [profileUser, setProfileUser] = useState(null);
+  const [profilePosts, setProfilePosts] = useState([]);
+  const [activeProfilePostTab, setActiveProfilePostTab] = useState("posts");
   const [savedPosts, setSavedPosts] = useState([]);
   const [activeSavedTab, setActiveSavedTab] = useState("posts");
   const [stats, setStats] = useState({ followers: 0, following: 0, friends: 0 });
@@ -188,6 +220,9 @@ export default function ProfilePage() {
       ? xp.badges.slice(0, 3).map((badge) => ({ title: badge, subtitle: "Badge unlocked", date: "Verified milestone", tone: "purple" }))
       : DEFAULT_ACHIEVEMENTS;
 
+  const authoredFeedPosts = useMemo(() => profilePosts.filter((post) => !isVideoItem(post)), [profilePosts]);
+  const authoredReels = useMemo(() => profilePosts.filter((post) => isVideoItem(post)), [profilePosts]);
+  const activeProfilePosts = activeProfilePostTab === "posts" ? authoredFeedPosts : authoredReels;
   const savedFeedPosts = useMemo(() => savedPosts.filter((post) => !isVideoItem(post)), [savedPosts]);
   const savedReels = useMemo(() => savedPosts.filter((post) => isVideoItem(post)), [savedPosts]);
   const activeSaved = activeSavedTab === "posts" ? savedFeedPosts : savedReels;
@@ -201,11 +236,12 @@ export default function ProfilePage() {
       setLoading(true);
       try {
         if (isOwnProfile) {
-          const [followersRes, followingRes, friendsRes, savedRes] = await Promise.all([
+          const [followersRes, followingRes, friendsRes, savedRes, myPostsRes] = await Promise.all([
             followService.followers(),
             followService.following(),
             friendService.getFriends(),
-            feedService.getSavedPosts({ page: 0, size: 100 })
+            feedService.getSavedPosts({ page: 0, size: 100 }),
+            feedService.getMyPosts()
           ]);
           const followers = Array.isArray(followersRes.data) ? followersRes.data : [];
           const following = Array.isArray(followingRes.data) ? followingRes.data : [];
@@ -231,15 +267,17 @@ export default function ProfilePage() {
           });
           setNetworkLists({ followers, following, friends });
           setRelationship({ isFollowing: false, isFriend: false, requested: false });
-          setSavedPosts(savedRes?.data?.data?.content || []);
+          setSavedPosts(listFromResponse(savedRes));
+          setProfilePosts(listFromResponse(myPostsRes));
         } else {
-          const [profileRes, followersRes, followingRes, friendsRes, myFollowingRes, myFriendsRes] = await Promise.all([
+          const [profileRes, followersRes, followingRes, friendsRes, myFollowingRes, myFriendsRes, feedRes] = await Promise.all([
             userService.getPublicProfile(viewingUserId),
             followService.followersForUser(viewingUserId),
             followService.followingForUser(viewingUserId),
             friendService.getFriendsForUser(viewingUserId),
             followService.following(),
-            friendService.getFriends()
+            friendService.getFriends(),
+            feedService.getFeed()
           ]);
           const followers = Array.isArray(followersRes.data) ? followersRes.data : [];
           const following = Array.isArray(followingRes.data) ? followingRes.data : [];
@@ -255,6 +293,11 @@ export default function ProfilePage() {
             requested: false
           });
           setSavedPosts([]);
+          setProfilePosts(
+            listFromResponse(feedRes)
+              .filter((item) => String(item?.type || "POST").toUpperCase() !== "SHARE")
+              .filter((item) => postAuthorId(item) === viewingUserId)
+          );
         }
       } catch {
         pushToast("Failed to load profile", "error");
@@ -270,6 +313,28 @@ export default function ProfilePage() {
     const postId = Number(post?.postId);
     if (!postId) return;
     navigate("/home", { state: { openPostId: postId, mode: isVideoItem(post) ? "reels" : "posts" } });
+  };
+
+  const openProfilePost = (post) => {
+    const postId = postIdForItem(post);
+    if (!postId) return;
+    navigate("/home", { state: { openPostId: postId, mode: isVideoItem(post) ? "reels" : "posts" } });
+  };
+
+  const deleteProfilePost = async (post) => {
+    const postId = postIdForItem(post);
+    if (!postId || !isOwnProfile) return;
+    if (!window.confirm("Delete this post?")) return;
+    setSaving(`delete-post-${postId}`);
+    try {
+      await feedService.deletePost(postId);
+      setProfilePosts((prev) => prev.filter((item) => postIdForItem(item) !== postId));
+      pushToast("Post deleted", "success");
+    } catch (errorResponse) {
+      pushToast(errorResponse?.response?.data?.message || errorResponse?.response?.data || "Failed to delete post", "error");
+    } finally {
+      setSaving("");
+    }
   };
 
   const openNetworkUser = (entry) => {
@@ -615,63 +680,126 @@ export default function ProfilePage() {
             <StatCard icon="chat" label="Friends" value={stats.friends} trend="Tap to view" tone="pink" onClick={() => setActiveNetwork("friends")} />
           </div>
 
-          <Card className="saved-card profile-saved-card">
+          <Card className="saved-card profile-posts-card">
             <SectionHeader
-              title="Saved Posts & Reels"
-              subtitle="Posts and reels you saved from the social feed."
+              title={isOwnProfile ? "My Posts & Reels" : `${name}'s Posts & Reels`}
+              subtitle={isOwnProfile ? "Posts and reels you published from the feed." : "Posts and reels published by this profile."}
               action={<Button icon="home" onClick={() => navigate("/home")}>Open Feed</Button>}
             />
             <Tabs
-              active={activeSavedTab}
-              onChange={setActiveSavedTab}
+              active={activeProfilePostTab}
+              onChange={setActiveProfilePostTab}
               tabs={[
-                { value: "posts", label: "Saved Posts", icon: "image", count: savedFeedPosts.length },
-                { value: "reels", label: "Saved Reels", icon: "video", count: savedReels.length }
+                { value: "posts", label: "Posts", icon: "image", count: authoredFeedPosts.length },
+                { value: "reels", label: "Reels", icon: "video", count: authoredReels.length }
               ]}
             />
-            <div className="saved-list-grid saved-tile-grid">
-              {activeSaved.length === 0 ? (
-                <EmptyPanel icon="save" title={`No saved ${activeSavedTab} yet`} subtitle="Saved feed items will appear here for quick access." />
-              ) : activeSaved.slice(0, 4).map((post, index) => {
+            <div className="saved-list-grid saved-tile-grid profile-post-tile-grid">
+              {activeProfilePosts.length === 0 ? (
+                <EmptyPanel icon="image" title={`No ${activeProfilePostTab} yet`} subtitle={isOwnProfile ? "Your published posts will appear here." : "This profile has not published anything in this tab yet."} />
+              ) : activeProfilePosts.slice(0, 6).map((post, index) => {
                 const video = isVideoItem(post);
                 const mediaUrl = savedItemMediaUrl(post);
-                const title = savedItemTitle(post, video);
+                const title = authoredPostTitle(post, video);
+                const postId = postIdForItem(post);
                 return (
-                  <article key={`${activeSavedTab}-${post.postId}`} className={`saved-tile-card saved-tile-${index % 4}`}>
-                    <button type="button" className="saved-tile-open" onClick={() => openSavedItem(post)}>
+                  <article key={`profile-post-${postId || index}`} className={`saved-tile-card profile-post-tile saved-tile-${index % 4}`}>
+                    <button type="button" className="saved-tile-open" onClick={() => openProfilePost(post)}>
                       <div className="saved-tile-media">
                         {mediaUrl ? (
                           video ? <video src={mediaUrl} muted playsInline /> : <img src={mediaUrl} alt={title} />
                         ) : (
                           <span className="saved-tile-placeholder"><Icon name={video ? "video" : "image"} /></span>
                         )}
-                        {video ? <span className="saved-tile-type">Reel</span> : null}
+                        {video ? <span className="saved-tile-type">Reel</span> : <span className="saved-tile-type">Post</span>}
                       </div>
                       <div className="saved-tile-copy">
                         <strong>{title}</strong>
-                        <span>{formatProfileDate(post.savedAt || post.createdAt || post.sharedAt)}</span>
+                        <span>{formatProfileDate(post.createdAt || post.sharedAt)}</span>
                       </div>
                     </button>
-                    <button
-                      type="button"
-                      className="saved-tile-save"
-                      disabled={saving === `unsave-${post.postId}`}
-                      onClick={() => unsaveSavedItem(post)}
-                      aria-label="Remove saved item"
-                      title="Remove saved item"
-                    >
-                      <Icon name="bookmark" />
-                    </button>
+                    {isOwnProfile ? (
+                      <button
+                        type="button"
+                        className="saved-tile-save profile-post-delete"
+                        disabled={saving === `delete-post-${postId}`}
+                        onClick={() => deleteProfilePost(post)}
+                        aria-label="Delete post"
+                        title="Delete post"
+                      >
+                        <Icon name="trash" />
+                      </button>
+                    ) : null}
                   </article>
                 );
               })}
             </div>
-            {activeSaved.length > 4 ? (
-              <button type="button" className="text-link saved-view-all" onClick={() => navigate("/home", { state: { mode: activeSavedTab === "reels" ? "reels" : "posts" } })}>
-                View All Saved {activeSavedTab === "reels" ? "Reels" : "Posts"}
+            {activeProfilePosts.length > 6 ? (
+              <button type="button" className="text-link saved-view-all" onClick={() => navigate("/home", { state: { mode: activeProfilePostTab === "reels" ? "reels" : "posts" } })}>
+                View All {activeProfilePostTab === "reels" ? "Reels" : "Posts"}
               </button>
             ) : null}
           </Card>
+
+          {isOwnProfile ? (
+            <Card className="saved-card profile-saved-card">
+              <SectionHeader
+                title="Saved Posts & Reels"
+                subtitle="Posts and reels you saved from the social feed."
+                action={<Button icon="home" onClick={() => navigate("/home")}>Open Feed</Button>}
+              />
+              <Tabs
+                active={activeSavedTab}
+                onChange={setActiveSavedTab}
+                tabs={[
+                  { value: "posts", label: "Saved Posts", icon: "image", count: savedFeedPosts.length },
+                  { value: "reels", label: "Saved Reels", icon: "video", count: savedReels.length }
+                ]}
+              />
+              <div className="saved-list-grid saved-tile-grid">
+                {activeSaved.length === 0 ? (
+                  <EmptyPanel icon="save" title={`No saved ${activeSavedTab} yet`} subtitle="Saved feed items will appear here for quick access." />
+                ) : activeSaved.slice(0, 4).map((post, index) => {
+                  const video = isVideoItem(post);
+                  const mediaUrl = savedItemMediaUrl(post);
+                  const title = savedItemTitle(post, video);
+                  return (
+                    <article key={`${activeSavedTab}-${post.postId}`} className={`saved-tile-card saved-tile-${index % 4}`}>
+                      <button type="button" className="saved-tile-open" onClick={() => openSavedItem(post)}>
+                        <div className="saved-tile-media">
+                          {mediaUrl ? (
+                            video ? <video src={mediaUrl} muted playsInline /> : <img src={mediaUrl} alt={title} />
+                          ) : (
+                            <span className="saved-tile-placeholder"><Icon name={video ? "video" : "image"} /></span>
+                          )}
+                          {video ? <span className="saved-tile-type">Reel</span> : null}
+                        </div>
+                        <div className="saved-tile-copy">
+                          <strong>{title}</strong>
+                          <span>{formatProfileDate(post.savedAt || post.createdAt || post.sharedAt)}</span>
+                        </div>
+                      </button>
+                      <button
+                        type="button"
+                        className="saved-tile-save"
+                        disabled={saving === `unsave-${post.postId}`}
+                        onClick={() => unsaveSavedItem(post)}
+                        aria-label="Remove saved item"
+                        title="Remove saved item"
+                      >
+                        <Icon name="bookmark" />
+                      </button>
+                    </article>
+                  );
+                })}
+              </div>
+              {activeSaved.length > 4 ? (
+                <button type="button" className="text-link saved-view-all" onClick={() => navigate("/home", { state: { mode: activeSavedTab === "reels" ? "reels" : "posts" } })}>
+                  View All Saved {activeSavedTab === "reels" ? "Reels" : "Posts"}
+                </button>
+              ) : null}
+            </Card>
+          ) : null}
 
           {isOwnProfile ? (
             <div className="profile-forms-grid">

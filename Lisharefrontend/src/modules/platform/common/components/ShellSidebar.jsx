@@ -35,6 +35,8 @@ export default function ShellSidebar({ collapsed = false, onToggleCollapsed }) {
             <span>Share</span>
             <i aria-hidden="true" />
             <span>Sell</span>
+            <i aria-hidden="true" />
+            <span>Grow Together</span>
           </p>
         </div>
         <button

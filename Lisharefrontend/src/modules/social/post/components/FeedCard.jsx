@@ -315,6 +315,38 @@ function commentAuthorName(comment) {
   return comment?.authorName || `${comment?.firstName || ""} ${comment?.lastName || ""}`.trim() || "Member";
 }
 
+function firstNumericId(...values) {
+  const found = values.find((value) => Number(value) > 0);
+  return found ? Number(found) : 0;
+}
+
+function comparableName(value = "") {
+  return String(value || "").trim().replace(/\s+/g, " ").toLowerCase();
+}
+
+function itemAuthorId(item) {
+  return firstNumericId(
+    item?.authorId,
+    item?.userId,
+    item?.ownerId,
+    item?.createdById,
+    item?.user?.userId,
+    item?.user?.id,
+    item?.author?.userId,
+    item?.author?.id
+  );
+}
+
+function isOwnedPost(item, currentUserId, currentUserName) {
+  const ownerId = itemAuthorId(item);
+  const viewerId = firstNumericId(currentUserId);
+  if (ownerId && viewerId) return ownerId === viewerId;
+
+  const ownerName = comparableName(item?.authorName || item?.author?.name);
+  const viewerName = comparableName(currentUserName);
+  return Boolean(ownerName && viewerName && ownerName === viewerName);
+}
+
 function mentionFromName(name = "member") {
   const cleaned = String(name)
     .trim()
@@ -439,7 +471,7 @@ export default function FeedCard({
   const validTargetPost = Number(targetPostId) > 0 && !originalPostDeleted;
   const mediaUrl = !originalPostDeleted && item.imageUrl ? toMediaUrl(item.imageUrl) : "";
   const videoAsset = (item.mediaType || "").toUpperCase() === "VIDEO" || isVideoAsset(item.imageUrl || "");
-  const canEditPost = !isShare && Number(item.authorId) === Number(currentUserId);
+  const canEditPost = !isShare && isOwnedPost(item, currentUserId, currentUserName);
   const canDeletePost = canEditPost;
   const canDeleteShare = isShare && Number(item.sharedById) === Number(currentUserId);
   const canShareToStory = Boolean(validTargetPost && mediaUrl);

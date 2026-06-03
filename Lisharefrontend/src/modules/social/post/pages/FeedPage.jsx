@@ -366,7 +366,7 @@ export default function FeedPage() {
   const [reportDraft, setReportDraft] = useState({ postId: null, reason: "CATEGORY_FAKE", details: "" });
   const [reportSubmitting, setReportSubmitting] = useState(false);
 
-  const userId = Number(user?.userId || 0);
+  const userId = Number(user?.userId || user?.id || 0);
   const currentUserStoryName = `${user?.firstname || user?.firstName || ""} ${user?.lastName || user?.lastname || ""}`.trim()
     || user?.name
     || "Anuradh DK";

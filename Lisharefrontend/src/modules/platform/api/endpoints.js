@@ -29,6 +29,7 @@ export const ENDPOINTS = {
   },
   feed: {
     postsFeed: "/posts/feed",
+    myPosts: "/posts/my",
     createPost: "/posts/create",
     deletePost: (postId) => `/posts/delete/${postId}`,
     commentAdd: (postId) => `/comments/${postId}/add`,

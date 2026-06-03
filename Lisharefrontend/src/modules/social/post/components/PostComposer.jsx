@@ -84,7 +84,6 @@ export default function PostComposer({ onSubmit, submitting }) {
   const displayName = `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || user?.name || "there";
   const firstName = displayName.split(" ")[0] || "there";
   const avatarUrl = user?.profileImageUrl || user?.imageUrl ? toMediaUrl(user.profileImageUrl || user.imageUrl) : "";
-  const selectedCategory = POST_CATEGORIES.find((item) => item.value === category);
 
   const fileLabel = useMemo(() => {
     if (!imageFile) return "";
@@ -170,24 +169,6 @@ export default function PostComposer({ onSubmit, submitting }) {
               ))}
             </select>
           </label>
-          <div className="composer-xp-guide composer-xp-guide-inline" aria-label="Post category XP rewards">
-            {POST_CATEGORIES.map((item) => (
-              <button
-                key={`xp-${item.value}`}
-                type="button"
-                className={item.value === category ? "active" : ""}
-                onClick={() => setCategory(item.value)}
-              >
-                <strong>{item.xp} XP</strong>
-                <span>{item.label}</span>
-              </button>
-            ))}
-          </div>
-          {selectedCategory ? (
-            <small className="composer-xp-preview active">
-              {selectedCategory.label} post earns {selectedCategory.xp} XP
-            </small>
-          ) : null}
         </div>
         <button type="submit" className="btn btn-primary composer-publish-btn" disabled={submitting}>
           {submitting ? "Posting..." : "Post"}

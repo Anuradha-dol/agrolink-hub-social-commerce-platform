@@ -3,6 +3,7 @@ import { ENDPOINTS } from "/src/modules/platform/api/endpoints";
 
 export const feedService = {
   getFeed: () => axiosInstance.get(ENDPOINTS.feed.sharedFeed),
+  getMyPosts: () => axiosInstance.get(ENDPOINTS.feed.myPosts),
   createPost: (formData) =>
     axiosInstance.post(ENDPOINTS.feed.createPost, formData, {
       headers: { "Content-Type": "multipart/form-data" }
@@ -11,7 +12,16 @@ export const feedService = {
     axiosInstance.put(`/posts/update/${postId}`, formData, {
       headers: { "Content-Type": "multipart/form-data" }
     }),
-  deletePost: (postId) => axiosInstance.delete(ENDPOINTS.feed.deletePost(postId)),
+  deletePost: async (postId) => {
+    try {
+      return await axiosInstance.delete(ENDPOINTS.feed.deletePost(postId));
+    } catch (error) {
+      if ([404, 405].includes(Number(error?.response?.status))) {
+        return axiosInstance.delete(`/api/posts/${postId}`);
+      }
+      throw error;
+    }
+  },
   markReelView: (postId) => axiosInstance.post(`/posts/${postId}/reel-view`),
   addComment: (postId, content) => axiosInstance.post(ENDPOINTS.feed.commentAdd(postId), { content }),
   addReply: (postId, parentCommentId, content) =>
