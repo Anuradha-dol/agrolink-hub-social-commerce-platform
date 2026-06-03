@@ -116,7 +116,7 @@ export default function ForgotPasswordPage() {
     <main className="auth-ref-page auth-forgot-ref">
       <Link className="auth-brand-ref" to="/" aria-label="AgroLink Hub home">
         <img src={agroLinkHubLogo} alt="" />
-        <span><strong>AgroLink Hub</strong><small>Connect. Share. Sell.</small></span>
+        <span><strong>AgroLink <em>Hub</em></strong><small>Connect. Share. Sell. Grow Together.</small></span>
       </Link>
       <Link className="auth-top-link auth-forgot-back" to="/login"><ForgotIcon name="arrowLeft" /> Back to Login</Link>
 

@@ -48,7 +48,7 @@ export default function LoginPage() {
     <main className="auth-ref-page auth-login-ref">
       <Link className="auth-brand-ref" to="/" aria-label="AgroLink Hub home">
         <img src={agroLinkHubLogo} alt="" />
-        <span><strong>AgroLink Hub</strong><small>Connect. Share. Sell.</small></span>
+        <span><strong>AgroLink <em>Hub</em></strong><small>Connect. Share. Sell. Grow Together.</small></span>
       </Link>
       <Link className="auth-top-link" to="/signup">Create account</Link>
 

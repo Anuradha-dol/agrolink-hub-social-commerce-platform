@@ -68,7 +68,7 @@ export default function VerifyOtpPage() {
     <main className="auth-ref-page auth-verify-ref">
       <Link className="auth-brand-ref" to="/" aria-label="AgroLink Hub home">
         <img src={agroLinkHubLogo} alt="" />
-        <span><strong>AgroLink Hub</strong><small>Connect. Share. Sell.</small></span>
+        <span><strong>AgroLink <em>Hub</em></strong><small>Connect. Share. Sell. Grow Together.</small></span>
       </Link>
 
       <form className="auth-verify-card" onSubmit={verify}>

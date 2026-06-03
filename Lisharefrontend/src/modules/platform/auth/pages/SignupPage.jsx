@@ -115,8 +115,8 @@ function AuthBrand() {
     <Link className="auth-brand-ref" to="/" aria-label="AgroLink Hub home">
       <img src={agroLinkHubLogo} alt="" />
       <span>
-        <strong>AgroLink Hub</strong>
-        <small>Connect. Share. Sell.</small>
+        <strong>AgroLink <em>Hub</em></strong>
+        <small>Connect. Share. Sell. Grow Together.</small>
       </span>
     </Link>
   );

@@ -13284,8 +13284,8 @@ body.route-is-changing .shell-content::before {
   place-items: center !important;
   padding: clamp(58px, 7vh, 76px) clamp(12px, 2.4vw, 34px) clamp(10px, 2vh, 18px) !important;
   background:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.18) 20%, rgba(255, 255, 255, 0.44) 50%, rgba(255, 255, 255, 0.18) 80%, rgba(255, 255, 255, 0.34)),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.28)),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.26) 20%, rgba(255, 255, 255, 0.52) 50%, rgba(255, 255, 255, 0.26) 80%, rgba(255, 255, 255, 0.42)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.34)),
     url("./assets/backgrounds/signup-step2-hero-4k.jpg") center / cover no-repeat !important;
 }
 
@@ -18195,7 +18195,7 @@ body.route-is-changing .shell-content::before {
 
 .auth-signup-step-3.auth-signup-ref::before {
   height: min(45vh, 390px) !important;
-  opacity: 0.64 !important;
+  opacity: 0.84 !important;
   background-image: url("./assets/backgrounds/signup-step3-hero-4k.jpg") !important;
 }
 
@@ -18231,9 +18231,9 @@ body.route-is-changing .shell-content::before {
   height: 100% !important;
   opacity: 1 !important;
   background:
-    radial-gradient(circle at 16% 82%, rgba(217, 119, 6, 0.13), transparent 30%),
-    radial-gradient(circle at 84% 78%, rgba(20, 184, 166, 0.15), transparent 31%),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.48), transparent 22%, transparent 78%, rgba(255, 255, 255, 0.48)) !important;
+    radial-gradient(circle at 16% 82%, rgba(217, 119, 6, 0.08), transparent 30%),
+    radial-gradient(circle at 84% 78%, rgba(20, 184, 166, 0.09), transparent 31%),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.26), transparent 22%, transparent 78%, rgba(255, 255, 255, 0.26)) !important;
 }
 
 @media (max-width: 1360px), (max-height: 760px) {
@@ -18264,6 +18264,23 @@ body.route-is-changing .shell-content::before {
   }
 }
 
+
+/* Background fade tuning: keep signup step 3 clearer than the shared small-screen fade. */
+@media (max-width: 1360px), (max-height: 760px) {
+  .auth-signup-step-3.auth-signup-ref::before {
+    opacity: 0.78 !important;
+  }
+}
+
+@media (max-width: 760px), (max-height: 620px) {
+  .auth-signup-step-3.auth-signup-ref::before {
+    opacity: 0.58 !important;
+  }
+
+  .auth-signup-step-3.auth-signup-ref::after {
+    opacity: 0.48 !important;
+  }
+}
 /* Signup brand consistency: same logo lockup on all three steps. */
 .auth-signup-ref .auth-brand-ref,
 .auth-signup-step-1 .auth-brand-ref,
@@ -18447,7 +18464,8 @@ body.route-is-changing .shell-content::before {
 .auth-login-ref {
   min-height: 100svh !important;
   background:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.04) 24%, rgba(255, 255, 255, 0.06) 50%, rgba(255, 255, 255, 0.04) 76%, rgba(255, 255, 255, 0.2) 100%),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.34) 0%, rgba(255, 255, 255, 0.16) 24%, rgba(255, 255, 255, 0.18) 50%, rgba(255, 255, 255, 0.16) 76%, rgba(255, 255, 255, 0.34) 100%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.2)),
     var(--agro-auth-signin-collage-image) center / cover no-repeat !important;
 }
 
@@ -18659,5 +18677,253 @@ body.route-is-changing .shell-content::before {
   .auth-login-ref .auth-login-row {
     align-items: flex-start !important;
     flex-direction: column !important;
+  }
+}
+
+/* Auth brand text only: black AgroLink, green Hub, muted tagline. */
+.auth-login-ref,
+.auth-signup-ref,
+.auth-forgot-ref,
+.auth-verify-ref {
+  --auth-brand-ink: #07162f;
+  --auth-brand-green: #16a34a;
+  --auth-brand-muted: #48607a;
+}
+
+.auth-login-ref .auth-brand-ref strong,
+.auth-signup-ref .auth-brand-ref strong,
+.auth-forgot-ref .auth-brand-ref strong,
+.auth-verify-ref .auth-brand-ref strong {
+  color: var(--auth-brand-ink) !important;
+  font-weight: 950 !important;
+  letter-spacing: -0.045em !important;
+}
+
+.auth-login-ref .auth-brand-ref strong em,
+.auth-signup-ref .auth-brand-ref strong em,
+.auth-forgot-ref .auth-brand-ref strong em,
+.auth-verify-ref .auth-brand-ref strong em {
+  color: var(--auth-brand-green) !important;
+  font-style: normal !important;
+}
+
+.auth-login-ref .auth-brand-ref small,
+.auth-signup-ref .auth-brand-ref small,
+.auth-forgot-ref .auth-brand-ref small,
+.auth-verify-ref .auth-brand-ref small {
+  color: var(--auth-brand-muted) !important;
+}
+
+
+
+/* Auth text weight consistency: make signup form text match sign-in and forgot password. */
+.auth-signup-ref .auth-step-title h2,
+.auth-signup-step-2 .signup-step2-title h2,
+.auth-signup-step-3 .auth-step-title h2 {
+  font-weight: 700 !important;
+}
+
+.auth-signup-ref .auth-step-title p,
+.auth-signup-step-2 .signup-step2-title p,
+.auth-signup-step-3 .auth-step-title p,
+.auth-signup-ref .signup-privacy-note,
+.auth-signup-ref .auth-bottom-link {
+  font-weight: 740 !important;
+}
+
+.auth-signup-ref .auth-field-ref,
+.auth-signup-ref .auth-field-ref > span,
+.auth-signup-ref .signup-section-label,
+.signup-pdf-card .auth-field-ref > span,
+.signup-section-label {
+  font-weight: 900 !important;
+}
+
+/* Match requested brand size/boldness on every auth page. */
+.auth-login-ref .auth-brand-ref,
+.auth-signup-ref .auth-brand-ref,
+.auth-forgot-ref .auth-brand-ref,
+.auth-verify-ref .auth-brand-ref {
+  top: clamp(14px, 2.6vh, 24px) !important;
+  left: clamp(14px, 2.4vw, 28px) !important;
+  gap: 14px !important;
+}
+
+.auth-login-ref .auth-brand-ref img,
+.auth-signup-ref .auth-brand-ref img,
+.auth-forgot-ref .auth-brand-ref img,
+.auth-verify-ref .auth-brand-ref img {
+  width: clamp(50px, 6.8vh, 58px) !important;
+  height: clamp(50px, 6.8vh, 58px) !important;
+  border-radius: 16px !important;
+  background: #ffffff !important;
+  box-shadow: 0 12px 28px rgba(15, 28, 48, 0.1) !important;
+  object-fit: contain !important;
+}
+
+.auth-login-ref .auth-brand-ref strong,
+.auth-signup-ref .auth-brand-ref strong,
+.auth-forgot-ref .auth-brand-ref strong,
+.auth-verify-ref .auth-brand-ref strong {
+  font-size: clamp(1.28rem, 2.8vh, 1.62rem) !important;
+  line-height: 1 !important;
+  font-weight: 950 !important;
+  letter-spacing: -0.045em !important;
+}
+
+.auth-login-ref .auth-brand-ref small,
+.auth-signup-ref .auth-brand-ref small,
+.auth-forgot-ref .auth-brand-ref small,
+.auth-verify-ref .auth-brand-ref small {
+  margin-top: 5px !important;
+  font-size: clamp(0.82rem, 1.75vh, 1rem) !important;
+  line-height: 1.1 !important;
+  font-weight: 900 !important;
+}
+
+@media (max-width: 760px) {
+  .auth-login-ref .auth-brand-ref span,
+  .auth-signup-ref .auth-brand-ref span,
+  .auth-forgot-ref .auth-brand-ref span,
+  .auth-verify-ref .auth-brand-ref span {
+    display: block !important;
+  }
+
+  .auth-login-ref .auth-brand-ref img,
+  .auth-signup-ref .auth-brand-ref img,
+  .auth-forgot-ref .auth-brand-ref img,
+  .auth-verify-ref .auth-brand-ref img {
+    width: 42px !important;
+    height: 42px !important;
+  }
+
+  .auth-login-ref .auth-brand-ref strong,
+  .auth-signup-ref .auth-brand-ref strong,
+  .auth-forgot-ref .auth-brand-ref strong,
+  .auth-verify-ref .auth-brand-ref strong {
+    font-size: 1rem !important;
+  }
+
+  .auth-login-ref .auth-brand-ref small,
+  .auth-signup-ref .auth-brand-ref small,
+  .auth-forgot-ref .auth-brand-ref small,
+  .auth-verify-ref .auth-brand-ref small {
+    display: none !important;
+  }
+}
+
+/* Final lock: identical upper-left brand on sign up, sign in, forgot password, and OTP. */
+.auth-login-ref > .auth-brand-ref,
+.auth-signup-ref > .auth-brand-ref,
+.auth-forgot-ref > .auth-brand-ref,
+.auth-verify-ref > .auth-brand-ref {
+  top: 24px !important;
+  left: 26px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  width: auto !important;
+  color: #07162f !important;
+  font-family: Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+}
+
+.auth-login-ref > .auth-brand-ref img,
+.auth-signup-ref > .auth-brand-ref img,
+.auth-forgot-ref > .auth-brand-ref img,
+.auth-verify-ref > .auth-brand-ref img {
+  width: 52px !important;
+  height: 52px !important;
+  min-width: 52px !important;
+  min-height: 52px !important;
+  border-radius: 16px !important;
+  background: #ffffff !important;
+  box-shadow: 0 12px 28px rgba(15, 28, 48, 0.1) !important;
+  object-fit: contain !important;
+}
+
+.auth-login-ref > .auth-brand-ref span,
+.auth-signup-ref > .auth-brand-ref span,
+.auth-forgot-ref > .auth-brand-ref span,
+.auth-verify-ref > .auth-brand-ref span {
+  display: grid !important;
+  gap: 5px !important;
+  min-width: 0 !important;
+}
+
+.auth-login-ref > .auth-brand-ref strong,
+.auth-signup-ref > .auth-brand-ref strong,
+.auth-forgot-ref > .auth-brand-ref strong,
+.auth-verify-ref > .auth-brand-ref strong {
+  display: block !important;
+  margin: 0 !important;
+  color: #07162f !important;
+  font-size: 23px !important;
+  line-height: 1 !important;
+  letter-spacing: -0.045em !important;
+  font-weight: 900 !important;
+}
+
+.auth-login-ref > .auth-brand-ref strong em,
+.auth-signup-ref > .auth-brand-ref strong em,
+.auth-forgot-ref > .auth-brand-ref strong em,
+.auth-verify-ref > .auth-brand-ref strong em {
+  color: #16a34a !important;
+  font-style: normal !important;
+}
+
+.auth-login-ref > .auth-brand-ref small,
+.auth-signup-ref > .auth-brand-ref small,
+.auth-forgot-ref > .auth-brand-ref small,
+.auth-verify-ref > .auth-brand-ref small {
+  display: block !important;
+  margin: 0 !important;
+  color: #48607a !important;
+  font-size: 13px !important;
+  line-height: 1.1 !important;
+  letter-spacing: 0 !important;
+  font-weight: 800 !important;
+  white-space: nowrap !important;
+}
+
+@media (max-width: 760px) {
+  .auth-login-ref > .auth-brand-ref,
+  .auth-signup-ref > .auth-brand-ref,
+  .auth-forgot-ref > .auth-brand-ref,
+  .auth-verify-ref > .auth-brand-ref {
+    top: 16px !important;
+    left: 16px !important;
+    gap: 10px !important;
+  }
+
+  .auth-login-ref > .auth-brand-ref img,
+  .auth-signup-ref > .auth-brand-ref img,
+  .auth-forgot-ref > .auth-brand-ref img,
+  .auth-verify-ref > .auth-brand-ref img {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+    border-radius: 14px !important;
+  }
+
+  .auth-login-ref > .auth-brand-ref span,
+  .auth-signup-ref > .auth-brand-ref span,
+  .auth-forgot-ref > .auth-brand-ref span,
+  .auth-verify-ref > .auth-brand-ref span {
+    display: grid !important;
+  }
+
+  .auth-login-ref > .auth-brand-ref strong,
+  .auth-signup-ref > .auth-brand-ref strong,
+  .auth-forgot-ref > .auth-brand-ref strong,
+  .auth-verify-ref > .auth-brand-ref strong {
+    font-size: 18px !important;
+  }
+
+  .auth-login-ref > .auth-brand-ref small,
+  .auth-signup-ref > .auth-brand-ref small,
+  .auth-forgot-ref > .auth-brand-ref small,
+  .auth-verify-ref > .auth-brand-ref small {
+    display: none !important;
   }
 }
