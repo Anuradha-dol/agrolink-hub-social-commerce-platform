@@ -13286,7 +13286,7 @@ body.route-is-changing .shell-content::before {
   background:
     linear-gradient(90deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.18) 20%, rgba(255, 255, 255, 0.44) 50%, rgba(255, 255, 255, 0.18) 80%, rgba(255, 255, 255, 0.34)),
     linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.28)),
-    url("./assets/backgrounds/forgot-password-step3-bg-4k.jpg") center / cover no-repeat !important;
+    url("./assets/backgrounds/signup-step2-hero-4k.jpg") center / cover no-repeat !important;
 }
 
 .auth-forgot-ref::before,
@@ -17801,9 +17801,10 @@ body.route-is-changing .shell-content::before {
 .auth-signup-step-3 .signup-pdf-card {
   width: min(860px, calc(100vw - 28px)) !important;
   max-width: 860px !important;
+  height: min(720px, calc(100dvh - clamp(78px, 10vh, 96px))) !important;
   max-height: calc(100dvh - clamp(78px, 10vh, 96px)) !important;
   min-height: 0 !important;
-  grid-template-rows: auto minmax(0, auto) auto auto !important;
+  grid-template-rows: auto minmax(0, 1fr) auto auto !important;
   gap: clamp(7px, 1.2vh, 12px) !important;
   border-radius: 16px !important;
   padding: clamp(14px, 2.2vh, 24px) clamp(18px, 3vw, 36px) clamp(10px, 1.8vh, 18px) !important;
@@ -17834,7 +17835,9 @@ body.route-is-changing .shell-content::before {
 }
 
 .auth-signup-ref .auth-step-panel {
+  height: 100% !important;
   min-height: 0 !important;
+  align-content: start !important;
   gap: clamp(7px, 1.25vh, 12px) !important;
 }
 
@@ -17998,6 +18001,7 @@ body.route-is-changing .shell-content::before {
     display: none !important;
   }
 
+  .auth-signup-step-1 .signup-pdf-card,
   .auth-signup-step-2 .signup-pdf-card,
   .auth-signup-step-3 .signup-pdf-card {
     width: min(820px, calc(100vw - 28px)) !important;
@@ -18024,6 +18028,7 @@ body.route-is-changing .shell-content::before {
   .auth-signup-step-2 .signup-pdf-card,
   .auth-signup-step-3 .signup-pdf-card {
     width: calc(100vw - 20px) !important;
+    height: auto !important;
     max-height: calc(100dvh - 76px) !important;
     padding: 12px 12px 10px !important;
   }
@@ -18066,6 +18071,7 @@ body.route-is-changing .shell-content::before {
   .auth-signup-step-1 .signup-pdf-card,
   .auth-signup-step-2 .signup-pdf-card,
   .auth-signup-step-3 .signup-pdf-card {
+    height: min(640px, calc(100dvh - 58px)) !important;
     max-height: calc(100dvh - 58px) !important;
     padding-top: 10px !important;
     padding-bottom: 8px !important;
@@ -18114,6 +18120,13 @@ body.route-is-changing .shell-content::before {
   background-size: cover !important;
 }
 
+.auth-signup-step-1.auth-signup-ref {
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.18) 20%, rgba(255, 255, 255, 0.46) 50%, rgba(255, 255, 255, 0.18) 80%, rgba(255, 255, 255, 0.34)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.28)),
+    url("./assets/backgrounds/forgot-password-step3-bg-4k.jpg") center / cover no-repeat !important;
+}
+
 .auth-signup-ref .signup-step1-photo-side,
 .auth-signup-ref .signup-step3-decor {
   display: none !important;
@@ -18135,15 +18148,13 @@ body.route-is-changing .shell-content::before {
 }
 
 .auth-signup-step-1.auth-signup-ref::before {
-  height: min(45vh, 390px) !important;
-  opacity: 0.7 !important;
-  background-image: url("./assets/backgrounds/signup-step1-hero-4k.jpg") !important;
+  display: none !important;
 }
 
 .auth-signup-step-2.auth-signup-ref::before {
   height: min(42vh, 360px) !important;
   opacity: 0.68 !important;
-  background-image: url("./assets/backgrounds/signup-step2-hero-4k.jpg") !important;
+  background-image: url("./assets/backgrounds/signup-step1-hero-4k.jpg") !important;
 }
 
 .auth-signup-step-3.auth-signup-ref::before {
