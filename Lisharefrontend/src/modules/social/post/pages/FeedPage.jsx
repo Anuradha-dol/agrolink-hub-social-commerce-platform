@@ -1187,6 +1187,7 @@ export default function FeedPage() {
               <div className="row-actions">
                 <button className="feed-view-btn" type="button" onClick={() => navigate("/chat")}>
                   See all
+                  <FeedIcon name="chevronRight" />
                 </button>
               </div>
             </header>

@@ -41,6 +41,13 @@ function ComposerToolIcon({ name }) {
         <path d="M2 12c0-5.5 4.5-10 10-10s10 4.5 10 10-4.5 10-10 10" />
         <path d="M6 12c0-3.3 2.7-6 6-6s6 2.7 6 6" />
       </>
+    ),
+    more: (
+      <>
+        <circle cx="5" cy="12" r="1.4" />
+        <circle cx="12" cy="12" r="1.4" />
+        <circle cx="19" cy="12" r="1.4" />
+      </>
     )
   };
 
@@ -67,6 +74,7 @@ function ComposerToolButton({ label, icon, active = false, onClick }) {
   return (
     <button type="button" className={`composer-tool-button ${active ? "active" : ""}`} aria-label={label} title={label} onClick={onClick}>
       {icon === "gif" ? <span className="composer-tool-gif">GIF</span> : <ComposerToolIcon name={icon} />}
+      <span className="composer-tool-label">{label}</span>
     </button>
   );
 }
@@ -137,10 +145,14 @@ export default function PostComposer({ onSubmit, submitting }) {
           placeholder={`What's happening, ${firstName}?`}
           rows={1}
         />
-        <span className="composer-live-badge" aria-hidden="true">
-          <ComposerToolIcon name="liveFeed" />
-          Live Feed
-        </span>
+        <button
+          type="button"
+          className={`composer-input-emoji ${activeTool === "emoji" ? "active" : ""}`}
+          aria-label="Add emoji"
+          onClick={() => setActiveTool((prev) => prev === "emoji" ? "" : "emoji")}
+        >
+          <ComposerToolIcon name="smile" />
+        </button>
       </div>
 
       {/* Toolbar row: tools on left, Post button on right */}
@@ -149,12 +161,13 @@ export default function PostComposer({ onSubmit, submitting }) {
           <label className="composer-tool-button composer-file-label" aria-label="Attach image or video" title="Attach image or video" onClick={() => setFileAccept("image/*,video/*")}>
             <input ref={fileInputRef} type="file" accept={fileAccept} onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
             <ComposerToolIcon name="image" />
+            <span className="composer-tool-label">Photo</span>
           </label>
-          <ComposerToolButton label="Add video" icon="video" onClick={() => openFilePicker("video/*")} />
-          <ComposerToolButton label="Add GIF" icon="gif" active={activeTool === "gif"} onClick={() => setActiveTool((prev) => prev === "gif" ? "" : "gif")} />
-          <ComposerToolButton label="Add emoji" icon="smile" active={activeTool === "emoji"} onClick={() => setActiveTool((prev) => prev === "emoji" ? "" : "emoji")} />
-          <ComposerToolButton label="Add location" icon="pin" active={activeTool === "location"} onClick={() => setActiveTool((prev) => prev === "location" ? "" : "location")} />
-          <ComposerToolButton label="Add poll" icon="chart" active={activeTool === "poll"} onClick={() => setActiveTool((prev) => prev === "poll" ? "" : "poll")} />
+          <ComposerToolButton label="Video" icon="video" onClick={() => openFilePicker("video/*")} />
+          <ComposerToolButton label="Gif" icon="gif" active={activeTool === "gif"} onClick={() => setActiveTool((prev) => prev === "gif" ? "" : "gif")} />
+          <ComposerToolButton label="Poll" icon="chart" active={activeTool === "poll"} onClick={() => setActiveTool((prev) => prev === "poll" ? "" : "poll")} />
+          <ComposerToolButton label="Feeling" icon="smile" active={activeTool === "emoji"} onClick={() => setActiveTool((prev) => prev === "emoji" ? "" : "emoji")} />
+          <ComposerToolButton label="More" icon="more" active={activeTool === "location"} onClick={() => setActiveTool((prev) => prev === "location" ? "" : "location")} />
         </div>
         {fileLabel ? <small className="composer-file-name">{fileLabel}</small> : null}
         <div className="composer-category-stack">

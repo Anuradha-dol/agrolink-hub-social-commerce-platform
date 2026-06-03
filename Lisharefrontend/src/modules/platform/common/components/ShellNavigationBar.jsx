@@ -12,6 +12,7 @@ export default function ShellNavigationBar() {
   const [headerSearch, setHeaderSearch] = useState("");
   const pageMeta = getPageMeta(location.pathname);
   const { displayName, userHandle, avatarSrc, avatarInitial } = getShellUser(user);
+  const isHomeFeed = location.pathname === "/home" || location.pathname.startsWith("/home/");
 
   const handleLogout = async () => {
     await logout();
@@ -26,10 +27,25 @@ export default function ShellNavigationBar() {
   };
 
   return (
-    <header className="shell-header">
+    <header className={`shell-header ${isHomeFeed ? "shell-header-home-feed" : ""}`}>
       <div className="shell-header-left">
         <div className="shell-page-meta">
-          <h1 className="shell-page-title">{pageMeta.title}</h1>
+          {isHomeFeed ? (
+            <h1 className="shell-page-title shell-page-title-plant" aria-label={pageMeta.title}>
+              <span className="plant-title-word plant-title-home">
+                Home
+                <span className="plant-sprout plant-sprout-left" aria-hidden="true" />
+                <span className="plant-sprout plant-sprout-top" aria-hidden="true" />
+              </span>
+              {" "}
+              <span className="plant-title-word plant-title-feed">
+                Feed
+                <span className="plant-sprout plant-sprout-right" aria-hidden="true" />
+              </span>
+            </h1>
+          ) : (
+            <h1 className="shell-page-title">{pageMeta.title}</h1>
+          )}
           <p className="shell-page-subtitle">
             {pageMeta.showDot ? <span className="shell-subtitle-dot" aria-hidden="true" /> : null}
             {pageMeta.subtitle}
