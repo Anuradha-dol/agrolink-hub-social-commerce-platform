@@ -17323,3 +17323,425 @@ body.route-is-changing .shell-content::before {
     margin-bottom: 2px !important;
   }
 }
+
+/* Signup one-frame fit: keep each wizard form fully visible without page scrolling. */
+.auth-signup-ref {
+  height: 100dvh !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  place-items: center !important;
+  padding: clamp(58px, 7vh, 76px) clamp(12px, 2.4vw, 34px) clamp(10px, 2vh, 18px) !important;
+}
+
+.auth-signup-ref .auth-brand-ref {
+  top: clamp(14px, 2.6vh, 24px) !important;
+  left: clamp(14px, 2.4vw, 28px) !important;
+}
+
+.auth-signup-ref .auth-signup-top-actions {
+  top: clamp(12px, 2.4vh, 22px) !important;
+  right: clamp(12px, 2.4vw, 28px) !important;
+}
+
+.auth-signup-ref .signup-pdf-card,
+.auth-signup-step-1 .signup-pdf-card,
+.auth-signup-step-2 .signup-pdf-card,
+.auth-signup-step-3 .signup-pdf-card {
+  width: min(860px, calc(100vw - 28px)) !important;
+  max-width: 860px !important;
+  max-height: calc(100dvh - clamp(78px, 10vh, 96px)) !important;
+  min-height: 0 !important;
+  grid-template-rows: auto minmax(0, auto) auto auto !important;
+  gap: clamp(7px, 1.2vh, 12px) !important;
+  border-radius: 16px !important;
+  padding: clamp(14px, 2.2vh, 24px) clamp(18px, 3vw, 36px) clamp(10px, 1.8vh, 18px) !important;
+  overflow: visible !important;
+}
+
+.auth-signup-ref .pdf-step-rail {
+  width: min(620px, 100%) !important;
+  margin: 0 auto !important;
+}
+
+.auth-signup-ref .pdf-step-rail span {
+  gap: 6px !important;
+}
+
+.auth-signup-ref .pdf-step-rail strong {
+  width: clamp(24px, 4.4vh, 30px) !important;
+  height: clamp(24px, 4.4vh, 30px) !important;
+  font-size: clamp(0.66rem, 1.5vh, 0.8rem) !important;
+}
+
+.auth-signup-ref .pdf-step-rail span::before {
+  top: calc(clamp(24px, 4.4vh, 30px) / 2) !important;
+}
+
+.auth-signup-ref .pdf-step-rail small {
+  font-size: clamp(0.62rem, 1.35vh, 0.74rem) !important;
+}
+
+.auth-signup-ref .auth-step-panel {
+  min-height: 0 !important;
+  gap: clamp(7px, 1.25vh, 12px) !important;
+}
+
+.auth-signup-ref .auth-step-title,
+.auth-signup-ref .auth-step-title.centered,
+.auth-signup-step-2 .signup-step2-title {
+  min-height: clamp(42px, 8vh, 62px) !important;
+  margin: 0 !important;
+}
+
+.auth-signup-ref .auth-step-title h2,
+.auth-signup-step-2 .signup-step2-title h2,
+.auth-signup-step-3 .auth-step-title h2 {
+  font-size: clamp(1.18rem, 3vh, 1.72rem) !important;
+  line-height: 1.08 !important;
+}
+
+.auth-signup-ref .auth-step-title p,
+.auth-signup-step-2 .signup-step2-title p,
+.auth-signup-step-3 .auth-step-title p {
+  margin-top: 4px !important;
+  font-size: clamp(0.72rem, 1.65vh, 0.92rem) !important;
+  line-height: 1.25 !important;
+}
+
+.auth-signup-ref .auth-field-ref,
+.auth-signup-ref .signup-phone-field,
+.auth-signup-ref .signup-bio-field {
+  gap: 5px !important;
+}
+
+.auth-signup-ref .auth-field-ref > span,
+.auth-signup-ref .signup-section-label {
+  font-size: clamp(0.7rem, 1.45vh, 0.82rem) !important;
+}
+
+.auth-signup-ref .auth-field-ref input,
+.auth-signup-ref .auth-field-ref select,
+.auth-signup-ref .auth-field-ref textarea,
+.auth-signup-ref .signup-phone-control,
+.auth-signup-ref .signup-icon-control {
+  min-height: clamp(34px, 5.9vh, 42px) !important;
+  border-radius: 9px !important;
+  font-size: clamp(0.72rem, 1.45vh, 0.82rem) !important;
+}
+
+.auth-signup-ref .auth-field-ref input,
+.auth-signup-ref .auth-field-ref select {
+  padding: 0 12px !important;
+}
+
+.auth-signup-ref .auth-field-ref textarea {
+  min-height: clamp(52px, 9vh, 74px) !important;
+  padding: 9px 12px !important;
+}
+
+.auth-signup-ref .auth-form-grid.two,
+.auth-signup-ref .signup-profile-selects,
+.auth-signup-ref .persona-role-grid,
+.auth-signup-ref .pdf-interest-grid {
+  gap: clamp(7px, 1.25vh, 10px) !important;
+}
+
+.auth-signup-ref .persona-role-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+
+.auth-signup-ref .persona-role-grid .signup-role-card {
+  min-height: clamp(68px, 12vh, 92px) !important;
+  gap: 4px !important;
+  border-radius: 10px !important;
+  padding: 8px 7px !important;
+}
+
+.auth-signup-ref .persona-role-grid .signup-role-card strong {
+  font-size: clamp(0.68rem, 1.45vh, 0.8rem) !important;
+  line-height: 1.1 !important;
+}
+
+.auth-signup-ref .persona-role-grid .signup-role-card small {
+  font-size: clamp(0.58rem, 1.18vh, 0.68rem) !important;
+  line-height: 1.15 !important;
+}
+
+.auth-signup-ref .role-card-icon,
+.auth-signup-ref .persona-role-grid .signup-role-card span.role-card-icon {
+  width: clamp(24px, 4.4vh, 32px) !important;
+  height: clamp(24px, 4.4vh, 32px) !important;
+}
+
+.auth-signup-ref .pdf-interest-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+}
+
+.auth-signup-ref .pdf-interest-grid button {
+  min-height: clamp(30px, 5.2vh, 39px) !important;
+  border-radius: 9px !important;
+  padding: 0 10px !important;
+  font-size: clamp(0.66rem, 1.35vh, 0.78rem) !important;
+}
+
+.auth-signup-ref .interest-choice-label i {
+  min-width: clamp(18px, 3.4vh, 22px) !important;
+  height: clamp(18px, 3.4vh, 22px) !important;
+  font-size: clamp(0.62rem, 1.25vh, 0.74rem) !important;
+}
+
+.auth-signup-ref .pdf-hobby-editor {
+  min-height: clamp(34px, 5.6vh, 40px) !important;
+  gap: 5px !important;
+  padding: 4px !important;
+}
+
+.auth-signup-ref .pdf-hobby-editor input {
+  min-height: clamp(28px, 4.8vh, 34px) !important;
+}
+
+.auth-signup-ref .pdf-hobby-editor button {
+  min-height: clamp(24px, 4vh, 28px) !important;
+  padding: 0 8px !important;
+  font-size: clamp(0.62rem, 1.25vh, 0.74rem) !important;
+}
+
+.auth-signup-ref .optional-note-card {
+  padding: clamp(8px, 1.6vh, 12px) clamp(10px, 2vw, 14px) !important;
+  font-size: clamp(0.7rem, 1.35vh, 0.82rem) !important;
+}
+
+.auth-signup-ref .optional-note-card span,
+.auth-signup-ref .signup-field-hint,
+.auth-signup-ref .signup-text-count {
+  font-size: clamp(0.62rem, 1.22vh, 0.72rem) !important;
+}
+
+.auth-signup-ref .auth-step-actions {
+  min-height: clamp(34px, 5.8vh, 42px) !important;
+}
+
+.auth-signup-ref .auth-gradient-btn,
+.auth-signup-ref .auth-ghost-btn {
+  min-height: clamp(34px, 5.8vh, 42px) !important;
+  border-radius: 9px !important;
+  padding: 0 clamp(12px, 2vw, 18px) !important;
+  font-size: clamp(0.7rem, 1.35vh, 0.82rem) !important;
+}
+
+.auth-signup-ref .auth-bottom-link,
+.auth-signup-ref .signup-privacy-note {
+  font-size: clamp(0.62rem, 1.2vh, 0.74rem) !important;
+}
+
+.auth-signup-ref .signup-security-strip {
+  display: none !important;
+}
+
+@media (max-width: 1360px), (max-height: 760px) {
+  .auth-signup-step-2 .signup-story-panel,
+  .auth-signup-step-2 .signup-visual-panel,
+  .auth-signup-step-1 .signup-step1-photo-side,
+  .auth-signup-step-3 .signup-step3-decor {
+    display: none !important;
+  }
+
+  .auth-signup-step-2 .signup-pdf-card,
+  .auth-signup-step-3 .signup-pdf-card {
+    width: min(820px, calc(100vw - 28px)) !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .auth-signup-ref {
+    padding: 64px 10px 10px !important;
+  }
+
+  .auth-signup-ref .auth-brand-ref span,
+  .auth-signup-ref .auth-signup-top-actions span {
+    display: none !important;
+  }
+
+  .auth-signup-ref .auth-brand-ref img {
+    width: 42px !important;
+    height: 42px !important;
+  }
+
+  .auth-signup-ref .signup-pdf-card,
+  .auth-signup-step-1 .signup-pdf-card,
+  .auth-signup-step-2 .signup-pdf-card,
+  .auth-signup-step-3 .signup-pdf-card {
+    width: calc(100vw - 20px) !important;
+    max-height: calc(100dvh - 76px) !important;
+    padding: 12px 12px 10px !important;
+  }
+
+  .auth-signup-ref .auth-form-grid.two,
+  .auth-signup-ref .signup-profile-selects {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .auth-signup-ref .persona-role-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .auth-signup-ref .pdf-interest-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .auth-signup-ref .auth-step-actions,
+  .auth-signup-ref .auth-final-actions {
+    flex-direction: row !important;
+    align-items: center !important;
+  }
+
+  .auth-signup-ref .auth-step-actions > .auth-gradient-btn,
+  .auth-signup-ref .auth-step-actions > .auth-ghost-btn,
+  .auth-signup-ref .auth-final-actions .auth-gradient-btn,
+  .auth-signup-ref .auth-final-actions .auth-ghost-btn {
+    width: auto !important;
+    flex: 1 1 0 !important;
+  }
+}
+
+@media (max-height: 680px) {
+  .auth-signup-ref {
+    padding-top: 50px !important;
+    padding-bottom: 6px !important;
+  }
+
+  .auth-signup-ref .signup-pdf-card,
+  .auth-signup-step-1 .signup-pdf-card,
+  .auth-signup-step-2 .signup-pdf-card,
+  .auth-signup-step-3 .signup-pdf-card {
+    max-height: calc(100dvh - 58px) !important;
+    padding-top: 10px !important;
+    padding-bottom: 8px !important;
+  }
+
+  .auth-signup-ref .auth-step-title,
+  .auth-signup-ref .auth-step-title.centered,
+  .auth-signup-step-2 .signup-step2-title {
+    min-height: 38px !important;
+  }
+
+  .auth-signup-ref .auth-step-title p,
+  .auth-signup-step-2 .signup-step2-title p,
+  .auth-signup-step-3 .auth-step-title p,
+  .auth-signup-ref .optional-note-card span,
+  .auth-signup-ref .signup-privacy-note,
+  .auth-signup-ref .auth-bottom-link {
+    display: none !important;
+  }
+}
+
+/* Signup background art: distinct image decoration behind the fixed one-frame forms. */
+.auth-signup-ref::before,
+.auth-signup-ref::after {
+  content: "" !important;
+  display: block !important;
+  position: absolute !important;
+  inset: auto !important;
+  z-index: 0 !important;
+  pointer-events: none !important;
+  border-radius: 0 !important;
+  background-repeat: no-repeat !important;
+  filter: saturate(1.04) contrast(0.98) !important;
+}
+
+.auth-signup-step-1.auth-signup-ref::before,
+.auth-signup-step-1.auth-signup-ref::after,
+.auth-signup-step-3.auth-signup-ref::before,
+.auth-signup-step-3.auth-signup-ref::after {
+  top: 0 !important;
+  bottom: 0 !important;
+  width: min(48vw, 720px) !important;
+  height: 100% !important;
+  background-size: cover !important;
+  opacity: 0.34 !important;
+}
+
+.auth-signup-step-1.auth-signup-ref::before,
+.auth-signup-step-3.auth-signup-ref::before {
+  left: 0 !important;
+  background-position: left center !important;
+  -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 58%, transparent 100%) !important;
+  mask-image: linear-gradient(90deg, #000 0%, #000 58%, transparent 100%) !important;
+}
+
+.auth-signup-step-1.auth-signup-ref::after,
+.auth-signup-step-3.auth-signup-ref::after {
+  right: 0 !important;
+  background-position: right center !important;
+  -webkit-mask-image: linear-gradient(270deg, #000 0%, #000 58%, transparent 100%) !important;
+  mask-image: linear-gradient(270deg, #000 0%, #000 58%, transparent 100%) !important;
+}
+
+.auth-signup-step-1.auth-signup-ref::before {
+  background-image: url("./assets/backgrounds/signup-step1-left.png") !important;
+}
+
+.auth-signup-step-1.auth-signup-ref::after {
+  background-image: url("./assets/backgrounds/signup-step1-right.png") !important;
+}
+
+.auth-signup-step-2.auth-signup-ref::before {
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: min(46vh, 390px) !important;
+  opacity: 0.32 !important;
+  background-image: url("./assets/backgrounds/agrolink-farm-support-hero.png") !important;
+  background-position: center bottom !important;
+  background-size: cover !important;
+  -webkit-mask-image: linear-gradient(0deg, #000 0%, rgba(0, 0, 0, 0.78) 44%, transparent 100%) !important;
+  mask-image: linear-gradient(0deg, #000 0%, rgba(0, 0, 0, 0.78) 44%, transparent 100%) !important;
+}
+
+.auth-signup-step-2.auth-signup-ref::after {
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  opacity: 1 !important;
+  background:
+    radial-gradient(circle at 12% 78%, rgba(22, 185, 111, 0.16), transparent 28%),
+    radial-gradient(circle at 88% 74%, rgba(37, 99, 235, 0.13), transparent 30%),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.54), transparent 22%, transparent 78%, rgba(255, 255, 255, 0.54)) !important;
+}
+
+.auth-signup-step-3.auth-signup-ref::before {
+  background-image: url("./assets/backgrounds/signup-step3-left.png") !important;
+}
+
+.auth-signup-step-3.auth-signup-ref::after {
+  background-image: url("./assets/backgrounds/signup-step3-right.png") !important;
+}
+
+@media (max-width: 1360px), (max-height: 760px) {
+  .auth-signup-step-1.auth-signup-ref::before,
+  .auth-signup-step-1.auth-signup-ref::after,
+  .auth-signup-step-3.auth-signup-ref::before,
+  .auth-signup-step-3.auth-signup-ref::after {
+    width: min(56vw, 520px) !important;
+    opacity: 0.22 !important;
+  }
+
+  .auth-signup-step-2.auth-signup-ref::before {
+    height: min(40vh, 300px) !important;
+    opacity: 0.2 !important;
+  }
+}
+
+@media (max-width: 760px), (max-height: 620px) {
+  .auth-signup-step-1.auth-signup-ref::before,
+  .auth-signup-step-1.auth-signup-ref::after,
+  .auth-signup-step-2.auth-signup-ref::before,
+  .auth-signup-step-2.auth-signup-ref::after,
+  .auth-signup-step-3.auth-signup-ref::before,
+  .auth-signup-step-3.auth-signup-ref::after {
+    opacity: 0.12 !important;
+  }
+}
