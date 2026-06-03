@@ -7,36 +7,37 @@ export const NAVIGATION_SECTIONS = [
   {
     title: "Social",
     items: [
-      { to: "/home", label: "Feed", icon: "home" },
+      { to: "/home", label: "Home Feed", icon: "home" },
       { to: "/profile", label: "Profile", icon: "profile" },
       { to: "/friends", label: "Friends", icon: "friends" },
-      { to: "/chat", label: "Chat", icon: "chat" }
+      { to: "/chat", label: "Messages", icon: "chat" },
+      { to: "/notifications", label: "Notifications", icon: "notifications" }
     ]
   },
   {
-    title: "Marketplace",
+    title: "Commerce",
     items: [
       { to: "/marketplace", label: "Marketplace", icon: "marketplace" },
       { to: "/orders", label: "Orders", icon: "orders" },
-      { to: "/bookmarks", label: "Bookmarks", icon: "bookmark" }
+      { to: "/bookmarks", label: "Saved Items", icon: "bookmark" }
     ]
   },
   {
-    title: "Productivity",
+    title: "Workspace",
     items: [
       { to: "/calendar", label: "Calendar", icon: "calendar" },
-      { to: "/analytics", label: "Analytics", icon: "analytics" }
+      { to: "/analytics", label: "Insights", icon: "analytics" }
     ]
   },
   {
-    title: "Private",
+    title: "Account",
     items: [
       { to: "/settings", label: "Settings", icon: "settings" },
-      { to: "/support", label: "Problem Reports", icon: "support", roles: ["ROLE_USER", "ROLE_BUSINESS", "ROLE_FARMER", "ROLE_CREATOR"] }
+      { to: "/support", label: "Support Center", icon: "support", roles: ["ROLE_USER", "ROLE_BUSINESS", "ROLE_FARMER", "ROLE_CREATOR"] }
     ]
   },
   {
-    title: "Business",
+    title: "Seller Tools",
     items: [
       { to: "/business", label: "Business Page", icon: "business", roles: ["ROLE_BUSINESS", "ROLE_FARMER"] }
     ]
@@ -163,6 +164,7 @@ export function NavIcon({ name }) {
     profile: "M12 12a4.2 4.2 0 1 0-4.2-4.2A4.2 4.2 0 0 0 12 12zm0 2.2c-4.34 0-7.8 2.27-7.8 5.08 0 .4.32.72.72.72h14.16a.72.72 0 0 0 .72-.72c0-2.81-3.46-5.08-7.8-5.08z",
     friends: "M8.2 11a3.4 3.4 0 1 0-3.4-3.4A3.4 3.4 0 0 0 8.2 11zm7.6 0a3.4 3.4 0 1 0-3.4-3.4 3.4 3.4 0 0 0 3.4 3.4zM8.2 13.4c-3.18 0-5.7 1.64-5.7 3.67 0 .4.32.73.72.73h9.96a.72.72 0 0 0 .72-.73c0-2.03-2.52-3.67-5.7-3.67zm7.6.2c-.77 0-1.5.1-2.18.29 1.22.8 1.98 1.86 1.98 3.02h4.56a.72.72 0 0 0 .72-.73c0-1.44-2.12-2.58-5.08-2.58z",
     chat: "M5 4h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H9l-4.5 3.2a.8.8 0 0 1-1.26-.65V6a2 2 0 0 1 2-2z",
+    notifications: "M12 22a2.6 2.6 0 0 0 2.5-2h-5A2.6 2.6 0 0 0 12 22zM18 16v-5a6 6 0 1 0-12 0v5l-1.5 2h15z",
     marketplace: "M4 7h16l-1.1 12.1a1 1 0 0 1-1 .9H6.1a1 1 0 0 1-1-.9zM7.5 7l1.1-2.4A2.8 2.8 0 0 1 11.2 3h1.6a2.8 2.8 0 0 1 2.6 1.6L16.5 7",
     orders: "M5 5h14v4H5zM5 11h14v8H5zM8 13.5h3.8M8 16.5h6.5",
     calendar: "M7 3v2.4M17 3v2.4M4.6 7h14.8a1.2 1.2 0 0 1 1.2 1.2v10.2a1.2 1.2 0 0 1-1.2 1.2H4.6a1.2 1.2 0 0 1-1.2-1.2V8.2A1.2 1.2 0 0 1 4.6 7zm3.2 4h2.8v2.4H7.8zm5.6 0h2.8v2.4h-2.8z",
@@ -187,6 +189,13 @@ export function ShellActionIcon({ type, className = "" }) {
     sparkle: <path d="M12 3.5 13.8 8l4.7 1.3-4.7 1.3L12 15l-1.8-4.4-4.7-1.3L10.2 8z" />,
     check: <path d="m5 12 4 4 10-10" />,
     chevron: <path d="m9 6 6 6-6 6" />,
+    sidebarToggle: (
+      <>
+        <path d="m14.5 6-5 6 5 6" />
+        <path d="m19 6-5 6 5 6" />
+      </>
+    ),
+    more: <path d="M6 12h.1M12 12h.1M18 12h.1" />,
     logout: <path d="M9 4H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h4M16 16l4-4-4-4M20 12H10" />,
     settings: (
       <>
@@ -215,7 +224,7 @@ export function ShellNavLink({ to, label, icon }) {
   };
 
   return (
-    <Link className={`shell-nav-link ${active ? "active" : ""}`} to={to} viewTransition onClick={startNavigationMotion}>
+    <Link className={`shell-nav-link ${active ? "active" : ""}`} to={to} title={label} onClick={startNavigationMotion}>
       <span className="shell-nav-icon-wrap" aria-hidden="true">
         <NavIcon name={icon} />
       </span>
