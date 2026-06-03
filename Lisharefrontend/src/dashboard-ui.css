@@ -13276,6 +13276,458 @@ body.route-is-changing .shell-content::before {
   }
 }
 
+/* Forgot password reference UI: signup-sized recovery form over the previous Step 3 4K background. */
+.auth-forgot-ref {
+  height: 100dvh !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  place-items: center !important;
+  padding: clamp(58px, 7vh, 76px) clamp(12px, 2.4vw, 34px) clamp(10px, 2vh, 18px) !important;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.18) 20%, rgba(255, 255, 255, 0.44) 50%, rgba(255, 255, 255, 0.18) 80%, rgba(255, 255, 255, 0.34)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.28)),
+    url("./assets/backgrounds/forgot-password-step3-bg-4k.jpg") center / cover no-repeat !important;
+}
+
+.auth-forgot-ref::before,
+.auth-forgot-ref::after {
+  display: none !important;
+}
+
+.auth-forgot-ref .auth-brand-ref {
+  top: clamp(14px, 2.6vh, 24px) !important;
+  left: clamp(14px, 2.4vw, 28px) !important;
+  gap: 10px !important;
+}
+
+.auth-forgot-ref .auth-brand-ref img {
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 12px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.auth-forgot-ref .auth-brand-ref strong {
+  font-size: 1.02rem !important;
+  letter-spacing: -0.02em !important;
+}
+
+.auth-forgot-ref .auth-brand-ref small {
+  margin-top: 2px !important;
+  color: #58708b !important;
+  font-size: 0.75rem !important;
+  font-weight: 800 !important;
+}
+
+.auth-forgot-back {
+  top: clamp(12px, 2.4vh, 22px) !important;
+  right: clamp(12px, 2.4vw, 28px) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  color: #0f62fe !important;
+  font-size: 0.82rem !important;
+  text-decoration: none !important;
+}
+
+.auth-forgot-card {
+  z-index: 4 !important;
+}
+
+.auth-forgot-ref .auth-forgot-card {
+  width: min(860px, calc(100vw - 28px)) !important;
+  max-width: 860px !important;
+  max-height: calc(100dvh - clamp(78px, 10vh, 96px)) !important;
+  min-height: 0 !important;
+  justify-items: center !important;
+  gap: clamp(7px, 1.2vh, 12px) !important;
+  border: 1px solid rgba(214, 226, 240, 0.92) !important;
+  border-radius: 16px !important;
+  padding: clamp(14px, 2.2vh, 24px) clamp(18px, 3vw, 36px) clamp(10px, 1.8vh, 18px) !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  box-shadow: 0 30px 82px rgba(15, 28, 48, 0.14) !important;
+  backdrop-filter: blur(24px) saturate(145%) !important;
+  overflow: visible !important;
+}
+
+.forgot-svg-icon {
+  width: 1em;
+  height: 1em;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.forgot-security-orbit {
+  position: relative;
+  width: clamp(110px, 15vh, 148px);
+  height: clamp(72px, 11vh, 98px);
+  display: grid;
+  place-items: center;
+  margin-bottom: 0;
+}
+
+.forgot-security-orbit::before {
+  content: "";
+  position: absolute;
+  inset: 5px 18px 2px;
+  border: 1px dashed rgba(20, 184, 166, 0.36);
+  border-radius: 999px;
+}
+
+.forgot-shield-badge,
+.forgot-channel-badge {
+  position: relative;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+}
+
+.forgot-shield-badge {
+  width: clamp(52px, 7.6vh, 66px);
+  height: clamp(52px, 7.6vh, 66px);
+  z-index: 2;
+  color: #ffffff;
+  background: linear-gradient(160deg, #2563eb, #0f62fe);
+  box-shadow: 0 20px 38px rgba(37, 99, 235, 0.26);
+}
+
+.forgot-shield-badge .forgot-svg-icon {
+  width: 30px;
+  height: 30px;
+}
+
+.forgot-channel-badge {
+  position: absolute;
+  z-index: 3;
+  width: clamp(30px, 4.7vh, 36px);
+  height: clamp(30px, 4.7vh, 36px);
+  color: #13b36d;
+  background: #ffffff;
+  box-shadow: 0 14px 28px rgba(15, 28, 48, 0.11);
+}
+
+.forgot-channel-badge .forgot-svg-icon {
+  width: 17px;
+  height: 17px;
+}
+
+.forgot-channel-mail {
+  left: 12px;
+  top: 40px;
+}
+
+.forgot-channel-phone {
+  right: 10px;
+  top: 18px;
+  color: #2563eb;
+}
+
+.auth-forgot-ref .auth-forgot-card h1 {
+  margin: 0 !important;
+  color: #07162f !important;
+  font-size: clamp(1.18rem, 3vh, 1.72rem) !important;
+  line-height: 1.08 !important;
+  letter-spacing: -0.04em !important;
+}
+
+.auth-forgot-ref .forgot-step-subtitle,
+.auth-forgot-ref .forgot-step-copy {
+  max-width: 620px;
+  margin: 0 !important;
+  text-align: center !important;
+}
+
+.auth-forgot-ref .forgot-step-subtitle {
+  color: #53668a !important;
+  font-size: 0.82rem !important;
+  font-weight: 850 !important;
+}
+
+.auth-forgot-ref .forgot-step-copy {
+  margin-top: 4px !important;
+  color: #657693 !important;
+  font-size: 0.76rem !important;
+  line-height: 1.45 !important;
+  font-weight: 760 !important;
+}
+
+.auth-forgot-ref .auth-login-form {
+  width: min(620px, 100%) !important;
+  gap: clamp(7px, 1.25vh, 12px) !important;
+  margin-top: clamp(4px, 1vh, 10px) !important;
+  text-align: left !important;
+}
+
+.auth-forgot-ref .forgot-field {
+  gap: 7px !important;
+  color: #172033 !important;
+  font-size: 0.78rem !important;
+  font-weight: 900 !important;
+}
+
+.forgot-input-wrap {
+  width: 100%;
+  min-height: clamp(34px, 5.9vh, 42px);
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+  border: 1px solid rgba(204, 216, 232, 0.95);
+  border-radius: 10px;
+  padding: 0 13px;
+  color: #6b7d98;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.8) inset;
+}
+
+.forgot-input-wrap:focus-within {
+  border-color: rgba(37, 99, 235, 0.54);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
+}
+
+.forgot-input-wrap input {
+  min-height: clamp(32px, 5.7vh, 40px) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  color: #142033 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.forgot-input-wrap input::placeholder {
+  color: #9aa8bc;
+}
+
+.forgot-field-icon {
+  display: grid;
+  place-items: center;
+  color: #6a7b95;
+}
+
+.forgot-field-icon .forgot-svg-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.forgot-phone-wrap {
+  grid-template-columns: 22px auto minmax(0, 1fr);
+}
+
+.forgot-country-code {
+  min-height: 24px;
+  display: inline-flex;
+  align-items: center;
+  border-right: 1px solid #d8e2ee;
+  padding-right: 12px;
+  color: #20324b;
+  font-size: 0.78rem;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.auth-forgot-ref .forgot-submit-btn {
+  width: 100% !important;
+  min-height: clamp(34px, 5.8vh, 42px) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  margin-top: 2px !important;
+  border-radius: 10px !important;
+}
+
+.forgot-submit-btn .forgot-svg-icon,
+.auth-forgot-back .forgot-svg-icon {
+  width: 15px;
+  height: 15px;
+}
+
+.forgot-secure-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  margin-top: clamp(4px, 1vh, 10px);
+  color: #61708c;
+  text-align: left;
+}
+
+.forgot-secure-note > .forgot-svg-icon {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  color: #16b96f;
+}
+
+.forgot-secure-note strong,
+.forgot-secure-note small {
+  display: block;
+  line-height: 1.35;
+}
+
+.forgot-secure-note strong {
+  color: #50617d;
+  font-size: 0.68rem;
+  font-weight: 820;
+}
+
+.forgot-secure-note small {
+  color: #667693;
+  font-size: 0.66rem;
+  font-weight: 740;
+}
+
+.forgot-wave,
+.forgot-dot-field,
+.forgot-lock-watermark {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.forgot-wave {
+  width: min(560px, 46vw);
+  height: 180px;
+  opacity: 0.24;
+  background: repeating-radial-gradient(ellipse at center, transparent 0 20px, rgba(20, 184, 166, 0.35) 21px 22px, transparent 23px 38px);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 20%, #000 80%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0%, #000 20%, #000 80%, transparent 100%);
+}
+
+.forgot-wave-left {
+  left: -120px;
+  top: 41%;
+  transform: rotate(7deg);
+}
+
+.forgot-wave-right {
+  right: -130px;
+  top: 52%;
+  transform: rotate(-8deg);
+}
+
+.forgot-dot-field {
+  top: 16%;
+  right: 14.5%;
+  width: 170px;
+  height: 118px;
+  background-image: radial-gradient(circle, rgba(37, 99, 235, 0.12) 0 2px, transparent 2px);
+  background-size: 18px 18px;
+  opacity: 0.42;
+}
+
+.forgot-lock-watermark {
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  color: rgba(22, 185, 111, 0.13);
+  background: rgba(37, 99, 235, 0.035);
+}
+
+.forgot-lock-watermark .forgot-svg-icon {
+  width: 46%;
+  height: 46%;
+  stroke-width: 1.6;
+}
+
+.forgot-lock-left {
+  left: 5%;
+  bottom: 4%;
+  width: 220px;
+  height: 220px;
+}
+
+.forgot-lock-right {
+  right: 8%;
+  top: 35%;
+  width: 112px;
+  height: 112px;
+}
+
+@media (max-height: 720px) {
+  .auth-forgot-ref {
+    padding-top: 62px !important;
+    padding-bottom: 18px !important;
+  }
+
+  .auth-forgot-ref .auth-forgot-card {
+    gap: 6px !important;
+    padding: 24px 36px 20px !important;
+  }
+
+  .forgot-security-orbit {
+    width: 122px;
+    height: 82px;
+  }
+
+  .forgot-shield-badge {
+    width: 54px;
+    height: 54px;
+  }
+
+  .forgot-channel-badge {
+    width: 30px;
+    height: 30px;
+  }
+
+  .auth-forgot-ref .auth-login-form {
+    gap: 10px !important;
+    margin-top: 8px !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .auth-forgot-ref {
+    overflow: auto !important;
+    padding: 92px 14px 22px !important;
+  }
+
+  .auth-forgot-ref::before {
+    height: 38vh !important;
+    opacity: 0.2 !important;
+  }
+
+  .auth-forgot-ref::after,
+  .forgot-wave,
+  .forgot-dot-field,
+  .forgot-lock-watermark {
+    display: none !important;
+  }
+
+  .auth-forgot-ref .auth-brand-ref {
+    top: 18px !important;
+    left: 16px !important;
+  }
+
+  .auth-forgot-ref .auth-brand-ref span {
+    display: none !important;
+  }
+
+  .auth-forgot-back {
+    top: 27px !important;
+    right: 16px !important;
+    font-size: 0.76rem !important;
+  }
+
+  .auth-forgot-ref .auth-forgot-card {
+    width: calc(100vw - 28px) !important;
+    padding: 26px 18px 22px !important;
+  }
+
+  .forgot-phone-wrap {
+    grid-template-columns: 20px minmax(0, 1fr);
+  }
+
+  .forgot-country-code {
+    display: none;
+  }
+}
+
 /* Support, marketplace, and settings reference-design completion layer. */
 :root {
   --agro-farm-reference-image: url("./assets/backgrounds/agrolink-farm-support-hero.png");
@@ -17635,7 +18087,7 @@ body.route-is-changing .shell-content::before {
   }
 }
 
-/* Signup background art: distinct image decoration behind the fixed one-frame forms. */
+/* Signup background art: distinct 4K hero image decoration behind the fixed one-frame forms. */
 .auth-signup-ref::before,
 .auth-signup-ref::after {
   content: "" !important;
@@ -17649,56 +18101,58 @@ body.route-is-changing .shell-content::before {
   filter: saturate(1.16) contrast(1.07) brightness(1.02) !important;
 }
 
-.auth-signup-step-1.auth-signup-ref::before,
-.auth-signup-step-1.auth-signup-ref::after,
-.auth-signup-step-3.auth-signup-ref::before,
-.auth-signup-step-3.auth-signup-ref::after {
-  top: 0 !important;
-  bottom: 0 !important;
-  width: min(48vw, 720px) !important;
-  height: 100% !important;
+.auth-signup-step-1.auth-signup-ref,
+.auth-signup-step-2.auth-signup-ref,
+.auth-signup-step-3.auth-signup-ref {
+  background-color: #f7fbf8 !important;
+  background-image:
+    radial-gradient(circle at 12% 92%, rgba(34, 197, 94, 0.16), transparent 30%),
+    radial-gradient(circle at 88% 88%, rgba(14, 165, 233, 0.12), transparent 32%),
+    linear-gradient(180deg, #f9fcf8 0%, #eef8f1 100%) !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
   background-size: cover !important;
-  opacity: 0.6 !important;
+}
+
+.auth-signup-ref .signup-step1-photo-side,
+.auth-signup-ref .signup-step3-decor {
+  display: none !important;
 }
 
 .auth-signup-step-1.auth-signup-ref::before,
+.auth-signup-step-2.auth-signup-ref::before,
 .auth-signup-step-3.auth-signup-ref::before {
-  left: 0 !important;
-  background-position: left center !important;
-  -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 58%, transparent 100%) !important;
-  mask-image: linear-gradient(90deg, #000 0%, #000 58%, transparent 100%) !important;
-}
-
-.auth-signup-step-1.auth-signup-ref::after,
-.auth-signup-step-3.auth-signup-ref::after {
-  right: 0 !important;
-  background-position: right center !important;
-  -webkit-mask-image: linear-gradient(270deg, #000 0%, #000 58%, transparent 100%) !important;
-  mask-image: linear-gradient(270deg, #000 0%, #000 58%, transparent 100%) !important;
-}
-
-.auth-signup-step-1.auth-signup-ref::before {
-  background-image: url("./assets/backgrounds/signup-step1-left.png") !important;
-}
-
-.auth-signup-step-1.auth-signup-ref::after {
-  background-image: url("./assets/backgrounds/signup-step1-right.png") !important;
-}
-
-.auth-signup-step-2.auth-signup-ref::before {
   left: 0 !important;
   right: 0 !important;
   bottom: 0 !important;
   width: 100% !important;
-  height: min(42vh, 360px) !important;
-  opacity: 0.68 !important;
-  background-image: url("./assets/backgrounds/signup-step2-panorama.png") !important;
+  height: min(44vh, 380px) !important;
+  opacity: 0.66 !important;
   background-position: center bottom !important;
   background-size: cover !important;
   -webkit-mask-image: linear-gradient(0deg, #000 0%, rgba(0, 0, 0, 0.88) 52%, transparent 100%) !important;
   mask-image: linear-gradient(0deg, #000 0%, rgba(0, 0, 0, 0.88) 52%, transparent 100%) !important;
 }
 
+.auth-signup-step-1.auth-signup-ref::before {
+  height: min(45vh, 390px) !important;
+  opacity: 0.7 !important;
+  background-image: url("./assets/backgrounds/signup-step1-hero-4k.jpg") !important;
+}
+
+.auth-signup-step-2.auth-signup-ref::before {
+  height: min(42vh, 360px) !important;
+  opacity: 0.68 !important;
+  background-image: url("./assets/backgrounds/signup-step2-hero-4k.jpg") !important;
+}
+
+.auth-signup-step-3.auth-signup-ref::before {
+  height: min(45vh, 390px) !important;
+  opacity: 0.64 !important;
+  background-image: url("./assets/backgrounds/signup-step3-hero-4k.jpg") !important;
+}
+
+.auth-signup-step-1.auth-signup-ref::after,
 .auth-signup-step-2.auth-signup-ref::after {
   left: 0 !important;
   right: 0 !important;
@@ -17706,43 +18160,60 @@ body.route-is-changing .shell-content::before {
   width: 100% !important;
   height: 100% !important;
   opacity: 1 !important;
+}
+
+.auth-signup-step-1.auth-signup-ref::after {
+  background:
+    radial-gradient(circle at 12% 78%, rgba(22, 185, 111, 0.15), transparent 29%),
+    radial-gradient(circle at 88% 76%, rgba(14, 165, 233, 0.12), transparent 30%),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.5), transparent 22%, transparent 78%, rgba(255, 255, 255, 0.5)) !important;
+}
+
+.auth-signup-step-2.auth-signup-ref::after {
   background:
     radial-gradient(circle at 12% 78%, rgba(22, 185, 111, 0.16), transparent 28%),
     radial-gradient(circle at 88% 74%, rgba(37, 99, 235, 0.13), transparent 30%),
     linear-gradient(90deg, rgba(255, 255, 255, 0.54), transparent 22%, transparent 78%, rgba(255, 255, 255, 0.54)) !important;
 }
 
-.auth-signup-step-3.auth-signup-ref::before {
-  background-image: url("./assets/backgrounds/signup-step3-left.png") !important;
-}
-
 .auth-signup-step-3.auth-signup-ref::after {
-  background-image: url("./assets/backgrounds/signup-step3-right.png") !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  opacity: 1 !important;
+  background:
+    radial-gradient(circle at 16% 82%, rgba(217, 119, 6, 0.13), transparent 30%),
+    radial-gradient(circle at 84% 78%, rgba(20, 184, 166, 0.15), transparent 31%),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.48), transparent 22%, transparent 78%, rgba(255, 255, 255, 0.48)) !important;
 }
 
 @media (max-width: 1360px), (max-height: 760px) {
   .auth-signup-step-1.auth-signup-ref::before,
-  .auth-signup-step-1.auth-signup-ref::after,
-  .auth-signup-step-3.auth-signup-ref::before,
-  .auth-signup-step-3.auth-signup-ref::after {
-    width: min(56vw, 520px) !important;
-    opacity: 0.44 !important;
+  .auth-signup-step-3.auth-signup-ref::before {
+    height: min(40vh, 320px) !important;
+    opacity: 0.56 !important;
   }
 
   .auth-signup-step-2.auth-signup-ref::before {
     height: min(38vh, 290px) !important;
-    opacity: 0.52 !important;
+    opacity: 0.56 !important;
   }
 }
 
 @media (max-width: 760px), (max-height: 620px) {
   .auth-signup-step-1.auth-signup-ref::before,
-  .auth-signup-step-1.auth-signup-ref::after,
   .auth-signup-step-2.auth-signup-ref::before,
+  .auth-signup-step-3.auth-signup-ref::before {
+    height: min(34vh, 240px) !important;
+    opacity: 0.36 !important;
+  }
+
+  .auth-signup-step-1.auth-signup-ref::after,
   .auth-signup-step-2.auth-signup-ref::after,
-  .auth-signup-step-3.auth-signup-ref::before,
   .auth-signup-step-3.auth-signup-ref::after {
-    opacity: 0.27 !important;
+    opacity: 0.68 !important;
   }
 }
 
