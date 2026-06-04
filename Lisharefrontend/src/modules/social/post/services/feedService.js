@@ -1,6 +1,23 @@
 import axiosInstance from "/src/modules/platform/api/axiosInstance";
 import { ENDPOINTS } from "/src/modules/platform/api/endpoints";
 
+function buildCommentPayload(content, mediaFile) {
+  if (!mediaFile) {
+    return {
+      body: { content },
+      config: undefined
+    };
+  }
+
+  const formData = new FormData();
+  formData.append("content", content || "");
+  formData.append("media", mediaFile);
+  return {
+    body: formData,
+    config: { headers: { "Content-Type": "multipart/form-data" } }
+  };
+}
+
 export const feedService = {
   getFeed: () => axiosInstance.get(ENDPOINTS.feed.sharedFeed),
   getMyPosts: () => axiosInstance.get(ENDPOINTS.feed.myPosts),
@@ -23,12 +40,19 @@ export const feedService = {
     }
   },
   markReelView: (postId) => axiosInstance.post(`/posts/${postId}/reel-view`),
-  addComment: (postId, content) => axiosInstance.post(ENDPOINTS.feed.commentAdd(postId), { content }),
-  addReply: (postId, parentCommentId, content) =>
-    axiosInstance.post(ENDPOINTS.feed.commentReply(postId, parentCommentId), { content }),
+  addComment: (postId, content, mediaFile = null) => {
+    const payload = buildCommentPayload(content, mediaFile);
+    return axiosInstance.post(ENDPOINTS.feed.commentAdd(postId), payload.body, payload.config);
+  },
+  addReply: (postId, parentCommentId, content, mediaFile = null) => {
+    const payload = buildCommentPayload(content, mediaFile);
+    return axiosInstance.post(ENDPOINTS.feed.commentReply(postId, parentCommentId), payload.body, payload.config);
+  },
   updateComment: (commentId, content) => axiosInstance.put(ENDPOINTS.feed.commentUpdate(commentId), { content }),
   deleteComment: (commentId) => axiosInstance.delete(ENDPOINTS.feed.commentDelete(commentId)),
   getComments: (postId) => axiosInstance.get(ENDPOINTS.feed.comments(postId)),
+  reactComment: (commentId, type) => axiosInstance.post(ENDPOINTS.feed.commentReaction(commentId), null, { params: { type } }),
+  getCommentReactions: (commentId) => axiosInstance.get(ENDPOINTS.feed.commentReactionCounts(commentId)),
   react: (postId, type) => axiosInstance.post(ENDPOINTS.feed.reaction(postId), null, { params: { type } }),
   getReactions: (postId) => axiosInstance.get(ENDPOINTS.feed.reactionCounts(postId)),
   getReactionUsers: (postId) => axiosInstance.get(ENDPOINTS.feed.reactionUsers(postId)),

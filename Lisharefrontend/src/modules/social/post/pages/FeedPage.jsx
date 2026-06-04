@@ -626,12 +626,12 @@ export default function FeedPage() {
     }
   };
 
-  const onComment = async (postId, content, parentCommentId = null) => {
+  const onComment = async (postId, content, parentCommentId = null, mediaFile = null) => {
     try {
       if (parentCommentId) {
-        await feedService.addReply(postId, parentCommentId, content);
+        await feedService.addReply(postId, parentCommentId, content, mediaFile);
       } else {
-        await feedService.addComment(postId, content);
+        await feedService.addComment(postId, content, mediaFile);
       }
       const response = await feedService.getComments(postId);
       setCommentsMap((prev) => ({ ...prev, [postId]: response.data || [] }));
@@ -659,6 +659,16 @@ export default function FeedPage() {
       pushToast("Comment deleted", "success");
     } catch {
       pushToast("Failed to delete comment", "error");
+    }
+  };
+
+  const onReactComment = async (postId, commentId, type) => {
+    try {
+      await feedService.reactComment(commentId, type);
+      const response = await feedService.getComments(postId);
+      setCommentsMap((prev) => ({ ...prev, [postId]: response.data || [] }));
+    } catch {
+      pushToast("Failed to react to comment", "error");
     }
   };
 
@@ -1249,6 +1259,7 @@ export default function FeedPage() {
             onComment={onComment}
             onUpdateComment={onUpdateComment}
             onDeleteComment={onDeleteComment}
+            onReactComment={onReactComment}
             onReact={onReact}
             onShare={onShare}
             onDelete={onDelete}
@@ -1936,10 +1947,12 @@ export default function FeedPage() {
                 </button>
               ))}
               <span className="story-action-spacer" />
-              <button type="button" className="story-secondary-action" onClick={shareStory} disabled={sharingStory}>
-                <FeedIcon name="share" />
-                {sharingStory ? "Sharing..." : "Share"}
-              </button>
+              {!selectedStoryIsOwn ? (
+                <button type="button" className="story-secondary-action" onClick={shareStory} disabled={sharingStory}>
+                  <FeedIcon name="share" />
+                  {sharingStory ? "Sharing..." : "Share"}
+                </button>
+              ) : null}
               {selectedStoryIsOwn ? (
                 <button type="button" className="story-secondary-action danger" onClick={deleteStory}>
                   <FeedIcon name="trash" />

@@ -389,7 +389,55 @@ function formatCommentTime(value) {
 }
 
 function countCommentThread(comments = []) {
-  return comments.reduce((total, comment) => total + 1 + (Array.isArray(comment.replies) ? comment.replies.length : 0), 0);
+  return comments.reduce((total, comment) => total + 1 + countCommentThread(Array.isArray(comment.replies) ? comment.replies : []), 0);
+}
+
+function commentAuthorProfileImageUrl(comment) {
+  return firstNonEmptyString(
+    comment?.authorProfileImageUrl,
+    comment?.profileImageUrl,
+    comment?.authorImageUrl,
+    comment?.userProfileImageUrl,
+    comment?.author?.profileImageUrl,
+    comment?.author?.imageUrl
+  );
+}
+
+function commentMediaUrl(comment) {
+  return firstNonEmptyString(comment?.mediaUrl, comment?.imageUrl, comment?.attachmentUrl);
+}
+
+function isCommentVideo(comment) {
+  const mediaType = String(comment?.mediaType || "").toUpperCase();
+  return mediaType === "VIDEO" || isVideoAsset(commentMediaUrl(comment));
+}
+
+function commentReactionCounts(comment) {
+  return comment?.reactionCounts && typeof comment.reactionCounts === "object" ? comment.reactionCounts : {};
+}
+
+function countCommentReactions(comment) {
+  const directCount = Number(comment?.reactionCount);
+  if (Number.isFinite(directCount) && directCount > 0) return directCount;
+  return Object.values(commentReactionCounts(comment)).reduce((total, value) => total + Number(value || 0), 0);
+}
+
+function commentSignalScore(comment) {
+  const replies = Array.isArray(comment?.replies) ? comment.replies.length : Number(comment?.replyCount || 0);
+  return countCommentReactions(comment) + replies;
+}
+
+function commentRelationship(comment) {
+  return String(comment?.relationshipLabel || "Member").trim() || "Member";
+}
+
+function newestFirst(a, b) {
+  return new Date(b?.createdAt || 0).getTime() - new Date(a?.createdAt || 0).getTime();
+}
+
+function relationshipMatches(comment, values = []) {
+  const label = commentRelationship(comment).toLowerCase();
+  return values.some((value) => label.includes(value));
 }
 
 function normalizeCategory(category) {
@@ -435,6 +483,7 @@ export default function FeedCard({
   onComment,
   onUpdateComment,
   onDeleteComment,
+  onReactComment,
   onReact,
   onShare,
   onDelete,
@@ -471,14 +520,21 @@ export default function FeedCard({
   const [commentComposerOpen, setCommentComposerOpen] = useState(false);
   const [openReplyId, setOpenReplyId] = useState(null);
   const [replyDrafts, setReplyDrafts] = useState({});
+  const [commentMediaFile, setCommentMediaFile] = useState(null);
+  const [replyMediaDrafts, setReplyMediaDrafts] = useState({});
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [editingCommentText, setEditingCommentText] = useState("");
   const [commentActionBusy, setCommentActionBusy] = useState("");
+  const [commentReactionBusy, setCommentReactionBusy] = useState("");
+  const [openCommentReactionPickerId, setOpenCommentReactionPickerId] = useState(null);
   const [openCommentMenuId, setOpenCommentMenuId] = useState(null);
   const [deleteConfirmCommentId, setDeleteConfirmCommentId] = useState(null);
-  const [commentsExpanded, setCommentsExpanded] = useState(false);
+  const [commentsModalOpen, setCommentsModalOpen] = useState(false);
+  const [commentTab, setCommentTab] = useState("all");
   const [shareComposerOpen, setShareComposerOpen] = useState(false);
   const [reactionUsersOpen, setReactionUsersOpen] = useState(false);
+  const [reactionUserFilter, setReactionUserFilter] = useState("all");
+  const [reactionUserSearch, setReactionUserSearch] = useState("");
   const [selectedReactionKey, setSelectedReactionKey] = useState("");
   const [editingOpen, setEditingOpen] = useState(false);
   const [editingContent, setEditingContent] = useState(item.content || "");
@@ -493,6 +549,8 @@ export default function FeedCard({
   const shareAudienceRef = useRef(null);
   const shareCaptionRef = useRef(null);
   const commentInputRef = useRef(null);
+  const commentMediaInputRef = useRef(null);
+  const replyMediaInputRefs = useRef({});
   const isShare = item.type === "SHARE";
   const originalPostDeleted = Boolean(item.originalPostDeleted);
   const targetPostId = isShare ? item.originalPostId : item.postId;
@@ -534,9 +592,9 @@ export default function FeedCard({
   const selectedShareAudience = SHARE_AUDIENCES.find((audience) => audience.key === shareAudience) || SHARE_AUDIENCES[0];
   const authorName = isShare ? item.sharedByName : item.authorName;
   const headTimestamp = item.sharedAt || item.createdAt;
-  const visibleComments = commentsExpanded ? comments : comments.slice(0, 3);
-  const hiddenCommentCount = Math.max(0, comments.length - visibleComments.length);
+  const visibleComments = comments.slice(0, 2);
   const totalCommentCount = countCommentThread(comments);
+  const hiddenCommentCount = Math.max(0, totalCommentCount - countCommentThread(visibleComments));
   const reactionSummaryText = totalReactions
     ? selectedReactionKey
       ? totalReactions > 1
@@ -550,6 +608,62 @@ export default function FeedCard({
     .slice(0, 3);
   const authorProfileImageUrl = cardAuthorProfileImageUrl(item, isShare);
   const authorAvatarUrl = !avatarFailed && authorProfileImageUrl ? toMediaUrl(authorProfileImageUrl) : "";
+  const postReactionFilterOptions = useMemo(
+    () => REACTIONS.map((reaction) => ({
+      ...reaction,
+      count: Number(reactions?.[reaction.key] || 0)
+    })).filter((reaction) => reaction.count > 0),
+    [reactions]
+  );
+  const filteredReactionUsers = useMemo(() => {
+    const query = reactionUserSearch.trim().toLowerCase();
+    return realReactionUsers.filter((reactionUser) => {
+      const matchesType = reactionUserFilter === "all" || String(reactionUser?.type || "").toLowerCase() === reactionUserFilter;
+      const searchable = `${reactionUser?.name || ""} ${reactionUser?.email || ""}`.toLowerCase();
+      const matchesSearch = !query || searchable.includes(query);
+      return matchesType && matchesSearch;
+    });
+  }, [realReactionUsers, reactionUserFilter, reactionUserSearch]);
+  const commentSections = useMemo(() => {
+    const baseComments = [...comments];
+    const topComments = [...baseComments]
+      .filter((comment) => commentSignalScore(comment) > 0)
+      .sort((a, b) => commentSignalScore(b) - commentSignalScore(a) || newestFirst(a, b));
+    const latestComments = [...baseComments].sort(newestFirst);
+    const olderComments = [...baseComments].sort((a, b) => new Date(a?.createdAt || 0).getTime() - new Date(b?.createdAt || 0).getTime());
+    const followingComments = latestComments.filter((comment) => relationshipMatches(comment, ["following", "mutual"]));
+    const followerComments = latestComments.filter((comment) => relationshipMatches(comment, ["follower"]));
+    const friendComments = latestComments.filter((comment) => relationshipMatches(comment, ["friend"]));
+
+    if (commentTab === "all") {
+      return [{ key: "all", title: "All comments", emptyText: "No comments yet.", items: latestComments }];
+    }
+    if (commentTab === "top") {
+      return [{ key: "top", title: "Most reacted and replied", items: topComments.length ? topComments : latestComments }];
+    }
+    if (commentTab === "latest") {
+      return [{ key: "latest", title: "Latest comments", items: latestComments }];
+    }
+    if (commentTab === "older") {
+      return [{ key: "older", title: "Older comments", items: olderComments }];
+    }
+    if (commentTab === "other") {
+      const usedCommentIds = new Set();
+      followingComments.forEach((comment) => usedCommentIds.add(Number(comment.commentId)));
+      followerComments.forEach((comment) => usedCommentIds.add(Number(comment.commentId)));
+      friendComments.forEach((comment) => usedCommentIds.add(Number(comment.commentId)));
+      const otherMembers = latestComments.filter((comment) => !usedCommentIds.has(Number(comment.commentId)));
+
+      return [
+        { key: "following", title: "Following", emptyText: "No comments from people you follow yet.", items: followingComments },
+        { key: "followers", title: "Followers", emptyText: "No follower comments yet.", items: followerComments },
+        { key: "friends", title: "Friends", emptyText: "No friend comments yet.", items: friendComments },
+        { key: "members", title: "Other members", emptyText: "No other member comments yet.", items: otherMembers }
+      ];
+    }
+
+    return [{ key: "all", title: "All comments", emptyText: "No comments yet.", items: latestComments }];
+  }, [commentTab, comments]);
 
   useEffect(() => {
     setEditingContent(item.content || "");
@@ -558,12 +672,19 @@ export default function FeedCard({
     setEditingOpen(false);
     setOpenReplyId(null);
     setReplyDrafts({});
+    setCommentMediaFile(null);
+    setReplyMediaDrafts({});
     setEditingCommentId(null);
     setEditingCommentText("");
     setCommentActionBusy("");
+    setCommentReactionBusy("");
+    setOpenCommentReactionPickerId(null);
     setOpenCommentMenuId(null);
     setDeleteConfirmCommentId(null);
-    setCommentsExpanded(false);
+    setCommentsModalOpen(false);
+    setCommentTab("all");
+    setReactionUserFilter("all");
+    setReactionUserSearch("");
     setMediaFailed(false);
   }, [item.postId, item.content, item.imageUrl]);
 
@@ -609,7 +730,7 @@ export default function FeedCard({
   }, [onSearchShareUsers, shareComposerOpen, shareUserSearch]);
 
   useEffect(() => {
-    if (!shareComposerOpen || typeof document === "undefined") {
+    if ((!shareComposerOpen && !commentsModalOpen) || typeof document === "undefined") {
       return undefined;
     }
 
@@ -619,7 +740,7 @@ export default function FeedCard({
     return () => {
       document.body.style.overflow = previousOverflow;
     };
-  }, [shareComposerOpen]);
+  }, [shareComposerOpen, commentsModalOpen]);
 
   useEffect(() => {
     if (shareComposerOpen) {
@@ -643,6 +764,9 @@ export default function FeedCard({
         setOpenCommentMenuId(null);
         setDeleteConfirmCommentId(null);
       }
+      if (event.target instanceof Element && !event.target.closest(".comment-reaction-wrap")) {
+        setOpenCommentReactionPickerId(null);
+      }
     };
     document.addEventListener("mousedown", onPointerDown);
     return () => {
@@ -652,11 +776,11 @@ export default function FeedCard({
 
   const submitComment = async (event) => {
     event.preventDefault();
-    if (!validTargetPost || !commentText.trim()) return;
-    await onComment(targetPostId, commentText);
+    if (!validTargetPost || (!commentText.trim() && !commentMediaFile)) return;
+    await onComment(targetPostId, commentText, null, commentMediaFile);
     setCommentText("");
+    setCommentMediaFile(null);
     setCommentComposerOpen(true);
-    setCommentsExpanded(true);
   };
 
   const openReplyComposer = (comment) => {
@@ -668,22 +792,28 @@ export default function FeedCard({
       ...prev,
       [commentId]: prev[commentId] || mention
     }));
-    setCommentsExpanded(true);
+    setCommentsModalOpen(true);
   };
 
   const updateReplyDraft = (commentId, value) => {
     setReplyDrafts((prev) => ({ ...prev, [commentId]: value }));
   };
 
+  const updateReplyMediaDraft = (commentId, file) => {
+    setReplyMediaDrafts((prev) => ({ ...prev, [commentId]: file || null }));
+  };
+
   const submitReply = async (event, comment) => {
     event.preventDefault();
     const commentId = Number(comment?.commentId || 0);
     const draft = replyDrafts[commentId] || "";
-    if (!validTargetPost || !commentId || !draft.trim()) return;
-    await onComment(targetPostId, draft, commentId);
+    const mediaFile = replyMediaDrafts[commentId] || null;
+    if (!validTargetPost || !commentId || (!draft.trim() && !mediaFile)) return;
+    await onComment(targetPostId, draft, commentId, mediaFile);
     setReplyDrafts((prev) => ({ ...prev, [commentId]: "" }));
+    setReplyMediaDrafts((prev) => ({ ...prev, [commentId]: null }));
     setOpenReplyId(null);
-    setCommentsExpanded(true);
+    setCommentsModalOpen(true);
   };
 
   const beginEditComment = (comment) => {
@@ -694,7 +824,7 @@ export default function FeedCard({
     setOpenReplyId(null);
     setOpenCommentMenuId(null);
     setDeleteConfirmCommentId(null);
-    setCommentsExpanded(true);
+    setCommentsModalOpen(true);
   };
 
   const cancelEditComment = () => {
@@ -903,6 +1033,18 @@ export default function FeedCard({
     setPickerOpen(false);
   };
 
+  const handleCommentReaction = async (comment, reactionKey = "like") => {
+    const commentId = Number(comment?.commentId || 0);
+    if (!validTargetPost || !commentId || !onReactComment) return;
+    setCommentReactionBusy(`${commentId}-${reactionKey}`);
+    try {
+      await onReactComment(targetPostId, commentId, reactionKey);
+      setOpenCommentReactionPickerId(null);
+    } finally {
+      setCommentReactionBusy("");
+    }
+  };
+
   const handleEditSubmit = async (event) => {
     event.preventDefault();
     if (!onEdit || !canEditPost) return;
@@ -919,6 +1061,237 @@ export default function FeedCard({
     } finally {
       setSavingEdit(false);
     }
+  };
+
+  const renderCommentAvatar = (comment, compact = false) => {
+    const name = commentAuthorName(comment);
+    const profileImageUrl = commentAuthorProfileImageUrl(comment);
+    const authorId = Number(comment?.authorId || 0);
+    const avatarContent = profileImageUrl ? (
+      <img src={toMediaUrl(profileImageUrl)} alt="" />
+    ) : (
+      initialFromName(name)
+    );
+
+    if (authorId && onAuthorClick) {
+      return (
+        <button
+          type="button"
+          className={`comment-author-avatar ${compact ? "compact" : ""} ${profileImageUrl ? "has-image" : ""}`.trim()}
+          onClick={() => onAuthorClick(authorId)}
+          aria-label={`Open ${name} profile`}
+        >
+          {avatarContent}
+        </button>
+      );
+    }
+
+    return (
+      <span className={`comment-author-avatar ${compact ? "compact" : ""} ${profileImageUrl ? "has-image" : ""}`.trim()}>
+        {avatarContent}
+      </span>
+    );
+  };
+
+  const renderCommentMedia = (comment) => {
+    const media = commentMediaUrl(comment);
+    if (!media) return null;
+    const src = toMediaUrl(media);
+    return (
+      <div className={`comment-media-card ${isCommentVideo(comment) ? "video" : "image"}`.trim()}>
+        {isCommentVideo(comment) ? (
+          <video src={src} controls preload="metadata" />
+        ) : (
+          <img src={src} alt="Comment attachment" />
+        )}
+      </div>
+    );
+  };
+
+  const renderCommentReactionSummary = (comment) => {
+    const total = countCommentReactions(comment);
+    if (!total) return null;
+    const summary = Object.entries(commentReactionCounts(comment))
+      .filter(([, count]) => Number(count) > 0)
+      .sort((a, b) => Number(b[1]) - Number(a[1]))
+      .slice(0, 2);
+
+    return (
+      <span className="comment-reaction-summary">
+        <span className="comment-reaction-bubbles" aria-hidden="true">
+          {summary.map(([reactionKey]) => (
+            <i key={`${comment.commentId}-${reactionKey}`} className={`feed-reaction-bubble ${reactionKey}`}>
+              <ReactionIcon type={reactionKey} />
+            </i>
+          ))}
+        </span>
+        {total}
+      </span>
+    );
+  };
+
+  const renderReplyForm = (comment, mention) => {
+    const commentId = Number(comment?.commentId || 0);
+    const replyDraft = replyDrafts[commentId] || "";
+    const replyMediaFile = replyMediaDrafts[commentId] || null;
+    if (!commentId) return null;
+
+    return (
+      <form className="comment-reply-form premium-comment-reply-form" onSubmit={(event) => submitReply(event, comment)}>
+        <span className="comment-author-avatar compact">{initialFromName(currentUserName || authorName)}</span>
+        <div className="comment-reply-input-wrap">
+          <input
+            value={replyDraft}
+            onChange={(event) => updateReplyDraft(commentId, event.target.value)}
+            placeholder={`Reply to ${mention}`}
+            autoFocus
+          />
+          {replyMediaFile ? (
+            <span className="comment-media-chip">
+              {replyMediaFile.type?.startsWith("video") ? "Video" : "Photo"} attached
+              <button type="button" onClick={() => updateReplyMediaDraft(commentId, null)} aria-label="Remove reply media">
+                x
+              </button>
+            </span>
+          ) : null}
+        </div>
+        <span className="comment-reply-tools">
+          <input
+            hidden
+            ref={(node) => {
+              if (node) replyMediaInputRefs.current[commentId] = node;
+            }}
+            type="file"
+            accept="image/*,video/*"
+            onChange={(event) => updateReplyMediaDraft(commentId, event.target.files?.[0] || null)}
+          />
+          <button
+            type="button"
+            className="feed-tool-button"
+            onClick={() => replyMediaInputRefs.current[commentId]?.click()}
+            aria-label="Attach reply photo or video"
+            disabled={!validTargetPost}
+          >
+            <ImageIcon />
+          </button>
+          <button className="btn btn-primary" type="submit" disabled={!replyDraft.trim() && !replyMediaFile}>
+            Reply
+          </button>
+        </span>
+      </form>
+    );
+  };
+
+  const renderCommentItem = (comment, options = {}) => {
+    const { isReply = false, rootMention = "", showReplies = true, modal = false, depth = 0 } = options;
+    const commentId = Number(comment.commentId || 0);
+    const name = commentAuthorName(comment);
+    const mention = mentionFromName(name);
+    const replies = Array.isArray(comment.replies) ? comment.replies : [];
+    const isEditingComment = editingCommentId === commentId;
+    const content = String(comment.content || "");
+    const hasRootMention = rootMention && content.toLowerCase().startsWith(rootMention.toLowerCase());
+    const relationshipLabel = commentRelationship(comment);
+    const activeReaction = comment?.viewerReaction ? reactionByKey(comment.viewerReaction) : null;
+    const reactionBusy = commentReactionBusy.startsWith(`${commentId}-`);
+
+    return (
+      <article
+        className={`comment-thread-item ${isReply ? "is-reply" : ""} ${modal ? "modal-comment-item" : ""} comment-depth-${Math.min(depth, 4)}`.trim()}
+        role="listitem"
+        key={comment.commentId}
+      >
+        <div className="comment-bubble-row">
+          {renderCommentAvatar(comment, isReply)}
+          <div className="comment-bubble">
+            <header className="comment-bubble-header">
+              <span className="comment-author-meta">
+                <strong>{name}</strong>
+                {relationshipLabel ? <em>{relationshipLabel}</em> : null}
+                {comment.createdAt ? <time>{formatCommentTime(comment.createdAt)}</time> : null}
+              </span>
+              {renderCommentMenu(comment, isReply ? "Reply options" : "Comment options")}
+            </header>
+            {isEditingComment ? (
+              <form className="comment-edit-form" onSubmit={(event) => submitCommentEdit(event, comment)}>
+                <input
+                  value={editingCommentText}
+                  onChange={(event) => setEditingCommentText(event.target.value)}
+                  autoFocus
+                />
+                <button type="submit" disabled={!editingCommentText.trim() || commentActionBusy === `edit-${commentId}`}>
+                  Save
+                </button>
+                <button type="button" onClick={cancelEditComment}>
+                  Cancel
+                </button>
+              </form>
+            ) : content ? (
+              <p>
+                {isReply && rootMention && !hasRootMention ? <><span className="comment-root-mention">{rootMention}</span>{" "}</> : null}
+                {content}
+              </p>
+            ) : null}
+            {renderCommentMedia(comment)}
+          </div>
+        </div>
+
+        <div className="comment-actions">
+          <span className="comment-reaction-wrap">
+            <button
+              type="button"
+              className={`comment-react-link ${activeReaction ? `active ${activeReaction.key}` : ""}`.trim()}
+              onClick={() => setOpenCommentReactionPickerId((currentId) => (currentId === commentId ? null : commentId))}
+              disabled={!validTargetPost || !onReactComment || reactionBusy}
+              aria-haspopup="menu"
+              aria-expanded={openCommentReactionPickerId === commentId}
+            >
+              <ReactionIcon type={activeReaction?.key || "like"} />
+              {activeReaction ? activeReaction.label : "React"}
+            </button>
+            {openCommentReactionPickerId === commentId ? (
+              <span className="comment-reaction-popover" role="menu" aria-label="Choose comment reaction">
+                {REACTIONS.map((reaction) => (
+                  <button
+                    key={`${commentId}-${reaction.key}`}
+                    type="button"
+                    className={`comment-reaction-choice ${activeReaction?.key === reaction.key ? "active" : ""}`.trim()}
+                    onMouseDown={(event) => {
+                      event.preventDefault();
+                      handleCommentReaction(comment, reaction.key);
+                    }}
+                    disabled={commentReactionBusy === `${commentId}-${reaction.key}`}
+                    title={reaction.label}
+                  >
+                    <ReactionIcon type={reaction.key} />
+                    <span>{reaction.label}</span>
+                  </button>
+                ))}
+              </span>
+            ) : null}
+          </span>
+          {renderCommentReactionSummary(comment)}
+          <button type="button" className="comment-reply-link" onClick={() => openReplyComposer(comment)}>
+            Reply to {mention}
+          </button>
+          {replies.length > 0 ? <span>{replies.length} {replies.length === 1 ? "reply" : "replies"}</span> : null}
+        </div>
+
+        {openReplyId === commentId ? renderReplyForm(comment, mention) : null}
+
+        {showReplies && replies.length > 0 ? (
+          <div className="comment-replies" role="list" aria-label={`Replies to ${name}`}>
+            {replies.map((reply) => renderCommentItem(reply, {
+              isReply: true,
+              rootMention: mention,
+              showReplies: true,
+              modal,
+              depth: depth + 1
+            }))}
+          </div>
+        ) : null}
+      </article>
+    );
   };
 
   return (
@@ -1203,8 +1576,7 @@ export default function FeedCard({
           className="feed-comment-summary"
           onClick={() => {
             setCommentComposerOpen(true);
-            setCommentsExpanded(true);
-            window.setTimeout(() => commentInputRef.current?.focus(), 0);
+            setCommentsModalOpen(true);
           }}
         >
           <span>{totalCommentCount} {totalCommentCount === 1 ? "Comment" : "Comments"}</span>
@@ -1228,18 +1600,37 @@ export default function FeedCard({
               </button>
             </header>
             <div className="reaction-users-filter-row" aria-label="Reaction summary">
-              <button type="button" className="active">All <strong>{totalReactions}</strong></button>
-              {reactionSummary.map((reaction) => (
-                <button key={`filter-${reaction.key}`} type="button">
+              <button
+                type="button"
+                className={reactionUserFilter === "all" ? "active" : ""}
+                onClick={() => setReactionUserFilter("all")}
+              >
+                All <strong>{totalReactions}</strong>
+              </button>
+              {postReactionFilterOptions.map((reaction) => (
+                <button
+                  key={`filter-${reaction.key}`}
+                  type="button"
+                  className={reactionUserFilter === reaction.key ? "active" : ""}
+                  onClick={() => setReactionUserFilter(reaction.key)}
+                >
                   <ReactionIcon type={reaction.key} />
                   {reaction.label}
                   <strong>{reaction.count}</strong>
                 </button>
               ))}
             </div>
-            {realReactionUsers.length ? (
+            <label className="reaction-users-search">
+              <SearchIcon />
+              <input
+                value={reactionUserSearch}
+                onChange={(event) => setReactionUserSearch(event.target.value)}
+                placeholder="Search people..."
+              />
+            </label>
+            {filteredReactionUsers.length ? (
               <div className="reaction-users-list">
-                {realReactionUsers.map((reactionUser, index) => {
+                {filteredReactionUsers.map((reactionUser, index) => {
                   const reaction = reactionByKey(reactionUser.type);
                   const reactionUserId = Number(reactionUser.userId || 0);
                   return (
@@ -1274,12 +1665,25 @@ export default function FeedCard({
                         <ReactionIcon type={reaction.key} />
                         {reaction.label}
                       </span>
+                      <button
+                        type="button"
+                        className="reaction-user-view-btn"
+                        onClick={() => {
+                          if (reactionUserId) {
+                            setReactionUsersOpen(false);
+                            onAuthorClick?.(reactionUserId);
+                          }
+                        }}
+                        disabled={!reactionUserId}
+                      >
+                        View profile
+                      </button>
                     </article>
                   );
                 })}
               </div>
             ) : (
-              <p className="reaction-users-empty">No reaction users found for this post.</p>
+              <p className="reaction-users-empty">No people found for this reaction filter.</p>
             )}
           </section>
         </div>,
@@ -1288,19 +1692,36 @@ export default function FeedCard({
 
       {validTargetPost || comments.length > 0 ? (
         <div className="feed-thread-shell">
-          <form onSubmit={submitComment} className="inline-form feed-inline-form premium-inline-form">
+          <form onSubmit={submitComment} className="inline-form feed-inline-form premium-inline-form comment-publisher-form">
             <span className="feed-comment-avatar">
               {(currentUserName || authorName || "U").slice(0, 1).toUpperCase()}
               <span className="feed-avatar-online" aria-hidden="true" />
             </span>
-            <input
-              ref={commentInputRef}
-              value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
-              placeholder="Write a comment..."
-              disabled={!validTargetPost}
-            />
+            <div className="comment-publisher-input-wrap">
+              <input
+                ref={commentInputRef}
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                placeholder="Write a comment..."
+                disabled={!validTargetPost}
+              />
+              {commentMediaFile ? (
+                <span className="comment-media-chip">
+                  {commentMediaFile.type?.startsWith("video") ? "Video" : "Photo"} attached
+                  <button type="button" onClick={() => setCommentMediaFile(null)} aria-label="Remove comment media">
+                    x
+                  </button>
+                </span>
+              ) : null}
+            </div>
             <span className="feed-comment-tools">
+              <input
+                hidden
+                ref={commentMediaInputRef}
+                type="file"
+                accept="image/*,video/*"
+                onChange={(event) => setCommentMediaFile(event.target.files?.[0] || null)}
+              />
               <button
                 type="button"
                 className="feed-tool-button"
@@ -1312,8 +1733,8 @@ export default function FeedCard({
               <button
                 type="button"
                 className="feed-tool-button"
-                onClick={() => insertCommentText(" [photo] ")}
-                aria-label="Add image"
+                onClick={() => commentMediaInputRef.current?.click()}
+                aria-label="Add photo or video"
                 disabled={!validTargetPost}
               >
                 <ImageIcon />
@@ -1344,136 +1765,93 @@ export default function FeedCard({
                 </span>
               ) : null}
             </span>
-            <button className="btn btn-primary feed-comment-submit" type="submit" disabled={!validTargetPost}>
+            <button className="btn btn-primary feed-comment-submit" type="submit" disabled={!validTargetPost || (!commentText.trim() && !commentMediaFile)}>
               Send
             </button>
           </form>
 
           {comments.length > 0 ? (
-            <div className="comment-list premium-comment-list" role="list">
-              <div className="thread-summary-row">
+            <div className="comment-list premium-comment-list comment-preview-list" role="list">
+              <div className="thread-summary-row comment-preview-summary">
                 <span>{totalCommentCount} {totalCommentCount === 1 ? "comment" : "comments"}</span>
                 {hiddenCommentCount > 0 ? (
-                  <button type="button" onClick={() => setCommentsExpanded(true)}>
-                    View {hiddenCommentCount} older {hiddenCommentCount === 1 ? "comment" : "comments"}
+                  <button type="button" onClick={() => setCommentsModalOpen(true)}>
+                    +{hiddenCommentCount} {hiddenCommentCount === 1 ? "comment" : "comments"}
+                  </button>
+                ) : totalCommentCount > 0 ? (
+                  <button type="button" onClick={() => setCommentsModalOpen(true)}>
+                    View all
                   </button>
                 ) : null}
               </div>
 
-              {visibleComments.map((comment) => {
-                const commentId = Number(comment.commentId || 0);
-                const name = commentAuthorName(comment);
-                const mention = mentionFromName(name);
-                const replies = Array.isArray(comment.replies) ? comment.replies : [];
-                const replyDraft = replyDrafts[commentId] || "";
-                const isEditingComment = editingCommentId === commentId;
-                return (
-                  <article className="comment-thread-item" role="listitem" key={comment.commentId}>
-                    <div className="comment-bubble-row">
-                      <span className="comment-author-avatar">{initialFromName(name)}</span>
-                      <div className="comment-bubble">
-                        <header className="comment-bubble-header">
-                          <span className="comment-author-meta">
-                            <strong>{name}</strong>
-                            {comment.createdAt ? <time>{formatCommentTime(comment.createdAt)}</time> : null}
-                          </span>
-                          {renderCommentMenu(comment, "Comment options")}
-                        </header>
-                        {isEditingComment ? (
-                          <form className="comment-edit-form" onSubmit={(event) => submitCommentEdit(event, comment)}>
-                            <input
-                              value={editingCommentText}
-                              onChange={(event) => setEditingCommentText(event.target.value)}
-                              autoFocus
-                            />
-                            <button type="submit" disabled={!editingCommentText.trim() || commentActionBusy === `edit-${commentId}`}>
-                              Save
-                            </button>
-                            <button type="button" onClick={cancelEditComment}>
-                              Cancel
-                            </button>
-                          </form>
-                        ) : (
-                          <p>{comment.content}</p>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="comment-actions">
-                      <button type="button" className="comment-reply-link" onClick={() => openReplyComposer(comment)}>
-                        Reply to {mention}
-                      </button>
-                      {replies.length > 0 ? <span>{replies.length} {replies.length === 1 ? "reply" : "replies"}</span> : null}
-                    </div>
-
-                    {openReplyId === commentId ? (
-                      <form className="comment-reply-form" onSubmit={(event) => submitReply(event, comment)}>
-                        <span className="comment-author-avatar compact">{initialFromName(currentUserName || authorName)}</span>
-                        <input
-                          value={replyDraft}
-                          onChange={(event) => updateReplyDraft(commentId, event.target.value)}
-                          placeholder={`Reply to ${mention}`}
-                          autoFocus
-                        />
-                        <button className="btn btn-primary" type="submit" disabled={!replyDraft.trim()}>
-                          Reply
-                        </button>
-                      </form>
-                    ) : null}
-
-                    {replies.length > 0 ? (
-                      <div className="comment-replies" role="list" aria-label={`Replies to ${name}`}>
-                        {replies.map((reply) => {
-                          const replyName = commentAuthorName(reply);
-                          const replyContent = String(reply.content || "");
-                          const hasRootMention = replyContent.toLowerCase().startsWith(mention.toLowerCase());
-                          const replyId = Number(reply.commentId || 0);
-                          const isEditingReply = editingCommentId === replyId;
-                          return (
-                            <article className="comment-reply-item" role="listitem" key={reply.commentId}>
-                              <span className="comment-author-avatar compact">{initialFromName(replyName)}</span>
-                              <div className="comment-bubble reply">
-                                <header className="comment-bubble-header">
-                                  <span className="comment-author-meta">
-                                    <strong>{replyName}</strong>
-                                    {reply.createdAt ? <time>{formatCommentTime(reply.createdAt)}</time> : null}
-                                  </span>
-                                  {renderCommentMenu(reply, "Reply options")}
-                                </header>
-                                {isEditingReply ? (
-                                  <form className="comment-edit-form" onSubmit={(event) => submitCommentEdit(event, reply)}>
-                                    <input
-                                      value={editingCommentText}
-                                      onChange={(event) => setEditingCommentText(event.target.value)}
-                                      autoFocus
-                                    />
-                                    <button type="submit" disabled={!editingCommentText.trim() || commentActionBusy === `edit-${replyId}`}>
-                                      Save
-                                    </button>
-                                    <button type="button" onClick={cancelEditComment}>
-                                      Cancel
-                                    </button>
-                                  </form>
-                                ) : (
-                                  <p>
-                                    {!hasRootMention ? <><span className="comment-root-mention">{mention}</span>{" "}</> : null}
-                                    {replyContent}
-                                  </p>
-                                )}
-                              </div>
-                            </article>
-                          );
-                        })}
-                      </div>
-                    ) : null}
-                  </article>
-                );
-              })}
+              {visibleComments.map((comment) => renderCommentItem(comment, { showReplies: false }))}
             </div>
           ) : null}
         </div>
       ) : null}
 
+      {commentsModalOpen && typeof document !== "undefined" ? createPortal(
+        <div className="comments-modal-overlay" onMouseDown={() => setCommentsModalOpen(false)}>
+          <section className="comments-modal-card" onMouseDown={(event) => event.stopPropagation()} aria-label="All comments">
+            <header className="comments-modal-head">
+              <div>
+                <span className="comments-modal-kicker">Post discussion</span>
+                <h3>All Comments ({totalCommentCount})</h3>
+                <p>Top reactions, friends, followers, and the rest of the thread in one place.</p>
+              </div>
+              <button type="button" className="share-panel-close" onClick={() => setCommentsModalOpen(false)} aria-label="Close comments">
+                <ShareCloseIcon />
+              </button>
+            </header>
+
+            <div className="comments-modal-tabs" role="tablist" aria-label="Comment filters">
+              {[
+                ["all", "All"],
+                ["top", "Top"],
+                ["latest", "Latest"],
+                ["older", "Older"],
+                ["other", "Other"]
+              ].map(([key, label]) => (
+                <button
+                  key={key}
+                  type="button"
+                  className={commentTab === key ? "active" : ""}
+                  onClick={() => setCommentTab(key)}
+                  role="tab"
+                  aria-selected={commentTab === key}
+                >
+                  {label}
+                  {key === "all" ? <strong>{totalCommentCount}</strong> : null}
+                </button>
+              ))}
+            </div>
+
+            <div className="comments-modal-scroll">
+              {commentSections.length ? (
+                commentSections.map((section) => (
+                  <section className="comments-section-block" key={section.key}>
+                    <div className="comments-section-title">
+                      <span>{section.title}</span>
+                      <strong>{section.items.length}</strong>
+                    </div>
+                  <div className="comments-section-list" role="list">
+                    {section.items.length ? (
+                      section.items.map((comment) => renderCommentItem(comment, { showReplies: true, modal: true }))
+                    ) : (
+                      <p className="comments-section-empty">{section.emptyText || "No comments in this section yet."}</p>
+                    )}
+                  </div>
+                  </section>
+                ))
+              ) : (
+                <p className="comments-modal-empty">No comments found for this filter.</p>
+              )}
+            </div>
+          </section>
+        </div>,
+        document.querySelector(".shell.shell-home-theme") || document.querySelector(".shell") || document.body
+      ) : null}
       {shareComposerOpen && validTargetPost && typeof document !== "undefined" ? createPortal(
         <div className="share-panel-backdrop" onClick={() => !shareSubmitting && setShareComposerOpen(false)}>
           <section className="share-panel-card" onClick={(event) => event.stopPropagation()} aria-label="Share post">

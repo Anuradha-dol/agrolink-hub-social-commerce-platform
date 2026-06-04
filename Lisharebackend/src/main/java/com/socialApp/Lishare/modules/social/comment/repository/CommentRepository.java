@@ -24,6 +24,13 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
             "ORDER BY c.createdAt DESC")
     List<Comment> findTopLevelCommentsWithReplies(@Param("postId") Long postId);
 
+    @Query("SELECT DISTINCT c FROM Comment c " +
+            "LEFT JOIN FETCH c.user " +
+            "LEFT JOIN FETCH c.parentComment p " +
+            "LEFT JOIN FETCH p.user " +
+            "WHERE c.post.postId = :postId")
+    List<Comment> findAllCommentsForThread(@Param("postId") Long postId);
+
     @Modifying
     @Transactional
     @Query("DELETE FROM Comment c WHERE c.user.userId = :userId OR c.parentComment.user.userId = :userId")

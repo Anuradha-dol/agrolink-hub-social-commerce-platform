@@ -41,6 +41,12 @@ public class Comment {
     @Column(length = 1000)
     private String content;
 
+    @Column(length = 700)
+    private String mediaUrl;
+
+    @Column(length = 20)
+    private String mediaType;
+
     @Column(name = "created_at")
     private Date createdAt;
 

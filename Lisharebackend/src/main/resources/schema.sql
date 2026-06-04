@@ -20,6 +20,24 @@ ALTER TABLE IF EXISTS posts
 ALTER TABLE IF EXISTS posts
     ADD COLUMN IF NOT EXISTS edited_at TIMESTAMP;
 
+ALTER TABLE IF EXISTS comments
+    ADD COLUMN IF NOT EXISTS media_url VARCHAR(700);
+
+ALTER TABLE IF EXISTS comments
+    ADD COLUMN IF NOT EXISTS media_type VARCHAR(20);
+
+CREATE TABLE IF NOT EXISTS comment_reactions (
+    comment_reaction_id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    comment_id BIGINT NOT NULL REFERENCES comments(comment_id) ON DELETE CASCADE,
+    type VARCHAR(20) NOT NULL,
+    created_at TIMESTAMP DEFAULT NOW(),
+    CONSTRAINT uq_comment_reactions_user_comment UNIQUE (user_id, comment_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_comment_reactions_comment_id ON comment_reactions(comment_id);
+CREATE INDEX IF NOT EXISTS idx_comment_reactions_type ON comment_reactions(type);
+
 ALTER TABLE IF EXISTS shares
     ADD COLUMN IF NOT EXISTS original_post_id BIGINT;
 
