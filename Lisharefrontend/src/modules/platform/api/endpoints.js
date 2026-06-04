@@ -32,6 +32,7 @@ export const ENDPOINTS = {
     myPosts: "/posts/my",
     createPost: "/posts/create",
     deletePost: (postId) => `/posts/delete/${postId}`,
+    pollVote: (postId) => `/posts/${postId}/poll/vote`,
     commentAdd: (postId) => `/comments/${postId}/add`,
     commentReply: (postId, parentCommentId) => `/comments/${postId}/reply/${parentCommentId}`,
     commentUpdate: (commentId) => `/comments/${commentId}/update`,

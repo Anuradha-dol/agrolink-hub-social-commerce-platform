@@ -224,7 +224,7 @@ function PostValueIcon({ type }) {
 }
 
 function renderContentWithHashtags(content = "", onHashtagClick) {
-  return String(content).split(/(#[a-zA-Z0-9_]+)/g).map((part, index) => {
+  return String(content).split(/(#[a-zA-Z0-9_]+|@[a-zA-Z0-9_]+)/g).map((part, index) => {
     if (!part) return null;
     if (part.startsWith("#")) {
       return (
@@ -237,6 +237,9 @@ function renderContentWithHashtags(content = "", onHashtagClick) {
           {part}
         </button>
       );
+    }
+    if (part.startsWith("@")) {
+      return <span key={`${part}-${index}`} className="feed-mention-pill">{part}</span>;
     }
     return part;
   });
@@ -336,6 +339,20 @@ function cardAuthorProfileImageUrl(item, isShare) {
 
 function shareUserName(user) {
   return `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || user?.email || "Unknown user";
+}
+
+function mentionHandle(user) {
+  const source = user?.username || user?.email?.split("@")[0] || shareUserName(user);
+  return String(source || "member").replace(/[^a-zA-Z0-9_]/g, "").slice(0, 32) || "member";
+}
+
+function activeMentionQuery(value = "") {
+  const match = String(value).match(/(^|\s)@([a-zA-Z0-9_]{1,40})$/);
+  return match ? match[2] : "";
+}
+
+function replaceActiveMention(value = "", handle = "") {
+  return String(value).replace(/(^|\s)@([a-zA-Z0-9_]{0,40})$/, (match, prefix) => `${prefix}@${handle} `);
 }
 
 function commentAuthorName(comment) {
@@ -453,9 +470,9 @@ function categoryLabel(category) {
 
 function categoryTone(category) {
   const normalized = normalizeCategory(category);
-  if (normalized === "EDUCATION" || normalized === "NEWS") return "green";
+  if (normalized === "EDUCATION" || normalized === "NEWS") return "blue";
   if (normalized === "BUSINESS" || normalized === "TECH") return "silver";
-  if (normalized === "FUNNY" || normalized === "LIFESTYLE") return "gold";
+  if (normalized === "FUNNY" || normalized === "LIFESTYLE") return "rose";
   return "neutral";
 }
 
@@ -480,11 +497,15 @@ export default function FeedCard({
   saved = false,
   currentUserId,
   currentUserName = "",
+  currentUserProfileImageUrl = "",
+  highlightCommentId = 0,
+  highlightReplyId = 0,
   onComment,
   onUpdateComment,
   onDeleteComment,
   onReactComment,
   onReact,
+  onVotePoll,
   onShare,
   onDelete,
   onDeleteShare,
@@ -495,6 +516,7 @@ export default function FeedCard({
   onShareToStory,
   onShareToChat,
   onSearchShareUsers,
+  onSearchMentionUsers,
   onHashtagClick,
   onAuthorClick
 }) {
@@ -537,12 +559,18 @@ export default function FeedCard({
   const [reactionUserSearch, setReactionUserSearch] = useState("");
   const [selectedReactionKey, setSelectedReactionKey] = useState("");
   const [editingOpen, setEditingOpen] = useState(false);
-  const [editingContent, setEditingContent] = useState(item.content || "");
+  const [editingContent, setEditingContent] = useState(firstNonEmptyString(item.content, item.caption, item.postCaption, item.text));
+  const [editingFeeling, setEditingFeeling] = useState(item.feeling || "");
+  const [editingLocation, setEditingLocation] = useState(item.locationName || "");
+  const [editingPollQuestion, setEditingPollQuestion] = useState(item.pollQuestion || "");
+  const [editingPollOptions, setEditingPollOptions] = useState(Array.isArray(item.pollOptions) && item.pollOptions.length ? item.pollOptions : ["", ""]);
   const [editingFile, setEditingFile] = useState(null);
   const [removeMedia, setRemoveMedia] = useState(false);
   const [savingEdit, setSavingEdit] = useState(false);
+  const [mentionLookup, setMentionLookup] = useState({ key: "", items: [], loading: false });
   const [mediaFailed, setMediaFailed] = useState(false);
   const [avatarFailed, setAvatarFailed] = useState(false);
+  const [currentUserAvatarFailed, setCurrentUserAvatarFailed] = useState(false);
 
   const pickerRef = useRef(null);
   const menuRef = useRef(null);
@@ -556,14 +584,23 @@ export default function FeedCard({
   const targetPostId = isShare ? item.originalPostId : item.postId;
   const validTargetPost = Number(targetPostId) > 0 && !originalPostDeleted;
   const mediaUrl = !originalPostDeleted && item.imageUrl ? toMediaUrl(item.imageUrl) : "";
-  const videoAsset = (item.mediaType || "").toUpperCase() === "VIDEO" || isVideoAsset(item.imageUrl || "");
+  const normalizedMediaType = String(item.mediaType || "").toUpperCase();
+  const gifAsset = normalizedMediaType === "GIF" || String(item.imageUrl || "").toLowerCase().split("?")[0].endsWith(".gif");
+  const videoAsset = normalizedMediaType === "VIDEO" || isVideoAsset(item.imageUrl || "");
   const canEditPost = !isShare && isOwnedPost(item, currentUserId, currentUserName);
   const canDeletePost = canEditPost;
   const canDeleteShare = isShare && Number(item.sharedById) === Number(currentUserId);
   const canShareToStory = Boolean(validTargetPost && mediaUrl);
-  const displayContent = originalPostDeleted ? "" : String(item.content || "").trim();
-  const sharePreviewTitle = (item.content || "").trim() || (videoAsset ? "Shared reel" : "Shared post");
-  const sharePreviewType = videoAsset ? "Reel" : "Post";
+  const contentFallback = firstNonEmptyString(item.content, item.caption, item.postCaption, item.text);
+  const hashtagFallback = Array.isArray(item.hashtags) ? item.hashtags.filter(Boolean).join(" ") : "";
+  const displayContent = originalPostDeleted ? "" : String(contentFallback || hashtagFallback || "").trim();
+  const pollOptions = Array.isArray(item.pollOptions) ? item.pollOptions.filter(Boolean) : [];
+  const pollVotes = Array.isArray(item.pollVotes) ? item.pollVotes : [];
+  const pollTotalVotes = Number(item.pollTotalVotes ?? pollVotes.reduce((total, value) => total + Number(value || 0), 0));
+  const viewerPollOptionIndex = Number.isInteger(item.viewerPollOptionIndex) ? item.viewerPollOptionIndex : null;
+  const hasPoll = Boolean(!originalPostDeleted && item.pollQuestion && pollOptions.length >= 2);
+  const sharePreviewTitle = displayContent || (gifAsset ? "Shared GIF" : videoAsset ? "Shared reel" : "Shared post");
+  const sharePreviewType = gifAsset ? "GIF" : videoAsset ? "Reel" : "Post";
 
   const totalReactions = useMemo(
     () => Object.values(reactions || {}).reduce((total, value) => total + Number(value || 0), 0),
@@ -608,6 +645,7 @@ export default function FeedCard({
     .slice(0, 3);
   const authorProfileImageUrl = cardAuthorProfileImageUrl(item, isShare);
   const authorAvatarUrl = !avatarFailed && authorProfileImageUrl ? toMediaUrl(authorProfileImageUrl) : "";
+  const currentUserAvatarUrl = !currentUserAvatarFailed && currentUserProfileImageUrl ? toMediaUrl(currentUserProfileImageUrl) : "";
   const postReactionFilterOptions = useMemo(
     () => REACTIONS.map((reaction) => ({
       ...reaction,
@@ -666,7 +704,11 @@ export default function FeedCard({
   }, [commentTab, comments]);
 
   useEffect(() => {
-    setEditingContent(item.content || "");
+    setEditingContent(firstNonEmptyString(item.content, item.caption, item.postCaption, item.text));
+    setEditingFeeling(item.feeling || "");
+    setEditingLocation(item.locationName || "");
+    setEditingPollQuestion(item.pollQuestion || "");
+    setEditingPollOptions(Array.isArray(item.pollOptions) && item.pollOptions.length ? item.pollOptions : ["", ""]);
     setEditingFile(null);
     setRemoveMedia(false);
     setEditingOpen(false);
@@ -686,11 +728,15 @@ export default function FeedCard({
     setReactionUserFilter("all");
     setReactionUserSearch("");
     setMediaFailed(false);
-  }, [item.postId, item.content, item.imageUrl]);
+  }, [item.postId, item.content, item.caption, item.postCaption, item.text, item.imageUrl, item.feeling, item.locationName, item.pollQuestion, item.pollOptions]);
 
   useEffect(() => {
     setAvatarFailed(false);
   }, [authorProfileImageUrl, item.postId, item.shareId]);
+
+  useEffect(() => {
+    setCurrentUserAvatarFailed(false);
+  }, [currentUserProfileImageUrl, currentUserId]);
 
   useEffect(() => {
     if (shareDestination === "story" && !canShareToStory) {
@@ -750,6 +796,24 @@ export default function FeedCard({
   }, [shareComposerOpen]);
 
   useEffect(() => {
+    const targetId = Number(highlightReplyId || highlightCommentId || 0);
+    if (!targetId || !validTargetPost) return;
+    const threadContainsTarget = (items = []) => items.some((comment) => {
+      if (Number(comment?.commentId) === targetId) return true;
+      return threadContainsTarget(Array.isArray(comment?.replies) ? comment.replies : []);
+    });
+    if (!threadContainsTarget(comments)) return;
+    setCommentsModalOpen(true);
+    setCommentTab("all");
+    window.setTimeout(() => {
+      const targetElement = document.getElementById(`comment-${targetId}`);
+      targetElement?.scrollIntoView({ behavior: "smooth", block: "center" });
+      targetElement?.classList.add("comment-target-highlight");
+      window.setTimeout(() => targetElement?.classList.remove("comment-target-highlight"), 2800);
+    }, 260);
+  }, [comments, highlightCommentId, highlightReplyId, validTargetPost]);
+
+  useEffect(() => {
     const onPointerDown = (event) => {
       if (pickerRef.current && !pickerRef.current.contains(event.target)) {
         setPickerOpen(false);
@@ -773,6 +837,54 @@ export default function FeedCard({
       document.removeEventListener("mousedown", onPointerDown);
     };
   }, []);
+
+  const lookupMentions = (key, value) => {
+    const query = activeMentionQuery(value);
+    if (!query || !onSearchMentionUsers) {
+      setMentionLookup((previous) => previous.key === key ? { key: "", items: [], loading: false } : previous);
+      return;
+    }
+
+    setMentionLookup({ key, items: [], loading: true });
+    window.clearTimeout(lookupMentions.timeoutId);
+    lookupMentions.timeoutId = window.setTimeout(() => {
+      onSearchMentionUsers(query)
+        .then((users) => setMentionLookup({ key, items: Array.isArray(users) ? users.slice(0, 6) : [], loading: false }))
+        .catch(() => setMentionLookup({ key, items: [], loading: false }));
+    }, 180);
+  };
+
+  const renderMentionLookup = (key, onPick) => {
+    if (mentionLookup.key !== key || (!mentionLookup.loading && mentionLookup.items.length === 0)) return null;
+    return (
+      <div className="comment-mention-menu">
+        {mentionLookup.loading ? <p>Finding people...</p> : null}
+        {mentionLookup.items.map((mentionUser) => (
+          <button
+            key={`mention-${key}-${mentionUser.userId || mentionUser.email}`}
+            type="button"
+            onMouseDown={(event) => {
+              event.preventDefault();
+              onPick(mentionUser);
+              setMentionLookup({ key: "", items: [], loading: false });
+            }}
+          >
+            <span className={`comment-mention-avatar ${mentionUser.profileImageUrl || mentionUser.imageUrl ? "has-image" : ""}`}>
+              {mentionUser.profileImageUrl || mentionUser.imageUrl ? (
+                <img src={toMediaUrl(mentionUser.profileImageUrl || mentionUser.imageUrl)} alt="" />
+              ) : (
+                initialFromName(shareUserName(mentionUser))
+              )}
+            </span>
+            <span>
+              <strong>@{mentionHandle(mentionUser)}</strong>
+              <small>{shareUserName(mentionUser)}</small>
+            </span>
+          </button>
+        ))}
+      </div>
+    );
+  };
 
   const submitComment = async (event) => {
     event.preventDefault();
@@ -1052,6 +1164,16 @@ export default function FeedCard({
     try {
       const formData = new FormData();
       formData.append("content", editingContent ?? "");
+      formData.append("feeling", editingFeeling || "");
+      formData.append("locationName", editingLocation || "");
+      const cleanEditPollOptions = editingPollOptions.map((option) => String(option || "").trim()).filter(Boolean);
+      if (editingPollQuestion.trim() && cleanEditPollOptions.length >= 2) {
+        formData.append("pollQuestion", editingPollQuestion.trim());
+        formData.append("pollOptions", JSON.stringify(cleanEditPollOptions));
+      } else {
+        formData.append("pollQuestion", "");
+        formData.append("pollOptions", "[]");
+      }
       if (editingFile) formData.append("image", editingFile);
       if (removeMedia) formData.append("removeMedia", "true");
       await onEdit(item.postId, formData);
@@ -1061,6 +1183,42 @@ export default function FeedCard({
     } finally {
       setSavingEdit(false);
     }
+  };
+
+  const renderPollDisplay = () => {
+    if (!hasPoll) return null;
+    return (
+      <section className="feed-poll-card" aria-label="Post poll">
+        <div className="feed-poll-head">
+          <span>Poll</span>
+          <strong>{item.pollQuestion}</strong>
+          <small>{pollTotalVotes} {pollTotalVotes === 1 ? "vote" : "votes"}</small>
+        </div>
+        <div className="feed-poll-options">
+          {pollOptions.map((option, index) => {
+            const votes = Number(pollVotes[index] || 0);
+            const percent = pollTotalVotes > 0 ? Math.round((votes / pollTotalVotes) * 100) : 0;
+            const selected = viewerPollOptionIndex === index;
+            return (
+              <button
+                key={`poll-${targetPostId}-${index}`}
+                type="button"
+                className={`feed-poll-option ${selected ? "selected" : ""}`.trim()}
+                onClick={() => onVotePoll?.(targetPostId, index)}
+                disabled={!validTargetPost || !onVotePoll}
+              >
+                <span className="feed-poll-fill" style={{ width: `${percent}%` }} />
+                <span className="feed-poll-option-copy">
+                  <strong>{option}</strong>
+                  <small>{percent}%</small>
+                </span>
+                {selected ? <em>Your vote</em> : null}
+              </button>
+            );
+          })}
+        </div>
+      </section>
+    );
   };
 
   const renderCommentAvatar = (comment, compact = false) => {
@@ -1138,14 +1296,26 @@ export default function FeedCard({
 
     return (
       <form className="comment-reply-form premium-comment-reply-form" onSubmit={(event) => submitReply(event, comment)}>
-        <span className="comment-author-avatar compact">{initialFromName(currentUserName || authorName)}</span>
+        <span className={`comment-author-avatar compact ${currentUserAvatarUrl ? "has-image" : ""}`.trim()}>
+          {currentUserAvatarUrl ? (
+            <img src={currentUserAvatarUrl} alt="" onError={() => setCurrentUserAvatarFailed(true)} />
+          ) : (
+            initialFromName(currentUserName || authorName)
+          )}
+        </span>
         <div className="comment-reply-input-wrap">
           <input
             value={replyDraft}
-            onChange={(event) => updateReplyDraft(commentId, event.target.value)}
+            onChange={(event) => {
+              updateReplyDraft(commentId, event.target.value);
+              lookupMentions(`reply-${commentId}`, event.target.value);
+            }}
             placeholder={`Reply to ${mention}`}
             autoFocus
           />
+          {renderMentionLookup(`reply-${commentId}`, (mentionUser) => {
+            updateReplyDraft(commentId, replaceActiveMention(replyDraft, mentionHandle(mentionUser)));
+          })}
           {replyMediaFile ? (
             <span className="comment-media-chip">
               {replyMediaFile.type?.startsWith("video") ? "Video" : "Photo"} attached
@@ -1197,6 +1367,7 @@ export default function FeedCard({
 
     return (
       <article
+        id={commentId ? `comment-${commentId}` : undefined}
         className={`comment-thread-item ${isReply ? "is-reply" : ""} ${modal ? "modal-comment-item" : ""} comment-depth-${Math.min(depth, 4)}`.trim()}
         role="listitem"
         key={comment.commentId}
@@ -1229,7 +1400,7 @@ export default function FeedCard({
             ) : content ? (
               <p>
                 {isReply && rootMention && !hasRootMention ? <><span className="comment-root-mention">{rootMention}</span>{" "}</> : null}
-                {content}
+                {renderContentWithHashtags(content, onHashtagClick)}
               </p>
             ) : null}
             {renderCommentMedia(comment)}
@@ -1418,8 +1589,17 @@ export default function FeedCard({
         <p className="feed-content">{renderContentWithHashtags(displayContent, onHashtagClick)}</p>
       ) : null}
 
+      {(item.feeling || item.locationName) && !originalPostDeleted ? (
+        <div className="feed-post-meta-chips">
+          {item.feeling ? <span>Feeling {item.feeling}</span> : null}
+          {item.locationName ? <span>{item.locationName}</span> : null}
+        </div>
+      ) : null}
+
+      {renderPollDisplay()}
+
       {mediaUrl ? (
-        <div className="feed-media-shell">
+        <div className={`feed-media-shell ${gifAsset ? "gif-media-shell" : ""}`.trim()}>
           {mediaFailed ? (
             <div className="feed-media-fallback">
               <FeedShareIcon />
@@ -1438,8 +1618,9 @@ export default function FeedCard({
               }}
             />
           ) : (
-            <img className="feed-image" src={mediaUrl} alt="Post" onError={() => setMediaFailed(true)} />
+            <img className={`feed-image ${gifAsset ? "feed-gif-image" : ""}`.trim()} src={mediaUrl} alt={gifAsset ? "Animated GIF post" : "Post"} onError={() => setMediaFailed(true)} />
           )}
+          {gifAsset ? <span className="feed-gif-badge">GIF</span> : null}
         </div>
       ) : null}
 
@@ -1693,18 +1874,28 @@ export default function FeedCard({
       {validTargetPost || comments.length > 0 ? (
         <div className="feed-thread-shell">
           <form onSubmit={submitComment} className="inline-form feed-inline-form premium-inline-form comment-publisher-form">
-            <span className="feed-comment-avatar">
-              {(currentUserName || authorName || "U").slice(0, 1).toUpperCase()}
+            <span className={`feed-comment-avatar ${currentUserAvatarUrl ? "has-image" : ""}`.trim()}>
+              {currentUserAvatarUrl ? (
+                <img src={currentUserAvatarUrl} alt="" onError={() => setCurrentUserAvatarFailed(true)} />
+              ) : (
+                initialFromName(currentUserName || authorName)
+              )}
               <span className="feed-avatar-online" aria-hidden="true" />
             </span>
             <div className="comment-publisher-input-wrap">
               <input
                 ref={commentInputRef}
                 value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
+                onChange={(e) => {
+                  setCommentText(e.target.value);
+                  lookupMentions("comment", e.target.value);
+                }}
                 placeholder="Write a comment..."
                 disabled={!validTargetPost}
               />
+              {renderMentionLookup("comment", (mentionUser) => {
+                setCommentText((previous) => replaceActiveMention(previous, mentionHandle(mentionUser)));
+              })}
               {commentMediaFile ? (
                 <span className="comment-media-chip">
                   {commentMediaFile.type?.startsWith("video") ? "Video" : "Photo"} attached
@@ -2163,14 +2354,71 @@ export default function FeedCard({
       ) : null}
 
       {editingOpen ? (
-        <div className="feed-inline-edit-shell">
+        <div className="feed-inline-edit-shell premium-edit-post-shell">
           <form className="grid-form" onSubmit={handleEditSubmit}>
+            <header className="edit-post-head">
+              <div>
+                <h4>Edit post</h4>
+                <p>Update text, media, feeling, location, and poll details.</p>
+              </div>
+            </header>
             <textarea
               rows={3}
               value={editingContent}
               onChange={(event) => setEditingContent(event.target.value)}
               placeholder="Edit your post"
             />
+            <div className="edit-post-meta-grid">
+              <label>
+                Feeling
+                <input
+                  value={editingFeeling}
+                  onChange={(event) => setEditingFeeling(event.target.value)}
+                  placeholder="Happy, Loved, Motivated..."
+                />
+              </label>
+              <label>
+                Location
+                <input
+                  value={editingLocation}
+                  onChange={(event) => setEditingLocation(event.target.value)}
+                  placeholder="City or place"
+                />
+              </label>
+            </div>
+            <div className="edit-post-poll-box">
+              <label>
+                Poll question
+                <input
+                  value={editingPollQuestion}
+                  onChange={(event) => setEditingPollQuestion(event.target.value)}
+                  placeholder="Optional poll question"
+                />
+              </label>
+              {editingPollOptions.map((option, index) => (
+                <div key={`edit-poll-${index}`} className="edit-post-poll-option">
+                  <input
+                    value={option}
+                    onChange={(event) => {
+                      const next = [...editingPollOptions];
+                      next[index] = event.target.value;
+                      setEditingPollOptions(next);
+                    }}
+                    placeholder={`Option ${index + 1}`}
+                  />
+                  {editingPollOptions.length > 2 ? (
+                    <button type="button" onClick={() => setEditingPollOptions((previous) => previous.filter((_, itemIndex) => itemIndex !== index))}>
+                      Remove
+                    </button>
+                  ) : null}
+                </div>
+              ))}
+              {editingPollOptions.length < 8 ? (
+                <button type="button" className="edit-post-add-option" onClick={() => setEditingPollOptions((previous) => [...previous, ""])}>
+                  Add option
+                </button>
+              ) : null}
+            </div>
             <label className="composer-file-label">
               <input
                 type="file"

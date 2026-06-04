@@ -12,9 +12,11 @@ public class NotificationMapper {
         User actor = notification.getActorUser();
         String actorName = null;
         Long actorId = null;
+        String actorProfileImageUrl = null;
         if (actor != null) {
             actorId = actor.getUserId();
             actorName = actor.getFirstname() + " " + actor.getLastName();
+            actorProfileImageUrl = actor.getImageUrl();
         }
 
         return new NotificationResponse(
@@ -25,8 +27,12 @@ public class NotificationMapper {
                 notification.getCreatedAt(),
                 actorId,
                 actorName,
+                actorProfileImageUrl,
                 notification.getReferenceId(),
-                notification.getReferenceType()
+                notification.getReferenceType(),
+                notification.getPostId(),
+                notification.getCommentId(),
+                notification.getReplyId()
         );
     }
 }

@@ -44,6 +44,14 @@ public class Notification {
     @Column(name = "reference_type", length = 50)
     private String referenceType;
 
+    @Column(name = "post_id")
+    private Long postId;
+
+    @Column(name = "comment_id")
+    private Long commentId;
+
+    @Column(name = "reply_id")
+    private Long replyId;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

@@ -2,6 +2,7 @@ package com.socialApp.Lishare.modules.social.notification.entity;
 
 public enum NotificationType {
     LIKE,
+    MENTION,
     COMMENT,
     COMMENT_REPLY,
     FOLLOW,

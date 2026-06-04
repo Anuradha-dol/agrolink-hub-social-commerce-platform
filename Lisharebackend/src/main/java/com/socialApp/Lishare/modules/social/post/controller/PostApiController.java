@@ -22,11 +22,15 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.ZoneId;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("/api/posts")
 @RequiredArgsConstructor
 public class PostApiController {
+
+    private static final Pattern HASHTAG_PATTERN = Pattern.compile("#[A-Za-z0-9_]+");
 
     private final PostService postService;
     private final CommentService commentService;
@@ -36,14 +40,18 @@ public class PostApiController {
             @AuthenticationPrincipal User user,
             @RequestParam(value = "content", required = false, defaultValue = "") String content,
             @RequestParam(value = "image", required = false) MultipartFile image,
-            @RequestParam(value = "category", required = false) String category
+            @RequestParam(value = "category", required = false) String category,
+            @RequestParam(value = "feeling", required = false) String feeling,
+            @RequestParam(value = "locationName", required = false) String locationName,
+            @RequestParam(value = "pollQuestion", required = false) String pollQuestion,
+            @RequestParam(value = "pollOptions", required = false) String pollOptions
     ) {
-        if (content.isBlank() && (image == null || image.isEmpty())) {
+        if (content.isBlank() && (image == null || image.isEmpty()) && (pollQuestion == null || pollQuestion.isBlank())) {
             throw new IllegalArgumentException("Post content or image is required");
         }
 
-        Post post = postService.createPost(user.getUserId(), content, image, category);
-        return ResponseEntity.ok(ApiResponse.success("Post created", toPostResponse(post)));
+        Post post = postService.createPost(user.getUserId(), content, image, category, feeling, locationName, pollQuestion, pollOptions);
+        return ResponseEntity.ok(ApiResponse.success("Post created", toPostResponse(post, user.getUserId())));
     }
 
     @PutMapping("/{postId}")
@@ -52,10 +60,14 @@ public class PostApiController {
             @PathVariable Long postId,
             @RequestParam(value = "content", required = false) String content,
             @RequestParam(value = "image", required = false) MultipartFile image,
-            @RequestParam(value = "removeMedia", required = false, defaultValue = "false") boolean removeMedia
+            @RequestParam(value = "removeMedia", required = false, defaultValue = "false") boolean removeMedia,
+            @RequestParam(value = "feeling", required = false) String feeling,
+            @RequestParam(value = "locationName", required = false) String locationName,
+            @RequestParam(value = "pollQuestion", required = false) String pollQuestion,
+            @RequestParam(value = "pollOptions", required = false) String pollOptions
     ) {
-        Post post = postService.updatePost(user.getUserId(), postId, content, image, removeMedia);
-        return ResponseEntity.ok(ApiResponse.success("Post updated", toPostResponse(post)));
+        Post post = postService.updatePost(user.getUserId(), postId, content, image, removeMedia, feeling, locationName, pollQuestion, pollOptions);
+        return ResponseEntity.ok(ApiResponse.success("Post updated", toPostResponse(post, user.getUserId())));
     }
 
     @DeleteMapping("/{postId}")
@@ -78,7 +90,7 @@ public class PostApiController {
             @RequestParam(defaultValue = "10") int size
     ) {
         List<PostResponse> posts = postService.getPostsByUser(user.getUserId()).stream()
-                .map(this::toPostResponse)
+                .map(post -> toPostResponse(post, user.getUserId()))
                 .toList();
         return ResponseEntity.ok(ApiResponse.success("My posts fetched", paginate(posts, page, size)));
     }
@@ -90,7 +102,7 @@ public class PostApiController {
             @RequestParam(defaultValue = "10") int size
     ) {
         List<PostResponse> feed = postService.getFeedPosts(user.getUserId()).stream()
-                .map(this::toPostResponse)
+                .map(post -> toPostResponse(post, user.getUserId()))
                 .toList();
         return ResponseEntity.ok(ApiResponse.success("Feed posts fetched", paginate(feed, page, size)));
     }
@@ -103,7 +115,7 @@ public class PostApiController {
     ) {
         List<PostResponse> reels = postService.getFeedPosts(user.getUserId()).stream()
                 .filter(post -> "VIDEO".equalsIgnoreCase(post.getMediaType()))
-                .map(this::toPostResponse)
+                .map(post -> toPostResponse(post, user.getUserId()))
                 .toList();
         return ResponseEntity.ok(ApiResponse.success("Reels fetched", paginate(reels, page, size)));
     }
@@ -112,6 +124,16 @@ public class PostApiController {
     public ResponseEntity<ApiResponse<Long>> markReelView(@PathVariable Long postId) {
         long viewCount = postService.incrementReelView(postId);
         return ResponseEntity.ok(ApiResponse.success("Reel view counted", viewCount));
+    }
+
+    @PostMapping("/{postId}/poll/vote")
+    public ResponseEntity<ApiResponse<PostResponse>> votePoll(
+            @AuthenticationPrincipal User user,
+            @PathVariable Long postId,
+            @RequestParam Integer optionIndex
+    ) {
+        Post post = postService.votePoll(user.getUserId(), postId, optionIndex);
+        return ResponseEntity.ok(ApiResponse.success("Poll vote saved", toPostResponse(post, user.getUserId())));
     }
 
     @GetMapping("/{postId}/comments")
@@ -157,13 +179,27 @@ public class PostApiController {
     }
 
     private PostResponse toPostResponse(Post post) {
+        return toPostResponse(post, null);
+    }
+
+    private PostResponse toPostResponse(Post post, Long viewerUserId) {
+        List<Long> pollVotes = postService.getPollVotes(post);
+        long pollTotalVotes = pollVotes.stream().mapToLong(Long::longValue).sum();
         return PostResponse.builder()
                 .postId(post.getPostId())
                 .authorId(post.getUser().getUserId())
                 .content(post.getContent())
+                .hashtags(extractHashtags(post.getContent()))
                 .imageUrl(post.getImageUrl())
                 .mediaType(post.getMediaType())
                 .category(resolvePostCategory(post))
+                .feeling(post.getFeeling())
+                .locationName(post.getLocationName())
+                .pollQuestion(post.getPollQuestion())
+                .pollOptions(postService.getPollOptions(post))
+                .pollVotes(pollVotes)
+                .pollTotalVotes(pollTotalVotes)
+                .viewerPollOptionIndex(postService.getViewerPollOptionIndex(post, viewerUserId))
                 .xpAwarded(resolvePostXp(post))
                 .authorVerifiedXp(calculateVerifiedXp(post.getUser()))
                 .reelViewCount(post.getReelViewCount())
@@ -211,5 +247,16 @@ public class PostApiController {
         }
         int end = Math.min(start + size, list.size());
         return new PageImpl<>(list.subList(start, end), PageRequest.of(page, size), list.size());
+    }
+
+    private List<String> extractHashtags(String content) {
+        if (content == null || content.isBlank()) {
+            return List.of();
+        }
+        Matcher matcher = HASHTAG_PATTERN.matcher(content);
+        return matcher.results()
+                .map(match -> match.group().toLowerCase())
+                .distinct()
+                .toList();
     }
 }

@@ -50,6 +50,18 @@ public class Post {
     @Column(length = 40)
     private String category;
 
+    @Column(length = 80)
+    private String feeling;
+
+    @Column(name = "location_name", length = 180)
+    private String locationName;
+
+    @Column(name = "poll_question", length = 500)
+    private String pollQuestion;
+
+    @Column(name = "poll_options_json", columnDefinition = "TEXT")
+    private String pollOptionsJson;
+
     @Column(name = "xp_awarded")
     private Integer xpAwarded;
 

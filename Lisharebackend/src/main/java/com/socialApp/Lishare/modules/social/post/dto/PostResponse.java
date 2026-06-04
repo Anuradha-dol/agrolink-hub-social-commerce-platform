@@ -15,9 +15,17 @@ public class PostResponse {
     private Long postId;
     private Long authorId;
     private String content;
+    private List<String> hashtags;
     private String imageUrl;
     private String mediaType;
     private String category;
+    private String feeling;
+    private String locationName;
+    private String pollQuestion;
+    private List<String> pollOptions;
+    private List<Long> pollVotes;
+    private Long pollTotalVotes;
+    private Integer viewerPollOptionIndex;
     private Integer xpAwarded;
     private Long authorVerifiedXp;
     private Long reelViewCount;

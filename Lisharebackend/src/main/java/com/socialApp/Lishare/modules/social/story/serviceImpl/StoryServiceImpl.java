@@ -363,11 +363,15 @@ public class StoryServiceImpl implements StoryService {
 
     private String resolveMediaType(MultipartFile media, String mediaUrl) {
         if (media != null && media.getContentType() != null) {
+            if ("image/gif".equalsIgnoreCase(media.getContentType())) return "GIF";
             if (media.getContentType().startsWith("video")) return "VIDEO";
             if (media.getContentType().startsWith("image")) return "IMAGE";
         }
         if (mediaUrl != null) {
             String normalized = mediaUrl.toLowerCase();
+            if (normalized.endsWith(".gif")) {
+                return "GIF";
+            }
             if (normalized.endsWith(".mp4") || normalized.endsWith(".webm")
                     || normalized.endsWith(".mov") || normalized.endsWith(".m4v")
                     || normalized.endsWith(".ogg") || normalized.endsWith(".avi")) {

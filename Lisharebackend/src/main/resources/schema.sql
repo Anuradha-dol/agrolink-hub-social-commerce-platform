@@ -20,6 +20,30 @@ ALTER TABLE IF EXISTS posts
 ALTER TABLE IF EXISTS posts
     ADD COLUMN IF NOT EXISTS edited_at TIMESTAMP;
 
+ALTER TABLE IF EXISTS posts
+    ADD COLUMN IF NOT EXISTS feeling VARCHAR(80);
+
+ALTER TABLE IF EXISTS posts
+    ADD COLUMN IF NOT EXISTS location_name VARCHAR(180);
+
+ALTER TABLE IF EXISTS posts
+    ADD COLUMN IF NOT EXISTS poll_question VARCHAR(500);
+
+ALTER TABLE IF EXISTS posts
+    ADD COLUMN IF NOT EXISTS poll_options_json TEXT;
+
+CREATE TABLE IF NOT EXISTS post_poll_votes (
+    id BIGSERIAL PRIMARY KEY,
+    post_id BIGINT NOT NULL REFERENCES posts(post_id) ON DELETE CASCADE,
+    user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    option_index INTEGER NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_post_poll_votes_post_user UNIQUE (post_id, user_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_post_poll_votes_post_id ON post_poll_votes(post_id);
+CREATE INDEX IF NOT EXISTS idx_post_poll_votes_user_id ON post_poll_votes(user_id);
+
 ALTER TABLE IF EXISTS comments
     ADD COLUMN IF NOT EXISTS media_url VARCHAR(700);
 
@@ -123,3 +147,12 @@ CREATE TABLE IF NOT EXISTS story_views (
 );
 
 CREATE INDEX IF NOT EXISTS idx_story_views_story_id ON story_views(story_id);
+
+ALTER TABLE IF EXISTS notifications
+    ADD COLUMN IF NOT EXISTS post_id BIGINT;
+
+ALTER TABLE IF EXISTS notifications
+    ADD COLUMN IF NOT EXISTS comment_id BIGINT;
+
+ALTER TABLE IF EXISTS notifications
+    ADD COLUMN IF NOT EXISTS reply_id BIGINT;

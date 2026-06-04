@@ -4,6 +4,7 @@ import com.socialApp.Lishare.modules.platform.storage.UploadPathResolver;
 import com.socialApp.Lishare.modules.social.comment.service.CommentService;
 import com.socialApp.Lishare.modules.social.comment.entity.Comment;
 import com.socialApp.Lishare.modules.social.comment.entity.CommentReaction;
+import com.socialApp.Lishare.modules.social.mention.service.MentionNotificationService;
 import com.socialApp.Lishare.modules.social.notification.entity.Notification;
 import com.socialApp.Lishare.modules.social.post.entity.Post;
 import com.socialApp.Lishare.modules.platform.user.entity.User;
@@ -38,6 +39,7 @@ public class CommentServiceImpl implements CommentService {
     private final PostRepository postRepository;
     private final UserRepo userRepository;
     private final NotificationService notificationService;
+    private final MentionNotificationService mentionNotificationService;
     private final UploadPathResolver uploadPathResolver;
 
     @Override
@@ -76,11 +78,14 @@ public class CommentServiceImpl implements CommentService {
                     .type(NotificationType.COMMENT)
                     .referenceId(post.getPostId())
                     .referenceType("POST")
+                    .postId(post.getPostId())
+                    .commentId(saved.getCommentId())
                     .message(user.getFirstname() + " commented on your post")
                     .read(false)
                     .build());
         }
 
+        mentionNotificationService.notifyMentions(user, cleanContent, post.getPostId(), saved.getCommentId(), null, "COMMENT");
         return saved;
     }
 
@@ -125,6 +130,9 @@ public class CommentServiceImpl implements CommentService {
                     .type(NotificationType.COMMENT_REPLY)
                     .referenceId(post.getPostId())
                     .referenceType("POST")
+                    .postId(post.getPostId())
+                    .commentId(parent.getCommentId())
+                    .replyId(savedReply.getCommentId())
                     .message(displayName(user) + " replied to a comment on your post")
                     .read(false)
                     .build());
@@ -138,11 +146,15 @@ public class CommentServiceImpl implements CommentService {
                     .type(NotificationType.COMMENT_REPLY)
                     .referenceId(post.getPostId())
                     .referenceType("COMMENT_REPLY")
+                    .postId(post.getPostId())
+                    .commentId(parent.getCommentId())
+                    .replyId(savedReply.getCommentId())
                     .message(displayName(user) + " replied to your comment on " + displayName(postOwner) + "'s post")
                     .read(false)
                     .build());
         }
 
+        mentionNotificationService.notifyMentions(user, cleanContent, post.getPostId(), parent.getCommentId(), savedReply.getCommentId(), "REPLY");
         return savedReply;
     }
 
@@ -226,6 +238,8 @@ public class CommentServiceImpl implements CommentService {
                     .type(NotificationType.LIKE)
                     .referenceId(comment.getCommentId())
                     .referenceType("COMMENT")
+                    .postId(comment.getPost() != null ? comment.getPost().getPostId() : null)
+                    .commentId(comment.getCommentId())
                     .message(displayName(user) + " reacted to your comment")
                     .read(false)
                     .build());
@@ -295,6 +309,9 @@ public class CommentServiceImpl implements CommentService {
 
     private String resolveMediaType(MultipartFile mediaFile, String mediaUrl) {
         if (mediaFile != null && mediaFile.getContentType() != null) {
+            if ("image/gif".equalsIgnoreCase(mediaFile.getContentType())) {
+                return "GIF";
+            }
             if (mediaFile.getContentType().startsWith("video")) {
                 return "VIDEO";
             }
@@ -304,6 +321,9 @@ public class CommentServiceImpl implements CommentService {
         }
         if (mediaUrl != null) {
             String normalized = mediaUrl.toLowerCase(Locale.ROOT);
+            if (normalized.endsWith(".gif")) {
+                return "GIF";
+            }
             if (normalized.endsWith(".mp4") || normalized.endsWith(".webm") || normalized.endsWith(".mov")
                     || normalized.endsWith(".m4v") || normalized.endsWith(".ogg") || normalized.endsWith(".avi")) {
                 return "VIDEO";

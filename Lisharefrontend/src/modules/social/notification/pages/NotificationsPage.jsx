@@ -7,18 +7,22 @@ import ErrorState from "/src/modules/platform/common/components/ErrorState";
 import EmptyState from "/src/modules/platform/common/components/EmptyState";
 import { useAuth } from "/src/modules/platform/app/store";
 import { useToast } from "/src/modules/platform/common/hooks/useToast";
+import { toMediaUrl } from "/src/modules/platform/common/utils/mediaUrl";
 
 function notificationRoute(item) {
   const referenceId = Number(item?.referenceId || 0);
   const referenceType = String(item?.referenceType || item?.type || "").toUpperCase();
+  const postId = Number(item?.postId || (referenceType === "POST" ? referenceId : 0));
+  const commentId = Number(item?.commentId || (referenceType === "COMMENT" ? referenceId : 0));
+  const replyId = Number(item?.replyId || (referenceType === "REPLY" ? referenceId : 0));
 
   if (referenceType === "USER" && referenceId > 0) return { to: `/profile/${referenceId}` };
   if (referenceType === "ORDER" || referenceType === "ORDER_STATUS") return { to: "/orders" };
   if (referenceType === "CHAT_MESSAGE" || referenceType === "MESSAGE") return { to: "/chat" };
   if (referenceType === "CALENDAR_EVENT" || referenceType === "EVENT_REMINDER") return { to: "/calendar" };
-  if (["POST", "COMMENT_REPLY", "SHARE", "SHARE_MENTION", "STORY"].includes(referenceType)) {
-    return referenceId > 0 && ["POST", "COMMENT_REPLY"].includes(referenceType)
-      ? { to: "/home", state: { openPostId: referenceId, mode: "posts" } }
+  if (["POST", "COMMENT", "REPLY", "COMMENT_REPLY", "SHARE", "SHARE_MENTION", "STORY", "MENTION"].includes(referenceType)) {
+    return (postId || referenceId) > 0 && ["POST", "COMMENT", "REPLY", "COMMENT_REPLY", "MENTION"].includes(referenceType)
+      ? { to: "/home", state: { openPostId: postId || referenceId, mode: "posts", highlightCommentId: commentId, highlightReplyId: replyId } }
       : { to: "/home" };
   }
   return null;
@@ -126,6 +130,9 @@ export default function NotificationsPage() {
           {items.map((item) => (
             <li key={item.id} className={item.read ? "notif-item" : "notif-item unread"}>
               <button type="button" className="notif-content-button" onClick={() => openNotification(item)}>
+                <span className={`notif-avatar ${item.actorProfileImageUrl ? "has-image" : ""}`}>
+                  {item.actorProfileImageUrl ? <img src={toMediaUrl(item.actorProfileImageUrl)} alt="" /> : (item.actorName || "N").slice(0, 1)}
+                </span>
                 <span className="notif-type-pill">{String(item.type || "SYSTEM").replace("_", " ")}</span>
                 <p>{item.message}</p>
                 <small>{item.createdAt ? new Date(item.createdAt).toLocaleString() : ""}</small>

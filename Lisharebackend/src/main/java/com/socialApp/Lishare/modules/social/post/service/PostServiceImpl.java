@@ -12,7 +12,10 @@ import com.socialApp.Lishare.modules.social.notification.entity.Notification;
 import com.socialApp.Lishare.modules.social.notification.entity.NotificationType;
 import com.socialApp.Lishare.modules.social.notification.service.NotificationService;
 import com.socialApp.Lishare.modules.social.comment.repository.CommentRepository;
+import com.socialApp.Lishare.modules.social.mention.service.MentionNotificationService;
 import com.socialApp.Lishare.modules.social.post.entity.Post;
+import com.socialApp.Lishare.modules.social.post.entity.PostPollVote;
+import com.socialApp.Lishare.modules.social.post.repository.PostPollVoteRepository;
 import com.socialApp.Lishare.modules.social.post.repository.PostReportRepository;
 import com.socialApp.Lishare.modules.social.post.repository.PostRepository;
 import com.socialApp.Lishare.modules.social.post.repository.SavedPostRepository;
@@ -29,6 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -46,20 +50,32 @@ public class PostServiceImpl implements PostService {
     private final StoryRepository storyRepository;
     private final ReactionRepository reactionRepository;
     private final CommentRepository commentRepository;
+    private final PostPollVoteRepository postPollVoteRepository;
     private final FollowRepository followRepository;
     private final FriendRepository friendRepository;
     private final NotificationService notificationService;
+    private final MentionNotificationService mentionNotificationService;
     private final UploadPathResolver uploadPathResolver;
 
     @Override
     @Transactional
     public Post createPost(Long userId, String content, MultipartFile imageFile, String category) {
+        return createPost(userId, content, imageFile, category, null, null, null, null);
+    }
+
+    @Override
+    @Transactional
+    public Post createPost(Long userId, String content, MultipartFile imageFile, String category,
+                           String feeling, String locationName, String pollQuestion, String pollOptionsJson) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         String mediaUrl = saveMedia(imageFile);
         String mediaType = resolveMediaType(imageFile, mediaUrl);
         String normalizedCategory = normalizeCategory(category);
+        List<String> pollOptions = parsePollOptionsInput(pollOptionsJson);
+        String normalizedPollQuestion = normalizeNullable(pollQuestion);
+        boolean hasValidPoll = normalizedPollQuestion != null && pollOptions.size() >= 2;
 
         Post post = Post.builder()
                 .user(user)
@@ -67,6 +83,10 @@ public class PostServiceImpl implements PostService {
                 .imageUrl(mediaUrl)
                 .mediaType(mediaType)
                 .category(normalizedCategory)
+                .feeling(normalizeNullable(feeling))
+                .locationName(normalizeNullable(locationName))
+                .pollQuestion(hasValidPoll ? normalizedPollQuestion : null)
+                .pollOptionsJson(hasValidPoll ? serializePollOptions(pollOptions) : null)
                 .xpAwarded(PostXpPolicy.xpForCategory(normalizedCategory))
                 .createdAt(LocalDateTime.now())
                 .reelViewCount(0L)
@@ -74,12 +94,20 @@ public class PostServiceImpl implements PostService {
 
         Post savedPost = postRepository.save(post);
         notifyFollowersAndFriendsOnPost(savedPost);
+        mentionNotificationService.notifyMentions(user, savedPost.getContent(), savedPost.getPostId(), null, null, "POST");
         return savedPost;
     }
 
     @Override
     @Transactional
     public Post updatePost(Long userId, Long postId, String content, MultipartFile imageFile, boolean removeMedia) {
+        return updatePost(userId, postId, content, imageFile, removeMedia, null, null, null, null);
+    }
+
+    @Override
+    @Transactional
+    public Post updatePost(Long userId, Long postId, String content, MultipartFile imageFile, boolean removeMedia,
+                           String feeling, String locationName, String pollQuestion, String pollOptionsJson) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
 
@@ -102,8 +130,17 @@ public class PostServiceImpl implements PostService {
             post.setMediaType(resolveMediaType(imageFile, mediaUrl));
         }
 
+        if (feeling != null) {
+            post.setFeeling(normalizeNullable(feeling));
+        }
+        if (locationName != null) {
+            post.setLocationName(normalizeNullable(locationName));
+        }
+        applyPollUpdate(post, pollQuestion, pollOptionsJson);
         post.setEditedAt(LocalDateTime.now());
-        return postRepository.save(post);
+        Post savedPost = postRepository.save(post);
+        mentionNotificationService.notifyMentions(post.getUser(), savedPost.getContent(), savedPost.getPostId(), null, null, "POST");
+        return savedPost;
     }
 
     @Override
@@ -144,6 +181,7 @@ public class PostServiceImpl implements PostService {
 
         savedPostRepository.deleteByPostPostId(postId);
         postReportRepository.deleteByPostPostId(postId);
+        postPollVoteRepository.deleteByPostPostId(postId);
         reactionRepository.deleteAllByPostId(postId);
         commentRepository.deleteRepliesByPostId(postId);
         commentRepository.deleteTopLevelByPostId(postId);
@@ -200,6 +238,66 @@ public class PostServiceImpl implements PostService {
         return post.getReelViewCount();
     }
 
+    @Override
+    @Transactional
+    public Post votePoll(Long userId, Long postId, Integer optionIndex) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("Post not found"));
+        List<String> options = getPollOptions(post);
+        if (options.size() < 2 || post.getPollQuestion() == null || post.getPollQuestion().isBlank()) {
+            throw new IllegalArgumentException("Post does not contain an active poll");
+        }
+        if (optionIndex == null || optionIndex < 0 || optionIndex >= options.size()) {
+            throw new IllegalArgumentException("Invalid poll option");
+        }
+
+        PostPollVote vote = postPollVoteRepository.findByPostPostIdAndUserUserId(postId, userId)
+                .orElseGet(() -> PostPollVote.builder()
+                        .post(post)
+                        .user(user)
+                        .build());
+        vote.setOptionIndex(optionIndex);
+        postPollVoteRepository.save(vote);
+        return post;
+    }
+
+    @Override
+    public List<String> getPollOptions(Post post) {
+        if (post == null || post.getPollOptionsJson() == null || post.getPollOptionsJson().isBlank()) {
+            return List.of();
+        }
+        return parsePollOptionsInput(post.getPollOptionsJson());
+    }
+
+    @Override
+    public List<Long> getPollVotes(Post post) {
+        List<String> options = getPollOptions(post);
+        if (post == null || post.getPostId() == null || options.isEmpty()) {
+            return List.of();
+        }
+
+        List<Long> counts = new ArrayList<>(Collections.nCopies(options.size(), 0L));
+        for (PostPollVote vote : postPollVoteRepository.findByPostPostId(post.getPostId())) {
+            Integer index = vote.getOptionIndex();
+            if (index != null && index >= 0 && index < counts.size()) {
+                counts.set(index, counts.get(index) + 1);
+            }
+        }
+        return counts;
+    }
+
+    @Override
+    public Integer getViewerPollOptionIndex(Post post, Long userId) {
+        if (post == null || post.getPostId() == null || userId == null) {
+            return null;
+        }
+        return postPollVoteRepository.findByPostPostIdAndUserUserId(post.getPostId(), userId)
+                .map(PostPollVote::getOptionIndex)
+                .orElse(null);
+    }
+
     private String saveMedia(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             return null;
@@ -230,6 +328,9 @@ public class PostServiceImpl implements PostService {
 
     private String resolveMediaType(MultipartFile imageFile, String mediaUrl) {
         if (imageFile != null && imageFile.getContentType() != null) {
+            if ("image/gif".equalsIgnoreCase(imageFile.getContentType())) {
+                return "GIF";
+            }
             if (imageFile.getContentType().startsWith("video")) {
                 return "VIDEO";
             }
@@ -239,6 +340,9 @@ public class PostServiceImpl implements PostService {
         }
         if (mediaUrl != null) {
             String normalized = mediaUrl.toLowerCase();
+            if (normalized.endsWith(".gif")) {
+                return "GIF";
+            }
             if (normalized.endsWith(".mp4") || normalized.endsWith(".webm") || normalized.endsWith(".mov")
                     || normalized.endsWith(".m4v") || normalized.endsWith(".ogg") || normalized.endsWith(".avi")) {
                 return "VIDEO";
@@ -268,6 +372,125 @@ public class PostServiceImpl implements PostService {
             throw new IllegalArgumentException("Unsupported post category");
         }
         return normalized;
+    }
+
+    private void applyPollUpdate(Post post, String pollQuestion, String pollOptionsJson) {
+        if (pollQuestion == null && pollOptionsJson == null) {
+            return;
+        }
+
+        String normalizedQuestion = normalizeNullable(pollQuestion);
+        List<String> options = parsePollOptionsInput(pollOptionsJson);
+        if (normalizedQuestion == null || options.size() < 2) {
+            post.setPollQuestion(null);
+            post.setPollOptionsJson(null);
+            if (post.getPostId() != null) {
+                postPollVoteRepository.deleteByPostPostId(post.getPostId());
+            }
+            return;
+        }
+
+        post.setPollQuestion(normalizedQuestion);
+        post.setPollOptionsJson(serializePollOptions(options));
+        if (post.getPostId() != null) {
+            List<PostPollVote> existingVotes = postPollVoteRepository.findByPostPostId(post.getPostId());
+            boolean invalidVoteExists = existingVotes.stream()
+                    .map(PostPollVote::getOptionIndex)
+                    .anyMatch(index -> index == null || index < 0 || index >= options.size());
+            if (invalidVoteExists) {
+                postPollVoteRepository.deleteByPostPostId(post.getPostId());
+            }
+        }
+    }
+
+    private String normalizeNullable(String value) {
+        if (value == null) {
+            return null;
+        }
+        String normalized = value.trim();
+        return normalized.isBlank() ? null : normalized;
+    }
+
+    private List<String> parsePollOptionsInput(String value) {
+        if (value == null || value.isBlank()) {
+            return List.of();
+        }
+
+        List<String> rawOptions = decodeStoredPollOptions(value);
+
+        return rawOptions.stream()
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(option -> !option.isBlank())
+                .map(option -> option.length() > 160 ? option.substring(0, 160) : option)
+                .limit(8)
+                .toList();
+    }
+
+    private String serializePollOptions(List<String> options) {
+        List<String> encoded = options.stream()
+                .map(option -> Base64.getUrlEncoder().withoutPadding().encodeToString(option.getBytes(StandardCharsets.UTF_8)))
+                .toList();
+        return "b64:" + String.join("|", encoded);
+    }
+
+    private List<String> decodeStoredPollOptions(String value) {
+        String trimmed = value.trim();
+        if (trimmed.startsWith("b64:")) {
+            return Arrays.stream(trimmed.substring(4).split("\\|"))
+                    .filter(token -> !token.isBlank())
+                    .map(token -> new String(Base64.getUrlDecoder().decode(token), StandardCharsets.UTF_8))
+                    .toList();
+        }
+        if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+            return parseJsonLikePollOptions(trimmed);
+        }
+        return Arrays.stream(trimmed.split("\\|"))
+                .map(String::trim)
+                .toList();
+    }
+
+    private List<String> parseJsonLikePollOptions(String value) {
+        List<String> options = new ArrayList<>();
+        StringBuilder current = new StringBuilder();
+        boolean inString = false;
+        boolean escaping = false;
+        boolean tokenStarted = false;
+
+        for (int index = 1; index < value.length() - 1; index++) {
+            char character = value.charAt(index);
+            if (escaping) {
+                current.append(character);
+                escaping = false;
+                continue;
+            }
+            if (character == '\\' && inString) {
+                escaping = true;
+                continue;
+            }
+            if (character == '"') {
+                inString = !inString;
+                tokenStarted = true;
+                continue;
+            }
+            if (character == ',' && !inString) {
+                if (tokenStarted || !current.isEmpty()) {
+                    options.add(current.toString());
+                }
+                current.setLength(0);
+                tokenStarted = false;
+                continue;
+            }
+            if (inString || !Character.isWhitespace(character)) {
+                current.append(character);
+                tokenStarted = true;
+            }
+        }
+
+        if (tokenStarted || !current.isEmpty()) {
+            options.add(current.toString());
+        }
+        return options;
     }
 
     private void notifyFollowersAndFriendsOnPost(Post post) {
@@ -301,6 +524,7 @@ public class PostServiceImpl implements PostService {
                     .type(NotificationType.SYSTEM)
                     .referenceId(post.getPostId())
                     .referenceType("POST")
+                    .postId(post.getPostId())
                     .message(message)
                     .read(false)
                     .build());

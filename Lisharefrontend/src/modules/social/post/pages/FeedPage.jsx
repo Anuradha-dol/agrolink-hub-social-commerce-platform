@@ -429,6 +429,41 @@ function renderTextWithHashtags(content = "", onHashtagClick) {
   });
 }
 
+function storyTimeValue(story) {
+  const value = new Date(story?.createdAt || 0).getTime();
+  return Number.isNaN(value) ? 0 : value;
+}
+
+function buildStoryGroups(stories = []) {
+  const groupsByOwner = new Map();
+  stories.forEach((story) => {
+    const ownerKey = Number(story?.ownerUserId) > 0
+      ? `user-${Number(story.ownerUserId)}`
+      : `story-${story?.id || Math.random()}`;
+    const existing = groupsByOwner.get(ownerKey) || {
+      key: ownerKey,
+      ownerUserId: Number(story?.ownerUserId || 0),
+      ownerName: storyOwnerName(story),
+      ownerProfileImageUrl: storyOwnerProfileImageUrl(story),
+      stories: [],
+      latestAt: 0
+    };
+    existing.ownerName = existing.ownerName || storyOwnerName(story);
+    existing.ownerProfileImageUrl = existing.ownerProfileImageUrl || storyOwnerProfileImageUrl(story);
+    existing.stories.push(story);
+    existing.latestAt = Math.max(existing.latestAt, storyTimeValue(story));
+    groupsByOwner.set(ownerKey, existing);
+  });
+
+  return [...groupsByOwner.values()]
+    .map((group) => ({
+      ...group,
+      stories: [...group.stories].sort((a, b) => storyTimeValue(a) - storyTimeValue(b)),
+      latestStory: [...group.stories].sort((a, b) => storyTimeValue(b) - storyTimeValue(a))[0]
+    }))
+    .sort((a, b) => b.latestAt - a.latestAt);
+}
+
 export default function FeedPage() {
   const { pushToast } = useToast();
   const navigate = useNavigate();
@@ -448,7 +483,11 @@ export default function FeedPage() {
   const [savedPosts, setSavedPosts] = useState([]);
   const [suggestedUsers, setSuggestedUsers] = useState([]);
   const [trendPanelOpen, setTrendPanelOpen] = useState(false);
-  const [trendVisibleCount, setTrendVisibleCount] = useState(9);
+  const [trendVisibleCount, setTrendVisibleCount] = useState(2);
+  const [suggestionsExpanded, setSuggestionsExpanded] = useState(false);
+  const [railExploreExpanded, setRailExploreExpanded] = useState(false);
+  const [railReelsExpanded, setRailReelsExpanded] = useState(false);
+  const [railImagesExpanded, setRailImagesExpanded] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submittingPost, setSubmittingPost] = useState(false);
   const [error, setError] = useState("");
@@ -465,16 +504,20 @@ export default function FeedPage() {
   const [storyFeedPickerOpen, setStoryFeedPickerOpen] = useState(false);
   const [creatingStory, setCreatingStory] = useState(false);
   const [viewingStoryIndex, setViewingStoryIndex] = useState(-1);
+  const [storyGroupStart, setStoryGroupStart] = useState(0);
+  const [storyLibraryOpen, setStoryLibraryOpen] = useState(false);
   const [storyReply, setStoryReply] = useState("");
   const [sendingStoryReply, setSendingStoryReply] = useState(false);
   const [sharingStory, setSharingStory] = useState(false);
   const [reportDraft, setReportDraft] = useState({ postId: null, reason: "CATEGORY_FAKE", details: "" });
   const [reportSubmitting, setReportSubmitting] = useState(false);
+  const [highlightTarget, setHighlightTarget] = useState({ commentId: 0, replyId: 0 });
 
   const userId = Number(user?.userId || user?.id || 0);
   const currentUserStoryName = `${user?.firstname || user?.firstName || ""} ${user?.lastName || user?.lastname || ""}`.trim()
     || user?.name
     || "Anuradh DK";
+  const currentUserProfileImageUrl = user?.profileImageUrl || user?.imageUrl || user?.authorProfileImageUrl || user?.userProfileImageUrl || "";
 
   const loadStories = useCallback(async () => {
     try {
@@ -593,13 +636,25 @@ export default function FeedPage() {
 
   useEffect(() => {
     const postId = Number(location.state?.openPostId || 0);
-    if (!postId || handledOpenPostRef.current === postId || feed.length === 0) return;
-    handledOpenPostRef.current = postId;
+    const openKey = `${postId}:${Number(location.state?.highlightCommentId || 0)}:${Number(location.state?.highlightReplyId || 0)}`;
+    if (!postId || handledOpenPostRef.current === openKey || feed.length === 0) return;
+    handledOpenPostRef.current = openKey;
     if (location.state?.mode === "reels" || location.state?.mode === "posts") {
       setActiveMode(location.state.mode);
     }
+    setHighlightTarget({
+      commentId: Number(location.state?.highlightCommentId || 0),
+      replyId: Number(location.state?.highlightReplyId || 0)
+    });
     window.setTimeout(() => {
       document.getElementById(`feed-item-${postId}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+      const targetId = Number(location.state?.highlightReplyId || location.state?.highlightCommentId || 0);
+      if (targetId) {
+        const targetElement = document.getElementById(`comment-${targetId}`);
+        targetElement?.scrollIntoView({ behavior: "smooth", block: "center" });
+        targetElement?.classList.add("comment-target-highlight");
+        window.setTimeout(() => targetElement?.classList.remove("comment-target-highlight"), 2800);
+      }
     }, 160);
   }, [feed.length, location.state]);
 
@@ -686,6 +741,23 @@ export default function FeedPage() {
       }));
     } catch {
       pushToast("Failed to react", "error");
+    }
+  };
+
+  const onVotePoll = async (postId, optionIndex) => {
+    try {
+      const response = await feedService.votePoll(postId, optionIndex);
+      const updatedPost = response?.data;
+      if (updatedPost?.postId) {
+        setFeed((previous) => previous.map((item) => {
+          const itemPostId = Number(item.type === "SHARE" ? item.originalPostId : item.postId);
+          return itemPostId === Number(updatedPost.postId) ? { ...item, ...updatedPost } : item;
+        }));
+      } else {
+        await loadFeed();
+      }
+    } catch {
+      pushToast("Failed to vote on poll", "error");
     }
   };
 
@@ -792,7 +864,18 @@ export default function FeedPage() {
     const normalized = normalizeHashtag(tag);
     if (!normalized) return;
     setSelectedHashtag(normalized);
-  }, []);
+    setActiveMode("posts");
+    navigate(`/home?hashtag=${encodeURIComponent(normalized.slice(1))}`);
+  }, [navigate]);
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const hashtag = params.get("hashtag");
+    if (hashtag) {
+      setSelectedHashtag(normalizeHashtag(hashtag));
+      setActiveMode("posts");
+    }
+  }, [location.search]);
 
   const openUserProfile = useCallback((profileUserId) => {
     const normalizedUserId = Number(profileUserId);
@@ -825,6 +908,17 @@ export default function FeedPage() {
       document.getElementById(`feed-item-${postId}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
     }, 120);
   }, []);
+
+  const openPostFromRail = useCallback((item, mode = "posts") => {
+    const postId = Number(item?.sourcePostId || item?.postId || item?.originalPostId || 0);
+    if (!postId) return;
+    setSelectedHashtag("");
+    setActiveMode(mode);
+    navigate("/home", { state: { openPostId: postId, mode } });
+    window.setTimeout(() => {
+      document.getElementById(`feed-item-${postId}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 140);
+  }, [navigate]);
 
   const onReport = (postId) => {
     setReportDraft({ postId, reason: "CATEGORY_FAKE", details: "" });
@@ -876,6 +970,8 @@ export default function FeedPage() {
         content: item.content || "Media post",
         imageUrl: item.imageUrl,
         mediaType: item.mediaType,
+        reelViewCount: item.reelViewCount,
+        reactionCount: Object.values(item.reactionCounts || {}).reduce((total, value) => total + Number(value || 0), 0),
         originalPostDeleted: Boolean(item.originalPostDeleted)
       }))
       .filter((item) => Number(item.sourcePostId) > 0 && !item.originalPostDeleted)
@@ -941,14 +1037,29 @@ export default function FeedPage() {
     [hashtagFilteredFeed]
   );
 
-  const railReelCandidates = useMemo(
-    () => feedMediaCandidates.filter((item) => isVideoItem(item)).slice(0, 4),
+  const railExploreCandidates = useMemo(
+    () => feedMediaCandidates.slice(0, railExploreExpanded ? feedMediaCandidates.length : 2),
+    [feedMediaCandidates, railExploreExpanded]
+  );
+
+  const allRailReelCandidates = useMemo(
+    () => feedMediaCandidates.filter((item) => isVideoItem(item)),
     [feedMediaCandidates]
   );
 
-  const railImageCandidates = useMemo(
-    () => feedMediaCandidates.filter((item) => !isVideoItem(item)).slice(0, 4),
+  const allRailImageCandidates = useMemo(
+    () => feedMediaCandidates.filter((item) => !isVideoItem(item)),
     [feedMediaCandidates]
+  );
+
+  const railReelCandidates = useMemo(
+    () => allRailReelCandidates.slice(0, railReelsExpanded ? allRailReelCandidates.length : 4),
+    [allRailReelCandidates, railReelsExpanded]
+  );
+
+  const railImageCandidates = useMemo(
+    () => allRailImageCandidates.slice(0, railImagesExpanded ? allRailImageCandidates.length : 4),
+    [allRailImageCandidates, railImagesExpanded]
   );
 
   const trendingHashtags = useMemo(() => {
@@ -995,7 +1106,7 @@ export default function FeedPage() {
   }, [feed, suggestedUsers]);
 
   const visibleTrendingHashtags = useMemo(
-    () => (trendPanelOpen ? trendingHashtags.slice(0, trendVisibleCount) : trendingHashtags.slice(0, 8)),
+    () => (trendPanelOpen ? trendingHashtags.slice(0, trendVisibleCount) : trendingHashtags.slice(0, 2)),
     [trendPanelOpen, trendVisibleCount, trendingHashtags]
   );
 
@@ -1016,7 +1127,21 @@ export default function FeedPage() {
     [savedPosts]
   );
 
-  const selectedStory = viewingStoryIndex >= 0 ? stories[viewingStoryIndex] : null;
+  const storyGroups = useMemo(() => buildStoryGroups(stories), [stories]);
+  const orderedStories = useMemo(() => storyGroups.flatMap((group) => group.stories), [storyGroups]);
+  const visibleStoryGroups = useMemo(
+    () => storyGroups.slice(storyGroupStart, storyGroupStart + 5),
+    [storyGroupStart, storyGroups]
+  );
+  const selectedStory = viewingStoryIndex >= 0 ? orderedStories[viewingStoryIndex] : null;
+  const selectedStoryGroupIndex = useMemo(() => {
+    if (!selectedStory) return -1;
+    return storyGroups.findIndex((group) => group.stories.some((story) => Number(story.id) === Number(selectedStory.id)));
+  }, [selectedStory, storyGroups]);
+  const selectedStoryGroup = selectedStoryGroupIndex >= 0 ? storyGroups[selectedStoryGroupIndex] : null;
+  const selectedStoryIndexInGroup = selectedStoryGroup
+    ? selectedStoryGroup.stories.findIndex((story) => Number(story.id) === Number(selectedStory?.id))
+    : -1;
   const selectedStoryIsOwn = Boolean(selectedStory && userId && Number(selectedStory.ownerUserId) === userId);
   const selectedStoryAvatarUrl = selectedStory ? storyOwnerProfileImageUrl(selectedStory) : "";
 
@@ -1026,6 +1151,13 @@ export default function FeedPage() {
       document.querySelector(".story-viewer-overlay")?.scrollIntoView({ behavior: "smooth", block: "center" });
     }, 40);
   }, [selectedStory]);
+
+  useEffect(() => {
+    setStoryGroupStart((current) => Math.min(current, Math.max(0, storyGroups.length - 1)));
+    if (viewingStoryIndex >= orderedStories.length) {
+      setViewingStoryIndex(-1);
+    }
+  }, [orderedStories.length, storyGroups.length, viewingStoryIndex]);
 
   const resetStoryComposer = useCallback(() => {
     setStorySourceMode("upload");
@@ -1082,7 +1214,7 @@ export default function FeedPage() {
   }, []);
 
   const openStory = useCallback(async (index) => {
-    const target = stories[index];
+    const target = orderedStories[index];
     if (!target) return;
     setViewingStoryIndex(index);
     setStoryReply("");
@@ -1095,7 +1227,59 @@ export default function FeedPage() {
     } catch {
       // no-op
     }
-  }, [replaceStory, stories]);
+  }, [orderedStories, replaceStory]);
+
+  const openStoryGroup = useCallback((group) => {
+    const firstStoryId = Number(group?.stories?.[0]?.id || 0);
+    if (!firstStoryId) return;
+    const index = orderedStories.findIndex((story) => Number(story.id) === firstStoryId);
+    if (index >= 0) openStory(index);
+  }, [openStory, orderedStories]);
+
+  const moveStoryRail = useCallback((direction) => {
+    setStoryGroupStart((current) => {
+      const maxStart = Math.max(0, storyGroups.length - 1);
+      return Math.max(0, Math.min(maxStart, current + direction));
+    });
+  }, [storyGroups.length]);
+
+  const goToAdjacentStory = useCallback((direction) => {
+    if (!selectedStoryGroup || selectedStoryGroupIndex < 0 || selectedStoryIndexInGroup < 0) return;
+
+    let nextGroupIndex = selectedStoryGroupIndex;
+    let nextStoryIndex = selectedStoryIndexInGroup + direction;
+
+    if (direction > 0 && nextStoryIndex >= selectedStoryGroup.stories.length) {
+      nextGroupIndex += 1;
+      nextStoryIndex = 0;
+    }
+    if (direction < 0 && nextStoryIndex < 0) {
+      nextGroupIndex -= 1;
+      const previousGroup = storyGroups[nextGroupIndex];
+      nextStoryIndex = previousGroup ? previousGroup.stories.length - 1 : 0;
+    }
+
+    const nextGroup = storyGroups[nextGroupIndex];
+    if (!nextGroup) {
+      if (direction > 0) {
+        setViewingStoryIndex(-1);
+      }
+      return;
+    }
+
+    const nextStory = nextGroup.stories[nextStoryIndex];
+    const flatIndex = orderedStories.findIndex((story) => Number(story.id) === Number(nextStory?.id));
+    if (flatIndex >= 0) openStory(flatIndex);
+  }, [openStory, orderedStories, selectedStoryGroup, selectedStoryGroupIndex, selectedStoryIndexInGroup, storyGroups]);
+
+  useEffect(() => {
+    if (!selectedStory) return undefined;
+    const timeoutId = window.setTimeout(() => {
+      goToAdjacentStory(1);
+    }, selectedStory.mediaType === "VIDEO" ? 9000 : 6500);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [goToAdjacentStory, selectedStory]);
 
   const createStory = async (event) => {
     event.preventDefault();
@@ -1256,11 +1440,15 @@ export default function FeedPage() {
             saved={normalizedMapPostId ? savedPostIds.includes(normalizedMapPostId) : false}
             currentUserId={userId}
             currentUserName={currentUserStoryName}
+            currentUserProfileImageUrl={currentUserProfileImageUrl}
+            highlightCommentId={highlightTarget.commentId}
+            highlightReplyId={highlightTarget.replyId}
             onComment={onComment}
             onUpdateComment={onUpdateComment}
             onDeleteComment={onDeleteComment}
             onReactComment={onReactComment}
             onReact={onReact}
+            onVotePoll={onVotePoll}
             onShare={onShare}
             onDelete={onDelete}
             onDeleteShare={onDeleteShare}
@@ -1271,6 +1459,7 @@ export default function FeedPage() {
             onShareToStory={onShareToStory}
             onShareToChat={onShareToChat}
             onSearchShareUsers={searchShareUsers}
+            onSearchMentionUsers={searchShareUsers}
             onHashtagClick={selectHashtag}
             onAuthorClick={openUserProfile}
           />
@@ -1320,8 +1509,8 @@ export default function FeedPage() {
                 <p>Manual stories only. Replies are delivered to {CHAT_PRODUCT_NAME}.</p>
               </div>
               <div className="row-actions">
-                <button className="feed-view-btn" type="button" onClick={() => navigate("/chat")}>
-                  See all
+                <button className="feed-view-btn" type="button" onClick={() => setStoryLibraryOpen(true)}>
+                  View All
                   <FeedIcon name="chevronRight" />
                 </button>
               </div>
@@ -1335,22 +1524,23 @@ export default function FeedPage() {
                 <small>Create Story</small>
               </button>
 
-              {stories.length === 0 ? (
+              {storyGroups.length === 0 ? (
                 <article className="story-empty-card">
                   <h4>No stories yet</h4>
                   <p>Create or assign your first story to activate the stories rail.</p>
                 </article>
               ) : null}
 
-              {stories.map((story, index) => {
-                const ownerAvatarUrl = storyOwnerProfileImageUrl(story);
+              {visibleStoryGroups.map((group) => {
+                const story = group.latestStory || group.stories[0];
+                const ownerAvatarUrl = group.ownerProfileImageUrl || storyOwnerProfileImageUrl(story);
 
                 return (
                   <button
-                    key={story.id}
+                    key={group.key}
                     type="button"
-                    className="story-thumb-card"
-                    onClick={() => openStory(index)}
+                    className="story-thumb-card grouped-story-card"
+                    onClick={() => openStoryGroup(group)}
                   >
                     <span className={`story-ring ${story.viewedByCurrentUser ? "viewed" : ""}`}>
                       {story.mediaType === "VIDEO" ? (
@@ -1367,7 +1557,8 @@ export default function FeedPage() {
                       )}
                     </span>
                     {isLiveStory(story) ? <span className="story-live-badge">LIVE</span> : null}
-                    <small>{storyOwnerName(story)}</small>
+                    <span className="story-count-badge">{group.stories.length}</span>
+                    <small>{group.ownerName || storyOwnerName(story)}</small>
                   </button>
                 );
               })}
@@ -1399,7 +1590,7 @@ export default function FeedPage() {
 
           <div className="feed-layout-grid">
             <main className="feed-main-column">
-              <PostComposer onSubmit={onCreatePost} submitting={submittingPost} />
+              <PostComposer onSubmit={onCreatePost} submitting={submittingPost} onSearchMentionUsers={searchShareUsers} />
 
               <div className="feed-post-scroll">
                 {activeMode === "posts"
@@ -1423,11 +1614,23 @@ export default function FeedPage() {
           <section className="feed-side-panel rail-card rail-trending-card">
             <header className="feed-section-head compact">
               <h4>Trending Hashtags</h4>
-              <button type="button" className="feed-view-btn" onClick={() => setTrendPanelOpen(!trendPanelOpen)}>View all</button>
+              <button
+                type="button"
+                className="feed-view-btn"
+                onClick={() => {
+                  setTrendPanelOpen((previous) => {
+                    const next = !previous;
+                    setTrendVisibleCount(next ? trendingHashtags.length : 2);
+                    return next;
+                  });
+                }}
+              >
+                {trendPanelOpen ? "View less" : "View all"}
+              </button>
             </header>
             <div className="trend-list">
               {trendingHashtags.length === 0 ? <p className="muted">No hashtags yet.</p> : null}
-              {visibleTrendingHashtags.slice(0, trendPanelOpen ? visibleTrendingHashtags.length : 5).map(({ tag, count, sharePercent, sparklinePoints }, index) => (
+              {visibleTrendingHashtags.map(({ tag, count, sharePercent, sparklinePoints }, index) => (
                 <button
                   key={tag}
                   type="button"
@@ -1454,7 +1657,10 @@ export default function FeedPage() {
             </div>
             {selectedHashtag ? (
               <div className="row-actions rail-clear-filter">
-                <button type="button" className="btn btn-secondary" onClick={() => setSelectedHashtag("")}>
+                <button type="button" className="btn btn-secondary" onClick={() => {
+                  setSelectedHashtag("");
+                  navigate("/home");
+                }}>
                   Clear Filter
                 </button>
               </div>
@@ -1465,11 +1671,17 @@ export default function FeedPage() {
           <section className="feed-side-panel rail-card rail-suggestions-card">
             <header className="feed-section-head compact">
               <h4>Suggested People</h4>
-              <button type="button" className="feed-view-btn" onClick={() => navigate("/friends")}>View all</button>
+              <button
+                type="button"
+                className="feed-view-btn"
+                onClick={() => setSuggestionsExpanded((previous) => !previous)}
+              >
+                {suggestionsExpanded ? "View less" : "View all"}
+              </button>
             </header>
             {suggestions.length === 0 ? <p className="muted">No suggestions yet.</p> : null}
             <div className="suggestion-stack">
-              {suggestions.slice(0, 3).map((suggestion) => (
+              {suggestions.slice(0, suggestionsExpanded ? suggestions.length : 2).map((suggestion) => (
                 <article key={`suggestion-${suggestion.userId}`} className="suggestion-feature-card rail-suggestion-row">
                   <button type="button" className="suggestion-feature-user" onClick={() => openUserProfile(suggestion.userId)}>
                     <span className="suggestion-avatar">{(suggestion.displayName || "U").slice(0, 1)}</span>
@@ -1493,29 +1705,71 @@ export default function FeedPage() {
             </div>
           </section>
 
+          {/* Explore */}
+          <section className="feed-side-panel rail-card rail-explore-card rail-explore-mixed">
+            <header className="feed-section-head compact">
+              <h4>Explore</h4>
+              <button
+                type="button"
+                className="feed-view-btn"
+                onClick={() => {
+                  setRailExploreExpanded((previous) => !previous);
+                }}
+              >
+                {railExploreExpanded ? "View less" : "View all"}
+              </button>
+            </header>
+            <div className="rail-mixed-stack">
+              {railExploreCandidates.length === 0 ? <p className="muted">No explore items yet.</p> : null}
+              {railExploreCandidates.map((item) => (
+                <button
+                  key={`explore-mixed-${item.sourcePostId}-${item.imageUrl}`}
+                  type="button"
+                  className="rail-mixed-item"
+                  onClick={() => openPostFromRail(item, isVideoItem(item) ? "reels" : "posts")}
+                >
+                  <span className="rail-mixed-thumb">
+                    {isVideoItem(item) ? (
+                      <video src={toMediaUrl(item.imageUrl)} muted playsInline preload="metadata" />
+                    ) : (
+                      <img src={toMediaUrl(item.imageUrl)} alt={item.authorName} />
+                    )}
+                    {isVideoItem(item) ? <FeedIcon name="play" /> : null}
+                  </span>
+                  <span>
+                    <strong>{item.authorName}</strong>
+                    <small>{item.content.slice(0, 52)}</small>
+                  </span>
+                </button>
+              ))}
+            </div>
+          </section>
+
           {/* Explore Reels */}
           <section className="feed-side-panel rail-card rail-explore-card rail-explore-reels">
-            <div className="rail-explore-content">
-              <div className="rail-explore-icon-wrap">
-                <FeedIcon name="reels" />
+            <header className="feed-section-head compact">
+              <div className="rail-explore-content">
+                <div className="rail-explore-icon-wrap">
+                  <FeedIcon name="reels" />
+                </div>
+                <div>
+                  <h4>Explore Reels</h4>
+                  <p>Discover short videos and trending content from the community.</p>
+                </div>
               </div>
-              <div>
-                <h4>Explore Reels</h4>
-                <p>Discover short videos and trending content from the community.</p>
-              </div>
-            </div>
-            <button
-              type="button"
-              className="rail-explore-thumb-btn"
-              onClick={() => {
-                setActiveMode("reels");
-                setSelectedHashtag("");
-              }}
-              aria-label="Explore Reels"
-            >
-              <span className="rail-explore-grid rail-explore-reel-grid">
+              <button type="button" className="feed-view-btn" onClick={() => setRailReelsExpanded((previous) => !previous)}>
+                {railReelsExpanded ? "View less" : "View all"}
+              </button>
+            </header>
+            <div className="rail-explore-grid rail-explore-reel-grid">
                 {railReelCandidates.length > 0 ? railReelCandidates.map((item) => (
-                  <span key={`explore-reel-${item.sourcePostId}-${item.imageUrl}`} className="rail-explore-reel-thumb">
+                  <button
+                    key={`explore-reel-${item.sourcePostId}-${item.imageUrl}`}
+                    type="button"
+                    className="rail-explore-reel-thumb"
+                    onClick={() => openPostFromRail(item, "reels")}
+                    aria-label={`Open reel by ${item.authorName}`}
+                  >
                     <video
                       className="rail-explore-grid-thumb rail-explore-reel-video"
                       src={toMediaUrl(item.imageUrl)}
@@ -1530,39 +1784,51 @@ export default function FeedPage() {
                     <span className="rail-reel-play-badge" aria-hidden="true">
                       <FeedIcon name="play" />
                     </span>
-                  </span>
+                    <small>{Number(item.reelViewCount || 0)} views</small>
+                  </button>
                 )) : (
                   <span className="rail-explore-grid-empty rail-explore-reel-empty">
                     <FeedIcon name="reels" />
                     <span>Open reels</span>
                   </span>
                 )}
-              </span>
-            </button>
+            </div>
           </section>
 
           {/* Explore Images */}
           <section className="feed-side-panel rail-card rail-explore-card rail-explore-images">
-            <div className="rail-explore-content">
-              <div className="rail-explore-icon-wrap">
-                <FeedIcon name="posts" />
+            <header className="feed-section-head compact">
+              <div className="rail-explore-content">
+                <div className="rail-explore-icon-wrap">
+                  <FeedIcon name="posts" />
+                </div>
+                <div>
+                  <h4>Explore Images</h4>
+                  <p>Browse stunning photos and captivating moments shared by the community.</p>
+                </div>
               </div>
-              <div>
-                <h4>Explore Images</h4>
-                <p>Browse stunning photos and captivating moments shared by the community.</p>
-              </div>
-            </div>
+              <button type="button" className="feed-view-btn" onClick={() => setRailImagesExpanded((previous) => !previous)}>
+                {railImagesExpanded ? "View less" : "View all"}
+              </button>
+            </header>
             <div className="rail-explore-grid">
               {railImageCandidates.map((item) => (
-                <img
+                <button
                   key={`explore-img-${item.sourcePostId}`}
-                  className="rail-explore-grid-thumb"
-                  src={toMediaUrl(item.imageUrl)}
-                  alt={item.authorName}
-                  onError={(event) => {
-                    event.currentTarget.style.display = "none";
-                  }}
-                />
+                  type="button"
+                  className="rail-explore-image-thumb"
+                  onClick={() => openPostFromRail(item, "posts")}
+                  aria-label={`Open image by ${item.authorName}`}
+                >
+                  <img
+                    className="rail-explore-grid-thumb"
+                    src={toMediaUrl(item.imageUrl)}
+                    alt={item.authorName}
+                    onError={(event) => {
+                      event.currentTarget.style.display = "none";
+                    }}
+                  />
+                </button>
               ))}
               {railImageCandidates.length === 0 && (
                 <div className="rail-explore-grid-empty">
@@ -1807,6 +2073,54 @@ export default function FeedPage() {
         document.querySelector(".shell.shell-home-theme") || document.querySelector(".shell") || document.body
       ) : null}
 
+      {storyLibraryOpen && typeof document !== "undefined" ? createPortal(
+        <div className="feed-modal-overlay story-library-overlay" onClick={() => setStoryLibraryOpen(false)}>
+          <section className="feed-modal-card story-library-card" onClick={(event) => event.stopPropagation()}>
+            <header className="reaction-users-head">
+              <div>
+                <h3>All Stories</h3>
+                <p>Grouped by user and sorted by the latest story from each publisher.</p>
+              </div>
+              <button type="button" className="share-panel-close" onClick={() => setStoryLibraryOpen(false)} aria-label="Close all stories">
+                <FeedIcon name="close" />
+              </button>
+            </header>
+            <div className="story-library-grid">
+              {storyGroups.length === 0 ? <p className="muted">No active stories yet.</p> : null}
+              {storyGroups.map((group) => {
+                const preview = group.latestStory || group.stories[0];
+                const ownerAvatarUrl = group.ownerProfileImageUrl || storyOwnerProfileImageUrl(preview);
+                return (
+                  <button
+                    key={`story-library-${group.key}`}
+                    type="button"
+                    className="story-library-item"
+                    onClick={() => {
+                      setStoryLibraryOpen(false);
+                      openStoryGroup(group);
+                    }}
+                  >
+                    <span className="story-library-preview">
+                      {preview?.mediaType === "VIDEO" ? (
+                        <video src={toMediaUrl(preview.mediaUrl)} muted playsInline preload="metadata" />
+                      ) : (
+                        <img src={toMediaUrl(preview?.mediaUrl)} alt={group.ownerName} />
+                      )}
+                    </span>
+                    <span className={`story-library-avatar ${ownerAvatarUrl ? "has-image" : ""}`}>
+                      {ownerAvatarUrl ? <img src={toMediaUrl(ownerAvatarUrl)} alt="" /> : storyOwnerInitial(preview)}
+                    </span>
+                    <strong>{group.ownerName}</strong>
+                    <small>{group.stories.length} {group.stories.length === 1 ? "story" : "stories"} - latest {humanTime(preview?.createdAt)}</small>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+        </div>,
+        document.querySelector(".shell.shell-home-theme") || document.querySelector(".shell") || document.body
+      ) : null}
+
       {reportDraft.postId && typeof document !== "undefined" ? createPortal(
         <div className="feed-modal-overlay report-dialog-overlay" onClick={() => setReportDraft({ postId: null, reason: "CATEGORY_FAKE", details: "" })}>
           <form className="feed-modal-card report-dialog-card" onSubmit={submitPostReport} onClick={(event) => event.stopPropagation()}>
@@ -1859,20 +2173,20 @@ export default function FeedPage() {
             className="story-viewer-nav story-viewer-nav-prev"
             onClick={(event) => {
               event.stopPropagation();
-              openStory(viewingStoryIndex <= 0 ? stories.length - 1 : viewingStoryIndex - 1);
+              goToAdjacentStory(-1);
             }}
-            disabled={stories.length <= 1}
+            disabled={!selectedStoryGroup || (selectedStoryGroupIndex <= 0 && selectedStoryIndexInGroup <= 0)}
             aria-label="Previous story"
           >
             <FeedIcon name="chevronLeft" />
           </button>
 
           <section className="feed-modal-card story-viewer-card premium-story-viewer-card" onClick={(event) => event.stopPropagation()}>
-            <div className="story-progress-row" style={{ gridTemplateColumns: `repeat(${stories.length}, minmax(0, 1fr))` }} aria-hidden="true">
-              {stories.map((story, index) => (
+            <div className="story-progress-row" style={{ gridTemplateColumns: `repeat(${selectedStoryGroup?.stories?.length || 1}, minmax(0, 1fr))` }} aria-hidden="true">
+              {(selectedStoryGroup?.stories || [selectedStory]).map((story, index) => (
                 <span
                   key={`story-progress-${story.id || index}`}
-                  className={index < viewingStoryIndex ? "seen" : index === viewingStoryIndex ? "active" : ""}
+                  className={index < selectedStoryIndexInGroup ? "seen" : index === selectedStoryIndexInGroup ? "active" : ""}
                 />
               ))}
             </div>
@@ -1904,7 +2218,14 @@ export default function FeedPage() {
               </button>
             </header>
 
-            <div className="story-viewer-media">
+            <div
+              className="story-viewer-media"
+              onClick={(event) => {
+                const bounds = event.currentTarget.getBoundingClientRect();
+                const clickedRightSide = event.clientX - bounds.left > bounds.width / 2;
+                goToAdjacentStory(clickedRightSide ? 1 : -1);
+              }}
+            >
               {selectedStory.mediaType === "VIDEO" ? (
                 <video src={toMediaUrl(selectedStory.mediaUrl)} controls autoPlay />
               ) : (
@@ -2001,9 +2322,9 @@ export default function FeedPage() {
             className="story-viewer-nav story-viewer-nav-next"
             onClick={(event) => {
               event.stopPropagation();
-              openStory(viewingStoryIndex >= stories.length - 1 ? 0 : viewingStoryIndex + 1);
+              goToAdjacentStory(1);
             }}
-            disabled={stories.length <= 1}
+            disabled={!selectedStoryGroup}
             aria-label="Next story"
           >
             <FeedIcon name="chevronRight" />

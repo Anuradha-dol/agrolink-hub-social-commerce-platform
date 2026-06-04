@@ -12,6 +12,10 @@ public record NotificationResponse(
         LocalDateTime createdAt,
         Long actorUserId,
         String actorName,
+        String actorProfileImageUrl,
         Long referenceId,
-        String referenceType
+        String referenceType,
+        Long postId,
+        Long commentId,
+        Long replyId
 ) {}

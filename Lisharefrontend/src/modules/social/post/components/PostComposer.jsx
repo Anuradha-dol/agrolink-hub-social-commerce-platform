@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "/src/modules/platform/app/store";
 import { toMediaUrl } from "/src/modules/platform/common/utils/mediaUrl";
 
@@ -69,6 +69,28 @@ const POST_CATEGORIES = [
   { value: "TECH", label: "Tech", xp: 2 },
   { value: "OTHER", label: "Other", xp: 2 }
 ];
+const FEELINGS = ["Happy", "Sad", "Excited", "Angry", "Loved", "Blessed", "Tired", "Motivated"];
+
+function displayUserName(user) {
+  return `${user?.firstName || user?.firstname || ""} ${user?.lastName || user?.lastname || ""}`.trim()
+    || user?.name
+    || user?.email
+    || "Member";
+}
+
+function mentionHandle(user) {
+  const source = user?.username || user?.email?.split("@")[0] || displayUserName(user);
+  return String(source || "member").replace(/[^a-zA-Z0-9_]/g, "").slice(0, 32) || "member";
+}
+
+function activeMentionQuery(value = "") {
+  const match = String(value).match(/(^|\s)@([a-zA-Z0-9_]{1,40})$/);
+  return match ? match[2] : "";
+}
+
+function replaceActiveMention(value = "", handle = "") {
+  return String(value).replace(/(^|\s)@([a-zA-Z0-9_]{0,40})$/, (match, prefix) => `${prefix}@${handle} `);
+}
 
 function ComposerToolButton({ label, icon, active = false, onClick }) {
   return (
@@ -79,7 +101,7 @@ function ComposerToolButton({ label, icon, active = false, onClick }) {
   );
 }
 
-export default function PostComposer({ onSubmit, submitting }) {
+export default function PostComposer({ onSubmit, submitting, onSearchMentionUsers }) {
   const { user } = useAuth();
   const [content, setContent] = useState("");
   const [imageFile, setImageFile] = useState(null);
@@ -87,7 +109,11 @@ export default function PostComposer({ onSubmit, submitting }) {
   const [fileAccept, setFileAccept] = useState("image/*,video/*");
   const [activeTool, setActiveTool] = useState("");
   const [locationText, setLocationText] = useState("");
+  const [feeling, setFeeling] = useState("");
+  const [pollQuestion, setPollQuestion] = useState("");
   const [pollOptions, setPollOptions] = useState(["", ""]);
+  const [mentionResults, setMentionResults] = useState([]);
+  const [mentionLoading, setMentionLoading] = useState(false);
   const fileInputRef = useRef(null);
   const displayName = `${user?.firstName || ""} ${user?.lastName || ""}`.trim() || user?.name || "there";
   const firstName = displayName.split(" ")[0] || "there";
@@ -97,6 +123,40 @@ export default function PostComposer({ onSubmit, submitting }) {
     if (!imageFile) return "";
     return imageFile.name;
   }, [imageFile]);
+  const mediaPreviewUrl = useMemo(() => (imageFile ? URL.createObjectURL(imageFile) : ""), [imageFile]);
+
+  useEffect(() => () => {
+    if (mediaPreviewUrl) URL.revokeObjectURL(mediaPreviewUrl);
+  }, [mediaPreviewUrl]);
+
+  useEffect(() => {
+    const query = activeMentionQuery(content);
+    if (!query || !onSearchMentionUsers) {
+      setMentionResults([]);
+      setMentionLoading(false);
+      return undefined;
+    }
+
+    let cancelled = false;
+    const timeoutId = window.setTimeout(() => {
+      setMentionLoading(true);
+      onSearchMentionUsers(query)
+        .then((users) => {
+          if (!cancelled) setMentionResults(Array.isArray(users) ? users.slice(0, 6) : []);
+        })
+        .catch(() => {
+          if (!cancelled) setMentionResults([]);
+        })
+        .finally(() => {
+          if (!cancelled) setMentionLoading(false);
+        });
+    }, 180);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeoutId);
+    };
+  }, [content, onSearchMentionUsers]);
 
   const appendToken = (token) => {
     setContent((prev) => `${prev}${prev && !prev.endsWith(" ") ? " " : ""}${token}`);
@@ -112,15 +172,17 @@ export default function PostComposer({ onSubmit, submitting }) {
     if (!category) return;
     const trimmedLocation = locationText.trim();
     const filledPollOptions = pollOptions.map((option) => option.trim()).filter(Boolean);
-    const enrichedContent = [
-      content.trim(),
-      trimmedLocation ? `Location: ${trimmedLocation}` : "",
-      filledPollOptions.length >= 2 ? `Poll: ${filledPollOptions.join(" / ")}` : ""
-    ].filter(Boolean).join("\n");
+    const trimmedPollQuestion = pollQuestion.trim();
 
     const formData = new FormData();
-    formData.append("content", enrichedContent);
+    formData.append("content", content.trim());
     formData.append("category", category);
+    formData.append("feeling", feeling);
+    formData.append("locationName", trimmedLocation);
+    if (trimmedPollQuestion && filledPollOptions.length >= 2) {
+      formData.append("pollQuestion", trimmedPollQuestion);
+      formData.append("pollOptions", JSON.stringify(filledPollOptions));
+    }
     if (imageFile) formData.append("image", imageFile);
     await onSubmit(formData);
     setContent("");
@@ -128,7 +190,10 @@ export default function PostComposer({ onSubmit, submitting }) {
     setCategory("");
     setActiveTool("");
     setLocationText("");
+    setFeeling("");
+    setPollQuestion("");
     setPollOptions(["", ""]);
+    setMentionResults([]);
     event.target.reset();
   };
 
@@ -145,6 +210,33 @@ export default function PostComposer({ onSubmit, submitting }) {
           placeholder={`What's happening, ${firstName}?`}
           rows={1}
         />
+        {mentionResults.length || mentionLoading ? (
+          <div className="composer-mention-menu">
+            {mentionLoading ? <p>Finding people...</p> : null}
+            {mentionResults.map((mentionUser) => (
+              <button
+                key={`composer-mention-${mentionUser.userId || mentionUser.email}`}
+                type="button"
+                onClick={() => {
+                  setContent((previous) => replaceActiveMention(previous, mentionHandle(mentionUser)));
+                  setMentionResults([]);
+                }}
+              >
+                <span className={`composer-mention-avatar ${mentionUser.profileImageUrl || mentionUser.imageUrl ? "has-image" : ""}`}>
+                  {mentionUser.profileImageUrl || mentionUser.imageUrl ? (
+                    <img src={toMediaUrl(mentionUser.profileImageUrl || mentionUser.imageUrl)} alt="" />
+                  ) : (
+                    displayUserName(mentionUser).slice(0, 1).toUpperCase()
+                  )}
+                </span>
+                <span>
+                  <strong>@{mentionHandle(mentionUser)}</strong>
+                  <small>{displayUserName(mentionUser)}</small>
+                </span>
+              </button>
+            ))}
+          </div>
+        ) : null}
         <button
           type="button"
           className={`composer-input-emoji ${activeTool === "emoji" ? "active" : ""}`}
@@ -164,10 +256,11 @@ export default function PostComposer({ onSubmit, submitting }) {
             <span className="composer-tool-label">Photo</span>
           </label>
           <ComposerToolButton label="Video" icon="video" onClick={() => openFilePicker("video/*")} />
-          <ComposerToolButton label="Gif" icon="gif" active={activeTool === "gif"} onClick={() => setActiveTool((prev) => prev === "gif" ? "" : "gif")} />
+          <ComposerToolButton label="GIF" icon="gif" onClick={() => openFilePicker("image/gif")} />
           <ComposerToolButton label="Poll" icon="chart" active={activeTool === "poll"} onClick={() => setActiveTool((prev) => prev === "poll" ? "" : "poll")} />
-          <ComposerToolButton label="Feeling" icon="smile" active={activeTool === "emoji"} onClick={() => setActiveTool((prev) => prev === "emoji" ? "" : "emoji")} />
-          <ComposerToolButton label="More" icon="more" active={activeTool === "location"} onClick={() => setActiveTool((prev) => prev === "location" ? "" : "location")} />
+          <ComposerToolButton label="Feeling" icon="smile" active={activeTool === "feeling"} onClick={() => setActiveTool((prev) => prev === "feeling" ? "" : "feeling")} />
+          <ComposerToolButton label="Location" icon="pin" active={activeTool === "location"} onClick={() => setActiveTool((prev) => prev === "location" ? "" : "location")} />
+          <ComposerToolButton label="Mention" icon="more" onClick={() => appendToken("@")} />
         </div>
         {fileLabel ? <small className="composer-file-name">{fileLabel}</small> : null}
         <div className="composer-category-stack">
@@ -196,11 +289,24 @@ export default function PostComposer({ onSubmit, submitting }) {
               ))}
             </div>
           ) : null}
-          {activeTool === "gif" ? (
-            <div className="composer-token-row" aria-label="GIF suggestions">
-              {["study tip", "launch", "thank you", "progress"].map((tag) => (
-                <button key={tag} type="button" onClick={() => appendToken(`#${tag.replace(/\s+/g, "")}`)}>{tag}</button>
+          {activeTool === "feeling" ? (
+            <div className="composer-token-row composer-feeling-row" aria-label="Feeling choices">
+              {FEELINGS.map((item) => (
+                <button
+                  key={item}
+                  type="button"
+                  className={feeling === item ? "active" : ""}
+                  onClick={() => setFeeling(item)}
+                >
+                  {item}
+                </button>
               ))}
+            </div>
+          ) : null}
+          {activeTool === "gif" ? (
+            <div className="composer-gif-upload-note">
+              <strong>Upload an animated GIF</strong>
+              <button type="button" onClick={() => openFilePicker("image/gif")}>Choose GIF</button>
             </div>
           ) : null}
           {activeTool === "location" ? (
@@ -211,18 +317,51 @@ export default function PostComposer({ onSubmit, submitting }) {
           ) : null}
           {activeTool === "poll" ? (
             <div className="composer-poll-fields">
+              <label>
+                Poll question
+                <input value={pollQuestion} onChange={(event) => setPollQuestion(event.target.value)} placeholder="Ask a clear question" />
+              </label>
               {pollOptions.map((option, index) => (
-                <label key={`poll-${index}`}>
-                  Option {index + 1}
-                  <input value={option} onChange={(event) => {
-                    const next = [...pollOptions];
-                    next[index] = event.target.value;
-                    setPollOptions(next);
-                  }} placeholder={`Poll option ${index + 1}`} />
-                </label>
+                <div key={`poll-${index}`} className="composer-poll-option-row">
+                  <label>
+                    Option {index + 1}
+                    <input value={option} onChange={(event) => {
+                      const next = [...pollOptions];
+                      next[index] = event.target.value;
+                      setPollOptions(next);
+                    }} placeholder={`Poll option ${index + 1}`} />
+                  </label>
+                  {pollOptions.length > 2 ? (
+                    <button type="button" onClick={() => setPollOptions((previous) => previous.filter((_, itemIndex) => itemIndex !== index))}>
+                      Remove
+                    </button>
+                  ) : null}
+                </div>
               ))}
+              {pollOptions.length < 8 ? (
+                <button type="button" className="composer-add-option" onClick={() => setPollOptions((previous) => [...previous, ""])}>
+                  Add option
+                </button>
+              ) : null}
             </div>
           ) : null}
+        </div>
+      ) : null}
+      {(feeling || locationText.trim() || pollQuestion.trim()) ? (
+        <div className="composer-preview-chips">
+          {feeling ? <span>Feeling {feeling}</span> : null}
+          {locationText.trim() ? <span>{locationText.trim()}</span> : null}
+          {pollQuestion.trim() ? <span>Poll ready</span> : null}
+        </div>
+      ) : null}
+      {mediaPreviewUrl ? (
+        <div className={`composer-media-preview ${imageFile?.type === "image/gif" ? "gif" : ""}`.trim()}>
+          {imageFile?.type?.startsWith("video") ? (
+            <video src={mediaPreviewUrl} controls muted />
+          ) : (
+            <img src={mediaPreviewUrl} alt={imageFile?.type === "image/gif" ? "Animated GIF preview" : "Post media preview"} />
+          )}
+          <button type="button" onClick={() => setImageFile(null)}>Remove media</button>
         </div>
       ) : null}
     </form>

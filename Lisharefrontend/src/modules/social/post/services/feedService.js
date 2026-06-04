@@ -40,6 +40,7 @@ export const feedService = {
     }
   },
   markReelView: (postId) => axiosInstance.post(`/posts/${postId}/reel-view`),
+  votePoll: (postId, optionIndex) => axiosInstance.post(ENDPOINTS.feed.pollVote(postId), null, { params: { optionIndex } }),
   addComment: (postId, content, mediaFile = null) => {
     const payload = buildCommentPayload(content, mediaFile);
     return axiosInstance.post(ENDPOINTS.feed.commentAdd(postId), payload.body, payload.config);

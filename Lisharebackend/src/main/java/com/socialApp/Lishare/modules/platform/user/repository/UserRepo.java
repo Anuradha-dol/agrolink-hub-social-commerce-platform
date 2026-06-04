@@ -20,6 +20,14 @@ public interface UserRepo extends JpaRepository<User, Long> {
 
     Optional<User> findByUsernameIgnoreCase(String username);
 
+    @Query("""
+            SELECT u FROM User u
+            WHERE LOWER(u.username) = LOWER(:token)
+               OR LOWER(u.email) LIKE LOWER(CONCAT(:token, '@%'))
+               OR LOWER(CONCAT(u.firstname, u.lastName)) = LOWER(:token)
+            """)
+    Optional<User> findMentionTarget(@Param("token") String token);
+
     Optional<User> findByRefreshToken(String refreshToken);
 
     Optional<User> findByPhoneNumber(String phoneNumber);
@@ -41,6 +49,7 @@ public interface UserRepo extends JpaRepository<User, Long> {
                 LOWER(u.firstname) LIKE LOWER(CONCAT('%', :query, '%'))
                 OR LOWER(u.lastName) LIKE LOWER(CONCAT('%', :query, '%'))
                 OR LOWER(u.email) LIKE LOWER(CONCAT('%', :query, '%'))
+                OR LOWER(u.username) LIKE LOWER(CONCAT('%', :query, '%'))
             )
             """)
     List<User> searchUsers(@Param("query") String query, @Param("excludeId") Long excludeId);

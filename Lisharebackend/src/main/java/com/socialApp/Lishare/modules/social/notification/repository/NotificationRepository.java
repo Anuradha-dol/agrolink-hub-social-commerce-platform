@@ -1,6 +1,7 @@
 package com.socialApp.Lishare.modules.social.notification.repository;
 
 import com.socialApp.Lishare.modules.social.notification.entity.Notification;
+import com.socialApp.Lishare.modules.social.notification.entity.NotificationType;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,6 +25,14 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
     Page<Notification> findByUserUserIdAndReadFalseOrderByCreatedAtDesc(Long userId, Pageable pageable);
 
     long countByUserUserIdAndReadFalse(Long userId);
+
+    boolean existsByUserUserIdAndActorUserUserIdAndTypeAndReferenceTypeAndReferenceId(
+            Long userId,
+            Long actorUserId,
+            NotificationType type,
+            String referenceType,
+            Long referenceId
+    );
 
     @Transactional
     @Modifying

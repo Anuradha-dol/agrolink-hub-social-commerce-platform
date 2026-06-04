@@ -12,11 +12,15 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @RestController
 @RequestMapping("/posts")
 @RequiredArgsConstructor
 public class PostController {
+
+    private static final Pattern HASHTAG_PATTERN = Pattern.compile("#[A-Za-z0-9_]+");
 
     private final PostService postService;
 
@@ -25,17 +29,21 @@ public class PostController {
             @AuthenticationPrincipal User user,
             @RequestParam(value = "content", required = false, defaultValue = "") String content,
             @RequestParam(value = "image", required = false) MultipartFile image,
-            @RequestParam(value = "category", required = false) String category
+            @RequestParam(value = "category", required = false) String category,
+            @RequestParam(value = "feeling", required = false) String feeling,
+            @RequestParam(value = "locationName", required = false) String locationName,
+            @RequestParam(value = "pollQuestion", required = false) String pollQuestion,
+            @RequestParam(value = "pollOptions", required = false) String pollOptions
     ) {
         if (user == null) {
             return ResponseEntity.status(401).body(null);
         }
-        if (content.isBlank() && (image == null || image.isEmpty())) {
+        if (content.isBlank() && (image == null || image.isEmpty()) && (pollQuestion == null || pollQuestion.isBlank())) {
             return ResponseEntity.badRequest().body(null);
         }
 
-        Post post = postService.createPost(user.getUserId(), content, image, category);
-        return ResponseEntity.ok(toResponse(post));
+        Post post = postService.createPost(user.getUserId(), content, image, category, feeling, locationName, pollQuestion, pollOptions);
+        return ResponseEntity.ok(toResponse(post, user.getUserId()));
     }
 
     @PutMapping("/update/{postId}")
@@ -44,18 +52,35 @@ public class PostController {
             @PathVariable Long postId,
             @RequestParam(value = "content", required = false) String content,
             @RequestParam(value = "image", required = false) MultipartFile image,
-            @RequestParam(value = "removeMedia", required = false, defaultValue = "false") boolean removeMedia
+            @RequestParam(value = "removeMedia", required = false, defaultValue = "false") boolean removeMedia,
+            @RequestParam(value = "feeling", required = false) String feeling,
+            @RequestParam(value = "locationName", required = false) String locationName,
+            @RequestParam(value = "pollQuestion", required = false) String pollQuestion,
+            @RequestParam(value = "pollOptions", required = false) String pollOptions
     ) {
         if (user == null) {
             return ResponseEntity.status(401).body(null);
         }
-        Post post = postService.updatePost(user.getUserId(), postId, content, image, removeMedia);
-        return ResponseEntity.ok(toResponse(post));
+        Post post = postService.updatePost(user.getUserId(), postId, content, image, removeMedia, feeling, locationName, pollQuestion, pollOptions);
+        return ResponseEntity.ok(toResponse(post, user.getUserId()));
     }
 
     @PostMapping("/{postId}/reel-view")
     public ResponseEntity<Long> incrementReelView(@PathVariable Long postId) {
         return ResponseEntity.ok(postService.incrementReelView(postId));
+    }
+
+    @PostMapping("/{postId}/poll/vote")
+    public ResponseEntity<PostResponse> votePoll(
+            @AuthenticationPrincipal User user,
+            @PathVariable Long postId,
+            @RequestParam Integer optionIndex
+    ) {
+        if (user == null) {
+            return ResponseEntity.status(401).body(null);
+        }
+        Post post = postService.votePoll(user.getUserId(), postId, optionIndex);
+        return ResponseEntity.ok(toResponse(post, user.getUserId()));
     }
 
     @DeleteMapping("/delete/{postId}")
@@ -79,7 +104,7 @@ public class PostController {
     @GetMapping("/my")
     public ResponseEntity<List<PostResponse>> getMyPosts(@AuthenticationPrincipal User user) {
         List<Post> posts = postService.getPostsByUser(user.getUserId());
-        List<PostResponse> responses = posts.stream().map(this::toResponse).toList();
+        List<PostResponse> responses = posts.stream().map(post -> toResponse(post, user.getUserId())).toList();
         return ResponseEntity.ok(responses);
     }
 
@@ -89,18 +114,32 @@ public class PostController {
             return ResponseEntity.status(401).body(null);
         }
         List<Post> feedPosts = postService.getFeedPosts(user.getUserId());
-        List<PostResponse> responses = feedPosts.stream().map(this::toResponse).toList();
+        List<PostResponse> responses = feedPosts.stream().map(post -> toResponse(post, user.getUserId())).toList();
         return ResponseEntity.ok(responses);
     }
 
     private PostResponse toResponse(Post post) {
+        return toResponse(post, null);
+    }
+
+    private PostResponse toResponse(Post post, Long viewerUserId) {
+        List<Long> pollVotes = postService.getPollVotes(post);
+        long pollTotalVotes = pollVotes.stream().mapToLong(Long::longValue).sum();
         return PostResponse.builder()
                 .postId(post.getPostId())
                 .authorId(post.getUser().getUserId())
                 .content(post.getContent())
+                .hashtags(extractHashtags(post.getContent()))
                 .imageUrl(post.getImageUrl())
                 .mediaType(post.getMediaType())
                 .category(resolvePostCategory(post))
+                .feeling(post.getFeeling())
+                .locationName(post.getLocationName())
+                .pollQuestion(post.getPollQuestion())
+                .pollOptions(postService.getPollOptions(post))
+                .pollVotes(pollVotes)
+                .pollTotalVotes(pollTotalVotes)
+                .viewerPollOptionIndex(postService.getViewerPollOptionIndex(post, viewerUserId))
                 .xpAwarded(resolvePostXp(post))
                 .authorVerifiedXp(calculateVerifiedXp(post.getUser()))
                 .reelViewCount(post.getReelViewCount())
@@ -126,5 +165,16 @@ public class PostController {
 
     private String resolvePostCategory(Post post) {
         return post.getCategory() == null || post.getCategory().isBlank() ? "GENERAL" : post.getCategory();
+    }
+
+    private List<String> extractHashtags(String content) {
+        if (content == null || content.isBlank()) {
+            return List.of();
+        }
+        Matcher matcher = HASHTAG_PATTERN.matcher(content);
+        return matcher.results()
+                .map(match -> match.group().toLowerCase())
+                .distinct()
+                .toList();
     }
 }

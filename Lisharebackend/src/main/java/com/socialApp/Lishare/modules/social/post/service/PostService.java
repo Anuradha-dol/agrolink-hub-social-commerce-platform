@@ -9,7 +9,13 @@ public interface PostService {
 
     Post createPost(Long userId, String content, MultipartFile imageFile, String category);
 
+    Post createPost(Long userId, String content, MultipartFile imageFile, String category,
+                    String feeling, String locationName, String pollQuestion, String pollOptionsJson);
+
     Post updatePost(Long userId, Long postId, String content, MultipartFile imageFile, boolean removeMedia);
+
+    Post updatePost(Long userId, Long postId, String content, MultipartFile imageFile, boolean removeMedia,
+                    String feeling, String locationName, String pollQuestion, String pollOptionsJson);
 
     void deletePost(Long postId);
 
@@ -20,4 +26,12 @@ public interface PostService {
     List<Post> getFeedPosts(Long userId);
 
     long incrementReelView(Long postId);
+
+    Post votePoll(Long userId, Long postId, Integer optionIndex);
+
+    List<String> getPollOptions(Post post);
+
+    List<Long> getPollVotes(Post post);
+
+    Integer getViewerPollOptionIndex(Post post, Long userId);
 }

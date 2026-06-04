@@ -3,6 +3,7 @@ package com.socialApp.Lishare.modules.social.story.controller;
 import com.socialApp.Lishare.modules.platform.common.response.ApiResponse;
 import com.socialApp.Lishare.modules.platform.user.entity.User;
 import com.socialApp.Lishare.modules.social.story.dto.StoryReplyRequest;
+import com.socialApp.Lishare.modules.social.story.dto.StoryGroupResponse;
 import com.socialApp.Lishare.modules.social.story.dto.StoryResponse;
 import com.socialApp.Lishare.modules.social.story.service.StoryService;
 import jakarta.validation.Valid;
@@ -12,7 +13,11 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/stories")
@@ -39,6 +44,14 @@ public class StoryController {
         return ResponseEntity.ok(ApiResponse.success(
                 "Stories fetched",
                 storyService.getStoryFeed(user.getUserId())
+        ));
+    }
+
+    @GetMapping("/grouped-feed")
+    public ResponseEntity<ApiResponse<List<StoryGroupResponse>>> groupedStoryFeed(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(ApiResponse.success(
+                "Grouped stories fetched",
+                groupStories(storyService.getStoryFeed(user.getUserId()))
         ));
     }
 
@@ -87,5 +100,37 @@ public class StoryController {
     ) {
         storyService.deleteStory(user.getUserId(), storyId);
         return ResponseEntity.ok(ApiResponse.success("Story deleted", null));
+    }
+
+    private List<StoryGroupResponse> groupStories(List<StoryResponse> stories) {
+        Map<Long, List<StoryResponse>> storiesByOwner = new LinkedHashMap<>();
+        for (StoryResponse story : stories) {
+            storiesByOwner.computeIfAbsent(story.ownerUserId(), ignored -> new java.util.ArrayList<>()).add(story);
+        }
+
+        return storiesByOwner.entrySet().stream()
+                .map(entry -> {
+                    List<StoryResponse> sortedStories = entry.getValue().stream()
+                            .sorted(Comparator.comparing(StoryResponse::createdAt, Comparator.nullsLast(Comparator.naturalOrder())))
+                            .toList();
+                    StoryResponse latestStory = sortedStories.stream()
+                            .max(Comparator.comparing(StoryResponse::createdAt, Comparator.nullsLast(Comparator.naturalOrder())))
+                            .orElse(null);
+                    LocalDateTime latestStoryTime = latestStory != null ? latestStory.createdAt() : null;
+                    StoryResponse firstStory = sortedStories.isEmpty() ? null : sortedStories.get(0);
+
+                    return StoryGroupResponse.builder()
+                            .userId(entry.getKey())
+                            .username(firstStory != null ? firstStory.ownerName() : "Unknown")
+                            .profileImage(firstStory != null ? firstStory.ownerProfileImageUrl() : null)
+                            .latestStoryTime(latestStoryTime)
+                            .stories(sortedStories)
+                            .build();
+                })
+                .sorted(Comparator.comparing(
+                        StoryGroupResponse::latestStoryTime,
+                        Comparator.nullsLast(Comparator.reverseOrder())
+                ))
+                .toList();
     }
 }
