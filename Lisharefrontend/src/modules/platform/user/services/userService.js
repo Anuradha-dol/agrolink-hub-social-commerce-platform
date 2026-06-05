@@ -19,5 +19,7 @@ export const userService = {
   uploadCoverImage: (formData) =>
     axiosInstance.post(ENDPOINTS.user.uploadCoverImage, formData, {
       headers: { "Content-Type": "multipart/form-data" }
-    })
+    }),
+  removeProfileImage: () => axiosInstance.delete(ENDPOINTS.user.removeProfileImage),
+  removeCoverImage: () => axiosInstance.delete(ENDPOINTS.user.removeCoverImage)
 };

@@ -307,7 +307,7 @@ export default function ProfilePage() {
       setFeed(allItems);
     } catch (err) {
       console.error("Failed to load feed", err);
-      alert("Failed to load feed");
+      console.warn("Failed to load feed");
     } finally {
       setLoadingFeed(false);
     }
@@ -362,7 +362,7 @@ export default function ProfilePage() {
       await refreshFollowData();
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.message || "Follow failed");
+      console.warn(err.response?.data?.message || "Follow failed");
     } finally {
       setProcessingIds(prev => prev.filter(id => id !== userId));
     }
@@ -376,7 +376,7 @@ export default function ProfilePage() {
       await refreshFollowData();
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.message || "Unfollow failed");
+      console.warn(err.response?.data?.message || "Unfollow failed");
     } finally {
       setProcessingIds(prev => prev.filter(id => id !== userId));
     }
@@ -481,7 +481,7 @@ export default function ProfilePage() {
 
   // --- Post Handlers ---
   const handleCreatePost = async () => {
-    if (!content.trim() && !image) return alert("Post must have content or image");
+    if (!content.trim() && !image) return console.warn("Post must have content or image");
     const formData = new FormData();
     formData.append("content", content);
     if (image) formData.append("image", image);
@@ -492,7 +492,7 @@ export default function ProfilePage() {
       await fetchFeed();
     } catch (err) {
       console.error(err);
-      alert("Failed to create post");
+      console.warn("Failed to create post");
     }
   };
 
@@ -502,7 +502,7 @@ export default function ProfilePage() {
       await fetchFeed();
     } catch (err) {
       console.error(err);
-      alert("Failed to delete post");
+      console.warn("Failed to delete post");
     }
     setMenuAnchorEl(null);
     setSelectedFeedItem(null);
@@ -544,9 +544,9 @@ export default function ProfilePage() {
       console.error("Share failed", err);
       if (err.response) {
         console.error("Server response:", err.response.data);
-        alert(`Share failed: ${err.response.data.message || err.response.status}`);
+        console.warn(`Share failed: ${err.response.data.message || err.response.status}`);
       } else {
-        alert("Failed to share post");
+        console.warn("Failed to share post");
       }
     }
   };
@@ -560,7 +560,7 @@ export default function ProfilePage() {
       await fetchFeed();
     } catch (err) {
       console.error(err);
-      alert("Failed to delete share");
+      console.warn("Failed to delete share");
     }
     setMenuAnchorEl(null);
     setSelectedFeedItem(null);
@@ -576,7 +576,7 @@ export default function ProfilePage() {
       setCommentText({ ...commentText, [postId]: "" });
     } catch (err) {
       console.error(err);
-      alert("Failed to add comment");
+      console.warn("Failed to add comment");
     }
   };
 
@@ -598,7 +598,7 @@ export default function ProfilePage() {
       );
     } catch (err) {
       console.error(err);
-      alert("Failed to react");
+      console.warn("Failed to react");
     }
   };
 
@@ -638,7 +638,7 @@ export default function ProfilePage() {
         await fetchFeed();
       } catch (err) {
         console.error(err);
-        alert("Failed to delete comment");
+        console.warn("Failed to delete comment");
       }
       handleMenuClose();
     };
@@ -650,7 +650,7 @@ export default function ProfilePage() {
         setReply("");
       } catch (err) {
         console.error(err);
-        alert("Failed to add reply");
+        console.warn("Failed to add reply");
       }
     };
 
@@ -882,11 +882,8 @@ export default function ProfilePage() {
   variant="outlined"
   color="error"
   onClick={() => {
-    const confirmed = window.confirm("Are you sure you want to log out?");
-    if (confirmed) {
-      localStorage.clear(); // optional, clear any local storage
-      navigate("/login");
-    }
+    localStorage.clear(); // optional, clear any local storage
+    navigate("/login");
   }}
   sx={{ borderRadius: 20, px: 4, borderColor: "#f44336", color: "#f44336" }}
 >

@@ -25,7 +25,9 @@ export const ENDPOINTS = {
     requestDeleteOtp: "/user/delete-forgot-request",
     verifyDeleteOtp: "/user/delete-forgot-verify",
     uploadProfileImage: "/user/upload-profile-image",
-    uploadCoverImage: "/user/upload-cover-image"
+    uploadCoverImage: "/user/upload-cover-image",
+    removeProfileImage: "/user/profile-image",
+    removeCoverImage: "/user/cover-image"
   },
   feed: {
     postsFeed: "/posts/feed",
@@ -68,6 +70,7 @@ export const ENDPOINTS = {
     all: "/api/friends/all",
     allForUser: (userId) => `/api/friends/${userId}/all`,
     pending: "/api/friends/pending",
+    sent: "/api/friends/sent",
     request: (userId) => `/api/friends/${userId}/request`,
     accept: (userId) => `/api/friends/${userId}/accept`,
     reject: (userId) => `/api/friends/${userId}/reject`,

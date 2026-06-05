@@ -5,6 +5,7 @@ export const friendService = {
   getFriends: () => axiosInstance.get(ENDPOINTS.friend.all),
   getFriendsForUser: (userId) => axiosInstance.get(ENDPOINTS.friend.allForUser(userId)),
   getPending: () => axiosInstance.get(ENDPOINTS.friend.pending),
+  getSent: () => axiosInstance.get(ENDPOINTS.friend.sent),
   request: (userId) => axiosInstance.post(ENDPOINTS.friend.request(userId)),
   accept: (userId) => axiosInstance.post(ENDPOINTS.friend.accept(userId)),
   reject: (userId) => axiosInstance.post(ENDPOINTS.friend.reject(userId)),

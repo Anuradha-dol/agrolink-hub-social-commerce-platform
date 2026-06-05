@@ -4,11 +4,13 @@ import { useAuth } from "/src/modules/platform/app/store";
 import { userService } from "/src/modules/platform/user/services/userService";
 import { useToast } from "/src/modules/platform/common/hooks/useToast";
 import { toMediaUrl } from "/src/modules/platform/common/utils/mediaUrl";
+import defaultProfileCover from "/src/assets/backgrounds/profile-cover-4k-background.png";
 import {
   Avatar,
   Button,
   Card,
   Icon,
+  Modal,
   PageGrid,
   SectionHeader,
   StatusBadge
@@ -61,11 +63,15 @@ export default function SettingsPage() {
   const [emailForm, setEmailForm] = useState({ newEmail: "", otp: "" });
   const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
   const [deleteForm, setDeleteForm] = useState({ currentPassword: "", otp: "" });
+  const [removeMediaTarget, setRemoveMediaTarget] = useState("");
+  const [deleteConfirmMode, setDeleteConfirmMode] = useState("");
 
   const profileName = displayName(profile);
   const roleLabel = compactRole(profile?.role || user?.role);
   const avatarUrl = profile?.profileImageUrl || profile?.imageUrl;
   const coverUrl = profile?.coverImageUrl || "";
+  const hasCustomCover = Boolean(coverUrl);
+  const hasCustomAvatar = Boolean(avatarUrl);
   const interests = splitCsv(profileDetailsForm.interests);
 
   const completionItems = useMemo(() => [
@@ -202,6 +208,14 @@ export default function SettingsPage() {
 
   const uploadProfileMedia = async (type, file) => {
     if (!file) return;
+    if (!file.type?.startsWith("image/")) {
+      pushToast("Only image files are allowed", "error");
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      pushToast("Image must be 8 MB or smaller", "error");
+      return;
+    }
     const formData = new FormData();
     formData.append("file", file);
     setSaving(type);
@@ -220,6 +234,28 @@ export default function SettingsPage() {
       pushToast(type === "profile-image" ? "Profile picture updated" : "Cover picture updated", "success");
     } catch (error) {
       pushToast(error?.response?.data?.message || "Image upload failed", "error");
+    } finally {
+      setSaving("");
+    }
+  };
+
+  const removeProfileMedia = async () => {
+    if (!removeMediaTarget) return;
+    const isProfileImage = removeMediaTarget === "profile-image";
+    setSaving(`remove-${removeMediaTarget}`);
+    try {
+      if (isProfileImage) {
+        await userService.removeProfileImage();
+        setProfile((previous) => ({ ...previous, profileImageUrl: "", imageUrl: "" }));
+      } else {
+        await userService.removeCoverImage();
+        setProfile((previous) => ({ ...previous, coverImageUrl: "" }));
+      }
+      await refreshUser();
+      pushToast(isProfileImage ? "Profile photo removed" : "Cover photo removed", "success");
+      setRemoveMediaTarget("");
+    } catch (error) {
+      pushToast(error?.response?.data?.message || "Failed to remove image", "error");
     } finally {
       setSaving("");
     }
@@ -288,7 +324,10 @@ export default function SettingsPage() {
       pushToast("Current password is required", "error");
       return;
     }
-    if (!window.confirm("Delete your account permanently? This cannot be undone.")) return;
+    setDeleteConfirmMode("password");
+  };
+
+  const confirmDeleteWithPassword = async () => {
     setSaving("delete");
     try {
       await userService.deleteAccount({ currentPassword: deleteForm.currentPassword });
@@ -318,7 +357,10 @@ export default function SettingsPage() {
       pushToast("Delete OTP is required", "error");
       return;
     }
-    if (!window.confirm("Verify OTP and delete your account permanently?")) return;
+    setDeleteConfirmMode("otp");
+  };
+
+  const confirmDeleteWithOtp = async () => {
     setSaving("verify-delete");
     try {
       await userService.verifyDeleteOtp({ otp: deleteForm.otp.trim() });
@@ -360,10 +402,10 @@ export default function SettingsPage() {
       <div className="settings-layout">
         <main className="settings-main">
           <Card className="settings-card settings-media-card">
-            <SectionHeader title="Profile Media" subtitle="Update your profile photo and cover image here. The profile page stays read-only." />
+            <SectionHeader title="Profile Media" subtitle="Update or reset your profile photo and clean mountain cover image." />
             <div className="settings-media-preview">
               <div className="settings-cover-preview">
-                {coverUrl ? <img src={toMediaUrl(coverUrl)} alt="Profile cover preview" /> : <span>Cover preview</span>}
+                <img src={coverUrl ? toMediaUrl(coverUrl) : defaultProfileCover} alt="Profile cover preview" />
               </div>
               <div className="settings-avatar-preview">
                 <Avatar name={profileName} src={avatarUrl ? toMediaUrl(avatarUrl) : null} size="xl" online />
@@ -375,10 +417,16 @@ export default function SettingsPage() {
             </div>
             <div className="settings-media-actions">
               <Button icon="image" onClick={() => coverInputRef.current?.click()} disabled={saving === "cover-image"}>
-                {saving === "cover-image" ? "Uploading..." : "Change Cover"}
+                {saving === "cover-image" ? "Uploading..." : "Change Cover Photo"}
+              </Button>
+              <Button icon="trash" variant="danger" onClick={() => setRemoveMediaTarget("cover-image")} disabled={!hasCustomCover || saving === "remove-cover-image"}>
+                {saving === "remove-cover-image" ? "Removing..." : "Remove Cover Photo"}
               </Button>
               <Button icon="user" variant="gradient" onClick={() => avatarInputRef.current?.click()} disabled={saving === "profile-image"}>
                 {saving === "profile-image" ? "Uploading..." : "Change Profile Photo"}
+              </Button>
+              <Button icon="trash" variant="danger" onClick={() => setRemoveMediaTarget("profile-image")} disabled={!hasCustomAvatar || saving === "remove-profile-image"}>
+                {saving === "remove-profile-image" ? "Removing..." : "Remove Profile Photo"}
               </Button>
               <input
                 ref={coverInputRef}
@@ -542,6 +590,55 @@ export default function SettingsPage() {
           ) : null}
         </aside>
       </div>
+
+      <Modal
+        open={Boolean(removeMediaTarget)}
+        title={removeMediaTarget === "cover-image" ? "Remove Cover Photo" : "Remove Profile Photo"}
+        subtitle="This resets your saved profile media."
+        onClose={saving ? undefined : () => setRemoveMediaTarget("")}
+        footer={(
+          <>
+            <Button onClick={() => setRemoveMediaTarget("")} disabled={Boolean(saving)}>Cancel</Button>
+            <Button icon="trash" variant="danger" onClick={removeProfileMedia} disabled={Boolean(saving)}>
+              {saving ? "Removing..." : "Remove Photo"}
+            </Button>
+          </>
+        )}
+      >
+        <p className="settings-remove-media-copy">
+          {removeMediaTarget === "cover-image"
+            ? "Your custom cover will be removed and the default mountain sunset cover will be shown."
+            : "Your custom profile photo will be removed and the default avatar will be shown."}
+        </p>
+      </Modal>
+
+      <Modal
+        open={Boolean(deleteConfirmMode)}
+        title="Delete Account"
+        subtitle="This is permanent and cannot be undone."
+        onClose={saving ? undefined : () => setDeleteConfirmMode("")}
+        footer={(
+          <>
+            <Button onClick={() => setDeleteConfirmMode("")} disabled={Boolean(saving)}>Cancel</Button>
+            <Button
+              icon="trash"
+              variant="danger"
+              onClick={deleteConfirmMode === "otp" ? confirmDeleteWithOtp : confirmDeleteWithPassword}
+              disabled={Boolean(saving)}
+            >
+              {saving ? "Deleting..." : "Delete Account"}
+            </Button>
+          </>
+        )}
+      >
+        <div className="confirmation-panel danger-confirmation-panel">
+          <span><Icon name="trash" /></span>
+          <div>
+            <strong>Confirm permanent account deletion</strong>
+            <p>{deleteConfirmMode === "otp" ? "Your delete OTP will be verified before removal." : "Your current password will be used before removal."}</p>
+          </div>
+        </div>
+      </Modal>
     </PageGrid>
   );
 }

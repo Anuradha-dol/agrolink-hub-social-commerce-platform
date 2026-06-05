@@ -9,15 +9,7 @@ const SIDEBAR_COLLAPSED_KEY = "lishareSidebarCollapsed";
 export default function AppShell() {
   const location = useLocation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "true");
-  const pathname = location.pathname;
-  const greenSidebarRoutes = ["/home", "/marketplace", "/orders", "/bookmarks", "/calendar"];
-  const usesGreenSidebar = greenSidebarRoutes.some((route) => pathname === route || pathname.startsWith(`${route}/`));
-  const usesProfileSidebar = pathname === "/profile" || pathname.startsWith("/profile/");
-  const sidebarThemeClass = usesProfileSidebar
-    ? "shell-sidebar-profile-theme"
-    : usesGreenSidebar
-      ? "shell-sidebar-green-theme"
-      : "shell-sidebar-neutral-theme";
+  const sidebarThemeClass = "shell-sidebar-green-theme";
 
   useEffect(() => {
     localStorage.setItem(THEME_MODE_KEY, "light");

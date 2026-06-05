@@ -103,7 +103,7 @@ export default function SearchUsers() {
       ));
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.message || "Failed to send friend request");
+      console.warn(err.response?.data?.message || "Failed to send friend request");
     } finally {
       setProcessingIds(prev => prev.filter(id => id !== user.userId));
     }
@@ -119,7 +119,7 @@ export default function SearchUsers() {
       ));
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.message || "Failed to cancel request");
+      console.warn(err.response?.data?.message || "Failed to cancel request");
     } finally {
       setProcessingIds(prev => prev.filter(id => id !== user.userId));
     }

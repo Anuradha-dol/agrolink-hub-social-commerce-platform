@@ -11,6 +11,7 @@ import com.socialApp.Lishare.modules.social.comment.entity.Comment;
 import com.socialApp.Lishare.modules.social.post.entity.Post;
 import com.socialApp.Lishare.modules.social.post.support.PostXpPolicy;
 import com.socialApp.Lishare.modules.platform.user.entity.User;
+import com.socialApp.Lishare.modules.social.reaction.service.ReactionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -23,6 +24,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.time.ZoneId;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -35,6 +37,7 @@ public class PostApiController {
 
     private final PostService postService;
     private final CommentService commentService;
+    private final ReactionService reactionService;
 
     @PostMapping
     public ResponseEntity<ApiResponse<PostResponse>> createPost(
@@ -199,6 +202,8 @@ public class PostApiController {
     private PostResponse toPostResponse(Post post, Long viewerUserId) {
         List<Long> pollVotes = postService.getPollVotes(post);
         long pollTotalVotes = pollVotes.stream().mapToLong(Long::longValue).sum();
+        Map<String, Long> reactionCounts = reactionService.getReactionCounts(post.getPostId());
+        long reactionCount = reactionCounts.values().stream().mapToLong(Long::longValue).sum();
         return PostResponse.builder()
                 .postId(post.getPostId())
                 .authorId(post.getUser().getUserId())
@@ -223,6 +228,9 @@ public class PostApiController {
                 .xpAwarded(resolvePostXp(post))
                 .authorVerifiedXp(calculateVerifiedXp(post.getUser()))
                 .reelViewCount(post.getReelViewCount())
+                .reactionCounts(reactionCounts)
+                .reactionCount(reactionCount)
+                .commentCount(commentService.countCommentsByPost(post.getPostId()))
                 .authorName(post.getUser().getFirstname() + " " + post.getUser().getLastName())
                 .authorProfileImageUrl(post.getUser().getImageUrl())
                 .createdAt(post.getCreatedAt())

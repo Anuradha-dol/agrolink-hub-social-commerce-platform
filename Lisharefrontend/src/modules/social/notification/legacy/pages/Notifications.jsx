@@ -101,7 +101,7 @@ const Notifications = () => {
       }
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.message || "Action failed");
+      console.warn(err.response?.data?.message || "Action failed");
 
       // rollback
       setNotifications(prev =>

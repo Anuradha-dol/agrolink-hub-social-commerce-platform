@@ -13,15 +13,16 @@ import {
   Card,
   EmptyPanel,
   Icon,
-  OverviewHero,
+  Modal,
   PageGrid,
   SectionHeader,
   StatusBadge,
-  Tabs,
-  UserCard
+  Tabs
 } from "/src/modules/platform/common/ui/DashboardUI";
 
 const VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov", ".m4v", ".ogg", ".avi"];
+const PEOPLE_FILTERS = ["People", "Creators", "Mutuals", "Verified"];
+const ROLE_FILTERS = ["All Roles", "Farmer", "Business", "Creator"];
 
 function fullName(user) {
   return `${user?.firstName ?? user?.firstname ?? ""} ${user?.lastName ?? user?.lastname ?? ""}`.trim()
@@ -100,6 +101,25 @@ function isOnlineUser(user) {
   return Boolean(user?.online || user?.isOnline || user?.presence === "ONLINE");
 }
 
+function normalizeRoleLabel(value = "") {
+  const text = String(value || "").replace(/^ROLE_/i, "").trim();
+  if (!text) return "";
+  return text.toLowerCase().replace(/\b[a-z]/g, (letter) => letter.toUpperCase());
+}
+
+function roleText(user) {
+  const roles = Array.isArray(user?.roles) ? user.roles.join(" ") : "";
+  return `${user?.role || ""} ${roles} ${user?.title || ""}`.toLowerCase();
+}
+
+function matchesRoleFilter(user, filter) {
+  if (filter === "All Roles") return true;
+  if (filter === "Creator") {
+    return Number(user?.postCount || 0) > 0 || roleText(user).includes("creator");
+  }
+  return roleText(user).includes(filter.toLowerCase());
+}
+
 export default function FriendsPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -108,32 +128,38 @@ export default function FriendsPage() {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState("discover");
   const [peopleFilter, setPeopleFilter] = useState("People");
+  const [roleFilter, setRoleFilter] = useState("All Roles");
   const [query, setQuery] = useState("");
   const [friends, setFriends] = useState([]);
   const [pending, setPending] = useState([]);
+  const [sentPending, setSentPending] = useState([]);
   const [followers, setFollowers] = useState([]);
   const [following, setFollowing] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
   const [creators, setCreators] = useState([]);
   const [requestedIds, setRequestedIds] = useState([]);
   const [busyId, setBusyId] = useState("");
+  const [removeFriendTarget, setRemoveFriendTarget] = useState(null);
 
   const followingIds = useMemo(() => following.map((item) => Number(item.userId)), [following]);
   const friendIds = useMemo(() => friends.map((item) => Number(item.userId)), [friends]);
   const pendingIds = useMemo(() => pending.map((item) => Number(item.userId)), [pending]);
+  const sentPendingIds = useMemo(() => sentPending.map((item) => Number(item.userId)), [sentPending]);
 
   const loadData = async () => {
     setLoading(true);
     try {
-      const [friendsRes, pendingRes, followersRes, followingRes, feedRes] = await Promise.all([
+      const [friendsRes, pendingRes, sentRes, followersRes, followingRes, feedRes] = await Promise.all([
         friendService.getFriends(),
         friendService.getPending(),
+        friendService.getSent(),
         followService.followers(),
         followService.following(),
         feedService.getFeed()
       ]);
       setFriends(Array.isArray(friendsRes.data) ? friendsRes.data : []);
       setPending(Array.isArray(pendingRes.data) ? pendingRes.data : []);
+      setSentPending(Array.isArray(sentRes.data) ? sentRes.data : []);
       setFollowers(Array.isArray(followersRes.data) ? followersRes.data : []);
       setFollowing(Array.isArray(followingRes.data) ? followingRes.data : []);
       const feedItems = Array.isArray(feedRes.data) ? feedRes.data : [];
@@ -165,6 +191,8 @@ export default function FriendsPage() {
     if (!urlQuery.trim()) return;
     let active = true;
     setQuery(urlQuery);
+    setPeopleFilter("People");
+    setRoleFilter("All Roles");
     followService.searchUsers(urlQuery.trim())
       .then((response) => {
         if (!active) return;
@@ -181,31 +209,36 @@ export default function FriendsPage() {
   }, [location.search, pushToast, user?.userId]);
 
   const discoverUsers = useMemo(() => {
-    const connected = new Set([Number(user?.userId), ...friendIds, ...followingIds]);
-    const base = searchResults.length ? searchResults : creators;
-    return base
+    const connected = new Set([Number(user?.userId), ...friendIds]);
+    return searchResults
       .filter((item) => Number(item.userId) > 0 && !connected.has(Number(item.userId)))
       .map((item) => ({
         ...item,
         displayName: fullName(item),
-        handle: item.email || `@${String(fullName(item)).toLowerCase().replace(/[^a-z0-9]+/g, "")}`,
-        role: item.role || (item.postCount ? "Creator" : "Community member"),
+        profileImageUrl: item.profileImageUrl ? toMediaUrl(item.profileImageUrl) : "",
+        imageUrl: item.imageUrl ? toMediaUrl(item.imageUrl) : "",
+        handle: item.username ? `@${item.username}` : item.email || `@${String(fullName(item)).toLowerCase().replace(/[^a-z0-9]+/g, "")}`,
+        role: normalizeRoleLabel(item.role || item.title || ""),
         mutual: Number(item.mutual || item.mutualFriends || 0)
       }));
-  }, [creators, friendIds, followingIds, searchResults, user?.userId]);
+  }, [friendIds, searchResults, user?.userId]);
 
   const filteredDiscoverUsers = useMemo(() => {
-    if (peopleFilter === "Creators") {
-      return discoverUsers.filter((item) => item.postCount > 0 || String(item.role || "").toLowerCase().includes("creator"));
-    }
-    if (peopleFilter === "Mutuals") {
-      return discoverUsers.filter((item) => Number(item.mutual || item.mutualFriends || 0) > 0);
-    }
-    if (peopleFilter === "Verified") {
-      return discoverUsers.filter(hasVerifiedBadge);
-    }
-    return discoverUsers;
-  }, [discoverUsers, peopleFilter]);
+    const filteredByPeople = discoverUsers.filter((item) => {
+      if (peopleFilter === "Creators") {
+        return Number(item.postCount || 0) > 0 || roleText(item).includes("creator");
+      }
+      if (peopleFilter === "Mutuals") {
+        return Number(item.mutual || item.mutualFriends || 0) > 0;
+      }
+      if (peopleFilter === "Verified") {
+        return hasVerifiedBadge(item);
+      }
+      return true;
+    });
+
+    return filteredByPeople.filter((item) => matchesRoleFilter(item, roleFilter));
+  }, [discoverUsers, peopleFilter, roleFilter]);
 
   const runSearch = async (event) => {
     event?.preventDefault();
@@ -213,6 +246,8 @@ export default function FriendsPage() {
       setSearchResults([]);
       return;
     }
+    setPeopleFilter("People");
+    setRoleFilter("All Roles");
     try {
       const response = await followService.searchUsers(query.trim());
       const data = Array.isArray(response.data) ? response.data : [];
@@ -242,11 +277,16 @@ export default function FriendsPage() {
   };
 
   const sendRequest = async (targetId) => {
-    setBusyId(`request-${targetId}`);
+    const normalizedId = Number(targetId);
+    setBusyId(`request-${normalizedId}`);
     try {
-      await friendService.request(targetId);
-      setRequestedIds((prev) => (prev.includes(targetId) ? prev : [...prev, targetId]));
-      pushToast("Friend request sent", "success");
+      const response = await friendService.request(normalizedId);
+      const message = String(response?.data?.message || "");
+      const requestIsPending = /sent|pending/i.test(message);
+      if (requestIsPending) {
+        setRequestedIds((prev) => (prev.includes(normalizedId) ? prev : [...prev, normalizedId]));
+      }
+      pushToast(message || (requestIsPending ? "Friend request sent" : "Request not sent"), requestIsPending ? "success" : "error");
       await loadData();
     } catch {
       pushToast("Failed to send request", "error");
@@ -258,8 +298,10 @@ export default function FriendsPage() {
   const accept = async (targetId) => {
     setBusyId(`accept-${targetId}`);
     try {
-      await friendService.accept(targetId);
-      pushToast("Request accepted", "success");
+      const response = await friendService.accept(targetId);
+      const message = String(response?.data?.message || "");
+      const accepted = /accepted/i.test(message);
+      pushToast(message || (accepted ? "Request accepted" : "Request not accepted"), accepted ? "success" : "error");
       await loadData();
     } catch {
       pushToast("Failed to accept request", "error");
@@ -271,8 +313,10 @@ export default function FriendsPage() {
   const reject = async (targetId) => {
     setBusyId(`reject-${targetId}`);
     try {
-      await friendService.reject(targetId);
-      pushToast("Request ignored", "success");
+      const response = await friendService.reject(targetId);
+      const message = String(response?.data?.message || "");
+      const rejected = /rejected/i.test(message);
+      pushToast(message || (rejected ? "Request rejected" : "Request not rejected"), rejected ? "success" : "error");
       await loadData();
     } catch {
       pushToast("Failed to ignore request", "error");
@@ -281,12 +325,14 @@ export default function FriendsPage() {
     }
   };
 
-  const unfriend = async (targetId) => {
-    if (!window.confirm("Remove this friend?")) return;
+  const unfriend = async () => {
+    const targetId = removeFriendTarget?.userId;
+    if (!targetId) return;
     setBusyId(`unfriend-${targetId}`);
     try {
       await friendService.unfriend(targetId);
       pushToast("Friend removed", "success");
+      setRemoveFriendTarget(null);
       await loadData();
     } catch {
       pushToast("Failed to remove friend", "error");
@@ -316,27 +362,51 @@ export default function FriendsPage() {
     });
   };
 
+  const networkStats = [
+    { label: "Friends", value: friends.length, trend: "Active network", icon: "users", tone: "blue" },
+    { label: "Pending", value: pending.length, trend: "Awaiting review", icon: "bell", tone: "pink" },
+    { label: "Followers", value: followers.length, trend: "Audience", icon: "users", tone: "purple" },
+    { label: "Following", value: following.length, trend: "Creators", icon: "user", tone: "orange" }
+  ];
+
+  const activeAccounts = tab === "followers" ? followers : tab === "following" ? following : tab === "friends" ? friends : [];
+  const activeAccountsTitle = tab === "followers" ? "No followers yet" : tab === "following" ? "Not following anyone yet" : "Your friend list is empty";
+  const activeAccountsSubtitle = tab === "followers"
+    ? "People who follow you will appear here."
+    : tab === "following"
+      ? "Creators and people you follow will appear here."
+      : "Add friends and start connecting to see them here.";
+
   if (loading) return <LoadingState text="Loading friends..." />;
 
   return (
     <PageGrid className="friends-dashboard">
-      <OverviewHero
-        icon="users"
-        eyebrow="Friends & Network"
-        title="Grow your circle, manage requests and keep your social graph active."
-        subtitle="Search people, discover creators, review requests, and jump into conversations from one clean workspace."
-        stats={[
-          { label: "Friends", value: friends.length, trend: "Active network" },
-          { label: "Pending", value: pending.length, trend: "Awaiting review" },
-          { label: "Followers", value: followers.length, trend: "Audience" },
-          { label: "Following", value: following.length, trend: "Creators" }
-        ]}
-      />
+      <section className="friends-network-hero" aria-label="Friends and network summary">
+        <div className="friends-hero-copy">
+          <span className="friends-hero-icon"><Icon name="users" /></span>
+          <div>
+            <p className="eyebrow">Friends & Network</p>
+            <h2>Grow your circle, manage requests and keep your social graph active.</h2>
+            <p>Search people, discover creators, review requests, and jump into conversations from one clean workspace.</p>
+          </div>
+        </div>
+        <div className="friends-hero-stats">
+          {networkStats.map((stat) => (
+            <article key={stat.label} className={`friends-stat-tile friends-stat-${stat.tone}`}>
+              <span><Icon name={stat.icon} /></span>
+              <small>{stat.label}</small>
+              <strong>{stat.value}</strong>
+              <em>{stat.trend}</em>
+            </article>
+          ))}
+        </div>
+      </section>
 
       <Card className="network-discovery-card">
         <Tabs
           active={tab}
           onChange={setTab}
+          className="network-tabs"
           tabs={[
             { value: "discover", label: "Discover", icon: "search", count: filteredDiscoverUsers.length },
             { value: "requests", label: "Requests", icon: "bell", count: pending.length },
@@ -349,42 +419,78 @@ export default function FriendsPage() {
         <form className="network-search-row" onSubmit={runSearch}>
           <label>
             <Icon name="search" />
-            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search friends, followers, or users by name or email" />
+            <input
+              value={query}
+              onChange={(event) => {
+                setQuery(event.target.value);
+                setPeopleFilter("People");
+                setRoleFilter("All Roles");
+              }}
+              placeholder="Search by name, username, email, or role"
+            />
           </label>
           <Button variant="gradient" icon="search" type="submit">Search</Button>
-          <Button onClick={() => { setQuery(""); setSearchResults([]); }}>Reset</Button>
+          <Button onClick={() => { setQuery(""); setSearchResults([]); setPeopleFilter("People"); setRoleFilter("All Roles"); }}>Reset</Button>
         </form>
 
-        <div className="filter-pills">
-          {["People", "Creators", "Mutuals", "Verified"].map((item, index) => (
-            <button key={item} type="button" className={peopleFilter === item ? "active" : ""} onClick={() => setPeopleFilter(item)}>
-              <Icon name={index === 0 ? "user" : index === 3 ? "check" : "spark"} />
-              {item}
-            </button>
-          ))}
+        <div className="friends-filter-stack">
+          <div className="filter-pills">
+            {PEOPLE_FILTERS.map((item, index) => (
+              <button key={item} type="button" className={peopleFilter === item ? "active" : ""} onClick={() => setPeopleFilter(item)}>
+                <Icon name={index === 0 ? "user" : index === 3 ? "check" : "spark"} />
+                {item}
+              </button>
+            ))}
+          </div>
+          <div className="filter-pills role-filter-pills">
+            {ROLE_FILTERS.map((item, index) => (
+              <button key={item} type="button" className={roleFilter === item ? "active" : ""} onClick={() => setRoleFilter(item)}>
+                <Icon name={index === 0 ? "grid" : index === 1 ? "spark" : index === 2 ? "bag" : "users"} />
+                {item}
+              </button>
+            ))}
+          </div>
         </div>
 
         {tab === "discover" ? (
           filteredDiscoverUsers.length ? (
             <div className="people-card-grid">
               {filteredDiscoverUsers.slice(0, 8).map((entry) => {
-                const requested = requestedIds.includes(entry.userId) || pendingIds.includes(Number(entry.userId));
+                const entryUserId = Number(entry.userId);
+                const requested = requestedIds.includes(entryUserId) || sentPendingIds.includes(entryUserId);
+                const incomingRequest = pendingIds.includes(Number(entry.userId));
                 return (
-                  <UserCard
-                    key={entry.userId}
-                    user={entry}
-                    onClick={() => openProfile(entry.userId)}
-                    primaryAction={
-                      <Button
-                        icon="users"
-                        variant="gradient"
-                        disabled={requested || busyId === `request-${entry.userId}`}
-                        onClick={() => sendRequest(entry.userId)}
-                      >
-                        {requested ? "Requested" : "Add Friend"}
-                      </Button>
-                    }
-                    secondaryAction={
+                  <article key={entry.userId} className="friends-person-row">
+                    <button type="button" className="friends-person-main" onClick={() => openProfile(entry.userId)}>
+                      <Avatar name={entry.displayName} src={entry.profileImageUrl || entry.imageUrl || null} size="xl" online={isOnlineUser(entry)} />
+                      <span>
+                        <strong>
+                          {entry.displayName}
+                          {hasVerifiedBadge(entry) ? <StatusBadge status="Verified XP" tone="blue" /> : null}
+                        </strong>
+                        <small>{entry.handle}</small>
+                        {entry.role || Number(entry.mutual || 0) > 0 ? (
+                          <em>
+                            {entry.role}
+                            {entry.role && Number(entry.mutual || 0) > 0 ? " - " : ""}
+                            {Number(entry.mutual || 0) > 0 ? `${entry.mutual} mutual connection${Number(entry.mutual) === 1 ? "" : "s"}` : ""}
+                          </em>
+                        ) : null}
+                      </span>
+                    </button>
+                    <div className="friends-person-actions">
+                      {incomingRequest ? (
+                        <Button icon="bell" onClick={() => setTab("requests")}>Review Request</Button>
+                      ) : (
+                        <Button
+                          icon="users"
+                          variant="gradient"
+                          disabled={requested || busyId === `request-${entry.userId}`}
+                          onClick={() => sendRequest(entry.userId)}
+                        >
+                          {requested ? "Request Sent" : "Add Friend"}
+                        </Button>
+                      )}
                       <Button
                         icon="user"
                         disabled={busyId === `follow-${entry.userId}`}
@@ -392,13 +498,17 @@ export default function FriendsPage() {
                       >
                         {followingIds.includes(Number(entry.userId)) ? "Unfollow" : "Follow"}
                       </Button>
-                    }
-                  />
+                    </div>
+                  </article>
                 );
               })}
             </div>
           ) : (
-            <EmptyPanel icon="users" title="No suggestions found" subtitle="Try searching by name or email." />
+            <EmptyPanel
+              icon="search"
+              title={query.trim() ? "No matching users found" : "Search registered users"}
+              subtitle={query.trim() ? "Try another username, email, name, or role from registered users." : "Type a username, email, name, or role above. Only matching registered users will appear here."}
+            />
           )
         ) : null}
 
@@ -410,10 +520,11 @@ export default function FriendsPage() {
                   <Avatar name={fullName(entry)} src={entry.profileImageUrl ? toMediaUrl(entry.profileImageUrl) : null} online={isOnlineUser(entry)} />
                   <div>
                     <strong>{fullName(entry)}</strong>
-                    <p>{entry.email || "Wants to connect"} · {entry.mutualFriends || 0} mutual friends</p>
-                    <div className="avatar-row">
-                      {[0, 1, 2].map((item) => <Avatar key={item} name={`${fullName(entry)}${item}`} size="xs" />)}
-                    </div>
+                    <p>
+                      {entry.email || "Wants to connect"}
+                      {entry.role ? ` - ${normalizeRoleLabel(entry.role)}` : ""}
+                      {Number(entry.mutualFriends || 0) > 0 ? ` - ${entry.mutualFriends} mutual friend${Number(entry.mutualFriends) === 1 ? "" : "s"}` : ""}
+                    </p>
                   </div>
                   <Button variant="gradient" disabled={busyId === `accept-${entry.userId}`} onClick={() => accept(entry.userId)}>Accept</Button>
                   <Button disabled={busyId === `reject-${entry.userId}`} onClick={() => reject(entry.userId)}>Ignore</Button>
@@ -424,83 +535,134 @@ export default function FriendsPage() {
         ) : null}
 
         {["followers", "following", "friends"].includes(tab) ? (
-          <div className="account-list-grid">
-            {(tab === "followers" ? followers : tab === "following" ? following : friends).map((entry) => (
-              <article key={entry.userId} className="account-row-card">
-                <Avatar name={fullName(entry)} src={entry.profileImageUrl ? toMediaUrl(entry.profileImageUrl) : null} online={isOnlineUser(entry)} />
-                <div>
-                  <strong>{fullName(entry)}{hasVerifiedBadge(entry) ? <StatusBadge status="Verified XP" tone="blue" /> : null}</strong>
-                  <p>{entry.email || `@${String(fullName(entry)).toLowerCase().replace(/[^a-z0-9]+/g, "")}`}</p>
-                </div>
-                <StatusBadge status={tab === "friends" ? "Friend" : tab} tone="blue" />
-                <Button icon="chat" onClick={() => openChat(entry.userId)}>Chat</Button>
-                <Button icon="user" onClick={() => openProfile(entry.userId)}>Profile</Button>
-                {tab === "following" ? (
-                  <Button
-                    variant="danger"
-                    icon="user"
-                    disabled={busyId === `follow-${entry.userId}`}
-                    onClick={() => followToggle(entry.userId)}
-                  >
-                    Unfollow
-                  </Button>
-                ) : null}
-                {tab === "followers" ? (
-                  <Button
-                    icon="user"
-                    disabled={busyId === `follow-${entry.userId}`}
-                    onClick={() => followToggle(entry.userId)}
-                  >
-                    {entry.isFollowing ? "Unfollow" : "Follow"}
-                  </Button>
-                ) : null}
-                {tab === "friends" ? <Button variant="danger" icon="trash" onClick={() => unfriend(entry.userId)}>Remove</Button> : null}
-              </article>
-            ))}
-          </div>
+          activeAccounts.length ? (
+            <div className="account-list-grid">
+              {activeAccounts.map((entry) => (
+                <article key={entry.userId} className="account-row-card">
+                  <Avatar name={fullName(entry)} src={entry.profileImageUrl ? toMediaUrl(entry.profileImageUrl) : null} online={isOnlineUser(entry)} />
+                  <div>
+                    <strong>{fullName(entry)}{hasVerifiedBadge(entry) ? <StatusBadge status="Verified XP" tone="blue" /> : null}</strong>
+                    <p>
+                      {entry.username ? `@${entry.username}` : entry.email || `@${String(fullName(entry)).toLowerCase().replace(/[^a-z0-9]+/g, "")}`}
+                      {entry.role ? ` - ${normalizeRoleLabel(entry.role)}` : ""}
+                    </p>
+                  </div>
+                  <StatusBadge status={tab === "friends" ? "Friend" : tab} tone="blue" />
+                  <Button icon="chat" onClick={() => openChat(entry.userId)}>Chat</Button>
+                  <Button icon="user" onClick={() => openProfile(entry.userId)}>Profile</Button>
+                  {tab === "following" ? (
+                    <Button
+                      variant="danger"
+                      icon="user"
+                      disabled={busyId === `follow-${entry.userId}`}
+                      onClick={() => followToggle(entry.userId)}
+                    >
+                      Unfollow
+                    </Button>
+                  ) : null}
+                  {tab === "followers" ? (
+                    <Button
+                      icon="user"
+                      disabled={busyId === `follow-${entry.userId}`}
+                      onClick={() => followToggle(entry.userId)}
+                    >
+                      {entry.isFollowing ? "Unfollow" : "Follow"}
+                    </Button>
+                  ) : null}
+                  {tab === "friends" ? <Button variant="danger" icon="trash" onClick={() => setRemoveFriendTarget(entry)}>Remove</Button> : null}
+                </article>
+              ))}
+            </div>
+          ) : (
+            <EmptyPanel icon={tab === "friends" ? "users" : "user"} title={activeAccountsTitle} subtitle={activeAccountsSubtitle} />
+          )
         ) : null}
       </Card>
 
       <div className="friends-bottom-grid">
-        <Card>
-          <SectionHeader title="Suggested from your network" subtitle="Posts and reels from creators with strong engagement." />
-          <div className="suggested-media-grid">
-            {creators.slice(0, 3).map((creator) => {
-              const media = creator.topPost?.imageUrl || creator.media?.[0];
-              return (
-                <button key={`media-${creator.userId}`} type="button" className="suggested-media-card" onClick={() => openSuggestedPost(creator)}>
-                  <div>
-                    {media ? (
-                      isVideoAsset(media) ? <video src={toMediaUrl(media)} muted /> : <img src={toMediaUrl(media)} alt={creator.name} />
-                    ) : <Icon name="image" />}
-                  </div>
-                  <strong>{creator.name}</strong>
-                  <span><Icon name="image" /> {creator.postCount} post{creator.postCount === 1 ? "" : "s"}</span>
-                  <span><Icon name="heart" /> {Number(creator.topPost?.reactionCount || 0)} reaction{Number(creator.topPost?.reactionCount || 0) === 1 ? "" : "s"}</span>
-                </button>
-              );
-            })}
-          </div>
+        <Card className="friends-suggested-card">
+          <SectionHeader
+            title="Suggested from your network"
+            subtitle="Posts and reels from creators with strong engagement."
+            action={creators.length ? <button type="button" className="text-link" onClick={() => setTab("discover")}>View all</button> : null}
+          />
+          {creators.length ? (
+            <div className="suggested-media-grid">
+              {creators.slice(0, 3).map((creator) => {
+                const media = creator.topPost?.imageUrl || creator.media?.[0];
+                return (
+                  <button key={`media-${creator.userId}`} type="button" className="suggested-media-card" onClick={() => openSuggestedPost(creator)}>
+                    <div>
+                      {media ? (
+                        isVideoAsset(media) ? <video src={toMediaUrl(media)} muted /> : <img src={toMediaUrl(media)} alt={creator.name} />
+                      ) : <Icon name="image" />}
+                    </div>
+                    <strong>{creator.name}</strong>
+                    <span><Icon name="image" /> {creator.postCount} post{creator.postCount === 1 ? "" : "s"}</span>
+                    <span><Icon name="heart" /> {Number(creator.topPost?.reactionCount || 0)} reaction{Number(creator.topPost?.reactionCount || 0) === 1 ? "" : "s"}</span>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <EmptyPanel icon="image" title="No network posts yet" subtitle="Search creators or follow people to see suggested posts here." />
+          )}
         </Card>
 
-        <Card>
+        <Card className="friends-side-card">
           <SectionHeader title="Your Friends" subtitle="Quick profile and chat actions." />
-          <ul className="panel-list">
-            {friends.slice(0, 6).map((entry, index) => (
-              <li key={`friend-side-${entry.userId}`} className="panel-row friend-side-row">
-                <Avatar name={fullName(entry)} size="sm" online={isOnlineUser(entry)} />
-                <div>
-                  <strong>{fullName(entry)}</strong>
-                  <span>{isOnlineUser(entry) ? "Online" : "Friend"}</span>
-                </div>
-                <button type="button" className="icon-button" onClick={() => openChat(entry.userId)} aria-label="Open chat">
-                  <Icon name="chat" />
-                </button>
-              </li>
-            ))}
-          </ul>
+          {friends.length ? (
+            <ul className="panel-list">
+              {friends.slice(0, 6).map((entry) => (
+                <li key={`friend-side-${entry.userId}`} className="panel-row friend-side-row">
+                  <Avatar name={fullName(entry)} size="sm" online={isOnlineUser(entry)} />
+                  <div>
+                    <strong>{fullName(entry)}</strong>
+                    <span>{isOnlineUser(entry) ? "Online" : "Friend"}</span>
+                  </div>
+                  <button type="button" className="icon-button" onClick={() => openChat(entry.userId)} aria-label="Open chat">
+                    <Icon name="chat" />
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <div className="friends-empty-state">
+              <div className="friends-empty-art" aria-hidden="true">
+                <span className="friends-empty-person friends-empty-person-blue"><Icon name="user" /></span>
+                <span className="friends-empty-person friends-empty-person-pink"><Icon name="user" /></span>
+                <span className="friends-empty-chat"><Icon name="chat" /></span>
+              </div>
+              <strong>Your friend list is empty</strong>
+              <p>Add friends and start connecting to see them here.</p>
+              <Button onClick={() => setTab("discover")}>Discover People</Button>
+            </div>
+          )}
         </Card>
       </div>
+
+      <Modal
+        open={Boolean(removeFriendTarget)}
+        title="Remove Friend"
+        subtitle="This removes the person from your friend list but keeps profile and follow options available."
+        onClose={busyId ? undefined : () => setRemoveFriendTarget(null)}
+        footer={(
+          <>
+            <Button onClick={() => setRemoveFriendTarget(null)} disabled={Boolean(busyId)}>Cancel</Button>
+            <Button variant="danger" icon="trash" onClick={unfriend} disabled={Boolean(busyId)}>
+              {busyId ? "Removing..." : "Remove Friend"}
+            </Button>
+          </>
+        )}
+      >
+        <div className="confirmation-panel">
+          <Avatar name={fullName(removeFriendTarget || {})} src={removeFriendTarget?.profileImageUrl ? toMediaUrl(removeFriendTarget.profileImageUrl) : null} size="lg" />
+          <div>
+            <strong>{fullName(removeFriendTarget || {})}</strong>
+            <p>{removeFriendTarget?.email || "Friend connection"}</p>
+          </div>
+        </div>
+      </Modal>
     </PageGrid>
   );
 }

@@ -33,7 +33,7 @@ const FollowList = () => {
       fetchData();
     } catch (err) {
       console.error(err);
-      alert("Follow action failed");
+      console.warn("Follow action failed");
     }
   };
 
@@ -43,7 +43,7 @@ const FollowList = () => {
       fetchData();
     } catch (err) {
       console.error(err);
-      alert("Unfollow action failed");
+      console.warn("Unfollow action failed");
     }
   };
 

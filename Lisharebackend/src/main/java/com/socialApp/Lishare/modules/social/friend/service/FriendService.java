@@ -29,6 +29,9 @@ public interface FriendService {
     // Get all pending friend requests for a user
     List<User> getPendingRequests(Long userId);
 
+    // Get all outgoing pending friend requests for a user
+    List<User> getSentRequests(Long userId);
+
 
 
 }

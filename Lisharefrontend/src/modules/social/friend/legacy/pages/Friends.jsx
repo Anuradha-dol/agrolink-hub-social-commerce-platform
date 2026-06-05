@@ -92,7 +92,7 @@ const Friends = () => {
       }
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.message || "Action failed");
+      console.warn(err.response?.data?.message || "Action failed");
     } finally {
       setProcessingIds((prev) => prev.filter((id) => id !== userId));
     }

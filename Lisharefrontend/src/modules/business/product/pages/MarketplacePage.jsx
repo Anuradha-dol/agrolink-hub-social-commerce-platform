@@ -303,7 +303,34 @@ export default function MarketplacePage() {
         </div>
       </Card>
 
-      <div className="market-layout">
+      <div className="market-layout marketplace-hub-layout">
+        <aside className="marketplace-hub-nav">
+          <div className="marketplace-nav-card">
+            <span className="marketplace-nav-art" aria-hidden="true" />
+            <strong>Marketplace</strong>
+            <p>Products and shopping activity</p>
+          </div>
+          <nav aria-label="Marketplace tools">
+            {[
+              ["Dashboard", "home", () => window.scrollTo({ top: 0, behavior: "smooth" })],
+              ["Discover Products", "bag", () => setActiveCategory("all")],
+              ["Featured Shops", "grid", () => pushToast("Featured shops are shown below the catalog.", "success")],
+              ["Categories", "spark", () => pushToast("Use category chips and filters to browse.", "success")],
+              ["Seller Pages", "users", () => navigate("/business")],
+              ["Add Product", "plus", () => isBusiness ? openProductModal("add") : pushToast("Business role required to add products.", "error")],
+              ["My Products", "bag", () => isBusiness ? setActiveCategory("all") : pushToast("Seller tools are for business accounts.", "error")],
+              ["Orders", "order", () => navigate("/orders")],
+              ["Saved Items", "bookmark", () => navigate("/bookmarks")],
+              ["Cart Items", "bag", () => pushToast(`${cartCount} cart item${cartCount === 1 ? "" : "s"} loaded.`, "success")]
+            ].map(([label, icon, action], index) => (
+              <button key={label} type="button" className={index === 0 ? "active" : ""} onClick={action}>
+                <Icon name={icon} />
+                {label}
+              </button>
+            ))}
+          </nav>
+        </aside>
+
         <main className="market-main">
           <Card className="filter-panel">
             <SectionHeader
@@ -335,10 +362,60 @@ export default function MarketplacePage() {
             />
           </Card>
 
-          <Card className="product-section-card">
-            <SectionHeader title="Featured Products" action={<button type="button" className="text-link" onClick={() => { setQuery(""); setCategory(""); setActiveCategory("all"); }}>See all</button>} />
+          <Card className="product-section-card marketplace-product-list-card">
+            <SectionHeader title="Product List" subtitle="Search, filter, inspect, save, cart, and seller-manage products from one table." action={<button type="button" className="text-link" onClick={() => { setQuery(""); setCategory(""); setActiveCategory("all"); }}>See all</button>} />
             {visibleProducts.length === 0 ? <EmptyPanel icon="bag" title="No products found" subtitle="Try another search, category, or seller filter." /> : null}
-            <div className="products-grid-v2">
+            <div className="dashboard-table-wrap marketplace-table-wrap">
+              <table className="dashboard-table marketplace-products-table">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Status</th>
+                    <th>Views</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {visibleProducts.slice(0, 10).map((product) => (
+                    <tr key={`table-${product.id}`}>
+                      <td>
+                        <div className="table-product">
+                          {product.imageUrl ? <img src={product.imageUrl} alt={product.name} /> : <span className="placeholder"><Icon name="bag" /></span>}
+                          <div>
+                            <strong>{product.name || "Product"}</strong>
+                            <span>SKU: AG-{String(product.id || "000").padStart(3, "0")} - {product.businessPageName || "AgroLink Seller"}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td><StatusBadge status={product.category || "General"} tone="green" /></td>
+                      <td>${Number(product.price || 0).toFixed(2)}</td>
+                      <td>{Number(product.stock || 0)} kg</td>
+                      <td><StatusBadge status={Number(product.stock || 0) > 0 ? "Active" : "Out of Stock"} tone={Number(product.stock || 0) > 0 ? "green" : "red"} /></td>
+                      <td>{Number(product.views || product.soldCount || product.orderCount || 0)}</td>
+                      <td>
+                        <div className="table-action-row">
+                          <Button icon="eye" onClick={() => openProductModal("view", product)}>View</Button>
+                          <Button icon="bag" variant="gradient" onClick={() => addToCart(product)}>Cart</Button>
+                          {isBusiness ? <button className="icon-button" type="button" onClick={() => openProductModal("edit", product)} aria-label="Edit product"><Icon name="more" /></button> : null}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="marketplace-pagination-row">
+              <span>Showing 1 to {Math.min(10, visibleProducts.length)} of {visibleProducts.length} products</span>
+              <div>
+                {[1, 2, 3, 4].map((page) => <button key={page} type="button" className={page === 1 ? "active" : ""}>{page}</button>)}
+                <button type="button" aria-label="Next page"><Icon name="more" /></button>
+              </div>
+            </div>
+
+            <div className="products-grid-v2 marketplace-card-backup">
               {visibleProducts.map((product) => (
                 <ProductCard
                   key={product.id}

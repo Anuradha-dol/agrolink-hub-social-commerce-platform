@@ -148,7 +148,7 @@ export default function Home() {
       );
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.message || "Failed to send friend request");
+      console.warn(err.response?.data?.message || "Failed to send friend request");
     } finally {
       setProcessingIds(prev => prev.filter(id => id !== userId));
     }
@@ -164,7 +164,7 @@ export default function Home() {
       );
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.message || "Failed to cancel request");
+      console.warn(err.response?.data?.message || "Failed to cancel request");
     } finally {
       setProcessingIds(prev => prev.filter(id => id !== userId));
     }
@@ -308,7 +308,7 @@ export default function Home() {
       setFeed(allItems);
     } catch (err) {
       console.error("Failed to load feed", err);
-      alert("Failed to load feed");
+      console.warn("Failed to load feed");
     } finally {
       setLoading(false);
     }
@@ -346,7 +346,7 @@ export default function Home() {
 
   // --- Post handlers ---
   const handleCreatePost = async () => {
-    if (!content.trim() && !image) return alert("Post must have content or image");
+    if (!content.trim() && !image) return console.warn("Post must have content or image");
     const formData = new FormData();
     formData.append("content", content);
     if (image) formData.append("image", image);
@@ -362,7 +362,7 @@ export default function Home() {
       setImage(null);
     } catch (err) {
       console.error(err);
-      alert("Failed to create post");
+      console.warn("Failed to create post");
     }
   };
 
@@ -370,10 +370,10 @@ export default function Home() {
     try {
       const res = await api.delete(`/posts/delete/${postId}`, { withCredentials: true });
       if (res.status === 200) setFeed(feed.filter((item) => !(item.type === "POST" && item.postId === postId)));
-      else alert(res.data || "Failed to delete post");
+      else console.warn(res.data || "Failed to delete post");
     } catch (err) {
       console.error(err);
-      alert(err.response?.data || "Failed to delete post");
+      console.warn(err.response?.data || "Failed to delete post");
     }
     setMenuAnchorEl(null);
     setSelectedFeedItem(null);
@@ -387,7 +387,7 @@ export default function Home() {
       fetchFeed();
     } catch (err) {
       console.error(err);
-      alert("Failed to delete share");
+      console.warn("Failed to delete share");
     }
     setMenuAnchorEl(null);
     setSelectedFeedItem(null);
@@ -412,7 +412,7 @@ export default function Home() {
       setCommentText({ ...commentText, [postId]: "" });
     } catch (err) {
       console.error(err);
-      alert("Failed to add comment");
+      console.warn("Failed to add comment");
     }
   };
 
@@ -437,7 +437,7 @@ export default function Home() {
       }));
     } catch (err) {
       console.error(err);
-      alert("Failed to add reply");
+      console.warn("Failed to add reply");
     }
   };
 
@@ -468,7 +468,7 @@ export default function Home() {
       }));
     } catch (err) {
       console.error(err);
-      alert("Failed to delete comment");
+      console.warn("Failed to delete comment");
     }
   };
 
@@ -492,7 +492,7 @@ export default function Home() {
       }));
     } catch (err) {
       console.error(err);
-      alert("Failed to react");
+      console.warn("Failed to react");
     }
   };
 
@@ -545,7 +545,7 @@ export default function Home() {
       fetchFeed();
     } catch (err) {
       console.error("Share failed", err);
-      alert("Failed to share post");
+      console.warn("Failed to share post");
     }
   };
 

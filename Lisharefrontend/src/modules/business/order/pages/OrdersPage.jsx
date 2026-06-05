@@ -103,12 +103,19 @@ export default function OrdersPage() {
     setModal(type);
   };
 
-  const cancelOrder = async (order) => {
-    if (!window.confirm("Cancel this order?")) return;
+  const requestCancelOrder = (order) => {
+    setSelectedOrder(order);
+    setModal("cancel");
+  };
+
+  const confirmCancelOrder = async () => {
+    const order = selectedOrder;
+    if (!order) return;
     setBusy(`cancel-${order.id}`);
     try {
       await orderService.cancelOrder(order.id);
       pushToast("Order cancelled", "success");
+      setModal(null);
       await load();
     } catch {
       pushToast("Failed to cancel order", "error");
@@ -290,7 +297,7 @@ export default function OrdersPage() {
         subtitle="Timeline, shipping, payment summary, product list, and available actions."
         onClose={() => setModal(null)}
         className="ui-modal-wide"
-        footer={<OrderActionFooter order={selectedOrder} onReorder={reorder} onCancel={cancelOrder} onInvoice={() => setModal("invoice")} onContact={contactSeller} busy={busy} />}
+        footer={<OrderActionFooter order={selectedOrder} onReorder={reorder} onCancel={requestCancelOrder} onInvoice={() => setModal("invoice")} onContact={contactSeller} busy={busy} />}
       >
         {selectedOrder ? <OrderDetails order={selectedOrder} /> : null}
       </Modal>
@@ -328,7 +335,7 @@ export default function OrdersPage() {
             <Button icon="truck" onClick={() => setModal("track")}>Track Package</Button>
             <Button icon="invoice" onClick={() => setModal("invoice")}>View Invoice</Button>
             <Button icon="bag" onClick={() => reorder(selectedOrder)} disabled={busy === `reorder-${selectedOrder.id}`}>Reorder</Button>
-            <Button icon="close" variant="danger" onClick={() => cancelOrder(selectedOrder)} disabled={busy === `cancel-${selectedOrder.id}`}>Cancel Order</Button>
+            <Button icon="close" variant="danger" onClick={() => requestCancelOrder(selectedOrder)} disabled={busy === `cancel-${selectedOrder.id}`}>Cancel Order</Button>
             <Button icon="chat" onClick={() => contactSeller(selectedOrder)}>Contact Seller</Button>
             {mode === "business" ? (
               <select value={selectedOrder.status} onChange={(event) => updateOrderStatus(selectedOrder.id, event.target.value)}>
@@ -337,6 +344,29 @@ export default function OrdersPage() {
             ) : null}
           </div>
         ) : null}
+      </Modal>
+
+      <Modal
+        open={modal === "cancel"}
+        title="Cancel Order"
+        subtitle="Confirm this before changing the order state."
+        onClose={busy ? undefined : () => setModal(null)}
+        footer={(
+          <>
+            <Button onClick={() => setModal(null)} disabled={Boolean(busy)}>Keep Order</Button>
+            <Button variant="danger" icon="close" onClick={confirmCancelOrder} disabled={Boolean(busy)}>
+              {busy ? "Cancelling..." : "Cancel Order"}
+            </Button>
+          </>
+        )}
+      >
+        <div className="confirmation-panel">
+          <span><Icon name="order" /></span>
+          <div>
+            <strong>{selectedOrder?.productName || "Selected order"}</strong>
+            <p>This will request cancellation for order LSH-{String(selectedOrder?.id || "").padStart(6, "0")}.</p>
+          </div>
+        </div>
       </Modal>
     </PageGrid>
   );

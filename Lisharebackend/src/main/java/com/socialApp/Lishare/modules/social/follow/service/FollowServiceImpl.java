@@ -1,5 +1,6 @@
 package com.socialApp.Lishare.modules.social.follow.service;
 
+import com.socialApp.Lishare.modules.platform.common.enums.Role;
 import com.socialApp.Lishare.modules.social.follow.service.FollowService;
 import com.socialApp.Lishare.modules.social.follow.dto.FollowActionResponse;
 import com.socialApp.Lishare.modules.social.follow.entity.Follow;
@@ -12,7 +13,11 @@ import com.socialApp.Lishare.modules.platform.user.repository.UserRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -105,6 +110,37 @@ public class FollowServiceImpl implements FollowService {
 
     @Override
     public List<User> searchUsers(String query, Long currentUserId) {
-        return userRepository.searchUsers(query, currentUserId);
+        String cleanQuery = query == null ? "" : query.trim();
+        if (cleanQuery.isBlank()) return List.of();
+
+        Map<Long, User> results = new LinkedHashMap<>();
+        userRepository.searchUsers(cleanQuery, currentUserId)
+                .forEach(user -> results.put(user.getUserId(), user));
+
+        Role role = resolveRoleQuery(cleanQuery);
+        if (role != null) {
+            userRepository.findByRoleAndUserIdNot(role, currentUserId)
+                    .forEach(user -> results.put(user.getUserId(), user));
+        }
+
+        return new ArrayList<>(results.values());
+    }
+
+    private Role resolveRoleQuery(String query) {
+        String normalized = query.trim()
+                .toUpperCase(Locale.ROOT)
+                .replaceAll("[^A-Z0-9]+", "_")
+                .replaceAll("^_+|_+$", "");
+        if (normalized.isBlank()) return null;
+
+        for (Role role : Role.values()) {
+            String roleName = role.name();
+            String shortName = roleName.replaceFirst("^ROLE_", "");
+            if (roleName.equals(normalized) || shortName.equals(normalized)) {
+                return role;
+            }
+        }
+
+        return null;
     }
 }

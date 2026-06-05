@@ -40744,7 +40744,7 @@ button.comment-author-avatar {
   border-radius: 30px 30px 0 0 !important;
   background:
     linear-gradient(90deg, rgba(20, 45, 121, 0.28), rgba(64, 43, 142, 0.04) 42%, rgba(255, 84, 157, 0.1)),
-    url("./assets/backgrounds/profile-cover-dreamscape.svg") center / cover no-repeat !important;
+    url("./assets/backgrounds/profile-cover-4k-background.png") center / cover no-repeat !important;
 }
 
 .shell.shell-theme-light .profile-cover-art::before {
@@ -42129,7 +42129,7 @@ button.comment-author-avatar {
   color: #52657f;
   background:
     linear-gradient(90deg, rgba(36, 88, 255, 0.2), rgba(255, 25, 124, 0.12)),
-    url("./assets/backgrounds/profile-cover-dreamscape.svg") center / cover no-repeat;
+    url("./assets/backgrounds/profile-cover-4k-background.png") center / cover no-repeat;
   font-weight: 900;
 }
 
@@ -42372,4 +42372,3816 @@ button.comment-author-avatar {
 .shell.shell-sidebar-green-theme .shell-nav-link.active .shell-nav-icon-wrap,
 .shell.shell-sidebar-green-theme .shell-user-progress {
   background: var(--agro-sidebar-gradient) !important;
+}
+
+/* User reference pass: keep the Home sidebar palette globally, regardless of route. */
+.shell.shell-home-theme.shell-sidebar-profile-theme .shell-sidebar,
+.shell.shell-home-theme.shell-sidebar-neutral-theme .shell-sidebar,
+.shell.shell-home-theme.shell-sidebar-green-theme .shell-sidebar {
+  top: 12px !important;
+  height: calc(100vh - 24px) !important;
+  margin: 12px 0 12px 12px !important;
+  padding: 14px !important;
+  border: 1px solid rgba(205, 220, 240, 0.94) !important;
+  border-right: 1px solid rgba(205, 220, 240, 0.94) !important;
+  border-radius: 26px !important;
+  background:
+    radial-gradient(circle at 8% 7%, rgba(18, 200, 115, 0.13), transparent 28%),
+    radial-gradient(circle at 94% 10%, rgba(17, 105, 245, 0.11), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(244, 250, 255, 0.9)) !important;
+  box-shadow: 0 22px 58px rgba(34, 57, 95, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.86) !important;
+  color: var(--agro-ref-ink) !important;
+}
+
+.shell.shell-home-theme.shell-sidebar-profile-theme .shell-brand-wrap,
+.shell.shell-home-theme.shell-sidebar-neutral-theme .shell-brand-wrap,
+.shell.shell-home-theme.shell-sidebar-green-theme .shell-brand-wrap {
+  border-color: rgba(205, 220, 240, 0.9) !important;
+  background:
+    radial-gradient(circle at 5% 0%, rgba(18, 200, 115, 0.16), transparent 40%),
+    radial-gradient(circle at 100% 100%, rgba(17, 105, 245, 0.14), transparent 42%),
+    rgba(255, 255, 255, 0.72) !important;
+  box-shadow: 0 14px 30px rgba(34, 57, 95, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+}
+
+.shell.shell-home-theme.shell-sidebar-profile-theme .shell-brand-name,
+.shell.shell-home-theme.shell-sidebar-profile-theme .shell-brand-agro,
+.shell.shell-home-theme.shell-sidebar-neutral-theme .shell-brand-name,
+.shell.shell-home-theme.shell-sidebar-neutral-theme .shell-brand-agro,
+.shell.shell-home-theme.shell-sidebar-green-theme .shell-brand-name,
+.shell.shell-home-theme.shell-sidebar-green-theme .shell-brand-agro {
+  color: var(--agro-ref-ink) !important;
+  background: none !important;
+  -webkit-background-clip: initial !important;
+  background-clip: initial !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+.shell.shell-home-theme.shell-sidebar-profile-theme .shell-brand-hub,
+.shell.shell-home-theme.shell-sidebar-neutral-theme .shell-brand-hub,
+.shell.shell-home-theme.shell-sidebar-green-theme .shell-brand-hub {
+  color: #0d8f67 !important;
+  background: none !important;
+  -webkit-background-clip: initial !important;
+  background-clip: initial !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+.shell.shell-home-theme.shell-sidebar-profile-theme .shell-nav-title,
+.shell.shell-home-theme.shell-sidebar-neutral-theme .shell-nav-title,
+.shell.shell-home-theme.shell-sidebar-green-theme .shell-nav-title {
+  color: #7180a6 !important;
+}
+
+.shell.shell-home-theme.shell-sidebar-profile-theme .shell-nav-link,
+.shell.shell-home-theme.shell-sidebar-neutral-theme .shell-nav-link,
+.shell.shell-home-theme.shell-sidebar-green-theme .shell-nav-link {
+  color: var(--agro-ref-ink) !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.shell.shell-home-theme.shell-sidebar-profile-theme .shell-nav-link:hover,
+.shell.shell-home-theme.shell-sidebar-profile-theme .shell-nav-link:focus-visible,
+.shell.shell-home-theme.shell-sidebar-neutral-theme .shell-nav-link:hover,
+.shell.shell-home-theme.shell-sidebar-neutral-theme .shell-nav-link:focus-visible,
+.shell.shell-home-theme.shell-sidebar-green-theme .shell-nav-link:hover,
+.shell.shell-home-theme.shell-sidebar-green-theme .shell-nav-link:focus-visible {
+  color: #08204f !important;
+  border-color: rgba(18, 200, 115, 0.18) !important;
+  background: rgba(18, 200, 115, 0.08) !important;
+}
+
+.shell.shell-home-theme.shell-sidebar-profile-theme .shell-nav-link.active,
+.shell.shell-home-theme.shell-sidebar-neutral-theme .shell-nav-link.active,
+.shell.shell-home-theme.shell-sidebar-green-theme .shell-nav-link.active {
+  color: #ffffff !important;
+  border-color: transparent !important;
+  background: var(--agro-ref-gradient) !important;
+  box-shadow: 0 12px 24px rgba(17, 105, 245, 0.2) !important;
+}
+
+.shell.shell-home-theme.shell-sidebar-profile-theme .shell-nav-link.active .shell-nav-icon-wrap,
+.shell.shell-home-theme.shell-sidebar-neutral-theme .shell-nav-link.active .shell-nav-icon-wrap,
+.shell.shell-home-theme.shell-sidebar-green-theme .shell-nav-link.active .shell-nav-icon-wrap {
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.24) !important;
+  background: rgba(255, 255, 255, 0.16) !important;
+  box-shadow: none !important;
+}
+
+.shell.shell-home-theme.shell-sidebar-profile-theme .shell-side-user-card,
+.shell.shell-home-theme.shell-sidebar-neutral-theme .shell-side-user-card,
+.shell.shell-home-theme.shell-sidebar-green-theme .shell-side-user-card {
+  border-color: rgba(205, 220, 240, 0.92) !important;
+  color: var(--agro-ref-ink) !important;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(18, 200, 115, 0.18), transparent 36%),
+    radial-gradient(circle at 100% 100%, rgba(17, 105, 245, 0.15), transparent 42%),
+    rgba(255, 255, 255, 0.72) !important;
+  box-shadow: 0 14px 30px rgba(34, 57, 95, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+}
+
+.shell.shell-home-theme.shell-sidebar-profile-theme .shell-side-user-card .shell-user-name,
+.shell.shell-home-theme.shell-sidebar-profile-theme .shell-side-user-card .shell-user-level,
+.shell.shell-home-theme.shell-sidebar-profile-theme .shell-side-user-card .shell-side-user-menu,
+.shell.shell-home-theme.shell-sidebar-neutral-theme .shell-side-user-card .shell-user-name,
+.shell.shell-home-theme.shell-sidebar-neutral-theme .shell-side-user-card .shell-user-level,
+.shell.shell-home-theme.shell-sidebar-neutral-theme .shell-side-user-card .shell-side-user-menu,
+.shell.shell-home-theme.shell-sidebar-green-theme .shell-side-user-card .shell-user-name,
+.shell.shell-home-theme.shell-sidebar-green-theme .shell-side-user-card .shell-user-level,
+.shell.shell-home-theme.shell-sidebar-green-theme .shell-side-user-card .shell-side-user-menu {
+  color: var(--agro-ref-ink) !important;
+}
+
+.shell.shell-home-theme.shell-sidebar-profile-theme .shell-side-user-card .shell-user-role,
+.shell.shell-home-theme.shell-sidebar-profile-theme .shell-user-xp,
+.shell.shell-home-theme.shell-sidebar-neutral-theme .shell-side-user-card .shell-user-role,
+.shell.shell-home-theme.shell-sidebar-neutral-theme .shell-user-xp,
+.shell.shell-home-theme.shell-sidebar-green-theme .shell-side-user-card .shell-user-role,
+.shell.shell-home-theme.shell-sidebar-green-theme .shell-user-xp {
+  color: var(--agro-ref-muted) !important;
+}
+
+.shell.shell-theme-light .profile-cover-media-actions {
+  position: absolute !important;
+  z-index: 6 !important;
+  top: 28px !important;
+  right: 30px !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: flex-end !important;
+  gap: 10px !important;
+  max-width: min(520px, calc(100% - 44px)) !important;
+}
+
+.shell.shell-theme-light .profile-cover-media-actions .profile-cover-upload-btn {
+  position: static !important;
+  inset: auto !important;
+  width: auto !important;
+  max-width: none !important;
+  white-space: nowrap !important;
+}
+
+.shell.shell-theme-light .profile-cover-remove-btn,
+.shell.shell-theme-light .profile-photo-action-row .ui-btn-danger {
+  color: #d32652 !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+  box-shadow: 0 14px 34px rgba(211, 38, 82, 0.14) !important;
+}
+
+.shell.shell-theme-light .profile-cover-remove-btn:disabled,
+.shell.shell-theme-light .profile-photo-action-row .ui-btn:disabled {
+  opacity: 0.54 !important;
+  cursor: not-allowed !important;
+}
+
+.shell.shell-theme-light .profile-photo-action-row {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 9px !important;
+  margin-top: 10px !important;
+}
+
+.shell.shell-theme-light .profile-photo-action-row .ui-btn {
+  width: auto !important;
+  min-height: 38px !important;
+  padding: 0 13px !important;
+  border-radius: 12px !important;
+  border-color: rgba(255, 255, 255, 0.55) !important;
+  color: #17224a !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+  box-shadow: 0 12px 24px rgba(18, 27, 63, 0.16) !important;
+}
+
+.shell.shell-theme-light .profile-media-modal {
+  width: min(760px, calc(100vw - 28px)) !important;
+}
+
+.profile-media-draft {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(240px, 0.75fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+.profile-media-preview {
+  min-height: 250px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid #dfe8f5;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(36, 88, 255, 0.13), transparent 30%),
+    linear-gradient(135deg, #f8fbff, #fff5fb);
+}
+
+.profile-media-preview img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.profile-media-preview-avatar {
+  min-height: 250px;
+}
+
+.profile-media-preview-avatar img,
+.profile-media-preview-avatar span {
+  width: 178px;
+  height: 178px;
+  border-radius: 999px;
+  box-shadow: 0 18px 38px rgba(36, 88, 255, 0.22);
+}
+
+.profile-media-preview span {
+  display: grid;
+  place-items: center;
+  color: #2458ff;
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.profile-media-preview .ui-icon {
+  width: 42px;
+  height: 42px;
+}
+
+.profile-media-draft-copy {
+  display: grid;
+  align-content: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.profile-media-draft-copy strong {
+  overflow: hidden;
+  color: #07162f;
+  font-size: 1rem;
+  font-weight: 950;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-media-draft-copy p {
+  color: #52657f;
+  font-size: 0.88rem;
+  font-weight: 750;
+  line-height: 1.55;
+}
+
+.profile-media-error {
+  padding: 10px 12px;
+  border: 1px solid #ffd5de;
+  border-radius: 14px;
+  color: #b91c45 !important;
+  background: #fff4f6;
+}
+
+.profile-media-choose-again {
+  width: auto;
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  justify-self: start;
+  padding: 0 14px;
+  border: 1px solid #dfe8f5;
+  border-radius: 13px;
+  color: #2458ff;
+  background: #ffffff;
+  font-weight: 900;
+}
+
+.profile-remove-media-body {
+  display: grid;
+  grid-template-columns: 58px minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+}
+
+.profile-remove-media-body > span {
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  border-radius: 20px;
+  color: #e11d48;
+  background: #fff1f4;
+}
+
+.profile-remove-media-body p,
+.settings-remove-media-copy {
+  color: #52657f;
+  font-weight: 800;
+  line-height: 1.55;
+}
+
+/* Reference implementation pass: scoped page consistency for Business, Admin, Notifications, and Support. */
+.business-dashboard,
+.admin-workspace-dashboard,
+.notifications-dashboard,
+.support-dashboard {
+  position: relative;
+  isolation: isolate;
+}
+
+.business-dashboard::before,
+.admin-workspace-dashboard::before,
+.notifications-dashboard::before,
+.support-dashboard::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 15% 10%, rgba(18, 200, 115, 0.11), transparent 30%),
+    radial-gradient(circle at 82% 18%, rgba(36, 88, 255, 0.11), transparent 34%),
+    linear-gradient(180deg, rgba(248, 252, 255, 0.92), rgba(247, 250, 255, 0.96));
+}
+
+.notifications-dashboard::before,
+.support-dashboard::before {
+  background:
+    radial-gradient(circle at 12% 10%, rgba(36, 88, 255, 0.12), transparent 31%),
+    radial-gradient(circle at 88% 8%, rgba(236, 72, 153, 0.13), transparent 34%),
+    linear-gradient(180deg, rgba(249, 251, 255, 0.94), rgba(253, 247, 255, 0.96));
+}
+
+.business-dashboard .overview-intro,
+.business-dashboard .overview-stats {
+  border-color: rgba(199, 227, 208, 0.85);
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.58)),
+    url("./assets/backgrounds/agrolink-farm-support-hero.png") center / cover no-repeat;
+}
+
+.business-layout,
+.admin-workspace-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 330px;
+  gap: 18px;
+  align-items: start;
+}
+
+.business-main,
+.admin-workspace-main {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+
+.business-control-card,
+.business-table-card,
+.admin-role-section,
+.admin-table-card-v2,
+.notifications-list-card,
+.support-dashboard .support-form-card,
+.support-dashboard .support-ticket-list {
+  padding: 18px;
+  border-color: rgba(213, 224, 240, 0.9);
+  background:
+    radial-gradient(circle at 0% 0%, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.76) 48%, rgba(255, 255, 255, 0.92)),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.82), rgba(247, 251, 255, 0.78));
+  box-shadow: 0 18px 48px rgba(34, 57, 95, 0.11), inset 0 1px 0 rgba(255, 255, 255, 0.92);
+}
+
+.business-page-selector {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) auto auto auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.business-page-selector label,
+.admin-search-field {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  border: 1px solid #dfe8f5;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.business-page-selector select,
+.admin-search-field input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  color: #07162f;
+  background: transparent;
+  font-weight: 800;
+}
+
+.business-kpi-grid,
+.admin-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.admin-kpi-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.business-products-table .table-product span,
+.business-orders-table td,
+.admin-users-table-v2 td,
+.admin-reports-table-v2 td {
+  color: #52657f;
+  font-weight: 750;
+}
+
+.business-action-row {
+  padding: 0;
+  overflow: hidden;
+}
+
+.business-action-row > button {
+  width: 100%;
+  min-height: 64px;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) 24px;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border: 0;
+  color: #07162f;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.business-action-row > button:disabled {
+  cursor: not-allowed;
+  opacity: 0.52;
+}
+
+.business-action-row > button > span {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  color: #0d8f67;
+  background: rgba(18, 200, 115, 0.1);
+}
+
+.business-action-row small {
+  display: block;
+  margin-top: 3px;
+  color: #7180a6;
+  font-weight: 750;
+}
+
+.business-profile-summary {
+  display: grid;
+  grid-template-columns: 62px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.business-profile-summary > span {
+  width: 62px;
+  height: 62px;
+  display: grid;
+  place-items: center;
+  border-radius: 22px;
+  color: #0d8f67;
+  background: rgba(18, 200, 115, 0.12);
+}
+
+.business-profile-summary strong,
+.business-profile-summary p,
+.business-confirm-copy,
+.notification-confirm-copy {
+  margin: 0;
+  color: #07162f;
+  font-weight: 900;
+}
+
+.business-profile-summary p,
+.business-confirm-copy,
+.notification-confirm-copy {
+  color: #52657f;
+  line-height: 1.55;
+}
+
+.admin-workspace-dashboard .overview-intro,
+.admin-workspace-dashboard .overview-stats {
+  background:
+    radial-gradient(circle at 88% 18%, rgba(36, 88, 255, 0.16), transparent 34%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(242, 247, 255, 0.82));
+}
+
+.admin-role-grid-v2 {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.admin-role-card-v2 {
+  min-height: 136px;
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid #dfe8f5;
+  border-radius: 18px;
+  color: #07162f;
+  background: rgba(255, 255, 255, 0.82);
+  text-decoration: none;
+  box-shadow: 0 12px 28px rgba(34, 57, 95, 0.08);
+}
+
+.admin-role-card-v2.active {
+  border-color: rgba(36, 88, 255, 0.26);
+  background: linear-gradient(135deg, rgba(36, 88, 255, 0.1), rgba(236, 72, 153, 0.08)), rgba(255, 255, 255, 0.9);
+}
+
+.admin-role-card-v2 span {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  color: #2458ff;
+  background: #eef5ff;
+}
+
+.admin-role-card-v2 strong {
+  font-size: 0.9rem;
+}
+
+.admin-role-card-v2 b {
+  font-size: 1.45rem;
+}
+
+.admin-role-card-v2 small {
+  color: #7180a6;
+  font-weight: 800;
+}
+
+.admin-user-cell {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-user-cell > span {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 15px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #2458ff, #ec4899);
+  font-weight: 950;
+}
+
+.admin-user-cell strong,
+.admin-user-cell small {
+  display: block;
+}
+
+.admin-user-cell small {
+  color: #7180a6;
+  font-weight: 800;
+}
+
+.admin-users-table-v2 select,
+.admin-reports-table-v2 select,
+.admin-message-input,
+.admin-support-card-v2 textarea,
+.admin-delete-modal-body textarea,
+.admin-report-detail span,
+.support-form-fields input,
+.support-form-fields select,
+.support-form-fields textarea {
+  width: 100%;
+  border: 1px solid #dfe8f5;
+  border-radius: 13px;
+  color: #07162f;
+  background: rgba(255, 255, 255, 0.92);
+  font-weight: 800;
+}
+
+.admin-users-table-v2 select,
+.admin-reports-table-v2 select,
+.support-form-fields input,
+.support-form-fields select {
+  min-height: 42px;
+  padding: 0 12px;
+}
+
+.admin-message-input,
+.admin-support-card-v2 textarea,
+.admin-delete-modal-body textarea,
+.support-form-fields textarea {
+  min-height: 74px;
+  padding: 10px 12px;
+  resize: vertical;
+}
+
+.admin-support-grid-v2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.admin-support-card-v2 {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid #dfe8f5;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.admin-support-card-v2 header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.admin-support-card-v2 header strong,
+.admin-support-card-v2 header span,
+.admin-support-card-v2 p,
+.admin-support-card-v2 blockquote {
+  display: block;
+  margin: 0;
+}
+
+.admin-support-card-v2 header span,
+.admin-support-card-v2 p,
+.admin-support-card-v2 blockquote {
+  color: #52657f;
+  font-weight: 750;
+  line-height: 1.55;
+}
+
+.admin-support-card-v2 blockquote {
+  padding: 12px;
+  border-left: 4px solid #2458ff;
+  border-radius: 12px;
+  background: #f4f7ff;
+}
+
+.admin-health-ring {
+  width: 158px;
+  height: 158px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 3px;
+  margin: 8px auto 18px;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle, #ffffff 0 56%, transparent 57%),
+    conic-gradient(#12b76a var(--health), rgba(226, 232, 240, 0.9) 0);
+}
+
+.admin-health-ring strong {
+  color: #07162f;
+  font-size: 2rem;
+  font-weight: 950;
+}
+
+.admin-health-ring span {
+  color: #0d8f67;
+  font-weight: 900;
+}
+
+.admin-quick-action-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-quick-action-grid a {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  border: 1px solid #dfe8f5;
+  border-radius: 14px;
+  color: #07162f;
+  background: rgba(255, 255, 255, 0.9);
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.admin-delete-modal-body,
+.admin-report-detail {
+  display: grid;
+  gap: 14px;
+}
+
+.admin-delete-modal-body label {
+  display: grid;
+  gap: 8px;
+  color: #07162f;
+  font-weight: 900;
+}
+
+.admin-report-detail span {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+}
+
+.admin-report-detail strong {
+  color: #7180a6;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+}
+
+.notifications-dashboard .overview-hero {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.notifications-dashboard .overview-intro,
+.notifications-dashboard .overview-stats {
+  background:
+    radial-gradient(circle at 8% 20%, rgba(36, 88, 255, 0.12), transparent 34%),
+    radial-gradient(circle at 92% 16%, rgba(236, 72, 153, 0.14), transparent 34%),
+    rgba(255, 255, 255, 0.86);
+}
+
+.notification-row-stack {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.notification-row-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid #dfe8f5;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 14px 36px rgba(34, 57, 95, 0.08);
+}
+
+.notification-row-card.is-unread {
+  border-color: rgba(236, 72, 153, 0.28);
+  box-shadow: 0 16px 40px rgba(236, 72, 153, 0.12);
+}
+
+.notification-row-main {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 58px 42px minmax(0, 1fr) 36px;
+  gap: 12px;
+  align-items: center;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.notification-type-dot {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 15px;
+}
+
+.dot-blue {
+  color: #2458ff;
+  background: #eef5ff;
+}
+
+.dot-pink {
+  color: #ec4899;
+  background: #fff0f8;
+}
+
+.dot-purple {
+  color: #7c3aed;
+  background: #f4edff;
+}
+
+.dot-green {
+  color: #0d8f67;
+  background: #ecfdf5;
+}
+
+.dot-orange {
+  color: #f79009;
+  background: #fff7ed;
+}
+
+.notification-title-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 6px;
+}
+
+.notification-row-main strong,
+.notification-row-main small {
+  display: block;
+}
+
+.notification-row-main strong {
+  color: #07162f;
+  font-weight: 950;
+  line-height: 1.35;
+}
+
+.notification-row-main small {
+  margin-top: 4px;
+  color: #7180a6;
+  font-weight: 800;
+}
+
+.notification-open-arrow {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  color: #2458ff;
+  background: #f4f7ff;
+}
+
+.notifications-pagination {
+  margin-top: 18px;
+}
+
+.support-dashboard .support-grid {
+  align-items: stretch;
+}
+
+.support-form-fields {
+  display: grid;
+  gap: 14px;
+}
+
+.support-form-fields label {
+  display: grid;
+  gap: 8px;
+  color: #07162f;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.support-dashboard .support-ticket-card {
+  border: 1px solid #dfe8f5;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 12px 28px rgba(34, 57, 95, 0.08);
+}
+
+@media (max-width: 1180px) {
+  .business-layout,
+  .admin-workspace-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .business-kpi-grid,
+  .admin-kpi-grid,
+  .admin-role-grid-v2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .business-page-selector,
+  .admin-support-grid-v2,
+  .notification-row-card,
+  .notification-row-main {
+    grid-template-columns: 1fr;
+  }
+
+  .business-kpi-grid,
+  .admin-kpi-grid,
+  .admin-role-grid-v2 {
+    grid-template-columns: 1fr;
+  }
+
+  .notification-row-card > .ui-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 720px) {
+  .shell.shell-theme-light .profile-cover-media-actions {
+    top: 16px !important;
+    right: 16px !important;
+    left: 16px !important;
+    max-width: none !important;
+  }
+
+  .shell.shell-theme-light .profile-cover-media-actions .profile-cover-upload-btn {
+    flex: 1 1 180px !important;
+    min-width: 0 !important;
+    padding-inline: 12px !important;
+  }
+
+  .profile-media-draft {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* AgroLink reference completion pass: route-scoped premium UI. Do not target Home/feed. */
+:root {
+  --agro-ref-green: #0f9f5f;
+  --agro-ref-green-dark: #047243;
+  --agro-ref-blue: #2563eb;
+  --agro-ref-pink: #ec4899;
+  --agro-ref-purple: #7c3aed;
+  --agro-ref-ink: #07162f;
+  --agro-ref-muted: #65728a;
+  --agro-ref-border: rgba(205, 220, 235, 0.82);
+  --agro-ref-glass: rgba(255, 255, 255, 0.88);
+  --agro-ref-shadow: 0 22px 60px rgba(15, 28, 48, 0.12);
+  --agro-ref-soft-shadow: 0 14px 34px rgba(15, 28, 48, 0.08);
+  --agro-ref-farm: url("./assets/backgrounds/agrolink-farm-support-hero.png");
+}
+
+.shell .friends-dashboard,
+.shell .chat-dashboard,
+.shell .notifications-dashboard,
+.shell .settings-dashboard,
+.shell .support-dashboard,
+.shell .marketplace-dashboard,
+.shell .orders-dashboard,
+.shell .calendar-dashboard,
+.shell .business-dashboard,
+.shell .admin-workspace-dashboard {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: calc(100vh - 118px);
+  border-radius: 32px;
+  padding: clamp(18px, 2vw, 26px);
+}
+
+.shell .friends-dashboard::before,
+.shell .chat-dashboard::before,
+.shell .notifications-dashboard::before,
+.shell .settings-dashboard::before,
+.shell .support-dashboard::before,
+.shell .marketplace-dashboard::before,
+.shell .orders-dashboard::before,
+.shell .calendar-dashboard::before,
+.shell .business-dashboard::before,
+.shell .admin-workspace-dashboard::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+}
+
+.shell .friends-dashboard::after,
+.shell .chat-dashboard::after,
+.shell .notifications-dashboard::after,
+.shell .settings-dashboard::after,
+.shell .support-dashboard::after,
+.shell .marketplace-dashboard::after,
+.shell .orders-dashboard::after,
+.shell .calendar-dashboard::after,
+.shell .business-dashboard::after,
+.shell .admin-workspace-dashboard::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 12% 16%, rgba(255, 255, 255, 0.76), transparent 28%),
+    radial-gradient(circle at 86% 18%, rgba(255, 255, 255, 0.48), transparent 26%);
+}
+
+.shell .friends-dashboard,
+.shell .chat-dashboard,
+.shell .notifications-dashboard,
+.shell .settings-dashboard,
+.shell .support-dashboard {
+  background: linear-gradient(135deg, #f7fbff 0%, #f4f7ff 45%, #fff2f8 100%);
+}
+
+.shell .friends-dashboard::before,
+.shell .chat-dashboard::before,
+.shell .notifications-dashboard::before,
+.shell .settings-dashboard::before,
+.shell .support-dashboard::before {
+  background:
+    radial-gradient(circle at 14% 20%, rgba(37, 99, 235, 0.18), transparent 32%),
+    radial-gradient(circle at 78% 10%, rgba(236, 72, 153, 0.18), transparent 30%),
+    linear-gradient(135deg, #f8fbff, #fff6fb);
+}
+
+.shell .marketplace-dashboard,
+.shell .orders-dashboard,
+.shell .calendar-dashboard,
+.shell .business-dashboard {
+  background: linear-gradient(135deg, #f5fbf4 0%, #f8fbef 48%, #fff9ee 100%);
+}
+
+.shell .marketplace-dashboard::before,
+.shell .orders-dashboard::before,
+.shell .calendar-dashboard::before,
+.shell .business-dashboard::before {
+  background:
+    linear-gradient(135deg, rgba(245, 251, 244, 0.92), rgba(255, 252, 240, 0.9)),
+    var(--agro-ref-farm) center / cover no-repeat;
+  filter: saturate(1.08);
+}
+
+.shell .admin-workspace-dashboard {
+  background: linear-gradient(135deg, #f8fbff 0%, #f4f8ff 50%, #fff8fb 100%);
+}
+
+.shell .admin-workspace-dashboard::before {
+  background:
+    linear-gradient(135deg, rgba(248, 251, 255, 0.9), rgba(255, 255, 255, 0.7)),
+    radial-gradient(circle at 78% 20%, rgba(37, 99, 235, 0.16), transparent 32%),
+    radial-gradient(circle at 12% 12%, rgba(124, 58, 237, 0.14), transparent 30%);
+}
+
+.shell .friends-dashboard .dash-card,
+.shell .chat-dashboard .dash-card,
+.shell .notifications-dashboard .dash-card,
+.shell .settings-dashboard .dash-card,
+.shell .support-dashboard .dash-card,
+.shell .marketplace-dashboard .dash-card,
+.shell .orders-dashboard .dash-card,
+.shell .calendar-dashboard .dash-card,
+.shell .business-dashboard .dash-card,
+.shell .admin-workspace-dashboard .dash-card,
+.shell .friends-dashboard .ui-modal,
+.shell .chat-dashboard .ui-modal,
+.shell .notifications-dashboard .ui-modal,
+.shell .settings-dashboard .ui-modal,
+.shell .support-dashboard .ui-modal,
+.shell .marketplace-dashboard .ui-modal,
+.shell .orders-dashboard .ui-modal,
+.shell .calendar-dashboard .ui-modal,
+.shell .business-dashboard .ui-modal,
+.shell .admin-workspace-dashboard .ui-modal {
+  border: 1px solid var(--agro-ref-border) !important;
+  border-radius: 28px !important;
+  background: var(--agro-ref-glass) !important;
+  box-shadow: var(--agro-ref-shadow) !important;
+  backdrop-filter: blur(18px) saturate(1.15);
+}
+
+.shell .friends-dashboard .overview-hero,
+.shell .notifications-dashboard .overview-hero,
+.shell .settings-dashboard .settings-hero-card,
+.shell .support-dashboard .support-reference-hero {
+  border-radius: 32px;
+  border: 1px solid rgba(225, 232, 246, 0.9);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.5)),
+    radial-gradient(circle at 12% 18%, rgba(37, 99, 235, 0.22), transparent 30%),
+    radial-gradient(circle at 90% 15%, rgba(236, 72, 153, 0.2), transparent 28%);
+  box-shadow: var(--agro-ref-shadow);
+}
+
+.shell .marketplace-dashboard .overview-hero,
+.shell .orders-dashboard .overview-hero,
+.shell .calendar-dashboard .overview-hero,
+.shell .business-dashboard .overview-hero {
+  overflow: hidden;
+  border-radius: 32px;
+  border: 1px solid rgba(207, 225, 207, 0.9);
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.6)),
+    var(--agro-ref-farm) center / cover no-repeat;
+  box-shadow: var(--agro-ref-shadow);
+}
+
+.shell .admin-workspace-dashboard .overview-hero {
+  overflow: hidden;
+  border-radius: 32px;
+  border: 1px solid rgba(218, 228, 244, 0.95);
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.58)),
+    radial-gradient(circle at 76% 26%, rgba(37, 99, 235, 0.2), transparent 32%),
+    linear-gradient(135deg, #f7fbff, #ffffff);
+  box-shadow: var(--agro-ref-shadow);
+}
+
+.shell .overview-hero .overview-intro,
+.shell .overview-hero .overview-stats {
+  background: rgba(255, 255, 255, 0.76) !important;
+  border-color: rgba(220, 232, 244, 0.82) !important;
+  box-shadow: 0 16px 42px rgba(15, 28, 48, 0.08) !important;
+}
+
+.shell .overview-hero h2,
+.shell .dash-section-header h2,
+.shell .ui-modal h2 {
+  color: var(--agro-ref-ink);
+  letter-spacing: -0.035em;
+  font-weight: 950;
+}
+
+.shell .overview-hero p,
+.shell .dash-section-header p,
+.shell .dash-card p,
+.shell .muted {
+  color: var(--agro-ref-muted);
+}
+
+.shell .gradient-btn,
+.shell .ui-btn-gradient {
+  border: 0 !important;
+  color: #ffffff !important;
+  background: linear-gradient(135deg, var(--agro-ref-blue), var(--agro-ref-pink)) !important;
+  box-shadow: 0 14px 28px rgba(37, 99, 235, 0.22), 0 10px 22px rgba(236, 72, 153, 0.18) !important;
+}
+
+.shell .marketplace-dashboard .gradient-btn,
+.shell .orders-dashboard .gradient-btn,
+.shell .calendar-dashboard .gradient-btn,
+.shell .business-dashboard .gradient-btn,
+.shell .marketplace-dashboard .ui-btn-gradient,
+.shell .orders-dashboard .ui-btn-gradient,
+.shell .calendar-dashboard .ui-btn-gradient,
+.shell .business-dashboard .ui-btn-gradient {
+  background: linear-gradient(135deg, var(--agro-ref-green), var(--agro-ref-green-dark)) !important;
+  box-shadow: 0 14px 28px rgba(15, 159, 95, 0.22) !important;
+}
+
+.shell .ui-btn,
+.shell .dash-tabs button,
+.shell input,
+.shell select,
+.shell textarea {
+  border-radius: 14px;
+}
+
+.shell .dash-tabs {
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid rgba(218, 228, 244, 0.92);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.76);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.shell .dash-tabs button.active {
+  color: #ffffff;
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--agro-ref-blue), var(--agro-ref-pink));
+  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.18);
+}
+
+.shell .marketplace-dashboard .dash-tabs button.active,
+.shell .orders-dashboard .dash-tabs button.active,
+.shell .calendar-dashboard .dash-tabs button.active,
+.shell .business-dashboard .dash-tabs button.active {
+  background: linear-gradient(135deg, var(--agro-ref-green), var(--agro-ref-green-dark));
+}
+
+/* Marketplace seller/product hub */
+.shell .marketplace-dashboard {
+  gap: 18px;
+}
+
+.shell .marketplace-hub-layout {
+  display: grid;
+  grid-template-columns: 218px minmax(0, 1fr) 315px;
+  gap: 18px;
+  align-items: start;
+}
+
+.shell .marketplace-hub-nav {
+  position: sticky;
+  top: 18px;
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.shell .marketplace-nav-card,
+.shell .marketplace-hub-nav nav {
+  border: 1px solid rgba(211, 225, 214, 0.95);
+  border-radius: 26px;
+  background: rgba(255, 255, 255, 0.84);
+  box-shadow: var(--agro-ref-soft-shadow);
+  backdrop-filter: blur(18px);
+}
+
+.shell .marketplace-nav-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 170px;
+  padding: 18px;
+}
+
+.shell .marketplace-nav-card strong {
+  display: block;
+  position: relative;
+  z-index: 1;
+  color: var(--agro-ref-green-dark);
+  font-size: 1.2rem;
+  font-weight: 950;
+}
+
+.shell .marketplace-nav-card p {
+  position: relative;
+  z-index: 1;
+  max-width: 150px;
+  margin: 6px 0 0;
+  color: #4b6353;
+  font-size: 0.84rem;
+  font-weight: 760;
+}
+
+.shell .marketplace-nav-art {
+  position: absolute;
+  inset: auto -18px -12px 18px;
+  height: 104px;
+  border-radius: 22px;
+  background:
+    linear-gradient(0deg, rgba(15, 159, 95, 0.16), rgba(255, 255, 255, 0.08)),
+    var(--agro-ref-farm) center / cover no-repeat;
+  filter: saturate(1.12);
+}
+
+.shell .marketplace-hub-nav nav {
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+}
+
+.shell .marketplace-hub-nav nav button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  border: 0;
+  border-radius: 14px;
+  color: #314155;
+  background: transparent;
+  font-weight: 850;
+  text-align: left;
+  cursor: pointer;
+}
+
+.shell .marketplace-hub-nav nav button.active,
+.shell .marketplace-hub-nav nav button:hover {
+  color: var(--agro-ref-green-dark);
+  background: linear-gradient(135deg, rgba(15, 159, 95, 0.12), rgba(255, 255, 255, 0.72));
+}
+
+.shell .marketplace-reference-hero {
+  position: relative;
+  overflow: hidden;
+  min-height: 250px;
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(280px, 0.8fr);
+  align-items: center;
+  border-color: rgba(192, 219, 192, 0.92) !important;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.35)),
+    var(--agro-ref-farm) center / cover no-repeat !important;
+}
+
+.shell .marketplace-reference-copy {
+  position: relative;
+  z-index: 1;
+  padding: clamp(20px, 3vw, 32px);
+}
+
+.shell .marketplace-reference-copy h2 {
+  max-width: 530px;
+  color: var(--agro-ref-ink);
+  font-size: clamp(2rem, 4vw, 3.35rem);
+  line-height: 0.95;
+}
+
+.shell .marketplace-reference-copy h2 em,
+.shell .marketplace-reference-copy h2 span {
+  color: var(--agro-ref-green);
+}
+
+.shell .marketplace-reference-art {
+  align-self: stretch;
+  min-height: 230px;
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.78), transparent 34%),
+    linear-gradient(135deg, rgba(15, 159, 95, 0.18), rgba(255, 255, 255, 0.12));
+}
+
+.shell .marketplace-reference-art span {
+  display: inline-flex;
+  margin: 26px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  color: var(--agro-ref-green-dark);
+  background: rgba(255, 255, 255, 0.84);
+  font-weight: 950;
+  box-shadow: var(--agro-ref-soft-shadow);
+}
+
+.shell .marketplace-product-list-card {
+  overflow: hidden;
+}
+
+.shell .marketplace-table-wrap {
+  margin-top: 14px;
+  border-radius: 20px;
+  border: 1px solid rgba(218, 231, 220, 0.9);
+  overflow: auto;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.shell .marketplace-products-table th {
+  color: #536477;
+  background: rgba(246, 251, 247, 0.92);
+}
+
+.shell .marketplace-products-table td {
+  border-bottom: 1px solid rgba(218, 231, 220, 0.78);
+}
+
+.shell .marketplace-pagination-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 14px;
+  color: #64748b;
+  font-weight: 760;
+}
+
+.shell .marketplace-pagination-row div {
+  display: flex;
+  gap: 6px;
+}
+
+.shell .marketplace-pagination-row button {
+  min-width: 34px;
+  height: 34px;
+  border: 1px solid rgba(210, 224, 235, 0.9);
+  border-radius: 10px;
+  color: #334155;
+  background: #ffffff;
+  font-weight: 900;
+}
+
+.shell .marketplace-pagination-row button.active {
+  color: #ffffff;
+  border-color: transparent;
+  background: var(--agro-ref-green);
+}
+
+.shell .marketplace-card-backup {
+  display: none;
+}
+
+/* Farming business/order/calendar pages */
+.shell .orders-layout,
+.shell .calendar-layout,
+.shell .business-layout {
+  gap: 18px;
+}
+
+.shell .orders-dashboard .overview-intro,
+.shell .calendar-dashboard .overview-intro,
+.shell .business-dashboard .overview-intro {
+  min-height: 210px;
+}
+
+.shell .orders-dashboard .overview-stats,
+.shell .calendar-dashboard .overview-stats,
+.shell .business-dashboard .overview-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.shell .orders-toolbar,
+.shell .network-search-row,
+.shell .filter-grid,
+.shell .calendar-event-form input,
+.shell .calendar-event-form textarea,
+.shell .calendar-event-form select,
+.shell .settings-dashboard input,
+.shell .settings-dashboard textarea,
+.shell .settings-dashboard select,
+.shell .support-dashboard input,
+.shell .support-dashboard textarea,
+.shell .support-dashboard select,
+.shell .admin-workspace-dashboard input,
+.shell .admin-workspace-dashboard textarea,
+.shell .admin-workspace-dashboard select,
+.shell .business-dashboard input,
+.shell .business-dashboard textarea,
+.shell .business-dashboard select,
+.shell .marketplace-dashboard input,
+.shell .marketplace-dashboard textarea,
+.shell .marketplace-dashboard select {
+  border-color: rgba(207, 221, 235, 0.95) !important;
+  background: rgba(255, 255, 255, 0.86) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.shell .orders-dashboard .empty-panel,
+.shell .calendar-dashboard .empty-panel,
+.shell .marketplace-dashboard .empty-panel,
+.shell .business-dashboard .empty-panel {
+  border-radius: 24px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(244, 252, 243, 0.9)),
+    var(--agro-ref-farm) center bottom / cover no-repeat;
+}
+
+.shell .calendar-grid {
+  gap: 8px;
+}
+
+.shell .calendar-cell {
+  border-color: rgba(216, 228, 220, 0.95) !important;
+  border-radius: 16px !important;
+  background: rgba(255, 255, 255, 0.74) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+.shell .calendar-cell.today {
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--agro-ref-green), var(--agro-ref-green-dark)) !important;
+}
+
+.shell .event-type-grid button,
+.shell .reminder-option-grid button {
+  border: 1px solid rgba(207, 221, 235, 0.92);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 10px 24px rgba(15, 28, 48, 0.06);
+}
+
+.shell .event-type-grid button.active,
+.shell .reminder-option-grid button.active {
+  color: var(--agro-ref-green-dark);
+  border-color: rgba(15, 159, 95, 0.36);
+  background: rgba(236, 253, 245, 0.94);
+}
+
+/* Social/community pages */
+.shell .friends-dashboard .user-card-v2,
+.shell .friends-dashboard .network-discovery-card,
+.shell .chat-dashboard .messages-panel,
+.shell .chat-dashboard .chat-thread-card,
+.shell .chat-dashboard .chat-profile-panel,
+.shell .notifications-dashboard .notification-card,
+.shell .notifications-dashboard .notification-row {
+  border-color: rgba(221, 229, 247, 0.94) !important;
+  background: rgba(255, 255, 255, 0.82) !important;
+}
+
+.shell .friends-dashboard .overview-intro,
+.shell .friends-dashboard .overview-stats,
+.shell .notifications-dashboard .overview-intro,
+.shell .notifications-dashboard .overview-stats {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0.58)),
+    radial-gradient(circle at 12% 20%, rgba(37, 99, 235, 0.18), transparent 30%),
+    radial-gradient(circle at 92% 12%, rgba(236, 72, 153, 0.18), transparent 28%) !important;
+}
+
+.shell .network-search-row {
+  border-radius: 18px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.76) !important;
+}
+
+.shell .filter-pills button,
+.shell .profile-action-grid button {
+  border: 1px solid rgba(218, 228, 244, 0.9);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: var(--agro-ref-soft-shadow);
+}
+
+.shell .filter-pills button.active,
+.shell .profile-action-grid button:hover {
+  color: #ffffff;
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--agro-ref-blue), var(--agro-ref-pink));
+}
+
+.shell .chat-dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 330px) minmax(360px, 1fr) minmax(280px, 330px);
+  gap: 18px;
+  align-items: stretch;
+}
+
+.shell .message-bubble-row.mine .message-bubble {
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--agro-ref-blue), var(--agro-ref-pink)) !important;
+  box-shadow: 0 14px 34px rgba(37, 99, 235, 0.2), 0 10px 28px rgba(236, 72, 153, 0.18);
+}
+
+.shell .message-input-bar,
+.shell .chat-search,
+.shell .new-message-box label {
+  border: 1px solid rgba(218, 228, 244, 0.92);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.shell .conversation-list-v2 button.active {
+  border-color: rgba(37, 99, 235, 0.46);
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(236, 72, 153, 0.08));
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.12);
+}
+
+.shell .chat-profile-head .ui-avatar,
+.shell .user-card-v2 .ui-avatar,
+.shell .conversation-list-v2 .ui-avatar {
+  box-shadow: 0 12px 28px rgba(37, 99, 235, 0.18);
+}
+
+/* Support and Settings */
+.shell .support-reference-hero {
+  min-height: 300px;
+  padding: clamp(20px, 3vw, 36px);
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.42)),
+    radial-gradient(circle at 80% 18%, rgba(236, 72, 153, 0.2), transparent 30%),
+    radial-gradient(circle at 16% 20%, rgba(37, 99, 235, 0.18), transparent 32%),
+    linear-gradient(135deg, #f8fbff, #fff5fb) !important;
+}
+
+.shell .support-help-search,
+.shell .support-suggestion-row span {
+  border: 1px solid rgba(218, 228, 244, 0.92);
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: var(--agro-ref-soft-shadow);
+}
+
+.shell .support-form-fields label {
+  color: var(--agro-ref-ink);
+  font-weight: 900;
+}
+
+.shell .support-ticket-card {
+  border-radius: 20px;
+  border: 1px solid rgba(218, 228, 244, 0.92);
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: var(--agro-ref-soft-shadow);
+}
+
+.shell .settings-media-preview {
+  overflow: hidden;
+  border-radius: 24px;
+  border: 1px solid rgba(218, 228, 244, 0.92);
+  background: rgba(255, 255, 255, 0.78);
+}
+
+.shell .settings-cover-preview img {
+  min-height: 190px;
+  object-fit: cover;
+}
+
+/* Admin workspace */
+.shell .admin-kpi-grid,
+.shell .business-kpi-grid {
+  gap: 14px;
+}
+
+.shell .admin-role-card-v2,
+.shell .admin-support-card-v2,
+.shell .business-action-row button,
+.shell .panel-row {
+  border-radius: 18px;
+}
+
+.shell .admin-role-card-v2 {
+  border: 1px solid rgba(218, 228, 244, 0.92);
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: var(--agro-ref-soft-shadow);
+}
+
+.shell .admin-role-card-v2.active,
+.shell .admin-role-card-v2:hover {
+  border-color: rgba(37, 99, 235, 0.42);
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(124, 58, 237, 0.08));
+}
+
+.shell .admin-health-ring {
+  box-shadow: inset 0 0 0 12px rgba(15, 159, 95, 0.14), 0 20px 42px rgba(15, 159, 95, 0.15);
+}
+
+/* Tables, modals, confirmation states */
+.shell .dashboard-table-wrap {
+  border-radius: 20px;
+  border: 1px solid rgba(218, 228, 244, 0.9);
+  overflow: auto;
+  background: rgba(255, 255, 255, 0.66);
+}
+
+.shell .dashboard-table th {
+  color: #5b6a80;
+  font-size: 0.78rem;
+  font-weight: 950;
+  letter-spacing: 0.02em;
+  background: rgba(247, 250, 253, 0.9);
+}
+
+.shell .dashboard-table td {
+  color: #1f2a3a;
+  font-weight: 740;
+}
+
+.shell .table-product img,
+.shell .table-product .placeholder {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.confirmation-panel {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+  padding: 16px;
+  border: 1px solid rgba(218, 228, 244, 0.92);
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.86), rgba(248, 251, 255, 0.86));
+}
+
+.confirmation-panel > span:not(.ui-avatar) {
+  display: inline-grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 18px;
+  color: var(--agro-ref-blue);
+  background: rgba(37, 99, 235, 0.1);
+}
+
+.confirmation-panel strong {
+  display: block;
+  color: var(--agro-ref-ink);
+  font-weight: 950;
+}
+
+.confirmation-panel p {
+  margin: 4px 0 0;
+  color: var(--agro-ref-muted);
+  font-weight: 720;
+}
+
+.danger-confirmation-panel > span:not(.ui-avatar) {
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.1);
+}
+
+@media (max-width: 1240px) {
+  .shell .marketplace-hub-layout,
+  .shell .chat-dashboard-grid,
+  .shell .settings-layout,
+  .shell .business-layout,
+  .shell .orders-layout,
+  .shell .calendar-layout,
+  .shell .admin-workspace-layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  .shell .marketplace-hub-nav {
+    position: static;
+  }
+
+  .shell .marketplace-hub-nav nav {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .shell .friends-dashboard,
+  .shell .chat-dashboard,
+  .shell .notifications-dashboard,
+  .shell .settings-dashboard,
+  .shell .support-dashboard,
+  .shell .marketplace-dashboard,
+  .shell .orders-dashboard,
+  .shell .calendar-dashboard,
+  .shell .business-dashboard,
+  .shell .admin-workspace-dashboard {
+    border-radius: 22px;
+    padding: 14px;
+  }
+
+  .shell .overview-hero,
+  .shell .marketplace-reference-hero,
+  .shell .settings-hero-card {
+    grid-template-columns: 1fr !important;
+  }
+
+  .shell .overview-stats,
+  .shell .orders-dashboard .overview-stats,
+  .shell .calendar-dashboard .overview-stats,
+  .shell .business-dashboard .overview-stats,
+  .shell .settings-two-grid,
+  .shell .settings-account-grid,
+  .shell .settings-delete-otp-row,
+  .shell .settings-form-grid,
+  .shell .settings-danger-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .shell .marketplace-card-backup {
+    display: grid;
+  }
+
+  .shell .marketplace-products-table {
+    min-width: 780px;
+  }
+}
+
+/* Feed confirmation flow only: keeps Home layout unchanged while removing browser confirms. */
+.feed-confirm-overlay {
+  z-index: 1200;
+  background: rgba(9, 16, 30, 0.42);
+  backdrop-filter: blur(12px);
+}
+
+.feed-confirm-card {
+  width: min(460px, calc(100vw - 32px));
+  border-radius: 28px !important;
+  border: 1px solid rgba(232, 238, 248, 0.92) !important;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(37, 99, 235, 0.12), transparent 32%),
+    radial-gradient(circle at 100% 0%, rgba(236, 72, 153, 0.12), transparent 34%),
+    rgba(255, 255, 255, 0.94) !important;
+  box-shadow: 0 26px 70px rgba(15, 28, 48, 0.24) !important;
+}
+
+.feed-confirm-body {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+  margin: 18px 0;
+  padding: 16px;
+  border: 1px solid rgba(248, 113, 113, 0.24);
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.86), rgba(255, 241, 242, 0.86));
+}
+
+.feed-confirm-body > span {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  border-radius: 18px;
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.1);
+}
+
+.feed-confirm-body strong {
+  display: block;
+  color: #07162f;
+  font-weight: 950;
+}
+
+.feed-confirm-body p {
+  margin: 4px 0 0;
+  color: #65728a;
+  font-weight: 720;
+}
+
+.feed-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Final non-home dashboard repair pass: visibility, overflow, and responsive balance. */
+.modal-backdrop {
+  z-index: 2200 !important;
+  background: rgba(8, 18, 35, 0.56) !important;
+  backdrop-filter: blur(16px) saturate(115%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(115%) !important;
+}
+
+.modal-backdrop .ui-modal {
+  color: #07162f !important;
+  border: 1px solid rgba(215, 229, 245, 0.96) !important;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(18, 200, 115, 0.08), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(248, 252, 255, 0.98)) !important;
+  box-shadow: 0 34px 92px rgba(8, 18, 35, 0.28) !important;
+}
+
+.modal-backdrop .ui-modal-header,
+.modal-backdrop .ui-modal-footer {
+  border-color: rgba(215, 229, 245, 0.92) !important;
+  background: rgba(255, 255, 255, 0.86) !important;
+}
+
+.modal-backdrop .ui-modal-header h2,
+.modal-backdrop .ui-modal-body h2,
+.modal-backdrop .ui-modal-body h3,
+.modal-backdrop .modal-grid label,
+.modal-backdrop .product-modal-preview strong,
+.modal-backdrop .confirmation-panel strong,
+.modal-backdrop .admin-delete-modal-body label {
+  color: #07162f !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+.modal-backdrop .ui-modal-header p,
+.modal-backdrop .ui-modal-body p,
+.modal-backdrop .product-modal-preview p,
+.modal-backdrop .confirmation-panel p,
+.modal-backdrop .muted {
+  color: #52657f !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: currentColor !important;
+}
+
+.modal-backdrop .modal-grid input,
+.modal-backdrop .modal-grid select,
+.modal-backdrop .modal-grid textarea,
+.modal-backdrop .action-grid-modal select,
+.modal-backdrop .admin-delete-modal-body textarea {
+  color: #102033 !important;
+  border-color: rgba(205, 220, 238, 0.96) !important;
+  background: #ffffff !important;
+  opacity: 1 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92), 0 10px 24px rgba(15, 28, 48, 0.04) !important;
+  -webkit-text-fill-color: #102033 !important;
+}
+
+.modal-backdrop .modal-grid input::placeholder,
+.modal-backdrop .modal-grid textarea::placeholder,
+.modal-backdrop .admin-delete-modal-body textarea::placeholder {
+  color: #7b8aa3 !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: #7b8aa3 !important;
+}
+
+.modal-backdrop .modal-close {
+  color: #29425f !important;
+  background: #ffffff !important;
+}
+
+.modal-backdrop .ui-modal-footer .ui-btn,
+.modal-backdrop .ui-modal-footer .gradient-btn,
+.modal-backdrop .action-grid-modal .ui-btn,
+.modal-backdrop .action-grid-modal .gradient-btn {
+  width: auto !important;
+  min-width: 0 !important;
+}
+
+.shell .friends-dashboard,
+.shell .chat-dashboard,
+.shell .notifications-dashboard,
+.shell .settings-dashboard,
+.shell .support-dashboard,
+.shell .marketplace-dashboard,
+.shell .orders-dashboard,
+.shell .calendar-dashboard,
+.shell .business-dashboard,
+.shell .admin-workspace-dashboard {
+  max-width: 100% !important;
+  overflow: visible !important;
+}
+
+.shell .friends-dashboard > *,
+.shell .chat-dashboard > *,
+.shell .notifications-dashboard > *,
+.shell .settings-dashboard > *,
+.shell .support-dashboard > *,
+.shell .marketplace-dashboard > *,
+.shell .orders-dashboard > *,
+.shell .calendar-dashboard > *,
+.shell .business-dashboard > *,
+.shell .admin-workspace-dashboard > *,
+.shell .market-main,
+.shell .orders-main,
+.shell .business-main,
+.shell .admin-workspace-main,
+.shell .side-stack,
+.shell .settings-side,
+.shell .calendar-side {
+  min-width: 0 !important;
+}
+
+.shell .friends-dashboard .dash-card,
+.shell .chat-dashboard .dash-card,
+.shell .notifications-dashboard .dash-card,
+.shell .settings-dashboard .dash-card,
+.shell .support-dashboard .dash-card,
+.shell .marketplace-dashboard .dash-card,
+.shell .orders-dashboard .dash-card,
+.shell .calendar-dashboard .dash-card,
+.shell .business-dashboard .dash-card,
+.shell .admin-workspace-dashboard .dash-card {
+  color: #07162f !important;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(255, 255, 255, 0.92), transparent 36%),
+    rgba(255, 255, 255, 0.94) !important;
+}
+
+.shell .market-main > .dash-card,
+.shell .orders-main > .dash-card,
+.shell .bookmarks-main > .dash-card,
+.shell .business-main > .dash-card,
+.shell .admin-workspace-main > .dash-card {
+  max-width: 100% !important;
+  overflow: visible !important;
+}
+
+.shell .dash-section-header h2,
+.shell .panel-row strong,
+.shell .table-product strong,
+.shell .cart-product-mini strong,
+.shell .mini-stat-box strong,
+.shell .stat-card strong,
+.shell .settings-profile-summary strong,
+.shell .settings-account-metadata strong {
+  color: #07162f !important;
+  opacity: 1 !important;
+}
+
+.shell .dash-section-header p,
+.shell .panel-row span,
+.shell .panel-row p,
+.shell .table-product span,
+.shell .cart-product-mini span,
+.shell .settings-profile-summary span,
+.shell .settings-remove-media-copy,
+.shell .mode-note {
+  color: #52657f !important;
+  opacity: 1 !important;
+}
+
+.shell .settings-dashboard .auth-badge,
+.shell .marketplace-dashboard .auth-badge,
+.shell .support-dashboard .auth-badge {
+  color: #8a1242 !important;
+  border-color: rgba(236, 72, 153, 0.34) !important;
+  background: rgba(255, 228, 239, 0.94) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.74) !important;
+  -webkit-text-fill-color: #8a1242 !important;
+}
+
+.shell .settings-hero-copy,
+.shell .settings-profile-summary {
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+.shell .settings-profile-summary,
+.shell .cart-product-mini,
+.shell .table-product,
+.shell .panel-row {
+  min-width: 0 !important;
+}
+
+.shell .settings-profile-summary span,
+.shell .table-product strong,
+.shell .table-product span,
+.shell .cart-product-mini strong,
+.shell .cart-product-mini span,
+.shell .panel-row strong,
+.shell .panel-row span {
+  min-width: 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.shell .dashboard-table-wrap,
+.shell .marketplace-table-wrap {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  scrollbar-gutter: stable !important;
+}
+
+.shell .dashboard-table {
+  color: #1c2b3f !important;
+}
+
+.shell .dashboard-table th,
+.shell .dashboard-table td {
+  white-space: nowrap !important;
+}
+
+.shell .dashboard-table td {
+  color: #1f2a3a !important;
+  opacity: 1 !important;
+}
+
+.shell .marketplace-products-table {
+  min-width: 720px !important;
+  table-layout: fixed !important;
+}
+
+.shell .marketplace-products-table th:nth-child(1),
+.shell .marketplace-products-table td:nth-child(1) {
+  width: 30% !important;
+}
+
+.shell .marketplace-products-table th:nth-child(2),
+.shell .marketplace-products-table td:nth-child(2),
+.shell .marketplace-products-table th:nth-child(5),
+.shell .marketplace-products-table td:nth-child(5) {
+  width: 12% !important;
+}
+
+.shell .marketplace-products-table th:nth-child(3),
+.shell .marketplace-products-table td:nth-child(3),
+.shell .marketplace-products-table th:nth-child(4),
+.shell .marketplace-products-table td:nth-child(4) {
+  width: 10% !important;
+}
+
+.shell .marketplace-products-table th:nth-child(6),
+.shell .marketplace-products-table td:nth-child(6) {
+  width: 8% !important;
+}
+
+.shell .marketplace-products-table th:nth-child(7),
+.shell .marketplace-products-table td:nth-child(7) {
+  width: 18% !important;
+}
+
+.shell .business-products-table,
+.shell .business-orders-table,
+.shell .orders-table {
+  min-width: 760px !important;
+  table-layout: fixed !important;
+}
+
+.shell .admin-users-table-v2,
+.shell .admin-reports-table-v2 {
+  min-width: 900px !important;
+  table-layout: fixed !important;
+}
+
+.shell .table-action-row {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  gap: 8px !important;
+  align-items: center !important;
+}
+
+.shell .table-action-row button,
+.shell .table-action-row .ui-btn,
+.shell .table-action-row .gradient-btn,
+.shell .marketplace-pagination-row button,
+.shell .qty-control button {
+  width: auto !important;
+  min-width: 0 !important;
+  flex: 0 0 auto !important;
+}
+
+.shell .table-action-row .ui-btn,
+.shell .table-action-row .gradient-btn {
+  min-height: 40px !important;
+  padding-inline: 12px !important;
+  white-space: nowrap !important;
+}
+
+.shell .table-product img,
+.shell .cart-product-mini img,
+.shell .product-modal-preview img {
+  display: block !important;
+  color: transparent !important;
+  font-size: 0 !important;
+  text-indent: -9999px !important;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(18, 200, 115, 0.2), transparent 38%),
+    linear-gradient(135deg, #edf7f1, #eef5ff) !important;
+}
+
+.shell .marketplace-pagination-row {
+  flex-wrap: wrap !important;
+}
+
+.shell .orders-toolbar label,
+.shell .filter-grid label,
+.shell .business-page-selector label,
+.shell .admin-search-field,
+.shell .settings-inline-field {
+  min-width: 0 !important;
+}
+
+.shell .orders-toolbar input,
+.shell .orders-toolbar select,
+.shell .filter-grid input,
+.shell .filter-grid select,
+.shell .business-page-selector select,
+.shell .calendar-event-form input,
+.shell .calendar-event-form textarea,
+.shell .calendar-event-form select,
+.shell .settings-dashboard input,
+.shell .settings-dashboard textarea,
+.shell .settings-dashboard select,
+.shell .support-dashboard input,
+.shell .support-dashboard textarea,
+.shell .support-dashboard select,
+.shell .admin-workspace-dashboard input,
+.shell .admin-workspace-dashboard textarea,
+.shell .admin-workspace-dashboard select,
+.shell .business-dashboard input,
+.shell .business-dashboard textarea,
+.shell .business-dashboard select,
+.shell .marketplace-dashboard input,
+.shell .marketplace-dashboard textarea,
+.shell .marketplace-dashboard select {
+  color: #102033 !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: #102033 !important;
+}
+
+.shell .orders-toolbar input::placeholder,
+.shell .filter-grid input::placeholder,
+.shell .calendar-event-form input::placeholder,
+.shell .calendar-event-form textarea::placeholder,
+.shell .settings-dashboard input::placeholder,
+.shell .settings-dashboard textarea::placeholder,
+.shell .support-dashboard input::placeholder,
+.shell .support-dashboard textarea::placeholder,
+.shell .admin-workspace-dashboard input::placeholder,
+.shell .admin-workspace-dashboard textarea::placeholder,
+.shell .business-dashboard input::placeholder,
+.shell .business-dashboard textarea::placeholder,
+.shell .marketplace-dashboard input::placeholder,
+.shell .marketplace-dashboard textarea::placeholder {
+  color: #7b8aa3 !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: #7b8aa3 !important;
+}
+
+.shell .orders-toolbar select:disabled,
+.shell .settings-dashboard input:disabled,
+.shell .settings-dashboard select:disabled,
+.shell .settings-dashboard textarea:disabled,
+.shell .support-dashboard input:disabled,
+.shell .support-dashboard select:disabled,
+.shell .support-dashboard textarea:disabled,
+.shell .admin-workspace-dashboard input:disabled,
+.shell .admin-workspace-dashboard select:disabled,
+.shell .admin-workspace-dashboard textarea:disabled,
+.shell .business-dashboard input:disabled,
+.shell .business-dashboard select:disabled,
+.shell .business-dashboard textarea:disabled,
+.shell .marketplace-dashboard input:disabled,
+.shell .marketplace-dashboard select:disabled,
+.shell .marketplace-dashboard textarea:disabled {
+  color: #65728a !important;
+  background: #f8fafc !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: #65728a !important;
+}
+
+.shell .calendar-toolbar {
+  align-items: start !important;
+  gap: 14px !important;
+}
+
+.shell .month-nav {
+  min-width: 0 !important;
+}
+
+.shell .month-nav h2 {
+  color: #07162f !important;
+  opacity: 1 !important;
+  white-space: nowrap !important;
+}
+
+.shell .calendar-grid {
+  min-width: 0 !important;
+  grid-template-columns: repeat(7, minmax(74px, 1fr)) !important;
+}
+
+.shell .calendar-cell {
+  min-width: 0 !important;
+  min-height: 118px !important;
+}
+
+.shell .event-type-grid,
+.shell .reminder-option-grid {
+  grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)) !important;
+}
+
+@media (max-width: 1600px) {
+  .shell .marketplace-hub-layout {
+    grid-template-columns: minmax(0, 1fr) 300px !important;
+  }
+
+  .shell .marketplace-hub-nav {
+    grid-column: 1 / -1 !important;
+    position: static !important;
+  }
+
+  .shell .marketplace-hub-nav {
+    grid-template-columns: minmax(180px, 0.35fr) minmax(0, 1fr) !important;
+    align-items: stretch !important;
+  }
+
+  .shell .marketplace-hub-nav nav {
+    grid-template-columns: repeat(auto-fit, minmax(142px, 1fr)) !important;
+  }
+
+  .shell .marketplace-nav-card {
+    min-height: 118px !important;
+  }
+
+  .shell .marketplace-nav-art {
+    height: 78px !important;
+  }
+
+  .shell .marketplace-products-table {
+    min-width: 640px !important;
+  }
+
+  .shell .marketplace-products-table th:nth-child(6),
+  .shell .marketplace-products-table td:nth-child(6) {
+    display: none !important;
+  }
+
+  .shell .calendar-layout {
+    grid-template-columns: minmax(280px, 330px) minmax(0, 1fr) !important;
+  }
+
+  .shell .calendar-layout > .calendar-side {
+    grid-column: 1 / -1 !important;
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .shell .business-layout,
+  .shell .orders-layout,
+  .shell .admin-workspace-layout {
+    grid-template-columns: minmax(0, 1fr) 300px !important;
+  }
+
+  .shell .admin-kpi-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  .shell .business-kpi-grid,
+  .shell .admin-role-grid-v2,
+  .shell .business-order-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 1240px) {
+  .shell .marketplace-hub-layout,
+  .shell .calendar-layout,
+  .shell .business-layout,
+  .shell .orders-layout,
+  .shell .admin-workspace-layout,
+  .shell .settings-layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  .shell .marketplace-hub-nav,
+  .shell .calendar-layout > .calendar-side {
+    grid-column: auto !important;
+  }
+
+  .shell .marketplace-hub-nav,
+  .shell .calendar-layout > .calendar-side {
+    grid-template-columns: 1fr !important;
+  }
+
+  .shell .calendar-layout > .calendar-side {
+    display: grid !important;
+  }
+}
+
+@media (max-width: 860px) {
+  .shell .settings-hero-card,
+  .shell .marketplace-reference-hero,
+  .shell .overview-hero,
+  .shell .calendar-toolbar,
+  .shell .business-page-selector,
+  .shell .orders-toolbar,
+  .shell .market-filter-grid,
+  .modal-backdrop .modal-grid.two {
+    grid-template-columns: 1fr !important;
+  }
+
+  .shell .settings-hero-card::after,
+  .shell .marketplace-reference-art {
+    display: none !important;
+  }
+
+  .shell .admin-kpi-grid,
+  .shell .business-kpi-grid,
+  .shell .admin-role-grid-v2,
+  .shell .business-order-grid,
+  .shell .seller-analytics-grid,
+  .shell .calendar-layout > .calendar-side {
+    grid-template-columns: 1fr !important;
+  }
+
+  .shell .calendar-grid {
+    overflow-x: auto !important;
+  }
+
+  .modal-backdrop .ui-modal-footer {
+    flex-wrap: wrap !important;
+  }
+
+  .modal-backdrop .ui-modal-footer .ui-btn,
+  .modal-backdrop .ui-modal-footer .gradient-btn {
+    flex: 1 1 180px !important;
+  }
+}
+
+/* Compact profile header matching the provided reference screenshot. */
+.shell.shell-theme-light .profile-dashboard .profile-cover-card {
+  position: relative !important;
+  min-height: 164px !important;
+  overflow: hidden !important;
+  border-radius: 20px !important;
+  background: #ffffff !important;
+}
+
+.shell.shell-theme-light .profile-dashboard .profile-cover-card::after {
+  content: "" !important;
+  position: absolute !important;
+  z-index: 2 !important;
+  left: 150px !important;
+  right: 18px !important;
+  bottom: 16px !important;
+  height: 46px !important;
+  border: 1px solid rgba(234, 239, 250, 0.74) !important;
+  border-radius: 0 0 20px 20px !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+  box-shadow: 0 16px 38px rgba(27, 39, 82, 0.12) !important;
+  backdrop-filter: blur(16px) saturate(1.12) !important;
+  clip-path: polygon(0 0, 70% 0, 77% 62%, 100% 62%, 100% 100%, 0 100%) !important;
+  pointer-events: none !important;
+}
+
+.shell.shell-theme-light .profile-dashboard .profile-cover-art {
+  height: 156px !important;
+  overflow: hidden !important;
+  border-radius: 20px 20px 0 0 !important;
+  background:
+    linear-gradient(90deg, rgba(12, 23, 80, 0.2), rgba(78, 47, 150, 0.05) 46%, rgba(255, 84, 157, 0.08)),
+    url("./assets/backgrounds/profile-cover-4k-background.png") center / cover no-repeat !important;
+}
+
+.shell.shell-theme-light .profile-dashboard .profile-cover-art::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 1 !important;
+  background:
+    radial-gradient(circle at 14% 20%, rgba(255, 255, 255, 0.18), transparent 26%),
+    linear-gradient(90deg, rgba(15, 22, 74, 0.1), rgba(15, 22, 74, 0.02) 52%, rgba(15, 22, 74, 0.12)) !important;
+  pointer-events: none !important;
+}
+
+.shell.shell-theme-light .profile-dashboard .profile-cover-art::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: auto 0 0 !important;
+  z-index: 2 !important;
+  height: 72px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: linear-gradient(180deg, rgba(9, 16, 57, 0), rgba(9, 16, 57, 0.12)) !important;
+  mask-image: none !important;
+  pointer-events: none !important;
+}
+
+.shell.shell-theme-light .profile-dashboard .profile-cover-art img {
+  position: relative !important;
+  z-index: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+  object-fit: cover !important;
+}
+
+.shell.shell-theme-light .profile-dashboard .profile-cover-media-actions {
+  position: absolute !important;
+  z-index: 8 !important;
+  top: 14px !important;
+  right: 16px !important;
+  left: auto !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+  gap: 8px !important;
+  max-width: calc(100% - 32px) !important;
+}
+
+.shell.shell-theme-light .profile-dashboard .profile-cover-media-actions .profile-cover-upload-btn {
+  position: static !important;
+  inset: auto !important;
+  width: auto !important;
+  min-height: 30px !important;
+  height: 30px !important;
+  padding: 0 11px !important;
+  border: 0 !important;
+  border-radius: 8px !important;
+  color: #1f2a4d !important;
+  background: rgba(255, 255, 255, 0.93) !important;
+  box-shadow: 0 10px 24px rgba(31, 42, 77, 0.16) !important;
+  font-size: 0.68rem !important;
+  font-weight: 900 !important;
+  white-space: nowrap !important;
+}
+
+.shell.shell-theme-light .profile-dashboard .profile-cover-remove-btn,
+.shell.shell-theme-light .profile-dashboard .profile-photo-action-row {
+  display: none !important;
+}
+
+.shell.shell-theme-light .profile-dashboard .profile-identity-row {
+  position: relative !important;
+  z-index: 4 !important;
+  min-height: 128px !important;
+  display: grid !important;
+  grid-template-columns: 112px minmax(0, 1fr) auto !important;
+  align-items: start !important;
+  gap: 16px !important;
+  margin-top: -132px !important;
+  padding: 0 24px 14px 32px !important;
+  text-align: left !important;
+}
+
+.shell.shell-theme-light .profile-dashboard .profile-avatar-wrap,
+.shell.shell-theme-light .profile-dashboard .profile-main-avatar {
+  width: 112px !important;
+  height: 112px !important;
+}
+
+.shell.shell-theme-light .profile-dashboard .profile-main-avatar {
+  border: 5px solid #ffffff !important;
+  color: #ffffff !important;
+  font-size: 2.6rem !important;
+  background: linear-gradient(135deg, #2458ff, #ff197c) !important;
+  box-shadow: 0 16px 34px rgba(18, 27, 63, 0.28) !important;
+}
+
+.shell.shell-theme-light .profile-dashboard .profile-avatar-upload-btn {
+  position: absolute !important;
+  z-index: 6 !important;
+  right: -2px !important;
+  bottom: 8px !important;
+  width: 32px !important;
+  height: 32px !important;
+  border: 3px solid #ffffff !important;
+  border-radius: 12px !important;
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #2458ff, #4f7cff) !important;
+  box-shadow: 0 10px 20px rgba(36, 88, 255, 0.34) !important;
+}
+
+.shell.shell-theme-light .profile-dashboard .profile-avatar-upload-btn .ui-icon {
+  width: 14px !important;
+  height: 14px !important;
+}
+
+.shell.shell-theme-light .profile-dashboard .profile-name-stack {
+  min-width: 0 !important;
+  padding-top: 18px !important;
+  padding-bottom: 0 !important;
+}
+
+.shell.shell-theme-light .profile-dashboard .profile-identity-row h2 {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  margin: 0 !important;
+  color: #ffffff !important;
+  font-size: clamp(1.18rem, 1.65vw, 1.38rem) !important;
+  font-weight: 950 !important;
+  letter-spacing: -0.035em !important;
+  line-height: 1.05 !important;
+  text-shadow: 0 3px 14px rgba(15, 23, 60, 0.34) !important;
+}
+
+.shell.shell-theme-light .profile-dashboard .profile-identity-row .status-badge {
+  min-height: 20px !important;
+  padding: 0 9px !important;
+  border: 1px solid rgba(255, 255, 255, 0.72) !important;
+  color: #2458ff !important;
+  background: #ffffff !important;
+  text-shadow: none !important;
+  font-size: 0.64rem !important;
+}
+
+.shell.shell-theme-light .profile-dashboard .profile-hero-bio {
+  max-width: 590px !important;
+  margin: 8px 0 0 !important;
+  color: rgba(255, 255, 255, 0.94) !important;
+  font-size: 0.8rem !important;
+  font-weight: 850 !important;
+  line-height: 1.35 !important;
+  text-shadow: 0 2px 12px rgba(13, 20, 55, 0.28) !important;
+}
+
+.shell.shell-theme-light .profile-dashboard .profile-contact-list {
+  position: relative !important;
+  z-index: 5 !important;
+  width: min(100%, 760px) !important;
+  min-height: 34px !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 7px 18px !important;
+  margin-top: 14px !important;
+  color: #354065 !important;
+  font-size: 0.72rem !important;
+  font-weight: 900 !important;
+  text-shadow: none !important;
+}
+
+.shell.shell-theme-light .profile-dashboard .profile-contact-list span {
+  min-width: 0 !important;
+  max-width: 260px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.shell.shell-theme-light .profile-dashboard .profile-contact-list .ui-icon {
+  width: 14px !important;
+  height: 14px !important;
+  flex: 0 0 auto !important;
+  color: #275dff !important;
+  stroke-width: 2.4 !important;
+}
+
+.shell.shell-theme-light .profile-dashboard .profile-self-action-row,
+.shell.shell-theme-light .profile-dashboard .profile-action-row {
+  position: relative !important;
+  z-index: 5 !important;
+  justify-content: flex-end !important;
+  margin-top: 56px !important;
+  margin-left: 0 !important;
+}
+
+.shell.shell-theme-light .profile-dashboard .profile-hero-edit {
+  width: auto !important;
+  min-width: 112px !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 15px !important;
+  border-radius: 14px !important;
+  background: linear-gradient(135deg, #2458ff 0%, #7c3cff 44%, #ff197c 100%) !important;
+  box-shadow: 0 15px 30px rgba(124, 60, 255, 0.3) !important;
+  font-size: 0.78rem !important;
+  font-weight: 950 !important;
+}
+
+@media (max-width: 920px) {
+  .shell.shell-theme-light .profile-dashboard .profile-cover-card {
+    min-height: 350px !important;
+  }
+
+  .shell.shell-theme-light .profile-dashboard .profile-cover-card::after {
+    left: 20px !important;
+    right: 20px !important;
+    bottom: 22px !important;
+    height: 114px !important;
+    border-radius: 22px !important;
+    clip-path: none !important;
+  }
+
+  .shell.shell-theme-light .profile-dashboard .profile-cover-art {
+    height: 218px !important;
+  }
+
+  .shell.shell-theme-light .profile-dashboard .profile-identity-row {
+    grid-template-columns: 1fr !important;
+    justify-items: center !important;
+    gap: 10px !important;
+    margin-top: -148px !important;
+    padding: 0 22px 24px !important;
+    text-align: center !important;
+  }
+
+  .shell.shell-theme-light .profile-dashboard .profile-avatar-wrap,
+  .shell.shell-theme-light .profile-dashboard .profile-main-avatar {
+    width: 126px !important;
+    height: 126px !important;
+  }
+
+  .shell.shell-theme-light .profile-dashboard .profile-name-stack {
+    width: 100% !important;
+    padding-top: 0 !important;
+  }
+
+  .shell.shell-theme-light .profile-dashboard .profile-identity-row h2,
+  .shell.shell-theme-light .profile-dashboard .profile-contact-list {
+    justify-content: center !important;
+  }
+
+  .shell.shell-theme-light .profile-dashboard .profile-contact-list {
+    margin-top: 12px !important;
+  }
+
+  .shell.shell-theme-light .profile-dashboard .profile-self-action-row,
+  .shell.shell-theme-light .profile-dashboard .profile-action-row {
+    justify-content: center !important;
+    margin-top: 0 !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .shell.shell-theme-light .profile-dashboard .profile-cover-card {
+    min-height: 376px !important;
+    border-radius: 20px !important;
+  }
+
+  .shell.shell-theme-light .profile-dashboard .profile-cover-media-actions {
+    top: 12px !important;
+    right: 12px !important;
+    left: 12px !important;
+    justify-content: flex-end !important;
+  }
+
+  .shell.shell-theme-light .profile-dashboard .profile-cover-media-actions .profile-cover-upload-btn {
+    min-width: 0 !important;
+    padding-inline: 10px !important;
+  }
+
+  .shell.shell-theme-light .profile-dashboard .profile-contact-list {
+    display: grid !important;
+    justify-items: center !important;
+    gap: 7px !important;
+    font-size: 0.7rem !important;
+  }
+
+  .shell.shell-theme-light .profile-dashboard .profile-contact-list span {
+    max-width: min(100%, 280px) !important;
+  }
+}
+
+/* Universal route-aware top navbar. */
+.shell.shell-theme-light .shell-header-reference {
+  --shell-header-accent: #2458ff;
+  --shell-header-accent-rgb: 36, 88, 255;
+  --shell-header-accent-2: #ff197c;
+  --shell-header-accent-2-rgb: 255, 25, 124;
+  --shell-header-ink: #17224a;
+  grid-template-columns: minmax(260px, 1fr) minmax(560px, auto) !important;
+  min-height: 86px !important;
+  padding: 14px 20px 14px 24px !important;
+  background:
+    radial-gradient(circle at 4% 10%, rgba(var(--shell-header-accent-rgb), 0.13), transparent 24%),
+    radial-gradient(circle at 34% 0%, rgba(var(--shell-header-accent-2-rgb), 0.09), transparent 25%),
+    linear-gradient(90deg, rgba(245, 248, 255, 0.96), rgba(250, 247, 255, 0.92)) !important;
+  border-bottom-color: rgba(var(--shell-header-accent-rgb), 0.18) !important;
+  box-shadow: 0 12px 30px rgba(36, 51, 105, 0.08) !important;
+}
+
+.shell.shell-theme-light .shell-header-home-feed {
+  --shell-header-accent: #16b96f;
+  --shell-header-accent-rgb: 22, 185, 111;
+  --shell-header-accent-2: #2563eb;
+  --shell-header-accent-2-rgb: 37, 99, 235;
+}
+
+.shell.shell-theme-light .shell-header-profile-page {
+  --shell-header-accent: #2458ff;
+  --shell-header-accent-rgb: 36, 88, 255;
+  --shell-header-accent-2: #ff197c;
+  --shell-header-accent-2-rgb: 255, 25, 124;
+}
+
+.shell.shell-theme-light .shell-header-friends,
+.shell.shell-theme-light .shell-header-chat,
+.shell.shell-theme-light .shell-header-notifications {
+  --shell-header-accent: #2563eb;
+  --shell-header-accent-rgb: 37, 99, 235;
+  --shell-header-accent-2: #06b6d4;
+  --shell-header-accent-2-rgb: 6, 182, 212;
+}
+
+.shell.shell-theme-light .shell-header-notifications {
+  --shell-header-accent: #ef4444;
+  --shell-header-accent-rgb: 239, 68, 68;
+  --shell-header-accent-2: #f97316;
+  --shell-header-accent-2-rgb: 249, 115, 22;
+}
+
+.shell.shell-theme-light .shell-header-marketplace,
+.shell.shell-theme-light .shell-header-business {
+  --shell-header-accent: #0d8f67;
+  --shell-header-accent-rgb: 13, 143, 103;
+  --shell-header-accent-2: #f59e0b;
+  --shell-header-accent-2-rgb: 245, 158, 11;
+}
+
+.shell.shell-theme-light .shell-header-orders,
+.shell.shell-theme-light .shell-header-bookmarks {
+  --shell-header-accent: #f59e0b;
+  --shell-header-accent-rgb: 245, 158, 11;
+  --shell-header-accent-2: #2458ff;
+  --shell-header-accent-2-rgb: 36, 88, 255;
+}
+
+.shell.shell-theme-light .shell-header-calendar,
+.shell.shell-theme-light .shell-header-analytics {
+  --shell-header-accent: #7c3cff;
+  --shell-header-accent-rgb: 124, 60, 255;
+  --shell-header-accent-2: #14b8a6;
+  --shell-header-accent-2-rgb: 20, 184, 166;
+}
+
+.shell.shell-theme-light .shell-header-support,
+.shell.shell-theme-light .shell-header-settings {
+  --shell-header-accent: #0ea5e9;
+  --shell-header-accent-rgb: 14, 165, 233;
+  --shell-header-accent-2: #8b5cf6;
+  --shell-header-accent-2-rgb: 139, 92, 246;
+}
+
+.shell.shell-theme-light .shell-header-admin,
+.shell.shell-theme-light .shell-header-admin-users,
+.shell.shell-theme-light .shell-header-admin-business-users,
+.shell.shell-theme-light .shell-header-admin-farmers,
+.shell.shell-theme-light .shell-header-admin-creators,
+.shell.shell-theme-light .shell-header-admin-admins,
+.shell.shell-theme-light .shell-header-admin-moderation,
+.shell.shell-theme-light .shell-header-admin-support {
+  --shell-header-accent: #7c3cff;
+  --shell-header-accent-rgb: 124, 60, 255;
+  --shell-header-accent-2: #ef4444;
+  --shell-header-accent-2-rgb: 239, 68, 68;
+}
+
+.shell.shell-theme-light .shell-header-reference .shell-header-left,
+.shell.shell-theme-light .shell-header-reference .shell-page-meta {
+  min-width: 0 !important;
+}
+
+.shell.shell-theme-light .shell-page-title-reference {
+  width: max-content !important;
+  max-width: 100% !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  margin: 0 !important;
+  font-family: Georgia, "Times New Roman", serif !important;
+  font-size: clamp(2rem, 3.7vw, 3.35rem) !important;
+  line-height: 0.95 !important;
+  font-weight: 950 !important;
+  letter-spacing: -0.07em !important;
+}
+
+.shell.shell-theme-light .shell-page-title-reference .shell-title-word {
+  position: relative !important;
+  display: inline-block !important;
+  color: transparent !important;
+  background: linear-gradient(110deg, var(--shell-header-accent) 0%, #2458ff 42%, var(--shell-header-accent-2) 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  text-shadow: 0 10px 28px rgba(var(--shell-header-accent-rgb), 0.12) !important;
+}
+
+.shell.shell-theme-light .shell-page-title-reference .shell-title-word::after {
+  content: "" !important;
+  position: absolute !important;
+  right: -17px !important;
+  top: -12px !important;
+  width: 12px !important;
+  height: 28px !important;
+  border-radius: 8px 8px 2px 2px !important;
+  background: linear-gradient(180deg, var(--shell-header-accent), var(--shell-header-accent-2)) !important;
+  box-shadow: 0 9px 18px rgba(var(--shell-header-accent-rgb), 0.24) !important;
+  transform: rotate(-14deg) !important;
+}
+
+.shell.shell-theme-light .shell-header-reference .shell-page-subtitle {
+  margin-top: 9px !important;
+  color: #596684 !important;
+  font-size: 0.86rem !important;
+  font-weight: 850 !important;
+}
+
+.shell.shell-theme-light .shell-header-reference .shell-subtitle-dot {
+  background: var(--shell-header-accent) !important;
+  box-shadow: 0 0 0 8px rgba(var(--shell-header-accent-rgb), 0.12), 0 0 18px rgba(var(--shell-header-accent-2-rgb), 0.24) !important;
+}
+
+.shell.shell-theme-light .shell-header-reference .shell-header-search,
+.shell.shell-theme-light .shell-header-reference .shell-icon-action-btn,
+.shell.shell-theme-light .shell-header-reference .notif-trigger,
+.shell.shell-theme-light .shell-header-reference .shell-logout-btn {
+  border-color: rgba(var(--shell-header-accent-rgb), 0.14) !important;
+  box-shadow: 0 13px 28px rgba(36, 51, 105, 0.1) !important;
+}
+
+.shell.shell-theme-light .shell-header-reference .shell-header-search .ui-icon,
+.shell.shell-theme-light .shell-header-reference .shell-inline-icon {
+  color: var(--shell-header-accent) !important;
+}
+
+.shell.shell-theme-light .shell-header-reference .shell-header-search input::placeholder {
+  color: #92a0bf !important;
+}
+
+.shell.shell-theme-light .shell-header-reference .shell-user .avatar {
+  border: 3px solid #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(var(--shell-header-accent-rgb), 0.72), 0 12px 22px rgba(var(--shell-header-accent-rgb), 0.16) !important;
+}
+
+.shell.shell-theme-light .shell-header-reference .shell-user-name {
+  color: var(--shell-header-ink) !important;
+}
+
+.shell.shell-theme-light .shell-header-reference .shell-user-role {
+  color: #5b6682 !important;
+}
+
+.shell.shell-theme-light .shell-header-reference .shell-logout-btn {
+  color: var(--shell-header-ink) !important;
+  background: #ffffff !important;
+}
+
+@media (max-width: 1180px) {
+  .shell.shell-theme-light .shell-header-reference {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .shell.shell-theme-light .shell-header-reference .shell-header-right {
+    justify-content: flex-start !important;
+    flex-wrap: wrap !important;
+  }
+
+  .shell.shell-theme-light .shell-header-reference .shell-header-search {
+    width: auto !important;
+    min-width: min(100%, 280px) !important;
+    flex: 1 1 340px !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .shell.shell-theme-light .shell-header-reference {
+    padding: 14px !important;
+  }
+
+  .shell.shell-theme-light .shell-page-title-reference {
+    font-size: clamp(1.85rem, 10vw, 2.55rem) !important;
+  }
+
+  .shell.shell-theme-light .shell-header-reference .shell-page-subtitle {
+    font-size: 0.78rem !important;
+  }
+
+  .shell.shell-theme-light .shell-header-reference .shell-user {
+    min-width: 46px !important;
+  }
+
+  .shell.shell-theme-light .shell-header-reference .shell-user > div {
+    display: none !important;
+  }
+
+  .shell.shell-theme-light .shell-header-reference .shell-header-search kbd {
+    display: none !important;
+  }
+}
+
+/* Friends & Network page reference UI. Scoped to page content only. */
+.shell .friends-dashboard {
+  --friends-blue: #2458ff;
+  --friends-blue-deep: #1646d9;
+  --friends-pink: #ec3ba5;
+  --friends-purple: #7c3cff;
+  --friends-orange: #f26a3d;
+  --friends-ink: #101936;
+  --friends-muted: #64708d;
+  --friends-line: rgba(214, 223, 242, 0.92);
+  --friends-glass: rgba(255, 255, 255, 0.78);
+  --friends-shadow: 0 22px 58px rgba(34, 47, 86, 0.12);
+  gap: 12px !important;
+  border-radius: 28px !important;
+  background:
+    linear-gradient(90deg, rgba(249, 252, 255, 0.74), rgba(255, 247, 253, 0.78)),
+    url("./assets/backgrounds/friends-network-orb-bg.png") center / cover no-repeat !important;
+}
+
+.shell .friends-dashboard::before {
+  background:
+    radial-gradient(circle at 14% 18%, rgba(36, 88, 255, 0.1), transparent 26%),
+    radial-gradient(circle at 82% 12%, rgba(236, 59, 165, 0.12), transparent 28%) !important;
+}
+
+.shell .friends-dashboard::after {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.38)) !important;
+}
+
+.shell .friends-dashboard > * {
+  position: relative;
+  z-index: 1;
+}
+
+.shell .friends-network-hero {
+  display: grid;
+  grid-template-columns: minmax(320px, 0.95fr) minmax(420px, 1.45fr);
+  gap: 14px;
+  align-items: stretch;
+  padding: 14px;
+  border: 1px solid var(--friends-line);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.56);
+  box-shadow: var(--friends-shadow);
+  backdrop-filter: blur(20px) saturate(1.16);
+}
+
+.shell .friends-hero-copy {
+  position: relative;
+  min-height: 184px;
+  display: grid;
+  grid-template-columns: 132px minmax(0, 1fr);
+  align-items: center;
+  gap: 26px;
+  overflow: hidden;
+  padding: 28px 34px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 20px;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.72) 70%),
+    url("./assets/backgrounds/friends-network-orb-bg.png") 35% center / cover no-repeat;
+}
+
+.shell .friends-hero-copy::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 86% 28%, rgba(236, 59, 165, 0.22), transparent 6%),
+    radial-gradient(circle at 95% 64%, rgba(124, 60, 255, 0.16), transparent 9%),
+    radial-gradient(circle at 72% 18%, rgba(236, 59, 165, 0.42), transparent 4%);
+}
+
+.shell .friends-hero-icon {
+  position: relative;
+  z-index: 1;
+  width: 104px;
+  height: 104px;
+  display: grid;
+  place-items: center;
+  justify-self: center;
+  border: 12px solid rgba(255, 255, 255, 0.74);
+  border-radius: 999px;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--friends-blue), var(--friends-purple) 48%, var(--friends-pink));
+  box-shadow: 0 20px 38px rgba(36, 88, 255, 0.24), 0 14px 28px rgba(236, 59, 165, 0.18);
+}
+
+.shell .friends-hero-icon .ui-icon {
+  width: 42px;
+  height: 42px;
+}
+
+.shell .friends-hero-copy > div {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+
+.shell .friends-hero-copy .eyebrow {
+  margin: 0 0 7px;
+  color: var(--friends-purple);
+  font-size: 0.78rem;
+  font-weight: 950;
+}
+
+.shell .friends-hero-copy h2 {
+  max-width: 480px;
+  margin: 0;
+  color: var(--friends-ink) !important;
+  font-size: clamp(1.4rem, 2vw, 2rem);
+  font-weight: 950;
+  line-height: 1.18;
+  letter-spacing: -0.035em;
+}
+
+.shell .friends-hero-copy p:not(.eyebrow) {
+  max-width: 500px;
+  margin: 12px 0 0;
+  color: var(--friends-muted) !important;
+  font-size: 0.9rem;
+  font-weight: 760;
+  line-height: 1.58;
+}
+
+.shell .friends-hero-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: stretch;
+  padding: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(225, 232, 246, 0.76);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at 96% 0%, rgba(236, 59, 165, 0.08), transparent 34%),
+    radial-gradient(circle at 8% 100%, rgba(36, 88, 255, 0.08), transparent 32%),
+    rgba(255, 255, 255, 0.82);
+  box-shadow: 0 14px 34px rgba(34, 47, 86, 0.08);
+}
+
+.shell .friends-stat-tile {
+  min-width: 0;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 8px;
+  padding: 16px 14px;
+  text-align: center;
+}
+
+.shell .friends-stat-tile + .friends-stat-tile {
+  border-left: 1px solid rgba(214, 223, 242, 0.95);
+}
+
+.shell .friends-stat-tile > span {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 15px;
+  color: var(--friends-blue);
+  background: rgba(36, 88, 255, 0.08);
+}
+
+.shell .friends-stat-pink > span {
+  color: var(--friends-pink);
+  background: rgba(236, 59, 165, 0.09);
+}
+
+.shell .friends-stat-purple > span {
+  color: var(--friends-purple);
+  background: rgba(124, 60, 255, 0.09);
+}
+
+.shell .friends-stat-orange > span {
+  color: var(--friends-orange);
+  background: rgba(242, 106, 61, 0.09);
+}
+
+.shell .friends-stat-tile small,
+.shell .friends-stat-tile em {
+  color: var(--friends-muted);
+  font-style: normal;
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.shell .friends-stat-tile strong {
+  color: var(--friends-ink) !important;
+  font-size: clamp(1.75rem, 2.6vw, 2.35rem);
+  font-weight: 950;
+  line-height: 1;
+}
+
+.shell .friends-stat-tile em {
+  color: var(--friends-blue-deep);
+  font-size: 0.74rem;
+}
+
+.shell .friends-dashboard .network-discovery-card,
+.shell .friends-dashboard .friends-suggested-card,
+.shell .friends-dashboard .friends-side-card {
+  border-radius: 20px !important;
+  border-color: var(--friends-line) !important;
+  background: rgba(255, 255, 255, 0.76) !important;
+  box-shadow: var(--friends-shadow) !important;
+}
+
+.shell .friends-dashboard .network-discovery-card {
+  padding: 12px 14px 16px !important;
+}
+
+.shell .friends-dashboard .network-tabs {
+  display: grid !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+  margin-bottom: 12px !important;
+  padding: 7px !important;
+  border-color: var(--friends-line) !important;
+  border-radius: 18px !important;
+  background: rgba(255, 255, 255, 0.86) !important;
+}
+
+.shell .friends-dashboard .network-tabs button {
+  min-width: 0 !important;
+  min-height: 46px !important;
+  border-radius: 13px !important;
+  color: #35405f !important;
+  font-weight: 930 !important;
+}
+
+.shell .friends-dashboard .network-tabs button.active {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, var(--friends-blue), var(--friends-purple) 52%, var(--friends-pink)) !important;
+  box-shadow: 0 13px 26px rgba(36, 88, 255, 0.2), 0 10px 20px rgba(236, 59, 165, 0.16) !important;
+}
+
+.shell .friends-dashboard .network-tabs strong {
+  color: inherit !important;
+  background: rgba(36, 88, 255, 0.08) !important;
+}
+
+.shell .friends-dashboard .network-tabs button.active strong {
+  background: rgba(255, 255, 255, 0.22) !important;
+}
+
+.shell .friends-dashboard .network-search-row {
+  grid-template-columns: minmax(0, 1fr) minmax(110px, auto) minmax(96px, auto) !important;
+  align-items: center;
+  gap: 10px !important;
+  margin: 10px 0 12px !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+.shell .friends-dashboard .network-search-row label {
+  min-height: 50px !important;
+  border-color: var(--friends-line) !important;
+  border-radius: 16px !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86);
+}
+
+.shell .friends-dashboard .network-search-row input {
+  color: var(--friends-ink) !important;
+  font-weight: 800;
+}
+
+.shell .friends-dashboard .network-search-row input::placeholder {
+  color: #8c98b5;
+}
+
+.shell .friends-dashboard .network-search-row .gradient-btn,
+.shell .friends-dashboard .network-search-row .ui-btn {
+  min-height: 50px !important;
+  border-radius: 14px !important;
+  font-weight: 940 !important;
+}
+
+.shell .friends-filter-stack {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.shell .friends-dashboard .filter-pills {
+  gap: 8px !important;
+  margin: 0 !important;
+}
+
+.shell .friends-dashboard .filter-pills button {
+  min-height: 39px !important;
+  border-color: var(--friends-line) !important;
+  color: #35405f !important;
+  background: rgba(255, 255, 255, 0.86) !important;
+  box-shadow: 0 10px 24px rgba(34, 47, 86, 0.06) !important;
+  font-size: 0.82rem !important;
+  font-weight: 930 !important;
+}
+
+.shell .friends-dashboard .filter-pills button.active {
+  color: #ffffff !important;
+  border-color: transparent !important;
+  background: linear-gradient(135deg, var(--friends-blue), var(--friends-purple) 52%, var(--friends-pink)) !important;
+  box-shadow: 0 13px 26px rgba(36, 88, 255, 0.18) !important;
+}
+
+.shell .friends-dashboard .role-filter-pills button {
+  min-height: 35px !important;
+  font-size: 0.78rem !important;
+}
+
+.shell .friends-dashboard .people-card-grid,
+.shell .friends-dashboard .account-list-grid,
+.shell .friends-dashboard .request-list {
+  grid-template-columns: 1fr !important;
+  gap: 12px !important;
+}
+
+.shell .friends-dashboard .user-card-v2 {
+  min-height: 0 !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  grid-template-areas:
+    "profile actions"
+    "handle actions"
+    "mutual actions"
+    "avatars actions" !important;
+  align-items: center !important;
+  justify-items: stretch !important;
+  gap: 3px 16px !important;
+  padding: 15px 16px !important;
+  border-radius: 18px !important;
+  text-align: left !important;
+}
+
+.shell .friends-dashboard .user-card-profile-button {
+  grid-area: profile !important;
+  display: grid !important;
+  grid-template-columns: 70px minmax(0, 1fr) !important;
+  align-items: center !important;
+  justify-items: start !important;
+  gap: 14px !important;
+  text-align: left !important;
+}
+
+.shell .friends-dashboard .user-card-profile-button .ui-avatar {
+  width: 64px !important;
+  height: 64px !important;
+}
+
+.shell .friends-dashboard .user-card-profile-button h3 {
+  justify-content: flex-start !important;
+  margin: 0 !important;
+  color: var(--friends-ink) !important;
+  font-size: 0.98rem !important;
+  font-weight: 950 !important;
+}
+
+.shell .friends-dashboard .user-card-v2 > p {
+  grid-area: handle !important;
+  margin: -6px 0 0 84px !important;
+  color: #556381 !important;
+  font-size: 0.82rem !important;
+  font-weight: 820 !important;
+}
+
+.shell .friends-dashboard .user-card-v2 .mutual-line {
+  grid-area: mutual !important;
+  margin-left: 84px !important;
+  color: #6f7b98 !important;
+  font-size: 0.8rem !important;
+  font-weight: 780 !important;
+}
+
+.shell .friends-dashboard .user-card-v2 .avatar-row {
+  grid-area: avatars !important;
+  margin-left: 84px !important;
+  margin-top: 3px !important;
+}
+
+.shell .friends-dashboard .user-card-actions {
+  grid-area: actions !important;
+  width: auto !important;
+  min-width: 250px;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(108px, 1fr)) !important;
+  align-content: center !important;
+  gap: 10px !important;
+  margin-top: 0 !important;
+}
+
+.shell .friends-dashboard .user-card-actions .ui-btn,
+.shell .friends-dashboard .user-card-actions .gradient-btn {
+  min-height: 42px !important;
+  border-radius: 13px !important;
+  white-space: nowrap;
+}
+
+.shell .friends-dashboard .request-row,
+.shell .friends-dashboard .account-row-card {
+  border-color: var(--friends-line) !important;
+  border-radius: 18px !important;
+  background: rgba(255, 255, 255, 0.84) !important;
+  box-shadow: 0 12px 28px rgba(34, 47, 86, 0.07) !important;
+}
+
+.shell .friends-dashboard .request-row strong,
+.shell .friends-dashboard .account-row-card strong,
+.shell .friends-dashboard .dash-section-header h2,
+.shell .friends-dashboard .panel-row strong,
+.shell .friends-dashboard .suggested-media-card strong,
+.shell .friends-empty-state strong {
+  color: var(--friends-ink) !important;
+}
+
+.shell .friends-dashboard .request-row p,
+.shell .friends-dashboard .account-row-card p,
+.shell .friends-dashboard .dash-section-header p,
+.shell .friends-dashboard .panel-row span,
+.shell .friends-dashboard .suggested-media-card span,
+.shell .friends-empty-state p,
+.shell .friends-dashboard .empty-panel p {
+  color: var(--friends-muted) !important;
+  font-weight: 760 !important;
+}
+
+.shell .friends-dashboard .account-row-card {
+  grid-template-columns: 52px minmax(0, 1fr) auto auto auto auto !important;
+}
+
+.shell .friends-dashboard .account-row-card > div,
+.shell .friends-dashboard .request-row > div {
+  min-width: 0;
+}
+
+.shell .friends-dashboard .account-row-card p,
+.shell .friends-dashboard .request-row p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shell .friends-dashboard .friends-bottom-grid {
+  grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.75fr) !important;
+  gap: 16px !important;
+}
+
+.shell .friends-dashboard .suggested-media-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  margin-top: 12px;
+}
+
+.shell .friends-dashboard .suggested-media-card {
+  min-width: 0;
+  display: grid;
+  gap: 7px;
+  padding: 10px;
+  border: 1px solid var(--friends-line);
+  border-radius: 16px;
+  color: inherit;
+  background: rgba(255, 255, 255, 0.84);
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 12px 28px rgba(34, 47, 86, 0.07);
+}
+
+.shell .friends-dashboard .suggested-media-card > div {
+  height: 126px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 13px;
+  color: var(--friends-blue);
+  background:
+    radial-gradient(circle at 20% 20%, rgba(36, 88, 255, 0.14), transparent 34%),
+    radial-gradient(circle at 90% 12%, rgba(236, 59, 165, 0.14), transparent 30%),
+    #eef5ff;
+}
+
+.shell .friends-dashboard .suggested-media-card img,
+.shell .friends-dashboard .suggested-media-card video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.shell .friends-dashboard .suggested-media-card strong,
+.shell .friends-dashboard .suggested-media-card span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.shell .friends-dashboard .friends-side-card {
+  align-self: stretch;
+}
+
+.shell .friends-dashboard .friends-side-card .panel-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.shell .friends-dashboard .friend-side-row {
+  grid-template-columns: auto minmax(0, 1fr) auto !important;
+  border: 1px solid var(--friends-line);
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.shell .friends-empty-state {
+  min-height: 250px;
+  display: grid;
+  justify-items: center;
+  align-content: center;
+  gap: 10px;
+  padding: 22px;
+  text-align: center;
+}
+
+.shell .friends-empty-art {
+  position: relative;
+  width: 156px;
+  height: 116px;
+  margin-bottom: 4px;
+}
+
+.shell .friends-empty-person {
+  position: absolute;
+  bottom: 8px;
+  width: 66px;
+  height: 66px;
+  display: grid;
+  place-items: center;
+  border-radius: 24px 24px 28px 28px;
+  color: #ffffff;
+  box-shadow: 0 16px 30px rgba(34, 47, 86, 0.12);
+}
+
+.shell .friends-empty-person-blue {
+  left: 24px;
+  background: linear-gradient(135deg, #7da9ff, var(--friends-blue));
+}
+
+.shell .friends-empty-person-pink {
+  right: 22px;
+  background: linear-gradient(135deg, #ff8fc8, var(--friends-pink));
+}
+
+.shell .friends-empty-chat {
+  position: absolute;
+  top: 8px;
+  left: 61px;
+  width: 42px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #9bb8ff, #b997ff);
+  box-shadow: 0 12px 22px rgba(36, 88, 255, 0.16);
+}
+
+.shell .friends-empty-state .ui-btn {
+  margin-top: 6px;
+  min-height: 42px !important;
+  border-radius: 13px !important;
+  color: var(--friends-blue-deep) !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+}
+
+.shell .friends-dashboard .empty-panel {
+  min-height: 190px;
+  border: 1px dashed rgba(175, 190, 220, 0.8);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.58);
+}
+
+.shell .friends-dashboard .empty-panel h3 {
+  color: var(--friends-ink) !important;
+}
+
+@media (max-width: 1320px) {
+  .shell .friends-network-hero,
+  .shell .friends-dashboard .friends-bottom-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 980px) {
+  .shell .friends-dashboard .network-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .shell .friends-dashboard .network-search-row,
+  .shell .friends-dashboard .account-row-card,
+  .shell .friends-dashboard .request-row,
+  .shell .friends-dashboard .user-card-v2 {
+    grid-template-columns: 1fr !important;
+  }
+
+  .shell .friends-dashboard .user-card-v2 {
+    grid-template-areas:
+      "profile"
+      "handle"
+      "mutual"
+      "avatars"
+      "actions" !important;
+  }
+
+  .shell .friends-dashboard .user-card-v2 > p,
+  .shell .friends-dashboard .user-card-v2 .mutual-line,
+  .shell .friends-dashboard .user-card-v2 .avatar-row {
+    margin-left: 84px !important;
+  }
+
+  .shell .friends-dashboard .user-card-actions {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .shell .friends-dashboard .account-row-card > .status-badge,
+  .shell .friends-dashboard .account-row-card > .ui-btn,
+  .shell .friends-dashboard .request-row > .ui-btn,
+  .shell .friends-dashboard .request-row > .gradient-btn {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .shell .friends-network-hero,
+  .shell .friends-hero-copy,
+  .shell .friends-hero-stats,
+  .shell .friends-dashboard .suggested-media-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .shell .friends-hero-copy {
+    padding: 22px;
+    text-align: center;
+    justify-items: center;
+  }
+
+  .shell .friends-stat-tile + .friends-stat-tile {
+    border-left: 0;
+    border-top: 1px solid rgba(214, 223, 242, 0.95);
+  }
+
+  .shell .friends-dashboard .network-tabs {
+    grid-template-columns: 1fr !important;
+  }
+
+  .shell .friends-dashboard .user-card-profile-button {
+    grid-template-columns: 1fr !important;
+    justify-items: center !important;
+    text-align: center !important;
+  }
+
+  .shell .friends-dashboard .user-card-v2 > p,
+  .shell .friends-dashboard .user-card-v2 .mutual-line,
+  .shell .friends-dashboard .user-card-v2 .avatar-row {
+    margin-left: 0 !important;
+    justify-self: center !important;
+    text-align: center !important;
+  }
+}
+
+/* Friends compact pass: real data only rows, no fake mutual placeholders. */
+.shell .friends-dashboard {
+  padding: clamp(12px, 1.4vw, 18px) !important;
+}
+
+.shell .friends-network-hero {
+  grid-template-columns: minmax(460px, 0.95fr) minmax(520px, 1.35fr) !important;
+  gap: 10px !important;
+  padding: 10px !important;
+  border-radius: 22px !important;
+}
+
+.shell .friends-hero-copy {
+  min-height: 136px !important;
+  grid-template-columns: 84px minmax(0, 1fr) !important;
+  gap: 16px !important;
+  padding: 18px 24px !important;
+}
+
+.shell .friends-hero-icon {
+  width: 70px !important;
+  height: 70px !important;
+  border-width: 8px !important;
+}
+
+.shell .friends-hero-icon .ui-icon {
+  width: 28px !important;
+  height: 28px !important;
+}
+
+.shell .friends-hero-copy .eyebrow {
+  margin-bottom: 4px !important;
+  font-size: 0.72rem !important;
+}
+
+.shell .friends-hero-copy h2 {
+  max-width: 620px !important;
+  font-size: clamp(1.08rem, 1.45vw, 1.44rem) !important;
+  line-height: 1.18 !important;
+}
+
+.shell .friends-hero-copy p:not(.eyebrow) {
+  max-width: 620px !important;
+  margin-top: 8px !important;
+  font-size: 0.78rem !important;
+  line-height: 1.45 !important;
+}
+
+.shell .friends-hero-stats {
+  padding: 10px !important;
+}
+
+.shell .friends-stat-tile {
+  gap: 5px !important;
+  padding: 10px 8px !important;
+}
+
+.shell .friends-stat-tile > span {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 11px !important;
+}
+
+.shell .friends-stat-tile .ui-icon {
+  width: 18px !important;
+  height: 18px !important;
+}
+
+.shell .friends-stat-tile small,
+.shell .friends-stat-tile em {
+  font-size: 0.68rem !important;
+}
+
+.shell .friends-stat-tile strong {
+  font-size: clamp(1.32rem, 2vw, 1.75rem) !important;
+}
+
+.shell .friends-dashboard .network-discovery-card {
+  padding: 10px 12px 12px !important;
+}
+
+.shell .friends-dashboard .network-tabs {
+  min-height: 42px !important;
+  margin-bottom: 9px !important;
+  padding: 5px !important;
+}
+
+.shell .friends-dashboard .network-tabs button {
+  min-height: 36px !important;
+  border-radius: 10px !important;
+  font-size: 0.78rem !important;
+}
+
+.shell .friends-dashboard .network-tabs strong {
+  min-width: 21px !important;
+  height: 21px !important;
+  font-size: 0.68rem !important;
+}
+
+.shell .friends-dashboard .network-search-row {
+  margin: 8px 0 9px !important;
+}
+
+.shell .friends-dashboard .network-search-row label,
+.shell .friends-dashboard .network-search-row .gradient-btn,
+.shell .friends-dashboard .network-search-row .ui-btn {
+  min-height: 42px !important;
+}
+
+.shell .friends-filter-stack {
+  gap: 6px !important;
+  margin-bottom: 10px !important;
+}
+
+.shell .friends-dashboard .filter-pills button {
+  min-height: 33px !important;
+  padding: 0 11px !important;
+  border-radius: 12px !important;
+  font-size: 0.74rem !important;
+}
+
+.shell .friends-person-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--friends-line);
+  border-radius: 17px;
+  background: rgba(255, 255, 255, 0.86);
+  box-shadow: 0 12px 28px rgba(34, 47, 86, 0.07);
+}
+
+.shell .friends-person-main {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.shell .friends-person-main .ui-avatar {
+  width: 52px !important;
+  height: 52px !important;
+}
+
+.shell .friends-person-main span,
+.shell .friends-person-main strong,
+.shell .friends-person-main small,
+.shell .friends-person-main em {
+  min-width: 0;
+}
+
+.shell .friends-person-main strong {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  color: var(--friends-ink) !important;
+  font-size: 0.92rem;
+  font-weight: 950;
+}
+
+.shell .friends-person-main small,
+.shell .friends-person-main em {
+  display: block;
+  margin-top: 4px;
+  overflow: hidden;
+  color: var(--friends-muted);
+  font-style: normal;
+  font-size: 0.76rem;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shell .friends-person-main em {
+  color: #53617e;
+}
+
+.shell .friends-person-actions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(104px, 1fr));
+  gap: 8px;
+}
+
+.shell .friends-person-actions .ui-btn,
+.shell .friends-person-actions .gradient-btn {
+  min-height: 38px !important;
+  border-radius: 12px !important;
+  padding-inline: 12px !important;
+  font-size: 0.78rem !important;
+  white-space: nowrap;
+}
+
+.shell .friends-dashboard .request-row,
+.shell .friends-dashboard .account-row-card {
+  padding: 11px 12px !important;
+}
+
+.shell .friends-dashboard .request-row .avatar-row {
+  display: none !important;
+}
+
+@media (max-width: 1320px) {
+  .shell .friends-network-hero {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 980px) {
+  .shell .friends-person-row {
+    grid-template-columns: 1fr !important;
+  }
+
+  .shell .friends-person-actions {
+    width: 100%;
+  }
+}
+
+@media (max-width: 720px) {
+  .shell .friends-hero-copy {
+    grid-template-columns: 1fr !important;
+  }
+
+  .shell .friends-person-main {
+    grid-template-columns: 1fr !important;
+    justify-items: center;
+    text-align: center;
+  }
+
+  .shell .friends-person-main strong {
+    justify-content: center;
+  }
+
+  .shell .friends-person-actions {
+    grid-template-columns: 1fr !important;
+  }
 }

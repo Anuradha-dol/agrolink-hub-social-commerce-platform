@@ -1,13 +1,25 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { notificationService } from "../services/notificationService";
 import { useRealtimeNotifications } from "../hooks/useRealtimeNotifications";
 import LoadingState from "/src/modules/platform/common/components/LoadingState";
 import ErrorState from "/src/modules/platform/common/components/ErrorState";
-import EmptyState from "/src/modules/platform/common/components/EmptyState";
 import { useAuth } from "/src/modules/platform/app/store";
 import { useToast } from "/src/modules/platform/common/hooks/useToast";
 import { toMediaUrl } from "/src/modules/platform/common/utils/mediaUrl";
+import {
+  Avatar,
+  Button,
+  Card,
+  EmptyPanel,
+  Icon,
+  Modal,
+  OverviewHero,
+  PageGrid,
+  SectionHeader,
+  StatusBadge,
+  Tabs
+} from "/src/modules/platform/common/ui/DashboardUI";
 
 function notificationRoute(item) {
   const referenceId = Number(item?.referenceId || 0);
@@ -28,6 +40,19 @@ function notificationRoute(item) {
   return null;
 }
 
+function notificationTone(type = "") {
+  const normalized = String(type || "").toUpperCase();
+  if (normalized.includes("LIKE") || normalized.includes("REACTION")) return "blue";
+  if (normalized.includes("MESSAGE") || normalized.includes("CHAT")) return "purple";
+  if (normalized.includes("ORDER")) return "green";
+  if (normalized.includes("REPORT") || normalized.includes("WARN")) return "orange";
+  return "pink";
+}
+
+function notificationTypeLabel(type = "") {
+  return String(type || "SYSTEM").replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
 export default function NotificationsPage() {
   const { user } = useAuth();
   const { pushToast } = useToast();
@@ -37,6 +62,9 @@ export default function NotificationsPage() {
   const [error, setError] = useState("");
   const [page, setPage] = useState(0);
   const [hasNext, setHasNext] = useState(false);
+  const [filter, setFilter] = useState("all");
+  const [clearOpen, setClearOpen] = useState(false);
+  const [busy, setBusy] = useState("");
 
   const load = useCallback(async (targetPage = 0, showLoading = true) => {
     if (showLoading) setLoading(true);
@@ -76,13 +104,52 @@ export default function NotificationsPage() {
     setItems((prev) => [notification, ...prev.filter((item) => String(item.id) !== String(notification.id))].slice(0, 20));
   });
 
+  const unreadCount = items.filter((item) => !item.read).length;
+  const visibleItems = useMemo(() => {
+    if (filter === "unread") return items.filter((item) => !item.read);
+    if (filter === "read") return items.filter((item) => item.read);
+    return items;
+  }, [filter, items]);
+
   const markRead = async (id) => {
+    setBusy(`read-${id}`);
     try {
       await notificationService.markRead(id);
       setItems((prev) => prev.map((item) => (item.id === id ? { ...item, read: true } : item)));
       window.dispatchEvent(new Event("lishare-notifications-refresh"));
     } catch {
       pushToast("Failed to update notification", "error");
+    } finally {
+      setBusy("");
+    }
+  };
+
+  const markAllRead = async () => {
+    setBusy("read-all");
+    try {
+      await notificationService.readAll();
+      setItems((prev) => prev.map((item) => ({ ...item, read: true })));
+      window.dispatchEvent(new Event("lishare-notifications-refresh"));
+      pushToast("All notifications marked as read", "success");
+    } catch {
+      pushToast("Failed to mark notifications as read", "error");
+    } finally {
+      setBusy("");
+    }
+  };
+
+  const clearAll = async () => {
+    setBusy("clear");
+    try {
+      await notificationService.clearAll();
+      setItems([]);
+      setClearOpen(false);
+      window.dispatchEvent(new Event("lishare-notifications-refresh"));
+      pushToast("Notifications cleared", "success");
+    } catch {
+      pushToast("Failed to clear notifications", "error");
+    } finally {
+      setBusy("");
     }
   };
 
@@ -101,60 +168,106 @@ export default function NotificationsPage() {
   if (error) return <ErrorState message={error} onRetry={() => load(page)} />;
 
   return (
-    <div className="notifications-page">
-      <section className="page-hero">
-        <div>
-          <h2>Notification Center</h2>
-          <p>Track likes, follows, mentions and system updates in one place.</p>
-        </div>
-        <div className="hero-stats">
-          <article>
-            <strong>{items.length}</strong>
-            <span>Visible</span>
-          </article>
-          <article>
-            <strong>{items.filter((item) => !item.read).length}</strong>
-            <span>Unread</span>
-          </article>
-          <article>
-            <strong>{page + 1}</strong>
-            <span>Page</span>
-          </article>
-        </div>
-      </section>
+    <PageGrid className="notifications-dashboard">
+      <OverviewHero
+        icon="bell"
+        eyebrow="Notification Center"
+        title="Track likes, follows, mentions and system updates in one place."
+        subtitle="Visible alerts, unread states, page counters, and click-through actions stay connected to the full community flow."
+        stats={[
+          { label: "Visible", value: items.length, trend: "Loaded alerts" },
+          { label: "Unread", value: unreadCount, trend: unreadCount ? "Needs review" : "All clear" },
+          { label: "Page", value: page + 1, trend: hasNext ? "More available" : "Current" }
+        ]}
+      />
 
-      <section className="card">
-        <h2>Notifications</h2>
-        {items.length === 0 ? <EmptyState title="No notifications yet" /> : null}
-        <ul className="notif-list full-page">
-          {items.map((item) => (
-            <li key={item.id} className={item.read ? "notif-item" : "notif-item unread"}>
-              <button type="button" className="notif-content-button" onClick={() => openNotification(item)}>
-                <span className={`notif-avatar ${item.actorProfileImageUrl ? "has-image" : ""}`}>
-                  {item.actorProfileImageUrl ? <img src={toMediaUrl(item.actorProfileImageUrl)} alt="" /> : (item.actorName || "N").slice(0, 1)}
-                </span>
-                <span className="notif-type-pill">{String(item.type || "SYSTEM").replace("_", " ")}</span>
-                <p>{item.message}</p>
-                <small>{item.createdAt ? new Date(item.createdAt).toLocaleString() : ""}</small>
-              </button>
-              {!item.read ? (
-                <button className="btn btn-primary notif-page-mark-btn" type="button" onClick={() => markRead(item.id)}>
-                  Mark Read
+      <Card className="notifications-list-card">
+        <SectionHeader
+          title="Notifications"
+          subtitle="Review, mark read, or open the related page directly."
+          action={(
+            <div className="inline-action-row">
+              <Button icon="check" onClick={markAllRead} disabled={!unreadCount || busy === "read-all"}>
+                {busy === "read-all" ? "Updating..." : "Mark All Read"}
+              </Button>
+              <Button icon="trash" variant="danger" onClick={() => setClearOpen(true)} disabled={!items.length}>Clear All</Button>
+            </div>
+          )}
+        />
+
+        <Tabs
+          active={filter}
+          onChange={setFilter}
+          tabs={[
+            { value: "all", label: "All", icon: "bell", count: items.length },
+            { value: "unread", label: "Unread", icon: "eye", count: unreadCount },
+            { value: "read", label: "Read", icon: "check", count: items.length - unreadCount }
+          ]}
+        />
+
+        <div className="notification-row-stack">
+          {visibleItems.map((item) => {
+            const tone = notificationTone(item.type);
+            return (
+              <article key={item.id} className={`notification-row-card ${item.read ? "is-read" : "is-unread"}`}>
+                <button type="button" className="notification-row-main" onClick={() => openNotification(item)}>
+                  <Avatar
+                    name={item.actorName || "Notification"}
+                    src={item.actorProfileImageUrl ? toMediaUrl(item.actorProfileImageUrl) : null}
+                    size="lg"
+                  />
+                  <span className={`notification-type-dot dot-${tone}`}><Icon name={tone === "green" ? "order" : tone === "purple" ? "chat" : tone === "orange" ? "bell" : "heart"} /></span>
+                  <div>
+                    <div className="notification-title-line">
+                      <StatusBadge status={notificationTypeLabel(item.type)} tone={tone} />
+                      {!item.read ? <StatusBadge status="Unread" tone="pink" /> : <StatusBadge status="Read" tone="blue" />}
+                    </div>
+                    <strong>{item.actorName ? `${item.actorName} ` : ""}{item.message || "New platform update"}</strong>
+                    <small>{item.createdAt ? new Date(item.createdAt).toLocaleString() : "Recently"}</small>
+                  </div>
+                  <span className="notification-open-arrow"><Icon name="more" /></span>
                 </button>
-              ) : null}
-            </li>
-          ))}
-        </ul>
-        <div className="pagination-row">
-          <button className="btn btn-secondary" type="button" disabled={page <= 0} onClick={() => load(page - 1)}>
-            Prev
-          </button>
-          <span>Page {page + 1}</span>
-          <button className="btn btn-secondary" type="button" disabled={!hasNext} onClick={() => load(page + 1)}>
-            Next
-          </button>
+                {!item.read ? (
+                  <Button icon="check" onClick={() => markRead(item.id)} disabled={busy === `read-${item.id}`}>
+                    {busy === `read-${item.id}` ? "Saving..." : "Mark Read"}
+                  </Button>
+                ) : null}
+              </article>
+            );
+          })}
         </div>
-      </section>
-    </div>
+
+        {!visibleItems.length ? (
+          <EmptyPanel
+            icon="bell"
+            title={filter === "unread" ? "No unread notifications" : "No notifications yet"}
+            subtitle={filter === "unread" ? "You are all caught up." : "Likes, follows, orders, messages, and system updates will appear here."}
+          />
+        ) : null}
+
+        <div className="pagination-row notifications-pagination">
+          <Button disabled={page <= 0} onClick={() => load(page - 1)}>Prev</Button>
+          <span>Page {page + 1}</span>
+          <Button disabled={!hasNext} onClick={() => load(page + 1)}>Next</Button>
+        </div>
+      </Card>
+
+      <Modal
+        open={clearOpen}
+        title="Clear Notifications"
+        subtitle="This removes the current notification list from your center."
+        onClose={busy ? undefined : () => setClearOpen(false)}
+        footer={(
+          <>
+            <Button onClick={() => setClearOpen(false)} disabled={Boolean(busy)}>Cancel</Button>
+            <Button icon="trash" variant="danger" onClick={clearAll} disabled={busy === "clear"}>
+              {busy === "clear" ? "Clearing..." : "Clear Notifications"}
+            </Button>
+          </>
+        )}
+      >
+        <p className="notification-confirm-copy">Clear all visible notifications? This keeps the UI state consistent and removes old alerts from this workspace.</p>
+      </Modal>
+    </PageGrid>
   );
 }

@@ -120,10 +120,18 @@ public class FollowController {
                 .userId(targetUser.getUserId())
                 .firstName(targetUser.getFirstname())
                 .lastName(targetUser.getLastName())
+                .username(targetUser.getProfileUsername())
                 .email(targetUser.getEmail())
+                .role(displayRole(targetUser))
                 .profileImageUrl(targetUser.getImageUrl())
                 .isFollowing(followService.isFollowing(currentUserId, targetUser.getUserId()))
                 .build();
+    }
+
+    private String displayRole(User user) {
+        if (user.getRole() == null) return "";
+        String value = user.getRole().name().replaceFirst("^ROLE_", "").toLowerCase();
+        return value.isBlank() ? "" : value.substring(0, 1).toUpperCase() + value.substring(1);
     }
 
 }

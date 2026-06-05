@@ -69,7 +69,6 @@ export default function Support() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete this question?")) return;
     try {
       await api.delete(`/support/${id}`, { withCredentials: true });
       setQuestions(questions.filter((q) => q.id !== id));

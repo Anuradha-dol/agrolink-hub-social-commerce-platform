@@ -8,6 +8,7 @@ import { friendService } from "/src/modules/social/friend/services/friendService
 import LoadingState from "/src/modules/platform/common/components/LoadingState";
 import { useToast } from "/src/modules/platform/common/hooks/useToast";
 import { toMediaUrl } from "/src/modules/platform/common/utils/mediaUrl";
+import defaultProfileCover from "/src/assets/backgrounds/profile-cover-4k-background.png";
 import {
   Avatar,
   Button,
@@ -23,6 +24,25 @@ import {
 } from "/src/modules/platform/common/ui/DashboardUI";
 
 const VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov", ".m4v", ".ogg", ".avi"];
+const PROFILE_MEDIA_MAX_BYTES = 8 * 1024 * 1024;
+const EMPTY_MEDIA_DRAFT = { type: "", file: null, previewUrl: "", error: "" };
+
+const PROFILE_MEDIA_COPY = {
+  cover: {
+    title: "Change Cover Photo",
+    subtitle: "Preview the new cover before saving. The clean mountain sunset image remains the default fallback.",
+    success: "Cover photo updated",
+    removeTitle: "Remove Cover Photo",
+    removeBody: "This will remove your custom cover and return the Profile cover to the default mountain sunset background."
+  },
+  avatar: {
+    title: "Change Profile Photo",
+    subtitle: "Preview your new profile picture before saving it.",
+    success: "Profile photo updated",
+    removeTitle: "Remove Profile Photo",
+    removeBody: "This will remove your custom profile picture and return your avatar to the default initial badge."
+  }
+};
 
 function payload(response) {
   return response?.data?.data ?? response?.data ?? null;
@@ -207,8 +227,11 @@ export default function ProfilePage() {
   const navigate = useNavigate();
   const { pushToast } = useToast();
   const coverInputRef = useRef(null);
+  const profileInputRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState("");
+  const [mediaDraft, setMediaDraft] = useState(EMPTY_MEDIA_DRAFT);
+  const [removeMediaTarget, setRemoveMediaTarget] = useState("");
   const [profileUser, setProfileUser] = useState(null);
   const [profilePosts, setProfilePosts] = useState([]);
   const [activeProfilePostTab, setActiveProfilePostTab] = useState("posts");
@@ -225,6 +248,12 @@ export default function ProfilePage() {
   const handleSource = profileUser?.username || (isOwnProfile ? (profileUser?.email || user?.email || name) : (profileUser?.email || name));
   const handle = `@${String(handleSource).split("@")[0].replace(/[^a-zA-Z0-9_]/g, "").toLowerCase()}`;
   const profileEmail = isOwnProfile ? (profileUser?.email || user?.email || "") : (profileUser?.email || "");
+  const profileAvatarSource = profileUser?.profileImageUrl || profileUser?.imageUrl || "";
+  const hasCustomCover = Boolean(profileUser?.coverImageUrl);
+  const hasCustomAvatar = Boolean(profileAvatarSource);
+  const profileCoverSrc = hasCustomCover ? toMediaUrl(profileUser.coverImageUrl) : defaultProfileCover;
+  const mediaDraftCopy = mediaDraft.type ? PROFILE_MEDIA_COPY[mediaDraft.type] : null;
+  const removeMediaCopy = removeMediaTarget ? PROFILE_MEDIA_COPY[removeMediaTarget] : null;
   const profileBio = compactText(profileUser?.bio, "Add a short bio from Profile Settings so others understand your purpose.");
   const profileLocation = compactText(profileUser?.location, "Location not added");
   const profileLanguage = compactText(profileUser?.preferredLanguage, "Language not added");
@@ -318,6 +347,12 @@ export default function ProfilePage() {
     load();
   }, [isOwnProfile, pushToast, user, viewingUserId]);
 
+  useEffect(() => {
+    return () => {
+      if (mediaDraft.previewUrl) URL.revokeObjectURL(mediaDraft.previewUrl);
+    };
+  }, [mediaDraft.previewUrl]);
+
   const openSavedItem = (post) => {
     const postId = Number(post?.postId);
     if (!postId) return;
@@ -337,19 +372,86 @@ export default function ProfilePage() {
     navigate(targetUserId === currentUserId ? "/profile" : `/profile/${targetUserId}`);
   };
 
-  const uploadCoverImage = async (file) => {
+  const resetMediaDraft = () => {
+    setMediaDraft(EMPTY_MEDIA_DRAFT);
+    if (coverInputRef.current) coverInputRef.current.value = "";
+    if (profileInputRef.current) profileInputRef.current.value = "";
+  };
+
+  const openMediaPicker = (type) => {
+    if (type === "cover") {
+      coverInputRef.current?.click();
+    } else {
+      profileInputRef.current?.click();
+    }
+  };
+
+  const handleMediaFileSelected = (type, file) => {
     if (!file || !isOwnProfile) return;
+
+    let error = "";
+    if (!file.type?.startsWith("image/")) {
+      error = "Only image files are allowed.";
+    } else if (file.size > PROFILE_MEDIA_MAX_BYTES) {
+      error = "Image must be 8 MB or smaller.";
+    }
+
+    setMediaDraft({
+      type,
+      file: error ? null : file,
+      previewUrl: error ? "" : URL.createObjectURL(file),
+      error
+    });
+
+    if (error) pushToast(error, "error");
+  };
+
+  const saveMediaDraft = async () => {
+    if (!mediaDraft.file || !mediaDraft.type || !isOwnProfile) return;
     const formData = new FormData();
-    formData.append("file", file);
-    setSaving("cover-image");
+    formData.append("file", mediaDraft.file);
+    const isCover = mediaDraft.type === "cover";
+    const savingKey = isCover ? "cover-image" : "profile-image";
+    setSaving(savingKey);
     try {
-      const response = await userService.uploadCoverImage(formData);
+      const response = isCover
+        ? await userService.uploadCoverImage(formData)
+        : await userService.uploadProfileImage(formData);
       const imageUrl = response?.data || "";
-      setProfileUser((previous) => ({ ...previous, coverImageUrl: imageUrl }));
+      setProfileUser((previous) => ({
+        ...previous,
+        ...(isCover
+          ? { coverImageUrl: imageUrl }
+          : { profileImageUrl: imageUrl, imageUrl })
+      }));
       await refreshUser();
-      pushToast("Cover picture updated", "success");
+      pushToast(PROFILE_MEDIA_COPY[mediaDraft.type].success, "success");
+      resetMediaDraft();
     } catch (errorResponse) {
-      pushToast(errorResponse?.response?.data?.message || "Cover upload failed", "error");
+      pushToast(errorResponse?.response?.data?.message || "Image upload failed", "error");
+    } finally {
+      setSaving("");
+    }
+  };
+
+  const confirmRemoveMedia = async () => {
+    if (!removeMediaTarget || !isOwnProfile) return;
+    const isCover = removeMediaTarget === "cover";
+    const savingKey = isCover ? "remove-cover" : "remove-avatar";
+    setSaving(savingKey);
+    try {
+      if (isCover) {
+        await userService.removeCoverImage();
+        setProfileUser((previous) => ({ ...previous, coverImageUrl: "" }));
+      } else {
+        await userService.removeProfileImage();
+        setProfileUser((previous) => ({ ...previous, profileImageUrl: "", imageUrl: "" }));
+      }
+      await refreshUser();
+      pushToast(isCover ? "Cover photo removed" : "Profile photo removed", "success");
+      setRemoveMediaTarget("");
+    } catch (errorResponse) {
+      pushToast(errorResponse?.response?.data?.message || "Failed to remove image", "error");
     } finally {
       setSaving("");
     }
@@ -431,24 +533,42 @@ export default function ProfilePage() {
     <PageGrid className="profile-dashboard">
       <Card className="profile-cover-card">
         <div className="profile-cover-art">
-          {profileUser?.coverImageUrl ? <img src={toMediaUrl(profileUser.coverImageUrl)} alt="Profile cover" /> : null}
+          <img src={profileCoverSrc} alt={hasCustomCover ? "Profile cover" : "Default mountain sunset profile cover"} />
           {isOwnProfile ? (
             <>
-              <button
-                type="button"
-                className="profile-cover-upload-btn profile-cover-choose-btn"
-                onClick={() => coverInputRef.current?.click()}
-                disabled={saving === "cover-image"}
-              >
-                <Icon name="image" />
-                {saving === "cover-image" ? "Uploading..." : "Choose Cover"}
-              </button>
+              <div className="profile-cover-media-actions">
+                <button
+                  type="button"
+                  className="profile-cover-upload-btn profile-cover-choose-btn"
+                  onClick={() => openMediaPicker("cover")}
+                  disabled={saving === "cover-image"}
+                >
+                  <Icon name="image" />
+                  {saving === "cover-image" ? "Saving..." : "Change Cover"}
+                </button>
+                <button
+                  type="button"
+                  className="profile-cover-upload-btn profile-cover-remove-btn"
+                  onClick={() => setRemoveMediaTarget("cover")}
+                  disabled={!hasCustomCover || saving === "remove-cover"}
+                >
+                  <Icon name="trash" />
+                  {saving === "remove-cover" ? "Removing..." : "Remove Cover Photo"}
+                </button>
+              </div>
               <input
                 ref={coverInputRef}
                 className="hidden-file-input"
                 type="file"
                 accept="image/*"
-                onChange={(event) => uploadCoverImage(event.target.files?.[0])}
+                onChange={(event) => handleMediaFileSelected("cover", event.target.files?.[0])}
+              />
+              <input
+                ref={profileInputRef}
+                className="hidden-file-input"
+                type="file"
+                accept="image/*"
+                onChange={(event) => handleMediaFileSelected("avatar", event.target.files?.[0])}
               />
             </>
           ) : null}
@@ -457,11 +577,23 @@ export default function ProfilePage() {
           <div className="profile-avatar-wrap">
             <Avatar
               name={name}
-              src={profileUser?.profileImageUrl || profileUser?.imageUrl ? toMediaUrl(profileUser.profileImageUrl || profileUser.imageUrl) : null}
+              src={profileAvatarSource ? toMediaUrl(profileAvatarSource) : null}
               size="xl"
               online={isOnlineUser(profileUser)}
               className="profile-main-avatar"
             />
+            {isOwnProfile ? (
+              <button
+                type="button"
+                className="profile-avatar-upload-btn"
+                onClick={() => openMediaPicker("avatar")}
+                disabled={saving === "profile-image"}
+                title="Change Profile Photo"
+                aria-label="Change Profile Photo"
+              >
+                <Icon name="image" />
+              </button>
+            ) : null}
           </div>
           <div className="profile-name-stack">
             <h2>
@@ -475,8 +607,24 @@ export default function ProfilePage() {
               {profileEmail ? <span><Icon name="send" /> {profileEmail}</span> : null}
               <span><Icon name="pin" /> {profileLocation}</span>
             </div>
+            {isOwnProfile ? (
+              <div className="profile-photo-action-row">
+                <Button icon="image" onClick={() => openMediaPicker("avatar")} disabled={saving === "profile-image"}>
+                  {saving === "profile-image" ? "Saving..." : "Change Profile Photo"}
+                </Button>
+                <Button icon="trash" variant="danger" onClick={() => setRemoveMediaTarget("avatar")} disabled={!hasCustomAvatar || saving === "remove-avatar"}>
+                  {saving === "remove-avatar" ? "Removing..." : "Remove Profile Photo"}
+                </Button>
+              </div>
+            ) : null}
           </div>
-          {!isOwnProfile ? (
+          {isOwnProfile ? (
+            <div className="profile-action-row profile-self-action-row">
+              <Button icon="edit" variant="gradient" className="profile-hero-edit" onClick={() => navigate("/settings")}>
+                Edit Profile
+              </Button>
+            </div>
+          ) : (
             <div className="profile-action-row">
               <Button icon="user" variant={relationship.isFollowing ? "secondary" : "gradient"} disabled={saving === "follow"} onClick={toggleProfileFollow}>
                 {relationship.isFollowing ? "Unfollow" : "Follow"}
@@ -486,7 +634,7 @@ export default function ProfilePage() {
               </Button>
               <Button icon="chat" onClick={() => navigate("/chat", { state: { startUserId: viewingUserId } })}>Chat</Button>
             </div>
-          ) : null}
+          )}
         </div>
       </Card>
 
@@ -691,6 +839,70 @@ export default function ProfilePage() {
           </Card>
         </aside>
       </div>
+
+      <Modal
+        open={Boolean(mediaDraft.type)}
+        title={mediaDraftCopy?.title || "Change Photo"}
+        subtitle={mediaDraftCopy?.subtitle}
+        onClose={saving ? undefined : resetMediaDraft}
+        footer={(
+          <>
+            <Button onClick={resetMediaDraft} disabled={Boolean(saving)}>Cancel</Button>
+            <Button
+              icon="check"
+              variant="gradient"
+              onClick={saveMediaDraft}
+              disabled={!mediaDraft.file || Boolean(mediaDraft.error) || Boolean(saving)}
+            >
+              {saving ? "Saving..." : "Save Photo"}
+            </Button>
+          </>
+        )}
+        className="profile-media-modal"
+      >
+        <div className="profile-media-draft">
+          <div className={`profile-media-preview profile-media-preview-${mediaDraft.type || "cover"}`}>
+            {mediaDraft.previewUrl ? (
+              <img src={mediaDraft.previewUrl} alt="Selected media preview" />
+            ) : (
+              <span><Icon name={mediaDraft.type === "avatar" ? "user" : "image"} /></span>
+            )}
+          </div>
+          <div className="profile-media-draft-copy">
+            <strong>{mediaDraft.file?.name || "No valid image selected"}</strong>
+            <p>
+              JPG, PNG, WebP, or GIF. Maximum size is 8 MB.
+              {mediaDraft.type === "cover" ? " Wide landscape images work best for the Profile cover." : " Square portraits work best for the avatar."}
+            </p>
+            {mediaDraft.error ? <p className="profile-media-error">{mediaDraft.error}</p> : null}
+            <button type="button" className="profile-media-choose-again" onClick={() => openMediaPicker(mediaDraft.type || "cover")}>
+              <Icon name="image" />
+              Choose a different image
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        open={Boolean(removeMediaTarget)}
+        title={removeMediaCopy?.removeTitle || "Remove Photo"}
+        subtitle="This action updates your saved profile media."
+        onClose={saving ? undefined : () => setRemoveMediaTarget("")}
+        footer={(
+          <>
+            <Button onClick={() => setRemoveMediaTarget("")} disabled={Boolean(saving)}>Cancel</Button>
+            <Button icon="trash" variant="danger" onClick={confirmRemoveMedia} disabled={Boolean(saving)}>
+              {saving ? "Removing..." : "Remove Photo"}
+            </Button>
+          </>
+        )}
+        className="profile-remove-media-modal"
+      >
+        <div className="profile-remove-media-body">
+          <span><Icon name="trash" /></span>
+          <p>{removeMediaCopy?.removeBody}</p>
+        </div>
+      </Modal>
 
       <Modal
         open={Boolean(activeNetwork)}

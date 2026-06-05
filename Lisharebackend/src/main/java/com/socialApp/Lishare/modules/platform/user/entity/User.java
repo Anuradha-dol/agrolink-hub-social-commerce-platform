@@ -168,6 +168,10 @@ public class User implements UserDetails {
         return email;
     }
 
+    public String getProfileUsername() {
+        return username;
+    }
+
     @Override
     @JsonIgnore
     public String getPassword() {

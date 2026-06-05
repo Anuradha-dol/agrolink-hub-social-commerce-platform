@@ -17,7 +17,7 @@ export default function Posts() {
       setFeed(res.data);
     } catch (err) {
       console.error(err);
-      alert("Failed to load feed");
+      console.warn("Failed to load feed");
     } finally {
       setLoading(false);
     }
@@ -30,7 +30,7 @@ export default function Posts() {
   // ================= CREATE POST =================
   const handleCreatePost = async () => {
     if (!content.trim() && !image) {
-      alert("Post must have content or image");
+      console.warn("Post must have content or image");
       return;
     }
 
@@ -47,7 +47,7 @@ export default function Posts() {
       await fetchFeed();
     } catch (err) {
       console.error(err);
-      alert("Failed to create post");
+      console.warn("Failed to create post");
     }
   };
 
@@ -60,19 +60,18 @@ export default function Posts() {
       await fetchFeed();
     } catch (err) {
       console.error(err);
-      alert("Failed to share post");
+      console.warn("Failed to share post");
     }
   };
 
   // ================= DELETE SHARE =================
   const handleDeleteShare = async (shareId) => {
-    if (!window.confirm("Are you sure you want to delete this share?")) return;
     try {
       await api.delete(`/shares/${shareId}`);
       await fetchFeed();
     } catch (err) {
       console.error(err);
-      alert("Failed to delete share");
+      console.warn("Failed to delete share");
     }
   };
 

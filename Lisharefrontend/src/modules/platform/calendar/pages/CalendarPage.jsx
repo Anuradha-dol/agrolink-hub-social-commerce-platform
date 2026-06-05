@@ -7,6 +7,7 @@ import {
   Card,
   EmptyPanel,
   Icon,
+  Modal,
   OverviewHero,
   PageGrid,
   SectionHeader,
@@ -76,6 +77,7 @@ export default function CalendarPage() {
   const [monthDate, setMonthDate] = useState(new Date());
   const [form, setForm] = useState(emptyForm);
   const [submitting, setSubmitting] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const loadEvents = async () => {
     setLoading(true);
@@ -154,11 +156,12 @@ export default function CalendarPage() {
     }
   };
 
-  const removeEvent = async (eventId) => {
-    if (!window.confirm("Delete this event?")) return;
+  const confirmRemoveEvent = async () => {
+    if (!deleteTarget?.id) return;
     try {
-      await calendarService.deleteEvent(eventId);
+      await calendarService.deleteEvent(deleteTarget.id);
       pushToast("Event deleted", "success");
+      setDeleteTarget(null);
       await loadEvents();
     } catch {
       pushToast("Failed to delete event", "error");
@@ -242,7 +245,7 @@ export default function CalendarPage() {
               <div key={cell.date.toISOString()} className={`calendar-cell ${cell.inMonth ? "" : "muted-cell"} ${dateKey(cell.date) === dateKey(new Date()) ? "today" : ""}`}>
                 <span>{cell.date.getDate()}</span>
                 {cell.events.slice(0, 3).map((event) => (
-                  <button key={event.id} type="button" className={`event-chip event-${typeTone(event.type)}`} onClick={() => removeEvent(event.id)}>
+                  <button key={event.id} type="button" className={`event-chip event-${typeTone(event.type)}`} onClick={() => setDeleteTarget(event)}>
                     {event.title}
                     <small>{new Date(event.startsAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</small>
                   </button>
@@ -296,6 +299,27 @@ export default function CalendarPage() {
           </Card>
         </aside>
       </div>
+
+      <Modal
+        open={Boolean(deleteTarget)}
+        title="Delete Calendar Event"
+        subtitle="Remove this schedule item from your calendar."
+        onClose={submitting ? undefined : () => setDeleteTarget(null)}
+        footer={(
+          <>
+            <Button onClick={() => setDeleteTarget(null)} disabled={submitting}>Keep Event</Button>
+            <Button variant="danger" icon="trash" onClick={confirmRemoveEvent} disabled={submitting}>Delete Event</Button>
+          </>
+        )}
+      >
+        <div className="confirmation-panel">
+          <span><Icon name="calendar" /></span>
+          <div>
+            <strong>{deleteTarget?.title}</strong>
+            <p>{deleteTarget?.startsAt ? new Date(deleteTarget.startsAt).toLocaleString() : "Selected date"}</p>
+          </div>
+        </div>
+      </Modal>
     </PageGrid>
   );
 }

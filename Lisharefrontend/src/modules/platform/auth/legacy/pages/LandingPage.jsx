@@ -214,7 +214,7 @@ export default function LandingPage() {
 
   const handleContactSubmit = (e) => {
     e.preventDefault();
-    alert("Thank you for contacting us! We'll get back to you soon.");
+    console.warn("Thank you for contacting us! We'll get back to you soon.");
     setContactForm({ name: "", email: "", message: "" });
   };
 

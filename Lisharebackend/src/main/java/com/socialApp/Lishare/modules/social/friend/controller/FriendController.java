@@ -32,7 +32,7 @@ public class FriendController {
             @AuthenticationPrincipal User user,
             @PathVariable Long senderId) {
 
-        FriendActionResponse response = friendService.acceptFriendRequest(user.getUserId(), senderId);
+        FriendActionResponse response = friendService.acceptFriendRequest(senderId, user.getUserId());
         return ResponseEntity.ok(response);
     }
 
@@ -41,7 +41,7 @@ public class FriendController {
             @AuthenticationPrincipal User user,
             @PathVariable Long senderId) {
 
-        FriendActionResponse response = friendService.rejectFriendRequest(user.getUserId(), senderId);
+        FriendActionResponse response = friendService.rejectFriendRequest(senderId, user.getUserId());
         return ResponseEntity.ok(response);
     }
 
@@ -90,13 +90,33 @@ public class FriendController {
         return ResponseEntity.ok(responses);
     }
 
+    @GetMapping("/sent")
+    public ResponseEntity<List<FriendResponse>> getSent(@AuthenticationPrincipal User user) {
+
+        List<User> sent = friendService.getSentRequests(user.getUserId());
+
+        List<FriendResponse> responses = sent.stream()
+                .map(this::toFriendResponse)
+                .toList();
+
+        return ResponseEntity.ok(responses);
+    }
+
     private FriendResponse toFriendResponse(User user) {
         return FriendResponse.builder()
                 .userId(user.getUserId())
                 .firstName(user.getFirstname())
                 .lastName(user.getLastName())
+                .username(user.getProfileUsername())
                 .email(user.getEmail())
+                .role(displayRole(user))
                 .profileImageUrl(user.getImageUrl())
                 .build();
+    }
+
+    private String displayRole(User user) {
+        if (user.getRole() == null) return "";
+        String value = user.getRole().name().replaceFirst("^ROLE_", "").toLowerCase();
+        return value.isBlank() ? "" : value.substring(0, 1).toUpperCase() + value.substring(1);
     }
 }

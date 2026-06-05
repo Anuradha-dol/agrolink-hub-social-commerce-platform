@@ -689,6 +689,8 @@ export default function FeedPage() {
   const [sharingStory, setSharingStory] = useState(false);
   const [reportDraft, setReportDraft] = useState({ postId: null, reason: "CATEGORY_FAKE", details: "" });
   const [reportSubmitting, setReportSubmitting] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
+  const [deleteSubmitting, setDeleteSubmitting] = useState(false);
   const [highlightTarget, setHighlightTarget] = useState({ commentId: 0, replyId: 0 });
 
   const userId = Number(user?.userId || user?.id || 0);
@@ -1042,25 +1044,46 @@ export default function FeedPage() {
     return Array.isArray(response?.data) ? response.data : [];
   }, []);
 
-  const onDelete = async (postId) => {
-    if (!window.confirm("Delete this post?")) return;
-    try {
-      await feedService.deletePost(postId);
-      pushToast("Post deleted", "success");
-      await loadFeed();
-    } catch {
-      pushToast("Failed to delete post", "error");
-    }
+  const onDelete = (postId) => {
+    setDeleteConfirm({
+      type: "post",
+      id: postId,
+      title: "Delete Post",
+      message: "This removes the post from the feed and cannot be undone."
+    });
   };
 
-  const onDeleteShare = async (shareId) => {
-    if (!window.confirm("Delete this reshare?")) return;
+  const onDeleteShare = (shareId) => {
+    setDeleteConfirm({
+      type: "share",
+      id: shareId,
+      title: "Delete Reshare",
+      message: "This removes your reshare from the feed."
+    });
+  };
+
+  const confirmDeleteContent = async () => {
+    if (!deleteConfirm?.id) return;
+    setDeleteSubmitting(true);
     try {
-      await feedService.deleteShare(shareId);
-      pushToast("Reshare deleted", "success");
+      if (deleteConfirm.type === "post") {
+        await feedService.deletePost(deleteConfirm.id);
+        pushToast("Post deleted", "success");
+      } else if (deleteConfirm.type === "share") {
+        await feedService.deleteShare(deleteConfirm.id);
+        pushToast("Reshare deleted", "success");
+      } else if (deleteConfirm.type === "story") {
+        await storyService.deleteStory(deleteConfirm.id);
+        pushToast("Story deleted", "success");
+        setViewingStoryIndex(-1);
+        await loadStories();
+      }
+      setDeleteConfirm(null);
       await loadFeed();
     } catch {
-      pushToast("Failed to delete reshare", "error");
+      pushToast(deleteConfirm.type === "story" ? "Failed to delete story" : "Failed to delete content", "error");
+    } finally {
+      setDeleteSubmitting(false);
     }
   };
 
@@ -1645,15 +1668,12 @@ export default function FeedPage() {
 
   const deleteStory = async () => {
     if (!selectedStory?.id) return;
-    if (!window.confirm("Delete this story?")) return;
-    try {
-      await storyService.deleteStory(selectedStory.id);
-      pushToast("Story deleted", "success");
-      setViewingStoryIndex(-1);
-      await loadStories();
-    } catch {
-      pushToast("Failed to delete story", "error");
-    }
+    setDeleteConfirm({
+      type: "story",
+      id: selectedStory.id,
+      title: "Delete Story",
+      message: "This removes the story from your active story set."
+    });
   };
 
   if (loading) {
@@ -2678,6 +2698,44 @@ export default function FeedPage() {
           >
             <FeedIcon name="chevronRight" />
           </button>
+        </div>,
+        document.querySelector(".shell.shell-home-theme") || document.querySelector(".shell") || document.body
+      ) : null}
+
+      {deleteConfirm && typeof document !== "undefined" ? createPortal(
+        <div className="feed-modal-overlay feed-confirm-overlay" onClick={() => deleteSubmitting ? null : setDeleteConfirm(null)}>
+          <section className="feed-modal-card feed-confirm-card" onClick={(event) => event.stopPropagation()}>
+            <header className="reaction-users-head">
+              <div>
+                <h3>{deleteConfirm.title}</h3>
+                <p>{deleteConfirm.message}</p>
+              </div>
+              <button
+                type="button"
+                className="share-panel-close"
+                onClick={() => setDeleteConfirm(null)}
+                disabled={deleteSubmitting}
+                aria-label="Close delete confirmation"
+              >
+                <FeedIcon name="close" />
+              </button>
+            </header>
+            <div className="feed-confirm-body">
+              <span><FeedIcon name="trash" /></span>
+              <div>
+                <strong>Confirm delete</strong>
+                <p>The action will be applied immediately after confirmation.</p>
+              </div>
+            </div>
+            <footer className="feed-confirm-actions">
+              <button type="button" className="btn btn-secondary" onClick={() => setDeleteConfirm(null)} disabled={deleteSubmitting}>
+                Cancel
+              </button>
+              <button type="button" className="btn btn-danger" onClick={confirmDeleteContent} disabled={deleteSubmitting}>
+                {deleteSubmitting ? "Deleting..." : "Delete"}
+              </button>
+            </footer>
+          </section>
         </div>,
         document.querySelector(".shell.shell-home-theme") || document.querySelector(".shell") || document.body
       ) : null}

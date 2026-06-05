@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -36,8 +37,23 @@ public class FriendServiceImpl implements FriendService {
         User receiver = userRepository.findById(receiverId)
                 .orElseThrow(() -> new RuntimeException("Receiver not found"));
 
-        if (friendRepository.findFriendship(sender, receiver).isPresent()) {
-            return new FriendActionResponse("Friend request already exists");
+        Optional<Friend> existingFriendship = friendRepository.findFriendship(sender, receiver);
+        if (existingFriendship.isPresent()) {
+            Friend existing = existingFriendship.get();
+            if (existing.getStatus() == FriendStatus.ACCEPTED) {
+                return new FriendActionResponse("Already friends");
+            }
+            if (existing.getStatus() == FriendStatus.PENDING) {
+                return new FriendActionResponse("Friend request already pending");
+            }
+
+            existing.setSender(sender);
+            existing.setReceiver(receiver);
+            existing.setStatus(FriendStatus.PENDING);
+            existing.setCreatedAt(new Date());
+            friendRepository.save(existing);
+            publishFriendRequestNotification(sender, receiver);
+            return new FriendActionResponse("Friend request sent successfully");
         }
 
         Friend friend = Friend.builder()
@@ -49,15 +65,7 @@ public class FriendServiceImpl implements FriendService {
 
         friendRepository.save(friend);
 
-        notificationService.publish(Notification.builder()
-                .user(receiver)
-                .actorUser(sender)
-                .type(NotificationType.FRIEND_REQUEST)
-                .referenceId(sender.getUserId())
-                .referenceType("USER")
-                .message(sender.getFirstname() + " " + sender.getLastName() + " sent you a friend request")
-                .read(false)
-                .build());
+        publishFriendRequestNotification(sender, receiver);
 
         return new FriendActionResponse("Friend request sent successfully");
     }
@@ -73,6 +81,10 @@ public class FriendServiceImpl implements FriendService {
 
         if (friend.getStatus() != FriendStatus.PENDING) {
             return new FriendActionResponse("Request is not pending");
+        }
+
+        if (!friend.getReceiver().getUserId().equals(receiverId)) {
+            return new FriendActionResponse("Only the request receiver can accept this request");
         }
 
         friend.setStatus(FriendStatus.ACCEPTED);
@@ -99,6 +111,10 @@ public class FriendServiceImpl implements FriendService {
 
         Friend friend = friendRepository.findFriendship(sender, receiver)
                 .orElseThrow(() -> new RuntimeException("Friend request not found"));
+
+        if (!friend.getReceiver().getUserId().equals(receiverId)) {
+            return new FriendActionResponse("Only the request receiver can reject this request");
+        }
 
         friend.setStatus(FriendStatus.REJECTED);
         friendRepository.save(friend);
@@ -139,5 +155,28 @@ public class FriendServiceImpl implements FriendService {
                 .stream()
                 .map(Friend::getSender)
                 .toList();
+    }
+
+    @Override
+    public List<User> getSentRequests(Long userId) {
+
+        User user = userRepository.findById(userId).orElseThrow();
+
+        return friendRepository.findBySenderAndStatus(user, FriendStatus.PENDING)
+                .stream()
+                .map(Friend::getReceiver)
+                .toList();
+    }
+
+    private void publishFriendRequestNotification(User sender, User receiver) {
+        notificationService.publish(Notification.builder()
+                .user(receiver)
+                .actorUser(sender)
+                .type(NotificationType.FRIEND_REQUEST)
+                .referenceId(sender.getUserId())
+                .referenceType("USER")
+                .message(sender.getFirstname() + " " + sender.getLastName() + " sent you a friend request")
+                .read(false)
+                .build());
     }
 }

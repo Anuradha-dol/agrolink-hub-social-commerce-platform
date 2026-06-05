@@ -58,27 +58,27 @@ export const NAVIGATION_SECTIONS = [
 ];
 
 export const PAGE_META = [
-  { key: "/home", title: "Home Feed", subtitle: "Community timeline and social updates", showDot: true },
-  { key: "/profile", title: "Profile", subtitle: "Posts, reels, saved items and profile overview", showDot: true },
-  { key: "/friends", title: "Friends", subtitle: "Connections, followers and requests" },
-  { key: "/chat", title: "Chat", subtitle: "Realtime conversations and groups" },
-  { key: "/marketplace", title: "Marketplace", subtitle: "Products and shopping activity" },
-  { key: "/orders", title: "Orders", subtitle: "Order status, history and tracking" },
-  { key: "/calendar", title: "Calendar", subtitle: "Events, plans and reminders" },
-  { key: "/bookmarks", title: "Bookmarks", subtitle: "Saved products, price alerts and collections" },
-  { key: "/analytics", title: "Analytics", subtitle: "Platform, marketplace and engagement insights" },
-  { key: "/notifications", title: "Notifications", subtitle: "Realtime alerts, requests and updates" },
-  { key: "/support", title: "Support Center", subtitle: "Admin messages, problem reports and public reviews" },
-  { key: "/settings", title: "Settings", subtitle: "Account, email, password and media settings" },
-  { key: "/business", title: "Business", subtitle: "Page management and product publishing" },
-  { key: "/admin/users", title: "Admin Users", subtitle: "Regular account management and deletion notices" },
-  { key: "/admin/business-users", title: "Business Users", subtitle: "Seller and marketplace account management" },
-  { key: "/admin/farmers", title: "Farmer Sellers", subtitle: "Farm seller account management" },
-  { key: "/admin/creators", title: "Creators", subtitle: "Creator account management" },
-  { key: "/admin/admins", title: "Admin Accounts", subtitle: "Platform command user management" },
-  { key: "/admin/moderation", title: "Content Moderation", subtitle: "Reported content review and fair outcomes" },
-  { key: "/admin/support", title: "Support Tickets", subtitle: "Problem reports and admin responses" },
-  { key: "/admin", title: "Admin Dashboard", subtitle: "Moderation and platform controls" }
+  { key: "/home", title: "Home Feed", subtitle: "Posts, reels, stories and community conversations", showDot: true, searchPlaceholder: "Search people, posts, reels..." },
+  { key: "/profile", title: "Profile", subtitle: "Posts, reels, saved items and profile overview", showDot: true, searchPlaceholder: "Search people, posts, profile tags..." },
+  { key: "/friends", title: "Friends", subtitle: "Find connections, followers, following and friend requests", searchPlaceholder: "Search friends, followers, people..." },
+  { key: "/chat", title: "Messages", subtitle: "Realtime chats, direct messages and group conversations", searchPlaceholder: "Search conversations or people..." },
+  { key: "/marketplace", title: "Marketplace", subtitle: "Shop products, compare sellers, manage carts and saved deals", searchPlaceholder: "Search products, sellers, categories..." },
+  { key: "/orders", title: "Orders", subtitle: "Track purchases, delivery status, order history and seller updates", searchPlaceholder: "Search orders, products, sellers..." },
+  { key: "/calendar", title: "Calendar", subtitle: "Plan events, reminders, farm tasks and business schedules", searchPlaceholder: "Search events, dates, reminders..." },
+  { key: "/bookmarks", title: "Saved Items", subtitle: "Saved products, bookmarked posts, collections and price alerts", searchPlaceholder: "Search saved products or posts..." },
+  { key: "/analytics", title: "Insights", subtitle: "Platform, marketplace, engagement and growth analytics", searchPlaceholder: "Search metrics, products, activity..." },
+  { key: "/notifications", title: "Notifications", subtitle: "Requests, alerts, system updates and recent activity", searchPlaceholder: "Search notifications or people..." },
+  { key: "/support", title: "Support Center", subtitle: "Submit issues, review admin replies and manage support tickets", searchPlaceholder: "Search tickets, topics, reviews..." },
+  { key: "/settings", title: "Settings", subtitle: "Account, email, password, privacy and profile media controls", searchPlaceholder: "Search settings, account options..." },
+  { key: "/business", title: "Business", subtitle: "Manage business pages, products, seller profile and publishing", searchPlaceholder: "Search products, pages, orders..." },
+  { key: "/admin/users", title: "Admin Users", subtitle: "Regular account management, safety actions and deletion notices", searchPlaceholder: "Search users, emails, roles..." },
+  { key: "/admin/business-users", title: "Business Users", subtitle: "Seller accounts, marketplace access and business compliance", searchPlaceholder: "Search business sellers..." },
+  { key: "/admin/farmers", title: "Farmer Sellers", subtitle: "Farm seller account management, marketplace listings and trust review", searchPlaceholder: "Search farmer sellers..." },
+  { key: "/admin/creators", title: "Creators", subtitle: "Creator account management, content quality and platform growth", searchPlaceholder: "Search creators..." },
+  { key: "/admin/admins", title: "Admin Accounts", subtitle: "Platform command users, roles and admin access control", searchPlaceholder: "Search admin accounts..." },
+  { key: "/admin/moderation", title: "Content Moderation", subtitle: "Reported content review, safety decisions and fair outcomes", searchPlaceholder: "Search reports or content..." },
+  { key: "/admin/support", title: "Support Tickets", subtitle: "Problem reports, admin responses and user support workflow", searchPlaceholder: "Search support tickets..." },
+  { key: "/admin", title: "Admin Dashboard", subtitle: "Moderation, user management and platform command controls", searchPlaceholder: "Search admin tools, users, tickets..." }
 ];
 
 function normalizeRoleName(role) {

@@ -54,6 +54,8 @@ public interface UserRepo extends JpaRepository<User, Long> {
             """)
     List<User> searchUsers(@Param("query") String query, @Param("excludeId") Long excludeId);
 
+    List<User> findByRoleAndUserIdNot(Role role, Long excludeId);
+
     Page<User> findByFirstnameContainingIgnoreCaseOrLastNameContainingIgnoreCaseOrEmailContainingIgnoreCase(
             String firstname,
             String lastName,

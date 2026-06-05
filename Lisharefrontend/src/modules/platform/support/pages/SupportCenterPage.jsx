@@ -4,6 +4,15 @@ import { useAuth } from "/src/modules/platform/app/store";
 import { useToast } from "/src/modules/platform/common/hooks/useToast";
 import { supportService } from "../services/supportService";
 import { reviewService } from "/src/modules/business/review/services/reviewService";
+import {
+  Button,
+  Card,
+  EmptyPanel,
+  Icon,
+  PageGrid,
+  SectionHeader,
+  StatusBadge
+} from "/src/modules/platform/common/ui/DashboardUI";
 
 const unwrapList = (response) => {
   const payload = response?.data?.data ?? response?.data;
@@ -103,7 +112,7 @@ export default function SupportCenterPage() {
   if (loading) return <LoadingState text="Loading support center..." />;
 
   return (
-    <div className="support-center-page">
+    <PageGrid className="support-center-page support-dashboard">
       <section className="page-hero support-hero-panel support-reference-hero">
         <div className="support-reference-copy">
           <span className="auth-badge">Message Center</span>
@@ -136,17 +145,16 @@ export default function SupportCenterPage() {
       </section>
 
       {user?.moderationMessage ? (
-        <section className={`moderation-message-card ${String(user?.moderationStatus || "").toLowerCase()}`}>
-          <span>{user?.moderationStatus || "ADMIN MESSAGE"}</span>
-          <h3>Admin Message</h3>
+        <Card className={`moderation-message-card ${String(user?.moderationStatus || "").toLowerCase()}`}>
+          <SectionHeader title="Admin Message" action={<StatusBadge status={user?.moderationStatus || "ADMIN MESSAGE"} tone="orange" />} />
           <p>{user.moderationMessage}</p>
-        </section>
+        </Card>
       ) : null}
 
       <div className="support-grid">
-        <form className="card support-form-card" onSubmit={submitTicket}>
-          <h2>Tell Admin a Problem</h2>
-          <p>Use this for bugs, marketplace issues, unsafe content, account problems, or feature problems.</p>
+        <Card className="support-form-card">
+          <SectionHeader title="Tell Admin a Problem" subtitle="Use this for bugs, marketplace issues, unsafe content, account problems, or feature problems." action={<Icon name="bell" />} />
+          <form className="support-form-fields" onSubmit={submitTicket}>
           <label>
             Your account
             <input value={`${displayName} - ${user?.email || ""}`} readOnly />
@@ -160,14 +168,15 @@ export default function SupportCenterPage() {
               placeholder="Explain what happened, where it happened, and what admin should review..."
             />
           </label>
-          <button className="btn btn-primary" type="submit" disabled={submittingTicket}>
+          <Button icon="send" variant="gradient" type="submit" disabled={submittingTicket}>
             {submittingTicket ? "Sending..." : "Send Problem"}
-          </button>
-        </form>
+          </Button>
+          </form>
+        </Card>
 
-        <form className="card support-form-card" onSubmit={submitReview}>
-          <h2>Publish Website Review</h2>
-          <p>Reviews are public and can be shown on the landing page.</p>
+        <Card className="support-form-card">
+          <SectionHeader title="Publish Website Review" subtitle="Reviews are public and can be shown on the landing page." action={<Icon name="star" />} />
+          <form className="support-form-fields" onSubmit={submitReview}>
           <label>
             Rating
             <select value={rating} onChange={(event) => setRating(event.target.value)}>
@@ -185,20 +194,21 @@ export default function SupportCenterPage() {
               placeholder="Tell visitors what AgroLink Hub helped you do..."
             />
           </label>
-          <button className="btn btn-secondary" type="submit" disabled={submittingReview}>
+          <Button icon="star" variant="gradient" type="submit" disabled={submittingReview}>
             {submittingReview ? "Publishing..." : "Publish Review"}
-          </button>
-        </form>
+          </Button>
+          </form>
+        </Card>
       </div>
 
-      <section className="card support-ticket-list">
-        <h2>My Problem Reports</h2>
+      <Card className="support-ticket-list">
+        <SectionHeader title="My Problem Reports" subtitle="Admin responses and report states stay in this workspace." action={<StatusBadge status={`${tickets.length} reports`} tone="blue" />} />
         {tickets.length ? (
           <div className="support-ticket-scroll">
             {tickets.map((ticket) => (
               <article className="support-ticket-card" key={ticket.id}>
                 <div>
-                  <strong>{ticket.status || "OPEN"}</strong>
+                  <StatusBadge status={ticket.status || "OPEN"} tone={String(ticket.status || "OPEN").toUpperCase() === "CLOSED" ? "green" : "orange"} />
                   <span>{ticket.createdAt ? new Date(ticket.createdAt).toLocaleString() : "Recently"}</span>
                 </div>
                 <p>{ticket.question}</p>
@@ -211,9 +221,9 @@ export default function SupportCenterPage() {
             ))}
           </div>
         ) : (
-          <p className="muted">No problem reports submitted yet.</p>
+          <EmptyPanel icon="chat" title="No problem reports submitted yet" subtitle="Problem reports and admin replies will appear here." />
         )}
-      </section>
-    </div>
+      </Card>
+    </PageGrid>
   );
 }

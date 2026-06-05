@@ -5,12 +5,22 @@ import NotificationDropdown from "/src/modules/social/notification/components/No
 import { Icon } from "/src/modules/platform/common/ui/DashboardUI";
 import { getPageMeta, getShellUser, ShellActionIcon } from "/src/modules/platform/common/components/shellNavigation";
 
+function pageHeaderKey(pageMeta, pathname) {
+  const source = pageMeta?.key || pathname || "workspace";
+  return String(source)
+    .replace(/^\/+|\/+$/g, "")
+    .replace(/[^a-zA-Z0-9]+/g, "-")
+    .toLowerCase() || "workspace";
+}
+
 export default function ShellNavigationBar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [headerSearch, setHeaderSearch] = useState("");
   const pageMeta = getPageMeta(location.pathname);
+  const headerKey = pageHeaderKey(pageMeta, location.pathname);
+  const showSubtitleDot = pageMeta.showDot !== false;
   const { displayName, userHandle, avatarSrc, avatarInitial } = getShellUser(user);
   const isHomeFeed = location.pathname === "/home" || location.pathname.startsWith("/home/");
   const isProfilePage = location.pathname === "/profile" || location.pathname.startsWith("/profile/");
@@ -28,7 +38,7 @@ export default function ShellNavigationBar() {
   };
 
   return (
-    <header className={`shell-header ${isHomeFeed ? "shell-header-home-feed" : ""} ${isProfilePage ? "shell-header-profile-page" : ""}`.trim()}>
+    <header className={`shell-header shell-header-reference shell-header-${headerKey} ${isHomeFeed ? "shell-header-home-feed" : ""} ${isProfilePage ? "shell-header-profile-page" : ""}`.trim()}>
       <div className="shell-header-left">
         <div className="shell-page-meta">
           {isHomeFeed ? (
@@ -53,10 +63,12 @@ export default function ShellNavigationBar() {
               </span>
             </h1>
           ) : (
-            <h1 className="shell-page-title">{pageMeta.title}</h1>
+            <h1 className={`shell-page-title shell-page-title-reference shell-page-title-${headerKey}`} aria-label={pageMeta.title}>
+              <span className="shell-title-word shell-title-main">{pageMeta.title}</span>
+            </h1>
           )}
           <p className="shell-page-subtitle">
-            {pageMeta.showDot ? <span className="shell-subtitle-dot" aria-hidden="true" /> : null}
+            {showSubtitleDot ? <span className="shell-subtitle-dot" aria-hidden="true" /> : null}
             {pageMeta.subtitle}
           </p>
         </div>
@@ -68,7 +80,7 @@ export default function ShellNavigationBar() {
           <input
             value={headerSearch}
             onChange={(event) => setHeaderSearch(event.target.value)}
-            placeholder="Search people, posts, products..."
+            placeholder={pageMeta.searchPlaceholder || "Search people, posts, products..."}
           />
           <kbd>Ctrl K</kbd>
         </form>

@@ -1,11 +1,13 @@
 package com.socialApp.Lishare.modules.social.post.controller;
 
 import com.socialApp.Lishare.modules.platform.user.entity.User;
+import com.socialApp.Lishare.modules.social.comment.service.CommentService;
 import com.socialApp.Lishare.modules.social.post.dto.PollVoterResponse;
 import com.socialApp.Lishare.modules.social.post.dto.PostResponse;
 import com.socialApp.Lishare.modules.social.post.entity.Post;
 import com.socialApp.Lishare.modules.social.post.service.PostService;
 import com.socialApp.Lishare.modules.social.post.support.PostXpPolicy;
+import com.socialApp.Lishare.modules.social.reaction.service.ReactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -24,6 +27,8 @@ public class PostController {
     private static final Pattern HASHTAG_PATTERN = Pattern.compile("#[A-Za-z0-9_]+");
 
     private final PostService postService;
+    private final CommentService commentService;
+    private final ReactionService reactionService;
 
     @PostMapping("/create")
     public ResponseEntity<PostResponse> createPost(
@@ -142,6 +147,8 @@ public class PostController {
     private PostResponse toResponse(Post post, Long viewerUserId) {
         List<Long> pollVotes = postService.getPollVotes(post);
         long pollTotalVotes = pollVotes.stream().mapToLong(Long::longValue).sum();
+        Map<String, Long> reactionCounts = reactionService.getReactionCounts(post.getPostId());
+        long reactionCount = reactionCounts.values().stream().mapToLong(Long::longValue).sum();
         return PostResponse.builder()
                 .postId(post.getPostId())
                 .authorId(post.getUser().getUserId())
@@ -166,6 +173,9 @@ public class PostController {
                 .xpAwarded(resolvePostXp(post))
                 .authorVerifiedXp(calculateVerifiedXp(post.getUser()))
                 .reelViewCount(post.getReelViewCount())
+                .reactionCounts(reactionCounts)
+                .reactionCount(reactionCount)
+                .commentCount(commentService.countCommentsByPost(post.getPostId()))
                 .authorName(post.getUser().getFirstname() + " " + post.getUser().getLastName())
                 .authorProfileImageUrl(post.getUser().getImageUrl())
                 .createdAt(post.getCreatedAt())

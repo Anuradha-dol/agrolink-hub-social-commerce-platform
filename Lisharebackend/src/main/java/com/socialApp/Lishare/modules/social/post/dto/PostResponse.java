@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -35,6 +36,9 @@ public class PostResponse {
     private Integer xpAwarded;
     private Long authorVerifiedXp;
     private Long reelViewCount;
+    private Map<String, Long> reactionCounts;
+    private Long reactionCount;
+    private Long commentCount;
     private String authorName;
     private String authorProfileImageUrl;
     private LocalDateTime createdAt;

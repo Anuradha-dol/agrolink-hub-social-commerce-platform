@@ -146,6 +146,20 @@ public class UserController {
         return ResponseEntity.ok(user.getCoverImageUrl());
     }
 
+    @DeleteMapping("/profile-image")
+    public ResponseEntity<String> removeProfileImage(@AuthenticationPrincipal User user) {
+        user.setImageUrl(null);
+        userRepo.save(user);
+        return ResponseEntity.ok("Profile image removed");
+    }
+
+    @DeleteMapping("/cover-image")
+    public ResponseEntity<String> removeCoverImage(@AuthenticationPrincipal User user) {
+        user.setCoverImageUrl(null);
+        userRepo.save(user);
+        return ResponseEntity.ok("Cover image removed");
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/dashboard")
     public ResponseEntity<UserDto.UserHomeDto> getAdminHome(@AuthenticationPrincipal User loggedUser) {
