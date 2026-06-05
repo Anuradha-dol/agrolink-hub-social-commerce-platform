@@ -562,10 +562,34 @@ export default function SettingsPage() {
           <Card className="settings-side-card">
             <SectionHeader title="Account Overview" action={<Icon name="settings" />} />
             <div className="settings-account-metadata">
-              <span><strong>Role</strong>{roleLabel}</span>
-              <span><strong>Email</strong>{profile?.email || "Not available"}</span>
-              <span><strong>XP</strong>{Number(profile?.verifiedXp || 0).toLocaleString()}</span>
-              <span><strong>Interests</strong>{interests.length || 0}</span>
+              <span className="overview-meta-row">
+                <span className="overview-meta-icon overview-meta-icon--role"><Icon name="user" /></span>
+                <span className="overview-meta-body">
+                  <strong>Role</strong>
+                  <span className="overview-meta-value">{roleLabel}</span>
+                </span>
+              </span>
+              <span className="overview-meta-row">
+                <span className="overview-meta-icon overview-meta-icon--email"><Icon name="mail" /></span>
+                <span className="overview-meta-body">
+                  <strong>Email</strong>
+                  <span className="overview-meta-value">{profile?.email || "Not available"}</span>
+                </span>
+              </span>
+              <span className="overview-meta-row">
+                <span className="overview-meta-icon overview-meta-icon--xp"><Icon name="star" /></span>
+                <span className="overview-meta-body">
+                  <strong>XP</strong>
+                  <span className="overview-meta-value">{Number(profile?.verifiedXp || 0).toLocaleString()}</span>
+                </span>
+              </span>
+              <span className="overview-meta-row">
+                <span className="overview-meta-icon overview-meta-icon--interests"><Icon name="heart" /></span>
+                <span className="overview-meta-body">
+                  <strong>Interests</strong>
+                  <span className="overview-meta-value">{interests.length || 0}</span>
+                </span>
+              </span>
             </div>
           </Card>
 

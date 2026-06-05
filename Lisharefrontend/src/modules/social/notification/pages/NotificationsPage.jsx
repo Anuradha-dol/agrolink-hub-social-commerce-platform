@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { notificationService } from "../services/notificationService";
 import { useRealtimeNotifications } from "../hooks/useRealtimeNotifications";
@@ -62,6 +62,8 @@ export default function NotificationsPage() {
   const [error, setError] = useState("");
   const [page, setPage] = useState(0);
   const [hasNext, setHasNext] = useState(false);
+  const [hasPrev, setHasPrev] = useState(false);
+  const pageRef = useRef(0);
   const [filter, setFilter] = useState("all");
   const [clearOpen, setClearOpen] = useState(false);
   const [busy, setBusy] = useState("");
@@ -72,9 +74,12 @@ export default function NotificationsPage() {
     try {
       const response = await notificationService.getNotifications({ page: targetPage, size: 20 });
       const payload = response?.data?.data ?? response?.data ?? {};
+      const newPage = Number(payload.number || 0);
       setItems(Array.isArray(payload.content) ? payload.content : []);
-      setPage(Number(payload.number || 0));
+      setPage(newPage);
+      pageRef.current = newPage;
       setHasNext(!payload.last);
+      setHasPrev(newPage > 0);
     } catch {
       setError("Failed to load notifications");
     } finally {
@@ -84,8 +89,8 @@ export default function NotificationsPage() {
 
   useEffect(() => {
     load(0);
-    const intervalId = window.setInterval(() => load(0, false), 15000);
-    const refresh = () => load(0, false);
+    const intervalId = window.setInterval(() => load(pageRef.current, false), 15000);
+    const refresh = () => load(pageRef.current, false);
     window.addEventListener("focus", refresh);
     window.addEventListener("lishare-notifications-refresh", refresh);
 
@@ -246,7 +251,7 @@ export default function NotificationsPage() {
         ) : null}
 
         <div className="pagination-row notifications-pagination">
-          <Button disabled={page <= 0} onClick={() => load(page - 1)}>Prev</Button>
+          <Button disabled={!hasPrev} onClick={() => load(page - 1)}>Prev</Button>
           <span>Page {page + 1}</span>
           <Button disabled={!hasNext} onClick={() => load(page + 1)}>Next</Button>
         </div>

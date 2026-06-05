@@ -14243,6 +14243,100 @@ body.route-is-changing .shell-content::before {
   color: currentColor;
 }
 
+/* Account Overview icon rows */
+.overview-meta-row {
+  display: grid !important;
+  grid-template-columns: 44px minmax(0, 1fr) !important;
+  align-items: center !important;
+  gap: 12px !important;
+  border: 1px solid #e4edf7 !important;
+  border-radius: 15px !important;
+  padding: 11px 14px 11px 11px !important;
+  background: #fbfdff !important;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease !important;
+}
+
+.overview-meta-row:hover {
+  border-color: rgba(99, 102, 241, 0.24) !important;
+  box-shadow: 0 6px 18px rgba(15, 28, 48, 0.07) !important;
+  transform: translateY(-1px) !important;
+}
+
+.overview-meta-icon {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 12px !important;
+  border: none !important;
+  padding: 0 !important;
+  flex-shrink: 0 !important;
+}
+
+.overview-meta-icon .ui-icon {
+  width: 18px !important;
+  height: 18px !important;
+}
+
+.overview-meta-icon--role {
+  background: linear-gradient(135deg, #ede9fe, #ddd6fe) !important;
+  color: #6d28d9 !important;
+  box-shadow: 0 4px 10px rgba(109, 40, 217, 0.18) !important;
+}
+
+.overview-meta-icon--email {
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe) !important;
+  color: #1d4ed8 !important;
+  box-shadow: 0 4px 10px rgba(29, 78, 216, 0.18) !important;
+}
+
+.overview-meta-icon--xp {
+  background: linear-gradient(135deg, #fef3c7, #fde68a) !important;
+  color: #b45309 !important;
+  box-shadow: 0 4px 10px rgba(180, 83, 9, 0.18) !important;
+}
+
+.overview-meta-icon--interests {
+  background: linear-gradient(135deg, #ffe4e6, #fecdd3) !important;
+  color: #be123c !important;
+  box-shadow: 0 4px 10px rgba(190, 18, 60, 0.18) !important;
+}
+
+.overview-meta-body {
+  display: grid !important;
+  gap: 1px !important;
+  min-width: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+.overview-meta-body strong {
+  display: block;
+  color: #07162f;
+  font-size: 0.72rem;
+  font-weight: 950;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.overview-meta-value {
+  display: block !important;
+  overflow: hidden !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  color: #3b4f6c !important;
+  background: transparent !important;
+  font-size: 0.88rem !important;
+  font-weight: 820 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+
 .settings-side .ui-btn {
   width: 100%;
 }
@@ -50983,6 +51077,30 @@ button.comment-author-avatar {
   box-shadow: 0 12px 28px rgba(20, 40, 86, 0.07) !important;
 }
 
+.shell .account-pro-page .overview-meta-row {
+  border: 1px solid rgba(47, 115, 232, 0.13) !important;
+  background: rgba(255, 255, 255, 0.82) !important;
+  box-shadow: none !important;
+}
+
+.shell .account-pro-page .overview-meta-row:hover {
+  border-color: rgba(47, 115, 232, 0.3) !important;
+  box-shadow: 0 6px 18px rgba(20, 40, 86, 0.1) !important;
+}
+
+.shell .account-pro-page .overview-meta-body {
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.shell .account-pro-page .overview-meta-value {
+  border: none !important;
+  background: transparent !important;
+}
+
+
+
 .shell .account-pro-page .settings-avatar-preview,
 .shell .account-pro-page .settings-cover-preview {
   border-radius: 26px !important;
@@ -51545,13 +51663,55 @@ button.comment-author-avatar {
   display: block !important;
 }
 
+/* ── Premium Profile-Initial Avatar for Settings Page ── */
 .shell .account-pro-page .ui-avatar.generated-avatar {
   background:
-    radial-gradient(circle at 28% 24%, rgba(255, 255, 255, 0.34), transparent 24%),
-    linear-gradient(135deg, #19b984 0%, #2f73e8 58%, #f65b9a 100%) !important;
+    radial-gradient(circle at 30% 22%, rgba(255, 255, 255, 0.28), transparent 38%),
+    linear-gradient(135deg, #7c3aed 0%, #6366f1 28%, #3b82f6 58%, #06b6d4 100%) !important;
   color: #ffffff !important;
-  text-shadow: 0 2px 12px rgba(5, 18, 42, 0.24) !important;
-  box-shadow: 0 18px 38px rgba(47, 115, 232, 0.24), 0 0 0 10px rgba(255, 255, 255, 0.24) !important;
+  font-size: 2.2rem !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.02em !important;
+  text-shadow:
+    0 2px 16px rgba(99, 102, 241, 0.52),
+    0 1px 3px rgba(0, 0, 0, 0.18) !important;
+  box-shadow:
+    0 0 0 5px rgba(124, 58, 237, 0.12),
+    0 0 0 10px rgba(99, 102, 241, 0.06),
+    0 18px 42px rgba(99, 102, 241, 0.28),
+    inset 0 -8px 20px rgba(6, 182, 212, 0.18) !important;
+  animation: settings-avatar-glow 4s ease-in-out infinite alternate !important;
+}
+
+@keyframes settings-avatar-glow {
+  0% {
+    box-shadow:
+      0 0 0 5px rgba(124, 58, 237, 0.12),
+      0 0 0 10px rgba(99, 102, 241, 0.06),
+      0 18px 42px rgba(99, 102, 241, 0.28),
+      inset 0 -8px 20px rgba(6, 182, 212, 0.18);
+  }
+  100% {
+    box-shadow:
+      0 0 0 6px rgba(124, 58, 237, 0.18),
+      0 0 0 12px rgba(99, 102, 241, 0.10),
+      0 22px 52px rgba(99, 102, 241, 0.36),
+      inset 0 -8px 20px rgba(6, 182, 212, 0.24);
+  }
+}
+
+/* ── Settings Page Avatar Presence Dot ── */
+.shell .account-pro-page .settings-avatar-preview .ui-avatar > .avatar-presence,
+.shell .account-pro-page .settings-profile-summary .ui-avatar > .avatar-presence,
+.shell .account-pro-page .settings-avatar-preview .ui-avatar > i,
+.shell .account-pro-page .settings-profile-summary .ui-avatar > i {
+  width: 18px !important;
+  height: 18px !important;
+  right: 3px !important;
+  bottom: 3px !important;
+  border: 3px solid #ffffff !important;
+  border-radius: 999px !important;
+  box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.18), 0 0 14px rgba(22, 163, 74, 0.42) !important;
 }
 
 .shell .account-pro-page .settings-avatar-preview strong,
