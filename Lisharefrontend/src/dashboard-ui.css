@@ -100,10 +100,11 @@
   min-height: 38px !important;
   border: 1px solid #dce4f2 !important;
   border-radius: 12px !important;
-  padding: 0 12px !important;
-  color: #172033 !important;
+  padding: 0 12px 0 2.5rem !important;
+  color: #0f172a !important;
   background: #ffffff !important;
   outline: 0 !important;
+  font-weight: 600 !important;
 }
 
 .reaction-avatar-mini img,
@@ -10576,8 +10577,8 @@ textarea {
 }
 
 .reaction-users-overlay {
-  background: rgba(11, 18, 32, 0.55) !important;
-  backdrop-filter: blur(16px) saturate(120%) !important;
+  background: rgba(11, 18, 32, 0.35) !important;
+  backdrop-filter: blur(8px) saturate(120%) !important;
 }
 
 .reaction-users-card {
@@ -12066,7 +12067,7 @@ body.route-is-changing .shell-content::before {
   place-items: center !important;
   padding: 24px !important;
   background: rgba(15, 23, 42, 0.54) !important;
-  backdrop-filter: blur(18px) saturate(116%) !important;
+  backdrop-filter: blur(4px) saturate(116%) !important;
 }
 
 .reaction-users-modal-card {
@@ -13112,8 +13113,8 @@ body.route-is-changing .shell-content::before {
 .feed-page .story-viewer-overlay {
   background:
     radial-gradient(circle at 50% 0%, rgba(31, 207, 118, 0.16), transparent 34%),
-    rgba(15, 23, 42, 0.56) !important;
-  backdrop-filter: blur(18px) saturate(116%) !important;
+    rgba(15, 23, 42, 0.35) !important;
+  backdrop-filter: blur(8px) saturate(116%) !important;
 }
 
 .premium-story-viewer-card,
@@ -13193,7 +13194,7 @@ body.route-is-changing .shell-content::before {
 .reaction-users-overlay,
 .feed-modal-overlay.reaction-users-overlay {
   background: rgba(15, 23, 42, 0.52) !important;
-  backdrop-filter: blur(18px) saturate(116%) !important;
+  backdrop-filter: blur(4px) saturate(116%) !important;
 }
 
 .reaction-users-card,
@@ -25212,7 +25213,8 @@ button.comment-author-avatar {
   align-items: center !important;
   justify-content: center !important;
   padding: 30px !important;
-  background: rgba(246, 250, 255, 0.58) !important;
+  background: rgba(246, 250, 255, 0.38) !important;
+  backdrop-filter: blur(8px) !important;
 }
 
 .shell.shell-home-theme .comments-modal-card {
@@ -38429,9 +38431,9 @@ button.comment-author-avatar {
 .shell.shell-home-theme .story-create-overlay {
   padding: 24px !important;
   overflow: auto !important;
-  background: rgba(31, 20, 42, 0.42) !important;
-  backdrop-filter: blur(10px) !important;
-  -webkit-backdrop-filter: blur(10px) !important;
+  background: rgba(31, 20, 42, 0.28) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
 }
 
 .shell.shell-home-theme .story-create-card {
@@ -39826,8 +39828,8 @@ button.comment-author-avatar {
     radial-gradient(circle at 86% 8%, rgba(255, 194, 71, 0.13), transparent 30%),
     linear-gradient(135deg, rgba(241, 251, 255, 0.54), rgba(255, 255, 255, 0.3)) !important;
   box-shadow: none !important;
-  backdrop-filter: blur(18px) saturate(1.12) !important;
-  -webkit-backdrop-filter: blur(18px) saturate(1.12) !important;
+  backdrop-filter: blur(6px) saturate(1.12) !important;
+  -webkit-backdrop-filter: blur(6px) saturate(1.12) !important;
 }
 
 .shell.shell-home-theme .feed-inline-edit-shell.premium-edit-post-shell::before,
@@ -39884,11 +39886,11 @@ button.comment-author-avatar {
 .shell.shell-home-theme .feed-inline-edit-shell.premium-edit-post-shell,
 .shell.shell-home-theme .premium-edit-post-shell.feed-inline-edit-shell {
   background:
-    radial-gradient(circle at 10% 10%, rgba(32, 199, 223, 0.18), transparent 28%),
-    radial-gradient(circle at 82% 8%, rgba(255, 194, 71, 0.16), transparent 30%),
-    linear-gradient(135deg, rgba(6, 20, 34, 0.36), rgba(230, 250, 255, 0.42)) !important;
-  backdrop-filter: blur(28px) saturate(1.05) brightness(0.96) !important;
-  -webkit-backdrop-filter: blur(28px) saturate(1.05) brightness(0.96) !important;
+    radial-gradient(circle at 10% 10%, rgba(32, 199, 223, 0.14), transparent 28%),
+    radial-gradient(circle at 82% 8%, rgba(255, 194, 71, 0.12), transparent 30%),
+    linear-gradient(135deg, rgba(6, 20, 34, 0.28), rgba(230, 250, 255, 0.32)) !important;
+  backdrop-filter: blur(10px) saturate(1.05) brightness(0.96) !important;
+  -webkit-backdrop-filter: blur(10px) saturate(1.05) brightness(0.96) !important;
 }
 
 .shell.shell-home-theme .feed-inline-edit-shell.premium-edit-post-shell .edit-post-modal-card,

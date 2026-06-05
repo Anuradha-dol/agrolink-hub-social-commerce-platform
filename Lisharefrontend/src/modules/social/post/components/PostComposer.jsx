@@ -107,6 +107,86 @@ function ComposerToolIcon({ name }) {
         <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
         <path d="M16 3.13a4 4 0 0 1 0 7.75" />
       </>
+    ),
+    globe: (
+      <>
+        <circle cx="12" cy="12" r="10" />
+        <line x1="2" y1="12" x2="22" y2="12" />
+        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+      </>
+    ),
+    user: (
+      <>
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+        <circle cx="12" cy="7" r="4" />
+      </>
+    ),
+    handshake: (
+      <>
+        <path d="m11 17 2 2 1-1" />
+        <path d="m18 14 2.5 2.5a3.3 3.3 0 0 1-4.7 4.7L11 16.5" />
+        <path d="m8 14.5-4 4a3.3 3.3 0 0 0 4.7 4.7L11 21" />
+        <path d="m14 11.5 2 2" />
+        <path d="M20 11.5a3.3 3.3 0 0 0-4.7-4.7L10.5 11.5" />
+        <path d="M14 6.8a3.3 3.3 0 0 0-4.7 4.7l4.7 4.7" />
+        <path d="M8.5 13.2 4 8.7a3.3 3.3 0 0 1 4.7-4.7l4.3 4.3" />
+      </>
+    ),
+    graduationCap: (
+      <>
+        <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+        <path d="M6 12v5c3.3 4.5 8.7 4.5 12 0v-5" />
+      </>
+    ),
+    newspaper: (
+      <>
+        <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" />
+        <path d="M18 14h-8M15 18h-5M10 6h8v4h-8V6Z" />
+      </>
+    ),
+    briefcase: (
+      <>
+        <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+      </>
+    ),
+    laugh: (
+      <>
+        <circle cx="12" cy="12" r="10" />
+        <path d="M18 13a6 6 0 0 1-6 5 6 6 0 0 1-6-5h12Z" />
+        <line x1="9" y1="9" x2="9.01" y2="9" />
+        <line x1="15" y1="9" x2="15.01" y2="9" />
+      </>
+    ),
+    palette: (
+      <>
+        <circle cx="13.5" cy="6.5" r=".5" />
+        <circle cx="17.5" cy="10.5" r=".5" />
+        <circle cx="8.5" cy="7.5" r=".5" />
+        <circle cx="6.5" cy="12.5" r=".5" />
+        <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.9 0 1.6-.5 1.6-1.3 0-.4-.1-.8-.4-1.1-.3-.3-.4-.7-.4-1.1 0-.9.7-1.6 1.6-1.6H16c3.3 0 6-2.7 6-6 0-5-4.5-9-10-9z" />
+      </>
+    ),
+    laptop: (
+      <>
+        <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+        <line x1="2" y1="20" x2="22" y2="20" />
+      </>
+    ),
+    sparkles: (
+      <>
+        <path d="m12 3 1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3Z" />
+        <path d="M5 3v4M3 5h4M19 17v4M17 19h4" />
+      </>
+    ),
+    fileText: (
+      <>
+        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+        <polyline points="14 2 14 8 20 8" />
+        <line x1="16" y1="13" x2="8" y2="13" />
+        <line x1="16" y1="17" x2="8" y2="17" />
+        <line x1="10" y1="9" x2="8" y2="9" />
+      </>
     )
   };
 
@@ -119,31 +199,20 @@ function ComposerToolIcon({ name }) {
 
 const QUICK_EMOJIS = ["\u{1F642}", "\u{1F44F}", "\u{1F4A1}", "\u{1F4DA}", "\u{1F680}", "\u{1F4AF}"];
 const POST_CATEGORIES = [
-  { value: "GENERAL", label: "General", xp: 1 },
-  { value: "EDUCATION", label: "Education", xp: 5 },
-  { value: "FUNNY", label: "Funny", xp: 2 },
-  { value: "NEWS", label: "News", xp: 5 },
-  { value: "BUSINESS", label: "Business", xp: 3 },
-  { value: "LIFESTYLE", label: "Lifestyle", xp: 2 },
-  { value: "TECH", label: "Tech", xp: 2 },
-  { value: "OTHER", label: "Other", xp: 2 }
+  { value: "GENERAL", label: "General", xp: 1, icon: "fileText" },
+  { value: "EDUCATION", label: "Education", xp: 5, icon: "graduationCap" },
+  { value: "FUNNY", label: "Funny", xp: 2, icon: "laugh" },
+  { value: "NEWS", label: "News", xp: 5, icon: "newspaper" },
+  { value: "BUSINESS", label: "Business", xp: 3, icon: "briefcase" },
+  { value: "LIFESTYLE", label: "Lifestyle", xp: 2, icon: "palette" },
+  { value: "TECH", label: "Tech", xp: 2, icon: "laptop" },
+  { value: "OTHER", label: "Other", xp: 2, icon: "sparkles" }
 ];
-const FEELINGS = ["Happy", "Sad", "Excited", "Angry", "Loved", "Blessed", "Tired", "Motivated"];
-const FEELING_META = {
-  Happy: { emoji: "\u{1F60A}", hint: "Bright mood" },
-  Sad: { emoji: "\u{1F614}", hint: "Need support" },
-  Excited: { emoji: "\u{1F929}", hint: "Big energy" },
-  Angry: { emoji: "\u{1F620}", hint: "Strong feeling" },
-  Loved: { emoji: "\u{1F499}", hint: "Feeling loved" },
-  Blessed: { emoji: "\u{1F64F}", hint: "Grateful day" },
-  Tired: { emoji: "\u{1F634}", hint: "Low energy" },
-  Motivated: { emoji: "\u{1F525}", hint: "Ready to grow" }
-};
 const AUDIENCE_OPTIONS = [
-  { value: "PUBLIC", label: "Public", hint: "Everyone can see it" },
-  { value: "FRIENDS_FOLLOWERS", label: "Friends + followers", hint: "Accepted friends and followers" },
-  { value: "FRIENDS", label: "Friends", hint: "Accepted friends only" },
-  { value: "FOLLOWERS", label: "Followers", hint: "Followers only" }
+  { value: "PUBLIC", label: "Public", hint: "Everyone can see it", icon: "globe" },
+  { value: "FRIENDS_FOLLOWERS", label: "Friends + followers", hint: "Accepted friends and followers", icon: "users" },
+  { value: "FRIENDS", label: "Friends", hint: "Accepted friends only", icon: "handshake" },
+  { value: "FOLLOWERS", label: "Followers", hint: "Followers only", icon: "user" }
 ];
 
 function displayUserName(user) {
@@ -357,24 +426,75 @@ export default function PostComposer({ onSubmit, submitting, onSearchMentionUser
         <div className="composer-category-stack">
           <label className="composer-category-field">
             <span>Category</span>
-            <select value={category} onChange={(event) => setCategory(event.target.value)} required>
-              <option value="">Choose category</option>
-              {POST_CATEGORIES.map((item) => (
-                <option key={item.value} value={item.value}>
-                  {item.label} - {item.xp} XP
-                </option>
-              ))}
-            </select>
+            <div style={{ position: 'relative' }}>
+              <select 
+                value={category} 
+                onChange={(event) => setCategory(event.target.value)} 
+                required
+                style={{ 
+                  paddingLeft: '2.5rem',
+                  color: '#0f172a',
+                  fontWeight: '600'
+                }}
+              >
+                <option value="">Choose category</option>
+                {POST_CATEGORIES.map((item) => (
+                  <option key={item.value} value={item.value}>
+                    {item.label} - {item.xp} XP
+                  </option>
+                ))}
+              </select>
+              <span style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', display: 'flex', alignItems: 'center' }}>
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  style={{ color: '#64748b' }}
+                >
+                  <ComposerToolIcon name={POST_CATEGORIES.find(c => c.value === category)?.icon || 'fileText'} />
+                </svg>
+              </span>
+            </div>
           </label>
           <label className="composer-category-field composer-audience-field">
             <span>Audience</span>
-            <select value={audience} onChange={(event) => setAudience(event.target.value)}>
-              {AUDIENCE_OPTIONS.map((item) => (
-                <option key={item.value} value={item.value}>
-                  {item.label}
-                </option>
-              ))}
-            </select>
+            <div style={{ position: 'relative' }}>
+              <select 
+                value={audience} 
+                onChange={(event) => setAudience(event.target.value)}
+                style={{ 
+                  paddingLeft: '2.5rem',
+                  color: '#0f172a',
+                  fontWeight: '600'
+                }}
+              >
+                {AUDIENCE_OPTIONS.map((item) => (
+                  <option key={item.value} value={item.value}>
+                    {item.label}
+                  </option>
+                ))}
+              </select>
+              <span style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', display: 'flex', alignItems: 'center' }}>
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  style={{ color: '#64748b' }}
+                >
+                  <ComposerToolIcon name={AUDIENCE_OPTIONS.find(a => a.value === audience)?.icon || 'globe'} />
+                </svg>
+              </span>
+            </div>
             <small>{AUDIENCE_OPTIONS.find((item) => item.value === audience)?.hint}</small>
           </label>
         </div>
@@ -382,6 +502,74 @@ export default function PostComposer({ onSubmit, submitting, onSearchMentionUser
           {submitting ? "Posting..." : "Post"}
         </button>
       </div>
+
+      {mediaPreviewItem && (
+        <div className="composer-media-preview-container" style={{
+          padding: '1rem',
+          borderTop: '1px solid var(--border-color, #eee)',
+          background: 'rgba(0,0,0,0.02)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center'
+        }}>
+          <div style={{ position: 'relative', maxWidth: '100%' }}>
+            {mediaFile.type.startsWith('image/') ? (
+              <img 
+                src={mediaPreviewItem.url} 
+                alt="Upload preview" 
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '300px',
+                  borderRadius: '12px',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                  border: '3px solid var(--accent-color, #00d2ff)'
+                }}
+              />
+            ) : (
+              <video 
+                src={mediaPreviewItem.url} 
+                controls
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '300px',
+                  borderRadius: '12px',
+                  boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                  border: '3px solid var(--accent-color, #00d2ff)'
+                }}
+              />
+            )}
+            <button
+              type="button"
+              onClick={clearMediaFile}
+              style={{
+                position: 'absolute',
+                top: '-10px',
+                right: '-10px',
+                width: '30px',
+                height: '30px',
+                borderRadius: '50%',
+                backgroundColor: '#ff4d4f',
+                color: 'white',
+                border: '2px solid white',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '18px',
+                fontWeight: 'bold',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.2)'
+              }}
+              title="Remove media"
+            >
+              &times;
+            </button>
+          </div>
+          <span style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+            {mediaFile.name}
+          </span>
+        </div>
+      )}
+
       {activeTool ? (
         <div className="composer-tool-panel">
           {activeTool === "emoji" ? (

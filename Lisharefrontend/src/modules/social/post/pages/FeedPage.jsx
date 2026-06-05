@@ -2023,6 +2023,62 @@ export default function FeedPage() {
                   <strong>{storyFile ? storyFile.name : "Choose image or video"}</strong>
                   <small>Drag & drop or click to browse</small>
                   <em>JPG, PNG, MP4 or MOV - Max 100MB</em>
+                  {storyFile && (
+                    <div className="story-create-preview" style={{ 
+                      marginTop: '1.5rem', 
+                      width: '100%', 
+                      display: 'flex', 
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      background: 'rgba(0,0,0,0.05)',
+                      padding: '1rem',
+                      borderRadius: '12px'
+                    }}>
+                      {storyFile.type.startsWith('image/') ? (
+                        <img 
+                          src={URL.createObjectURL(storyFile)} 
+                          alt="Preview" 
+                          style={{ 
+                            maxWidth: '100%', 
+                            maxHeight: '350px', 
+                            borderRadius: '12px', 
+                            objectFit: 'contain', 
+                            border: '4px solid var(--accent-color, #00d2ff)',
+                            boxShadow: '0 8px 24px rgba(0,0,0,0.15)'
+                          }} 
+                        />
+                      ) : (
+                        <video 
+                          src={URL.createObjectURL(storyFile)} 
+                          controls
+                          style={{ 
+                            maxWidth: '100%', 
+                            maxHeight: '350px', 
+                            borderRadius: '12px', 
+                            border: '4px solid var(--accent-color, #00d2ff)',
+                            boxShadow: '0 8px 24px rgba(0,0,0,0.15)'
+                          }} 
+                        />
+                      )}
+                      <button 
+                        type="button" 
+                        onClick={() => setStoryFile(null)}
+                        style={{
+                          marginTop: '0.75rem',
+                          padding: '6px 16px',
+                          borderRadius: '20px',
+                          backgroundColor: '#ff4d4f',
+                          color: 'white',
+                          border: 'none',
+                          cursor: 'pointer',
+                          fontSize: '0.85rem',
+                          fontWeight: '600'
+                        }}
+                      >
+                        Remove Media
+                      </button>
+                    </div>
+                  )}
                   </label>
                   <label className={`story-create-feed-toggle ${alsoAddStoryToFeed ? "active" : ""}`}>
                     <input

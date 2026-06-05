@@ -19,16 +19,26 @@ const POST_VALUES = [
   { key: "low", label: "Low", hint: "Light note" }
 ];
 const SHARE_AUDIENCES = [
-  { key: "public", label: "Public" },
-  { key: "friends_followers", label: "Friends + followers" },
-  { key: "followers", label: "Followers" },
-  { key: "friends", label: "Friends" }
+  { key: "public", label: "Public", icon: "🌐" },
+  { key: "friends_followers", label: "Friends + followers", icon: "👥" },
+  { key: "followers", label: "Followers", icon: "👤" },
+  { key: "friends", label: "Friends", icon: "🤝" }
 ];
 const AUDIENCE_OPTIONS = [
-  { key: "public", value: "PUBLIC", label: "Public" },
-  { key: "friends_followers", value: "FRIENDS_FOLLOWERS", label: "Friends + followers" },
-  { key: "friends", value: "FRIENDS", label: "Friends" },
-  { key: "followers", value: "FOLLOWERS", label: "Followers" }
+  { key: "public", value: "PUBLIC", label: "Public", icon: "globe" },
+  { key: "friends_followers", value: "FRIENDS_FOLLOWERS", label: "Friends + followers", icon: "users" },
+  { key: "friends", value: "FRIENDS", label: "Friends", icon: "handshake" },
+  { key: "followers", value: "FOLLOWERS", label: "Followers", icon: "user" }
+];
+const POST_CATEGORIES = [
+  { value: "GENERAL", label: "General", xp: 1, icon: "fileText" },
+  { value: "EDUCATION", label: "Education", xp: 5, icon: "graduationCap" },
+  { value: "FUNNY", label: "Funny", xp: 2, icon: "laugh" },
+  { value: "NEWS", label: "News", xp: 5, icon: "newspaper" },
+  { value: "BUSINESS", label: "Business", xp: 3, icon: "briefcase" },
+  { value: "LIFESTYLE", label: "Lifestyle", xp: 2, icon: "palette" },
+  { value: "TECH", label: "Tech", xp: 2, icon: "laptop" },
+  { value: "OTHER", label: "Other", xp: 2, icon: "sparkles" }
 ];
 const VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov", ".m4v", ".ogg", ".avi"];
 
@@ -312,11 +322,108 @@ function PostValueIcon({ type }) {
         <path d="M13 11 20 4" />
         <path d="m15.5 4H20v4.5" />
       </>
+    ),
+    globe: (
+      <>
+        <circle cx="12" cy="12" r="10" />
+        <line x1="2" y1="12" x2="22" y2="12" />
+        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+      </>
+    ),
+    users: (
+      <>
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+      </>
+    ),
+    user: (
+      <>
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+        <circle cx="12" cy="7" r="4" />
+      </>
+    ),
+    handshake: (
+      <>
+        <path d="m11 17 2 2 1-1" />
+        <path d="m18 14 2.5 2.5a3.3 3.3 0 0 1-4.7 4.7L11 16.5" />
+        <path d="m8 14.5-4 4a3.3 3.3 0 0 0 4.7 4.7L11 21" />
+        <path d="m14 11.5 2 2" />
+        <path d="M20 11.5a3.3 3.3 0 0 0-4.7-4.7L10.5 11.5" />
+        <path d="M14 6.8a3.3 3.3 0 0 0-4.7 4.7l4.7 4.7" />
+        <path d="M8.5 13.2 4 8.7a3.3 3.3 0 0 1 4.7-4.7l4.3 4.3" />
+      </>
+    ),
+    graduationCap: (
+      <>
+        <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+        <path d="M6 12v5c3.3 4.5 8.7 4.5 12 0v-5" />
+      </>
+    ),
+    newspaper: (
+      <>
+        <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2" />
+        <path d="M18 14h-8M15 18h-5M10 6h8v4h-8V6Z" />
+      </>
+    ),
+    briefcase: (
+      <>
+        <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+      </>
+    ),
+    laugh: (
+      <>
+        <circle cx="12" cy="12" r="10" />
+        <path d="M18 13a6 6 0 0 1-6 5 6 6 0 0 1-6-5h12Z" />
+        <line x1="9" y1="9" x2="9.01" y2="9" />
+        <line x1="15" y1="9" x2="15.01" y2="9" />
+      </>
+    ),
+    palette: (
+      <>
+        <circle cx="13.5" cy="6.5" r=".5" />
+        <circle cx="17.5" cy="10.5" r=".5" />
+        <circle cx="8.5" cy="7.5" r=".5" />
+        <circle cx="6.5" cy="12.5" r=".5" />
+        <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.9 0 1.6-.5 1.6-1.3 0-.4-.1-.8-.4-1.1-.3-.3-.4-.7-.4-1.1 0-.9.7-1.6 1.6-1.6H16c3.3 0 6-2.7 6-6 0-5-4.5-9-10-9z" />
+      </>
+    ),
+    laptop: (
+      <>
+        <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+        <line x1="2" y1="20" x2="22" y2="20" />
+      </>
+    ),
+    sparkles: (
+      <>
+        <path d="m12 3 1.912 5.813a2 2 0 0 0 1.275 1.275L21 12l-5.813 1.912a2 2 0 0 0-1.275 1.275L12 21l-1.912-5.813a2 2 0 0 0-1.275-1.275L3 12l5.813-1.912a2 2 0 0 0 1.275-1.275L12 3Z" />
+        <path d="M5 3v4M3 5h4M19 17v4M17 19h4" />
+      </>
+    ),
+    fileText: (
+      <>
+        <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+        <polyline points="14 2 14 8 20 8" />
+        <line x1="16" y1="13" x2="8" y2="13" />
+        <line x1="16" y1="17" x2="8" y2="17" />
+        <line x1="10" y1="9" x2="8" y2="9" />
+      </>
     )
   };
 
   return (
-    <svg className="share-value-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+    <svg 
+      className="share-value-icon-svg" 
+      viewBox="0 0 24 24" 
+      aria-hidden="true"
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+    >
       {paths[type] || paths.medium}
     </svg>
   );
@@ -790,6 +897,7 @@ export default function FeedCard({
   const [pollVoterSearch, setPollVoterSearch] = useState("");
   const [selectedReactionKey, setSelectedReactionKey] = useState("");
   const [editingOpen, setEditingOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState(normalizeCategory(item.category));
   const normalizedItemPollOptions = normalizePollOptions(item.pollOptions);
   const [editingContent, setEditingContent] = useState(firstNonEmptyString(item.content, item.caption, item.postCaption, item.text));
   const [editingAudience, setEditingAudience] = useState(AUDIENCE_OPTIONS.find((option) => option.key === normalizeAudienceKey(item.audience || item.shareAudience))?.value || "PUBLIC");
@@ -1052,6 +1160,7 @@ export default function FeedCard({
     setEditingPollQuestion(item.pollQuestion || "");
     setEditingPollOptions(normalizedItemPollOptions.length ? normalizedItemPollOptions : ["", ""]);
     setEditingFile(null);
+    setEditingCategory(normalizeCategory(item.category));
     setRemoveMedia(false);
     setEditingOpen(false);
     setOpenReplyId(null);
@@ -1531,6 +1640,7 @@ export default function FeedCard({
     try {
       const formData = new FormData();
       formData.append("content", editingContent ?? "");
+      formData.append("category", editingCategory || "GENERAL");
       formData.append("audience", editingAudience || "PUBLIC");
       formData.append("feeling", editingFeeling || "");
       formData.append("locationName", editingLocation || "");
@@ -3138,9 +3248,67 @@ export default function FeedCard({
                         setEditingPollOptions((previous) => (Array.isArray(previous) && previous.length >= 2 ? previous : ["", ""]));
                       }}
                     >
-                      <PostValueIcon type="medium" className="tool-icon" />
+                      <PostValueIcon type="medium" />
                       Poll
                     </button>
+                  </div>
+
+                  <div className="edit-post-category-row" style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
+                    <label className="edit-post-field-v2" style={{ flex: '1 1 200px' }}>
+                      <span style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Category</span>
+                      <div style={{ position: 'relative' }}>
+                        <select 
+                          value={editingCategory} 
+                          onChange={(e) => setEditingCategory(e.target.value)}
+                          style={{ 
+                            width: '100%', 
+                            padding: '0.75rem 1rem 0.75rem 2.5rem', 
+                            borderRadius: '10px', 
+                            border: '1px solid var(--border-color, #ddd)',
+                            background: '#ffffff',
+                            color: '#0f172a',
+                            fontWeight: '600',
+                            fontSize: '0.95rem',
+                            appearance: 'none'
+                          }}
+                        >
+                          {POST_CATEGORIES.map((cat) => (
+                            <option key={cat.value} value={cat.value}>{cat.label} - {cat.xp} XP</option>
+                          ))}
+                        </select>
+                        <span style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', display: 'flex', alignItems: 'center' }}>
+                          <PostValueIcon type={POST_CATEGORIES.find(c => c.value === editingCategory)?.icon || 'fileText'} />
+                        </span>
+                      </div>
+                    </label>
+
+                    <label className="edit-post-field-v2" style={{ flex: '1 1 200px' }}>
+                      <span style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Audience</span>
+                      <div style={{ position: 'relative' }}>
+                        <select 
+                          value={editingAudience} 
+                          onChange={(e) => setEditingAudience(e.target.value)}
+                          style={{ 
+                            width: '100%', 
+                            padding: '0.75rem 1rem 0.75rem 2.5rem', 
+                            borderRadius: '10px', 
+                            border: '1px solid var(--border-color, #ddd)',
+                            background: '#ffffff',
+                            color: '#0f172a',
+                            fontWeight: '600',
+                            fontSize: '0.95rem',
+                            appearance: 'none'
+                          }}
+                        >
+                          {AUDIENCE_OPTIONS.map((aud) => (
+                            <option key={aud.value} value={aud.value}>{aud.label}</option>
+                          ))}
+                        </select>
+                        <span style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', display: 'flex', alignItems: 'center' }}>
+                          <PostValueIcon type={AUDIENCE_OPTIONS.find(a => a.value === editingAudience)?.icon || 'globe'} />
+                        </span>
+                      </div>
+                    </label>
                   </div>
 
                   <div className="edit-post-meta-grid">
@@ -3287,19 +3455,72 @@ export default function FeedCard({
                     </label>
 
                     {editingMediaPreviewItem ? (
-                      <div className="edit-post-selected-media-grid single">
-                        <figure>
+                      <div className="edit-post-selected-media-grid single visible-preview">
+                        <figure style={{ 
+                          width: '100%', 
+                          maxWidth: '500px', 
+                          margin: '1.5rem auto',
+                          padding: '1rem',
+                          background: 'rgba(0,0,0,0.03)',
+                          borderRadius: '16px',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center'
+                        }}>
                           {String(editingMediaPreviewItem.file.type || "").startsWith("video") ? (
-                            <video src={editingMediaPreviewItem.url} muted playsInline preload="metadata" />
+                            <video 
+                              src={editingMediaPreviewItem.url} 
+                              controls
+                              muted 
+                              playsInline 
+                              preload="metadata" 
+                              style={{ 
+                                width: '100%', 
+                                borderRadius: '12px', 
+                                border: '4px solid var(--accent-color, #00d2ff)', 
+                                boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
+                                maxHeight: '400px',
+                                objectFit: 'contain'
+                              }} 
+                            />
                           ) : (
-                            <img src={editingMediaPreviewItem.url} alt={editingMediaPreviewItem.file.name || "Selected media"} />
+                            <img 
+                              src={editingMediaPreviewItem.url} 
+                              alt={editingMediaPreviewItem.file.name || "Selected media"} 
+                              style={{ 
+                                width: '100%', 
+                                borderRadius: '12px', 
+                                border: '4px solid var(--accent-color, #00d2ff)', 
+                                boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
+                                maxHeight: '400px',
+                                objectFit: 'contain'
+                              }} 
+                            />
                           )}
-                          <figcaption>
-                            <span>{editingMediaPreviewItem.kind}</span>
+                          <figcaption style={{ 
+                            padding: '1rem 0', 
+                            width: '100%',
+                            display: 'flex', 
+                            justifyContent: 'space-between', 
+                            alignItems: 'center' 
+                          }}>
+                            <span style={{ fontWeight: 'bold', color: 'var(--text-primary)', fontSize: '1rem' }}>
+                              New: {editingMediaPreviewItem.kind}
+                            </span>
                             <button
                               type="button"
+                              className="remove-preview-btn"
                               onClick={clearEditingMediaFile}
                               aria-label={`Remove ${editingMediaPreviewItem.file.name}`}
+                              style={{ 
+                                padding: '6px 16px', 
+                                borderRadius: '20px', 
+                                backgroundColor: '#ff4d4f', 
+                                color: 'white', 
+                                border: 'none', 
+                                cursor: 'pointer',
+                                fontWeight: '600'
+                              }}
                             >
                               Remove
                             </button>
@@ -3360,18 +3581,52 @@ export default function FeedCard({
                       <strong>Current post assets</strong>
                     </div>
                     {mediaItems.length ? (
-                      <div className={`edit-post-current-media-grid count-${Math.min(mediaItems.length, 4)}`}>
+                      <div className={`edit-post-current-media-grid count-${Math.min(mediaItems.length, 4)} visible-current-media`}>
                         {mediaItems.slice(0, 4).map((mediaItem, index) => {
                           const previewUrl = toMediaUrl(mediaItem.url);
                           const previewIsVideo = String(mediaItem.type || "").toUpperCase() === "VIDEO" || isVideoAsset(mediaItem.url);
                           return (
-                            <figure key={`edit-current-media-${mediaItem.url}-${index}`}>
+                            <figure key={`edit-current-media-${mediaItem.url}-${index}`} style={{ 
+                              width: '100%', 
+                              marginBottom: '1.5rem',
+                              borderBottom: '1px solid rgba(0,0,0,0.05)',
+                              paddingBottom: '1rem'
+                            }}>
                               {previewIsVideo ? (
-                                <video src={previewUrl} muted playsInline preload="metadata" />
+                                <video 
+                                  src={previewUrl} 
+                                  controls
+                                  muted 
+                                  playsInline 
+                                  preload="metadata" 
+                                  style={{ 
+                                    width: '100%', 
+                                    borderRadius: '12px', 
+                                    border: '2px solid #eee',
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                                  }} 
+                                />
                               ) : (
-                                <img src={previewUrl} alt="Current post media" />
+                                <img 
+                                  src={previewUrl} 
+                                  alt="Current post media" 
+                                  style={{ 
+                                    width: '100%', 
+                                    borderRadius: '12px', 
+                                    border: '2px solid #eee',
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                                  }} 
+                                />
                               )}
-                              <figcaption>{mediaItem.type || "Media"}</figcaption>
+                              <figcaption style={{ 
+                                textAlign: 'center', 
+                                fontSize: '0.9rem', 
+                                marginTop: '8px',
+                                color: 'var(--text-secondary)',
+                                fontWeight: '500'
+                              }}>
+                                Current {mediaItem.type || "Media"}
+                              </figcaption>
                             </figure>
                           );
                         })}
