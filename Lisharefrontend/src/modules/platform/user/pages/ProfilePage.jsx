@@ -221,6 +221,89 @@ function splitCsv(value = "") {
     .filter(Boolean);
 }
 
+function parsePostListValue(value) {
+  if (Array.isArray(value)) return value.filter(Boolean);
+  if (typeof value !== "string") return [];
+  const trimmed = value.trim();
+  if (!trimmed) return [];
+  if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
+    } catch {
+      return [];
+    }
+  }
+  return trimmed.split(",").map((item) => item.trim()).filter(Boolean);
+}
+
+function mediaItemsForProfilePost(post) {
+  const mediaUrls = parsePostListValue(post?.mediaUrls);
+  const legacyUrl = post?.imageUrl || post?.mediaUrl || post?.thumbnailUrl || post?.coverImageUrl || "";
+  const legacyUrls = legacyUrl ? [legacyUrl] : [];
+  const urls = mediaUrls.length ? mediaUrls : legacyUrls;
+  const mediaTypes = parsePostListValue(post?.mediaTypes);
+  const fallbackType = String(post?.mediaType || "").toUpperCase();
+
+  return urls.map((url, index) => ({
+    url,
+    type: (mediaTypes[index] || (urls.length === 1 ? fallbackType : "") || (isVideoAsset(url) ? "VIDEO" : "IMAGE")).toUpperCase()
+  }));
+}
+
+function normalizeProfileRole(value = "") {
+  const raw = Array.isArray(value) ? value[0] : value;
+  const label = String(raw || "")
+    .replace(/^ROLE_/i, "")
+    .replace(/[_-]+/g, " ")
+    .trim();
+  if (!label) return "";
+  return label.toLowerCase().replace(/\b[a-z]/g, (letter) => letter.toUpperCase());
+}
+
+function roleKey(value = "") {
+  return normalizeProfileRole(value).toLowerCase().replace(/[^a-z0-9]+/g, "-") || "member";
+}
+
+function roleIconName(value = "") {
+  const key = roleKey(value);
+  if (key.includes("business")) return "bag";
+  if (key.includes("farmer")) return "spark";
+  if (key.includes("creator")) return "video";
+  if (key.includes("admin")) return "settings";
+  return "user";
+}
+
+function countCommentThread(comments = []) {
+  if (!Array.isArray(comments)) return 0;
+  return comments.reduce((total, comment) => total + 1 + countCommentThread(comment?.replies || []), 0);
+}
+
+function commentAuthorName(comment) {
+  return comment?.authorName
+    || `${comment?.firstName || ""} ${comment?.lastName || ""}`.trim()
+    || comment?.email
+    || "Community member";
+}
+
+function postAuthorNameForModal(post, fallbackName) {
+  return post?.authorName
+    || post?.ownerName
+    || post?.userName
+    || post?.author?.name
+    || fallbackName
+    || "AgroLink User";
+}
+
+function postAuthorAvatarForModal(post, fallbackAvatar) {
+  return post?.authorProfileImageUrl
+    || post?.authorProfilePic
+    || post?.profileImageUrl
+    || post?.author?.profileImageUrl
+    || fallbackAvatar
+    || "";
+}
+
 export default function ProfilePage() {
   const { user, refreshUser } = useAuth();
   const { userId: routeUserId } = useParams();
@@ -240,11 +323,21 @@ export default function ProfilePage() {
   const [stats, setStats] = useState({ followers: 0, following: 0, friends: 0 });
   const [networkLists, setNetworkLists] = useState({ followers: [], following: [], friends: [] });
   const [activeNetwork, setActiveNetwork] = useState("");
-  const [relationship, setRelationship] = useState({ isFollowing: false, isFriend: false, requested: false });
+  const [relationship, setRelationship] = useState({ isFollowing: false, isFriend: false, requested: false, incomingRequest: false });
+  const [activeProfilePost, setActiveProfilePost] = useState(null);
+  const [activeProfilePostMediaIndex, setActiveProfilePostMediaIndex] = useState(0);
+  const [profilePostComments, setProfilePostComments] = useState([]);
+  const [profilePostCommentsLoading, setProfilePostCommentsLoading] = useState(false);
+  const [profilePostCommentDraft, setProfilePostCommentDraft] = useState("");
+  const [profilePostActionBusy, setProfilePostActionBusy] = useState("");
   const viewingUserId = Number(routeUserId || 0);
   const isOwnProfile = !viewingUserId || viewingUserId === Number(user?.userId || user?.id || 0);
   const currentUserId = Number(user?.userId || user?.id || 0);
   const name = displayName(profileUser, user);
+  const profileRoleSource = profileUser?.role || profileUser?.roles || user?.role || user?.roles || "";
+  const profileRoleLabel = normalizeProfileRole(profileRoleSource) || "Member";
+  const profileRoleClass = `profile-role-${roleKey(profileRoleSource)}`;
+  const profileRoleIcon = roleIconName(profileRoleSource);
   const handleSource = profileUser?.username || (isOwnProfile ? (profileUser?.email || user?.email || name) : (profileUser?.email || name));
   const handle = `@${String(handleSource).split("@")[0].replace(/[^a-zA-Z0-9_]/g, "").toLowerCase()}`;
   const profileEmail = isOwnProfile ? (profileUser?.email || user?.email || "") : (profileUser?.email || "");
@@ -281,6 +374,22 @@ export default function ProfilePage() {
   const activeNetworkTitle = activeNetwork
     ? `${activeNetwork.slice(0, 1).toUpperCase()}${activeNetwork.slice(1)}`
     : "";
+  const activeProfilePostId = postIdForItem(activeProfilePost);
+  const activeProfilePostMediaItems = useMemo(() => mediaItemsForProfilePost(activeProfilePost), [activeProfilePost]);
+  const activeProfilePostMedia = activeProfilePostMediaItems[Math.min(activeProfilePostMediaIndex, Math.max(0, activeProfilePostMediaItems.length - 1))] || null;
+  const activeProfilePostVideo = activeProfilePostMedia?.type === "VIDEO" || isVideoAsset(activeProfilePostMedia?.url || "");
+  const activeProfilePostTitle = activeProfilePost ? authoredPostTitle(activeProfilePost, activeProfilePostVideo) : "";
+  const activeProfilePostAuthorName = activeProfilePost ? postAuthorNameForModal(activeProfilePost, name) : name;
+  const activeProfilePostAuthorAvatar = activeProfilePost ? postAuthorAvatarForModal(activeProfilePost, profileAvatarSource) : profileAvatarSource;
+  const activeProfilePostTags = activeProfilePost ? postHashtags(activeProfilePost) : [];
+  const activeProfilePostAuthorId = postAuthorId(activeProfilePost);
+  const profileOwnerId = resolveUserId(profileUser) || currentUserId;
+  const activeProfilePostRoleSource = activeProfilePost?.authorRole
+    || activeProfilePost?.author?.role
+    || activeProfilePost?.role
+    || (activeProfilePostAuthorId === profileOwnerId ? profileRoleSource : "");
+  const activeProfilePostRoleLabel = normalizeProfileRole(activeProfilePostRoleSource) || (activeProfilePostAuthorId === profileOwnerId ? profileRoleLabel : "Member");
+  const activeProfilePostRoleIcon = roleIconName(activeProfilePostRoleSource || activeProfilePostRoleLabel);
 
   useEffect(() => {
     const load = async () => {
@@ -304,17 +413,19 @@ export default function ProfilePage() {
             friends: friends.length
           });
           setNetworkLists({ followers, following, friends });
-          setRelationship({ isFollowing: false, isFriend: false, requested: false });
+          setRelationship({ isFollowing: false, isFriend: false, requested: false, incomingRequest: false });
           setSavedPosts(listFromResponse(savedRes));
           setProfilePosts(listFromResponse(myPostsRes));
         } else {
-          const [profileRes, followersRes, followingRes, friendsRes, myFollowingRes, myFriendsRes, feedRes] = await Promise.all([
+          const [profileRes, followersRes, followingRes, friendsRes, myFollowingRes, myFriendsRes, myPendingRes, mySentRes, feedRes] = await Promise.all([
             userService.getPublicProfile(viewingUserId),
             followService.followersForUser(viewingUserId),
             followService.followingForUser(viewingUserId),
             friendService.getFriendsForUser(viewingUserId),
             followService.following(),
             friendService.getFriends(),
+            friendService.getPending(),
+            friendService.getSent(),
             feedService.getFeed()
           ]);
           const followers = Array.isArray(followersRes.data) ? followersRes.data : [];
@@ -322,13 +433,16 @@ export default function ProfilePage() {
           const friends = Array.isArray(friendsRes.data) ? friendsRes.data : [];
           const myFollowing = Array.isArray(myFollowingRes.data) ? myFollowingRes.data : [];
           const myFriends = Array.isArray(myFriendsRes.data) ? myFriendsRes.data : [];
+          const myPending = Array.isArray(myPendingRes.data) ? myPendingRes.data : [];
+          const mySent = Array.isArray(mySentRes.data) ? mySentRes.data : [];
           setProfileUser(payload(profileRes));
           setStats({ followers: followers.length, following: following.length, friends: friends.length });
           setNetworkLists({ followers, following, friends });
           setRelationship({
             isFollowing: myFollowing.some((entry) => Number(entry.userId) === viewingUserId),
             isFriend: myFriends.some((entry) => Number(entry.userId) === viewingUserId),
-            requested: false
+            requested: mySent.some((entry) => Number(entry.userId) === viewingUserId),
+            incomingRequest: myPending.some((entry) => Number(entry.userId) === viewingUserId)
           });
           setSavedPosts([]);
           setProfilePosts(
@@ -353,16 +467,108 @@ export default function ProfilePage() {
     };
   }, [mediaDraft.previewUrl]);
 
+  useEffect(() => {
+    const postId = activeProfilePostId;
+    if (!postId) {
+      setProfilePostComments([]);
+      setProfilePostCommentDraft("");
+      return undefined;
+    }
+
+    let active = true;
+    setProfilePostCommentsLoading(true);
+    setProfilePostComments([]);
+    setProfilePostCommentDraft("");
+
+    feedService.getComments(postId)
+      .then((response) => {
+        if (!active) return;
+        const comments = listFromResponse(response);
+        setProfilePostComments(comments);
+        const commentCount = countCommentThread(comments);
+        setActiveProfilePost((previous) => postIdForItem(previous) === postId ? { ...previous, comments, commentCount } : previous);
+        setProfilePosts((previous) => previous.map((item) => (
+          postIdForItem(item) === postId ? { ...item, comments, commentCount } : item
+        )));
+      })
+      .catch(() => {
+        if (active) pushToast("Failed to load comments", "error");
+      })
+      .finally(() => {
+        if (active) setProfilePostCommentsLoading(false);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [activeProfilePostId, pushToast]);
+
+  const updateProfilePostMetrics = (postId, patch) => {
+    setActiveProfilePost((previous) => postIdForItem(previous) === postId ? { ...previous, ...patch } : previous);
+    setProfilePosts((previous) => previous.map((item) => (
+      postIdForItem(item) === postId ? { ...item, ...patch } : item
+    )));
+  };
+
   const openSavedItem = (post) => {
     const postId = Number(post?.postId);
     if (!postId) return;
-    navigate("/home", { state: { openPostId: postId, mode: isVideoItem(post) ? "reels" : "posts" } });
+    setActiveProfilePost(post);
+    setActiveProfilePostMediaIndex(0);
   };
 
   const openProfilePost = (post) => {
     const postId = postIdForItem(post);
     if (!postId) return;
-    navigate("/home", { state: { openPostId: postId, mode: isVideoItem(post) ? "reels" : "posts" } });
+    setActiveProfilePost(post);
+    setActiveProfilePostMediaIndex(0);
+  };
+
+  const closeProfilePostViewer = () => {
+    if (profilePostActionBusy) return;
+    setActiveProfilePost(null);
+    setProfilePostComments([]);
+    setProfilePostCommentDraft("");
+    setActiveProfilePostMediaIndex(0);
+  };
+
+  const reactToProfilePost = async (type) => {
+    const postId = postIdForItem(activeProfilePost);
+    if (!postId) return;
+    setProfilePostActionBusy(`react-${type}`);
+    try {
+      await feedService.react(postId, type);
+      const response = await feedService.getReactions(postId);
+      const reactionCounts = response?.data || {};
+      const reactionCount = Object.values(reactionCounts).reduce((total, value) => total + Number(value || 0), 0);
+      updateProfilePostMetrics(postId, { reactionCounts, reactionCount });
+    } catch {
+      pushToast("Failed to update reaction", "error");
+    } finally {
+      setProfilePostActionBusy("");
+    }
+  };
+
+  const submitProfilePostComment = async (event) => {
+    event.preventDefault();
+    const postId = postIdForItem(activeProfilePost);
+    const content = profilePostCommentDraft.trim();
+    if (!postId || !content) return;
+    setProfilePostActionBusy("comment");
+    try {
+      await feedService.addComment(postId, content);
+      const response = await feedService.getComments(postId);
+      const comments = listFromResponse(response);
+      const commentCount = countCommentThread(comments);
+      setProfilePostComments(comments);
+      setProfilePostCommentDraft("");
+      updateProfilePostMetrics(postId, { comments, commentCount });
+      pushToast("Comment added", "success");
+    } catch {
+      pushToast("Failed to add comment", "error");
+    } finally {
+      setProfilePostActionBusy("");
+    }
   };
 
   const openNetworkUser = (entry) => {
@@ -493,17 +699,40 @@ export default function ProfilePage() {
     try {
       if (relationship.isFriend) {
         await friendService.unfriend(viewingUserId);
-        setRelationship((prev) => ({ ...prev, isFriend: false }));
+        setRelationship((prev) => ({ ...prev, isFriend: false, requested: false, incomingRequest: false }));
         setStats((prev) => ({ ...prev, friends: Math.max(0, prev.friends - 1) }));
         setNetworkLists((prev) => ({
           ...prev,
           friends: prev.friends.filter((entry) => Number(entry.userId) !== currentUserId)
         }));
         pushToast("Friend removed", "success");
+      } else if (relationship.incomingRequest) {
+        const response = await friendService.accept(viewingUserId);
+        const message = String(response?.data?.message || "");
+        const accepted = /accepted/i.test(message);
+        if (accepted) {
+          setRelationship((prev) => ({ ...prev, isFriend: true, requested: false, incomingRequest: false }));
+          setStats((prev) => ({ ...prev, friends: prev.friends + 1 }));
+          setNetworkLists((prev) => ({
+            ...prev,
+            friends: prev.friends.some((entry) => Number(entry.userId) === currentUserId)
+              ? prev.friends
+              : [{ ...user, userId: currentUserId }, ...prev.friends]
+          }));
+        }
+        pushToast(message || (accepted ? "Request accepted" : "Request not accepted"), accepted ? "success" : "error");
       } else {
-        await friendService.request(viewingUserId);
-        setRelationship((prev) => ({ ...prev, requested: true }));
-        pushToast("Friend request sent", "success");
+        const response = await friendService.request(viewingUserId);
+        const message = String(response?.data?.message || "");
+        const alreadyFriends = /already friends/i.test(message);
+        const requestIsPending = /sent|pending/i.test(message);
+        setRelationship((prev) => ({
+          ...prev,
+          isFriend: alreadyFriends ? true : prev.isFriend,
+          requested: requestIsPending,
+          incomingRequest: false
+        }));
+        pushToast(message || (requestIsPending ? "Friend request sent" : "Request not sent"), requestIsPending || alreadyFriends ? "success" : "error");
       }
     } catch (errorResponse) {
       pushToast(errorResponse?.response?.data?.message || "Failed to update friend", "error");
@@ -598,12 +827,17 @@ export default function ProfilePage() {
           <div className="profile-name-stack">
             <h2>
               {name}
+              <span className={`profile-role-badge ${profileRoleClass}`}>
+                <Icon name={profileRoleIcon} />
+                {profileRoleLabel}
+              </span>
               {isOnlineUser(profileUser) ? <StatusBadge status="Online" tone="green" /> : <StatusBadge status="Profile" tone="blue" />}
               {hasVerifiedBadge(profileUser) ? <StatusBadge status="Verified XP" tone="blue" /> : null}
             </h2>
             <p className="profile-hero-bio">{profileBio}</p>
             <div className="profile-contact-list">
               <span><Icon name="user" /> {handle}</span>
+              <span className={`profile-role-contact ${profileRoleClass}`}><Icon name={profileRoleIcon} /> {profileRoleLabel} Account</span>
               {profileEmail ? <span><Icon name="send" /> {profileEmail}</span> : null}
               <span><Icon name="pin" /> {profileLocation}</span>
             </div>
@@ -626,13 +860,25 @@ export default function ProfilePage() {
             </div>
           ) : (
             <div className="profile-action-row">
-              <Button icon="user" variant={relationship.isFollowing ? "secondary" : "gradient"} disabled={saving === "follow"} onClick={toggleProfileFollow}>
-                {relationship.isFollowing ? "Unfollow" : "Follow"}
-              </Button>
-              <Button icon={relationship.isFriend ? "trash" : "users"} variant={relationship.isFriend ? "danger" : "secondary"} disabled={saving === "friend" || relationship.requested} onClick={toggleProfileFriend}>
-                {relationship.isFriend ? "Unfriend" : relationship.requested ? "Requested" : "Add Friend"}
-              </Button>
-              <Button icon="chat" onClick={() => navigate("/chat", { state: { startUserId: viewingUserId } })}>Chat</Button>
+            <Button
+              icon="user"
+              variant={relationship.isFollowing ? "secondary" : "gradient"}
+              className="profile-action-button"
+              disabled={saving === "follow"}
+              onClick={toggleProfileFollow}
+            >
+              {relationship.isFollowing ? "Unfollow" : "Follow"}
+            </Button>
+            <Button
+              icon={relationship.isFriend ? "trash" : relationship.incomingRequest ? "check" : "users"}
+              variant={relationship.isFriend ? "danger" : "secondary"}
+              className="profile-action-button"
+              disabled={saving === "friend" || relationship.requested}
+              onClick={toggleProfileFriend}
+            >
+              {relationship.isFriend ? "Unfriend" : relationship.incomingRequest ? "Accept Request" : relationship.requested ? "Request Sent" : "Add Friend"}
+            </Button>
+            <Button icon="chat" className="profile-action-button" onClick={() => navigate("/chat", { state: { startUserId: viewingUserId } })}>Chat</Button>
             </div>
           )}
         </div>
@@ -794,6 +1040,7 @@ export default function ProfilePage() {
             <SectionHeader title="About Me" />
             <p className="profile-about-bio">{profileBio}</p>
             <div className="profile-about-list">
+              <span className={`profile-about-role ${profileRoleClass}`}><Icon name={profileRoleIcon} /> {profileRoleLabel} Account</span>
               {profileEmail ? <span><Icon name="send" /> {profileEmail}</span> : null}
               {profileUser?.phoneNumber ? <span><Icon name="phone" /> {profileUser.phoneNumber}</span> : null}
               <span><Icon name="pin" /> {profileLocation}</span>
@@ -839,6 +1086,151 @@ export default function ProfilePage() {
           </Card>
         </aside>
       </div>
+
+      <Modal
+        open={Boolean(activeProfilePost)}
+        title={activeProfilePostVideo ? "Reel Preview" : "Post Preview"}
+        subtitle="Preview, react, and comment without leaving this profile."
+        onClose={closeProfilePostViewer}
+        footer={<Button onClick={closeProfilePostViewer} disabled={Boolean(profilePostActionBusy)}>Close</Button>}
+        className={`profile-post-viewer-modal ${activeProfilePostVideo ? "profile-reel-viewer-modal" : "profile-feed-viewer-modal"}`}
+      >
+        {activeProfilePost ? (
+          <div className="profile-post-viewer">
+            <section className="profile-post-viewer-media" aria-label={activeProfilePostVideo ? "Selected reel" : "Selected post media"}>
+              <div className={`profile-post-viewer-stage ${activeProfilePostVideo ? "is-video" : "is-image"}`}>
+                {activeProfilePostMedia ? (
+                  activeProfilePostVideo ? (
+                    <video src={toMediaUrl(activeProfilePostMedia.url)} controls autoPlay playsInline />
+                  ) : (
+                    <img src={toMediaUrl(activeProfilePostMedia.url)} alt={activeProfilePostTitle} />
+                  )
+                ) : (
+                  <div className="profile-post-viewer-placeholder">
+                    <Icon name={activeProfilePostVideo ? "video" : "image"} />
+                    <strong>{activeProfilePostVideo ? "Reel" : "Post"}</strong>
+                  </div>
+                )}
+                <span className="profile-post-viewer-kind">
+                  <Icon name={activeProfilePostVideo ? "video" : "image"} />
+                  {activeProfilePostVideo ? "Reel" : "Post"}
+                </span>
+              </div>
+              {activeProfilePostMediaItems.length > 1 ? (
+                <div className="profile-post-media-strip">
+                  {activeProfilePostMediaItems.map((media, index) => {
+                    const mediaIsVideo = media.type === "VIDEO" || isVideoAsset(media.url);
+                    return (
+                      <button
+                        key={`${media.url}-${index}`}
+                        type="button"
+                        className={index === activeProfilePostMediaIndex ? "active" : ""}
+                        onClick={() => setActiveProfilePostMediaIndex(index)}
+                        aria-label={`Show media ${index + 1}`}
+                      >
+                        {mediaIsVideo ? <video src={toMediaUrl(media.url)} muted playsInline /> : <img src={toMediaUrl(media.url)} alt="" />}
+                        <span><Icon name={mediaIsVideo ? "video" : "image"} /></span>
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : null}
+            </section>
+
+            <section className="profile-post-viewer-panel">
+              <header className="profile-post-viewer-author">
+                <Avatar name={activeProfilePostAuthorName} src={activeProfilePostAuthorAvatar ? toMediaUrl(activeProfilePostAuthorAvatar) : null} size="xl" online={isOnlineUser(profileUser)} />
+                <div>
+                  <strong>{activeProfilePostAuthorName}</strong>
+                  <span>
+                    <Icon name={activeProfilePostRoleIcon} />
+                    {activeProfilePostRoleLabel}
+                  </span>
+                  <small>{formatProfileDate(activeProfilePost.createdAt || activeProfilePost.sharedAt)}</small>
+                </div>
+              </header>
+
+              <div className="profile-post-viewer-copy">
+                <p>{compactText(activeProfilePost.content || activeProfilePost.caption || activeProfilePost.shareCaption, activeProfilePostVideo ? "Reel from this profile." : "Post from this profile.")}</p>
+                <div className="profile-post-viewer-tags">
+                  {activeProfilePostTags.length ? activeProfilePostTags.map((tag) => <span key={tag}>{tag}</span>) : <span>{activeProfilePostVideo ? "#reel" : "#post"}</span>}
+                </div>
+              </div>
+
+              <div className="profile-post-viewer-metrics">
+                <span><Icon name="heart" /> {formatMetricValue(postReactionCount(activeProfilePost))} reactions</span>
+                <span><Icon name="chat" /> {formatMetricValue(postCommentCount(activeProfilePost))} comments</span>
+                {activeProfilePostVideo ? <span><Icon name="eye" /> {formatMetricValue(activeProfilePost.reelViewCount)} views</span> : null}
+              </div>
+
+              <div className="profile-post-reaction-row">
+                {[
+                  { type: "like", label: "Like", icon: "heart" },
+                  { type: "love", label: "Love", icon: "spark" },
+                  { type: "wow", label: "Wow", icon: "star" }
+                ].map((reaction) => (
+                  <button
+                    key={reaction.type}
+                    type="button"
+                    disabled={profilePostActionBusy === `react-${reaction.type}`}
+                    onClick={() => reactToProfilePost(reaction.type)}
+                  >
+                    <Icon name={reaction.icon} />
+                    {reaction.label}
+                    <strong>{Number(activeProfilePost?.reactionCounts?.[reaction.type] || 0)}</strong>
+                  </button>
+                ))}
+              </div>
+
+              <div className="profile-post-comments-panel">
+                <div className="profile-post-comments-head">
+                  <strong>Comments</strong>
+                  <span>{profilePostCommentsLoading ? "Loading..." : `${countCommentThread(profilePostComments)} total`}</span>
+                </div>
+                <div className="profile-post-comments-list">
+                  {profilePostCommentsLoading ? (
+                    <p className="profile-post-comments-empty">Loading comments...</p>
+                  ) : profilePostComments.length ? (
+                    profilePostComments.slice(0, 6).map((comment) => (
+                      <article key={comment.commentId || comment.id} className="profile-post-comment">
+                        <Avatar name={commentAuthorName(comment)} src={comment.authorProfileImageUrl ? toMediaUrl(comment.authorProfileImageUrl) : null} size="sm" />
+                        <div>
+                          <strong>{commentAuthorName(comment)}</strong>
+                          <p>{comment.content || comment.body || ""}</p>
+                          {Array.isArray(comment.replies) && comment.replies.length ? (
+                            <div className="profile-post-replies">
+                              {comment.replies.slice(0, 2).map((reply) => (
+                                <span key={reply.commentId || reply.id}>
+                                  <b>{commentAuthorName(reply)}:</b> {reply.content || reply.body || ""}
+                                </span>
+                              ))}
+                            </div>
+                          ) : null}
+                        </div>
+                      </article>
+                    ))
+                  ) : (
+                    <p className="profile-post-comments-empty">No comments yet. Start the conversation here.</p>
+                  )}
+                </div>
+
+                <form className="profile-post-comment-form" onSubmit={submitProfilePostComment}>
+                  <Avatar name={displayName(user)} src={user?.profileImageUrl || user?.imageUrl ? toMediaUrl(user.profileImageUrl || user.imageUrl) : null} size="sm" />
+                  <input
+                    value={profilePostCommentDraft}
+                    onChange={(event) => setProfilePostCommentDraft(event.target.value)}
+                    placeholder="Write a real comment..."
+                    disabled={profilePostActionBusy === "comment"}
+                  />
+                  <button type="submit" disabled={!profilePostCommentDraft.trim() || profilePostActionBusy === "comment"}>
+                    <Icon name="send" />
+                  </button>
+                </form>
+              </div>
+            </section>
+          </div>
+        ) : null}
+      </Modal>
 
       <Modal
         open={Boolean(mediaDraft.type)}

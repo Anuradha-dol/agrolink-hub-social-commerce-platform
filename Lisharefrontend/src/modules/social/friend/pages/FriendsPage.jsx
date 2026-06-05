@@ -479,6 +479,7 @@ export default function FriendsPage() {
                       </span>
                     </button>
                     <div className="friends-person-actions">
+                      <Button icon="eye" onClick={() => openProfile(entry.userId)}>View Profile</Button>
                       {incomingRequest ? (
                         <Button icon="bell" onClick={() => setTab("requests")}>Review Request</Button>
                       ) : (
@@ -528,6 +529,7 @@ export default function FriendsPage() {
                   </div>
                   <Button variant="gradient" disabled={busyId === `accept-${entry.userId}`} onClick={() => accept(entry.userId)}>Accept</Button>
                   <Button disabled={busyId === `reject-${entry.userId}`} onClick={() => reject(entry.userId)}>Ignore</Button>
+                  <Button icon="eye" onClick={() => openProfile(entry.userId)}>View Profile</Button>
                 </article>
               ))}
             </div>
@@ -549,7 +551,7 @@ export default function FriendsPage() {
                   </div>
                   <StatusBadge status={tab === "friends" ? "Friend" : tab} tone="blue" />
                   <Button icon="chat" onClick={() => openChat(entry.userId)}>Chat</Button>
-                  <Button icon="user" onClick={() => openProfile(entry.userId)}>Profile</Button>
+                  <Button icon="eye" onClick={() => openProfile(entry.userId)}>View Profile</Button>
                   {tab === "following" ? (
                     <Button
                       variant="danger"

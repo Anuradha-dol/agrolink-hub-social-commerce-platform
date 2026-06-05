@@ -412,7 +412,7 @@ export default function ChatPage() {
                         {attachmentUrl ? (
                           attachmentType.startsWith("video") ? <video src={attachmentUrl} controls /> : <img src={attachmentUrl} alt="Message attachment" />
                         ) : null}
-                        <small>{formatTime(message.createdAt)} {mine ? "· Sent" : ""}</small>
+                        <small>{formatTime(message.createdAt)} {mine ? " - Sent" : ""}</small>
                         <div className="message-reaction-toolbar">
                           {QUICK_REACTIONS.map((label) => (
                             <button key={label} type="button" onClick={() => reactToMessage(message.id, label)}>{REACTION_EMOJI[label]}</button>
