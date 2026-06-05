@@ -13,9 +13,7 @@ import {
   Button,
   Card,
   EmptyPanel,
-  GradientButton,
   Icon,
-  LineChart,
   Modal,
   PageGrid,
   SectionHeader,
@@ -127,9 +125,48 @@ function formatProfileDate(value) {
   return new Intl.DateTimeFormat("en", { month: "short", day: "numeric", year: "numeric" }).format(date);
 }
 
+function formatMetricValue(value) {
+  const number = Number(value || 0);
+  if (number >= 1000000) return `${(number / 1000000).toFixed(1).replace(".0", "")}M`;
+  if (number >= 1000) return `${(number / 1000).toFixed(number >= 10000 ? 0 : 1).replace(".0", "")}K`;
+  return number.toLocaleString();
+}
+
+function firstPositivePostValue(post, keys = []) {
+  for (const key of keys) {
+    const value = Number(post?.[key]);
+    if (Number.isFinite(value) && value > 0) return value;
+  }
+  return 0;
+}
+
+function postReactionCount(post) {
+  const direct = firstPositivePostValue(post, ["reactionCount", "reactionsCount", "likeCount", "likesCount", "likes"]);
+  if (direct) return direct;
+  const counts = post?.reactionCounts || post?.reactions;
+  if (counts && typeof counts === "object" && !Array.isArray(counts)) {
+    return Object.values(counts).reduce((total, value) => total + Number(value || 0), 0);
+  }
+  return 0;
+}
+
+function postCommentCount(post) {
+  const direct = firstPositivePostValue(post, ["commentCount", "commentsCount", "replyCount", "repliesCount"]);
+  if (direct) return direct;
+  if (Array.isArray(post?.comments)) return post.comments.length;
+  return 0;
+}
+
+function postHashtags(post) {
+  const text = String(post?.content || post?.caption || post?.postCaption || post?.title || "");
+  const tags = [...text.matchAll(/#[a-zA-Z0-9_]+/g)].map((match) => match[0]);
+  if (tags.length) return tags.slice(0, 2);
+  return splitCsv(post?.category || post?.tags).slice(0, 2).map((tag) => (tag.startsWith("#") ? tag : `#${tag}`));
+}
+
 const XP_SYSTEM_STEPS = [
   {
-    icon: "bookmark",
+    icon: "edit",
     title: "Create Valuable Content",
     text: "Share educational posts, useful answers, and verified listings."
   },
@@ -139,7 +176,7 @@ const XP_SYSTEM_STEPS = [
     text: "Earn when your support is accepted or positively reviewed."
   },
   {
-    icon: "spark",
+    icon: "check",
     title: "Stay Active & Consistent",
     text: "Build a steady record of trusted activity over time."
   }
@@ -169,7 +206,6 @@ export default function ProfilePage() {
   const { userId: routeUserId } = useParams();
   const navigate = useNavigate();
   const { pushToast } = useToast();
-  const avatarInputRef = useRef(null);
   const coverInputRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState("");
@@ -182,21 +218,6 @@ export default function ProfilePage() {
   const [networkLists, setNetworkLists] = useState({ followers: [], following: [], friends: [] });
   const [activeNetwork, setActiveNetwork] = useState("");
   const [relationship, setRelationship] = useState({ isFollowing: false, isFriend: false, requested: false });
-  const [nameForm, setNameForm] = useState({ name: "", lastName: "" });
-  const [profileDetailsForm, setProfileDetailsForm] = useState({
-    username: "",
-    phoneNumber: "",
-    backupEmail: "",
-    bio: "",
-    location: "",
-    preferredLanguage: "",
-    website: "",
-    interests: [],
-    hobbies: "",
-    hobbyInput: ""
-  });
-  const [emailForm, setEmailForm] = useState({ newEmail: "", otp: "" });
-  const [passwordForm, setPasswordForm] = useState({ currentPassword: "", newPassword: "", confirmPassword: "" });
   const viewingUserId = Number(routeUserId || 0);
   const isOwnProfile = !viewingUserId || viewingUserId === Number(user?.userId || user?.id || 0);
   const currentUserId = Number(user?.userId || user?.id || 0);
@@ -210,10 +231,11 @@ export default function ProfilePage() {
   const profileWebsite = compactText(profileUser?.website, "");
   const profileInterests = splitCsv(profileUser?.interests);
   const profileHobbies = splitCsv(profileUser?.hobbies);
+  const profileInterestChips = profileInterests.length + profileHobbies.length
+    ? [...profileInterests, ...profileHobbies].slice(0, 12)
+    : PROFILE_INTEREST_OPTIONS;
   const xp = xpModel(profileUser || user);
-  const xpChartValues = xp.history.length
-    ? xp.history.slice(-7).map((entry) => Math.max(4, Number(entry.points || entry.value || 0)))
-    : [Math.max(0, xp.progress || 0)];
+  const xpRemaining = Math.max(0, xp.next - xp.xp);
   const achievementRows = xp.history.length
     ? xp.history.slice(0, 3).map((entry) => ({ title: entry.reason || "Verified XP earned", subtitle: `+${Number(entry.points || 0)} XP`, date: formatProfileDate(entry.createdAt), tone: "green" }))
     : xp.badges.length
@@ -247,19 +269,6 @@ export default function ProfilePage() {
           const following = Array.isArray(followingRes.data) ? followingRes.data : [];
           const friends = Array.isArray(friendsRes.data) ? friendsRes.data : [];
           setProfileUser(user);
-          setNameForm({ name: user?.firstName || user?.firstname || user?.name || "", lastName: user?.lastName || user?.lastname || "" });
-          setProfileDetailsForm({
-            username: user?.username || "",
-            phoneNumber: user?.phoneNumber || "",
-            backupEmail: user?.backupEmail || user?.tempEmail || "",
-            bio: user?.bio || "",
-            location: user?.location || "",
-            preferredLanguage: user?.preferredLanguage || "",
-            website: user?.website || "",
-            interests: splitCsv(user?.interests),
-            hobbies: splitCsv(user?.hobbies).join(", "),
-            hobbyInput: ""
-          });
           setStats({
             followers: followers.length,
             following: following.length,
@@ -321,22 +330,6 @@ export default function ProfilePage() {
     navigate("/home", { state: { openPostId: postId, mode: isVideoItem(post) ? "reels" : "posts" } });
   };
 
-  const deleteProfilePost = async (post) => {
-    const postId = postIdForItem(post);
-    if (!postId || !isOwnProfile) return;
-    if (!window.confirm("Delete this post?")) return;
-    setSaving(`delete-post-${postId}`);
-    try {
-      await feedService.deletePost(postId);
-      setProfilePosts((prev) => prev.filter((item) => postIdForItem(item) !== postId));
-      pushToast("Post deleted", "success");
-    } catch (errorResponse) {
-      pushToast(errorResponse?.response?.data?.message || errorResponse?.response?.data || "Failed to delete post", "error");
-    } finally {
-      setSaving("");
-    }
-  };
-
   const openNetworkUser = (entry) => {
     const targetUserId = Number(entry?.userId || entry?.id || 0);
     if (!targetUserId) return;
@@ -344,26 +337,19 @@ export default function ProfilePage() {
     navigate(targetUserId === currentUserId ? "/profile" : `/profile/${targetUserId}`);
   };
 
-  const uploadProfileMedia = async (type, file) => {
-    if (!file) return;
+  const uploadCoverImage = async (file) => {
+    if (!file || !isOwnProfile) return;
     const formData = new FormData();
     formData.append("file", file);
-    setSaving(type);
+    setSaving("cover-image");
     try {
-      const response = type === "profile-image"
-        ? await userService.uploadProfileImage(formData)
-        : await userService.uploadCoverImage(formData);
+      const response = await userService.uploadCoverImage(formData);
       const imageUrl = response?.data || "";
-      setProfileUser((prev) => ({
-        ...prev,
-        ...(type === "profile-image"
-          ? { profileImageUrl: imageUrl, imageUrl }
-          : { coverImageUrl: imageUrl })
-      }));
+      setProfileUser((previous) => ({ ...previous, coverImageUrl: imageUrl }));
       await refreshUser();
-      pushToast(type === "profile-image" ? "Profile picture updated" : "Cover picture updated", "success");
+      pushToast("Cover picture updated", "success");
     } catch (errorResponse) {
-      pushToast(errorResponse?.response?.data?.message || "Image upload failed", "error");
+      pushToast(errorResponse?.response?.data?.message || "Cover upload failed", "error");
     } finally {
       setSaving("");
     }
@@ -439,146 +425,6 @@ export default function ProfilePage() {
     }
   };
 
-  const updateName = async (event) => {
-    event.preventDefault();
-    if (!nameForm.name.trim()) {
-      pushToast("First name is required", "error");
-      return;
-    }
-    setSaving("name");
-    try {
-      await userService.updateName(nameForm);
-      await refreshUser();
-      pushToast("Name updated", "success");
-    } catch {
-      pushToast("Failed to update name", "error");
-    } finally {
-      setSaving("");
-    }
-  };
-
-  const updateProfileDetailsField = (field, value) => {
-    setProfileDetailsForm((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const toggleProfileInterest = (interest) => {
-    setProfileDetailsForm((prev) => ({
-      ...prev,
-      interests: prev.interests.includes(interest)
-        ? prev.interests.filter((item) => item !== interest)
-        : [...prev.interests, interest]
-    }));
-  };
-
-  const addProfileHobby = () => {
-    const hobby = profileDetailsForm.hobbyInput.trim();
-    if (!hobby) return;
-    const current = splitCsv(profileDetailsForm.hobbies);
-    if (current.includes(hobby)) {
-      updateProfileDetailsField("hobbyInput", "");
-      return;
-    }
-    setProfileDetailsForm((prev) => ({
-      ...prev,
-      hobbies: [...current, hobby].join(", "),
-      hobbyInput: ""
-    }));
-  };
-
-  const removeProfileHobby = (hobby) => {
-    setProfileDetailsForm((prev) => ({
-      ...prev,
-      hobbies: splitCsv(prev.hobbies).filter((item) => item !== hobby).join(", ")
-    }));
-  };
-
-  const updateProfileDetails = async (event) => {
-    event.preventDefault();
-    setSaving("profile-details");
-    try {
-      const optionalValue = (value) => {
-        const cleaned = String(value || "").trim();
-        return cleaned || null;
-      };
-      const payload = {
-        username: optionalValue(profileDetailsForm.username),
-        phoneNumber: optionalValue(profileDetailsForm.phoneNumber),
-        backupEmail: optionalValue(profileDetailsForm.backupEmail),
-        bio: optionalValue(profileDetailsForm.bio),
-        location: optionalValue(profileDetailsForm.location),
-        preferredLanguage: optionalValue(profileDetailsForm.preferredLanguage),
-        website: optionalValue(profileDetailsForm.website),
-        interests: profileDetailsForm.interests.join(","),
-        hobbies: optionalValue(profileDetailsForm.hobbies)
-      };
-      const response = await userService.updateProfileDetails(payload);
-      setProfileUser(response?.data || { ...profileUser, ...payload });
-      await refreshUser();
-      pushToast("Profile details updated", "success");
-    } catch (errorResponse) {
-      pushToast(errorResponse?.response?.data?.message || "Failed to update profile details", "error");
-    } finally {
-      setSaving("");
-    }
-  };
-
-  const sendEmailOtp = async (event) => {
-    event.preventDefault();
-    if (!emailForm.newEmail.includes("@")) {
-      pushToast("Enter a valid email", "error");
-      return;
-    }
-    setSaving("email");
-    try {
-      await userService.updateEmail({ newEmail: emailForm.newEmail });
-      pushToast("OTP sent to new email", "success");
-    } catch {
-      pushToast("Failed to send email OTP", "error");
-    } finally {
-      setSaving("");
-    }
-  };
-
-  const verifyEmailOtp = async () => {
-    if (!emailForm.otp.trim()) {
-      pushToast("OTP is required", "error");
-      return;
-    }
-    setSaving("otp");
-    try {
-      await userService.verifyNewEmail(emailForm.otp.trim());
-      await refreshUser();
-      pushToast("Email updated", "success");
-      setEmailForm({ newEmail: "", otp: "" });
-    } catch {
-      pushToast("Failed to verify OTP", "error");
-    } finally {
-      setSaving("");
-    }
-  };
-
-  const updatePassword = async (event) => {
-    event.preventDefault();
-    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      pushToast("New passwords do not match", "error");
-      return;
-    }
-    if (passwordForm.newPassword.length < 8) {
-      pushToast("Password must be at least 8 characters", "error");
-      return;
-    }
-    setSaving("password");
-    try {
-      await userService.updatePassword(passwordForm);
-      pushToast("Password updated", "success");
-      setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
-    } catch {
-      pushToast("Failed to update password", "error");
-    } finally {
-      setSaving("");
-    }
-  };
-
   if (loading) return <LoadingState text="Loading profile..." />;
 
   return (
@@ -590,19 +436,19 @@ export default function ProfilePage() {
             <>
               <button
                 type="button"
-                className="profile-cover-upload-btn"
+                className="profile-cover-upload-btn profile-cover-choose-btn"
                 onClick={() => coverInputRef.current?.click()}
                 disabled={saving === "cover-image"}
               >
                 <Icon name="image" />
-                {saving === "cover-image" ? "Uploading..." : "Change Cover"}
+                {saving === "cover-image" ? "Uploading..." : "Choose Cover"}
               </button>
               <input
                 ref={coverInputRef}
                 className="hidden-file-input"
                 type="file"
                 accept="image/*"
-                onChange={(event) => uploadProfileMedia("cover-image", event.target.files?.[0])}
+                onChange={(event) => uploadCoverImage(event.target.files?.[0])}
               />
             </>
           ) : null}
@@ -613,30 +459,9 @@ export default function ProfilePage() {
               name={name}
               src={profileUser?.profileImageUrl || profileUser?.imageUrl ? toMediaUrl(profileUser.profileImageUrl || profileUser.imageUrl) : null}
               size="xl"
-              online
+              online={isOnlineUser(profileUser)}
               className="profile-main-avatar"
             />
-            {isOwnProfile ? (
-              <>
-                <button
-                  type="button"
-                  className="profile-avatar-upload-btn"
-                  onClick={() => avatarInputRef.current?.click()}
-                  disabled={saving === "profile-image"}
-                  aria-label="Change profile picture"
-                  title="Change profile picture"
-                >
-                  <Icon name="image" />
-                </button>
-                <input
-                  ref={avatarInputRef}
-                  className="hidden-file-input"
-                  type="file"
-                  accept="image/*"
-                  onChange={(event) => uploadProfileMedia("profile-image", event.target.files?.[0])}
-                />
-              </>
-            ) : null}
           </div>
           <div className="profile-name-stack">
             <h2>
@@ -651,9 +476,7 @@ export default function ProfilePage() {
               <span><Icon name="pin" /> {profileLocation}</span>
             </div>
           </div>
-          {isOwnProfile ? (
-            <GradientButton icon="edit" onClick={() => document.querySelector(".profile-forms-grid")?.scrollIntoView({ behavior: "smooth", block: "start" })}>Edit Profile</GradientButton>
-          ) : (
+          {!isOwnProfile ? (
             <div className="profile-action-row">
               <Button icon="user" variant={relationship.isFollowing ? "secondary" : "gradient"} disabled={saving === "follow"} onClick={toggleProfileFollow}>
                 {relationship.isFollowing ? "Unfollow" : "Follow"}
@@ -663,12 +486,7 @@ export default function ProfilePage() {
               </Button>
               <Button icon="chat" onClick={() => navigate("/chat", { state: { startUserId: viewingUserId } })}>Chat</Button>
             </div>
-          )}
-        </div>
-        <div className="profile-pill-stats">
-          <button type="button" onClick={() => setActiveNetwork("followers")}><Icon name="users" /> <strong>{stats.followers}</strong> Followers</button>
-          <button type="button" onClick={() => setActiveNetwork("following")}><Icon name="user" /> <strong>{stats.following}</strong> Following</button>
-          <button type="button" onClick={() => setActiveNetwork("friends")}><Icon name="chat" /> <strong>{stats.friends}</strong> Friends</button>
+          ) : null}
         </div>
       </Card>
 
@@ -702,8 +520,9 @@ export default function ProfilePage() {
                 const mediaUrl = savedItemMediaUrl(post);
                 const title = authoredPostTitle(post, video);
                 const postId = postIdForItem(post);
+                const tags = postHashtags(post);
                 return (
-                  <article key={`profile-post-${postId || index}`} className={`saved-tile-card profile-post-tile saved-tile-${index % 4}`}>
+                  <article key={`profile-post-${postId || index}`} className={`saved-tile-card profile-post-tile profile-feed-tile saved-tile-${index % 4}`}>
                     <button type="button" className="saved-tile-open" onClick={() => openProfilePost(post)}>
                       <div className="saved-tile-media">
                         {mediaUrl ? (
@@ -711,25 +530,21 @@ export default function ProfilePage() {
                         ) : (
                           <span className="saved-tile-placeholder"><Icon name={video ? "video" : "image"} /></span>
                         )}
-                        {video ? <span className="saved-tile-type">Reel</span> : <span className="saved-tile-type">Post</span>}
+                        <span className="saved-tile-type">{video ? "Reel" : "Post"}</span>
+                        <span className="saved-tile-date">{formatProfileDate(post.createdAt || post.sharedAt)}</span>
+                        {!isOwnProfile ? <span className="saved-tile-menu"><Icon name="more" /></span> : null}
                       </div>
                       <div className="saved-tile-copy">
                         <strong>{title}</strong>
-                        <span>{formatProfileDate(post.createdAt || post.sharedAt)}</span>
+                        <div className="saved-tile-tags">
+                          {tags.length ? tags.map((tag) => <span key={tag}>{tag}</span>) : <span>{video ? "#reel" : "#post"}</span>}
+                        </div>
+                        <div className="saved-tile-metrics">
+                          <span><Icon name="heart" /> {formatMetricValue(postReactionCount(post))}</span>
+                          <span><Icon name="chat" /> {formatMetricValue(postCommentCount(post))}</span>
+                        </div>
                       </div>
                     </button>
-                    {isOwnProfile ? (
-                      <button
-                        type="button"
-                        className="saved-tile-save profile-post-delete"
-                        disabled={saving === `delete-post-${postId}`}
-                        onClick={() => deleteProfilePost(post)}
-                        aria-label="Delete post"
-                        title="Delete post"
-                      >
-                        <Icon name="trash" />
-                      </button>
-                    ) : null}
                   </article>
                 );
               })}
@@ -763,8 +578,9 @@ export default function ProfilePage() {
                   const video = isVideoItem(post);
                   const mediaUrl = savedItemMediaUrl(post);
                   const title = savedItemTitle(post, video);
+                  const tags = postHashtags(post);
                   return (
-                    <article key={`${activeSavedTab}-${post.postId}`} className={`saved-tile-card saved-tile-${index % 4}`}>
+                    <article key={`${activeSavedTab}-${post.postId}`} className={`saved-tile-card profile-feed-tile saved-tile-${index % 4}`}>
                       <button type="button" className="saved-tile-open" onClick={() => openSavedItem(post)}>
                         <div className="saved-tile-media">
                           {mediaUrl ? (
@@ -772,11 +588,14 @@ export default function ProfilePage() {
                           ) : (
                             <span className="saved-tile-placeholder"><Icon name={video ? "video" : "image"} /></span>
                           )}
-                          {video ? <span className="saved-tile-type">Reel</span> : null}
+                          <span className="saved-tile-type">{video ? "Saved Reel" : "Saved"}</span>
+                          <span className="saved-tile-date">{formatProfileDate(post.savedAt || post.createdAt || post.sharedAt)}</span>
                         </div>
                         <div className="saved-tile-copy">
                           <strong>{title}</strong>
-                          <span>{formatProfileDate(post.savedAt || post.createdAt || post.sharedAt)}</span>
+                          <div className="saved-tile-tags">
+                            {tags.length ? tags.map((tag) => <span key={tag}>{tag}</span>) : <span>{video ? "#savedreel" : "#savedpost"}</span>}
+                          </div>
                         </div>
                       </button>
                       <button
@@ -802,94 +621,29 @@ export default function ProfilePage() {
           ) : null}
 
           {isOwnProfile ? (
-            <div className="profile-forms-grid">
-              <Card>
-                <SectionHeader title="Update Name" subtitle="Keep your display name current." />
-                <form className="form-grid" onSubmit={updateName}>
-                  <input className="ui-field" value={nameForm.name} onChange={(e) => setNameForm((prev) => ({ ...prev, name: e.target.value }))} placeholder="First name" />
-                  <input className="ui-field" value={nameForm.lastName} onChange={(e) => setNameForm((prev) => ({ ...prev, lastName: e.target.value }))} placeholder="Last name" />
-                  <Button variant="gradient" icon="check" type="submit" disabled={saving === "name"}>{saving === "name" ? "Saving..." : "Save"}</Button>
-                </form>
-              </Card>
-
-              <Card className="profile-details-form-card">
-                <SectionHeader title="Profile Details" subtitle="Optional signup details can be added or changed here anytime." />
-                <form className="form-grid profile-details-form" onSubmit={updateProfileDetails}>
-                  <div className="profile-form-two">
-                    <input className="ui-field" value={profileDetailsForm.username} onChange={(e) => updateProfileDetailsField("username", e.target.value)} placeholder="Username" />
-                    <input className="ui-field" value={profileDetailsForm.phoneNumber} onChange={(e) => updateProfileDetailsField("phoneNumber", e.target.value)} placeholder="Phone number" />
-                  </div>
-                  <div className="profile-form-two">
-                    <input className="ui-field" type="email" value={profileDetailsForm.backupEmail} onChange={(e) => updateProfileDetailsField("backupEmail", e.target.value)} placeholder="Backup email" />
-                    <select className="ui-field" value={profileDetailsForm.preferredLanguage} onChange={(e) => updateProfileDetailsField("preferredLanguage", e.target.value)}>
-                      <option value="">Preferred language</option>
-                      <option value="English">English</option>
-                      <option value="Sinhala">Sinhala</option>
-                      <option value="Tamil">Tamil</option>
-                    </select>
-                  </div>
-                  <div className="profile-form-two">
-                    <input className="ui-field" value={profileDetailsForm.location} onChange={(e) => updateProfileDetailsField("location", e.target.value)} placeholder="Location" />
-                    <input className="ui-field" value={profileDetailsForm.website} onChange={(e) => updateProfileDetailsField("website", e.target.value)} placeholder="Website" />
-                  </div>
-                  <textarea className="ui-field" rows={4} maxLength={280} value={profileDetailsForm.bio} onChange={(e) => updateProfileDetailsField("bio", e.target.value)} placeholder="Bio" />
-                  <div className="profile-interest-editor">
-                    {PROFILE_INTEREST_OPTIONS.map((interest) => (
-                      <button key={interest} type="button" className={profileDetailsForm.interests.includes(interest) ? "active" : ""} onClick={() => toggleProfileInterest(interest)}>
-                        {interest}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="profile-hobby-editor">
-                    {splitCsv(profileDetailsForm.hobbies).map((hobby) => (
-                      <button key={hobby} type="button" onClick={() => removeProfileHobby(hobby)}>
-                        {hobby} <span aria-hidden="true">x</span>
-                      </button>
-                    ))}
-                    <input
-                      value={profileDetailsForm.hobbyInput}
-                      onChange={(event) => updateProfileDetailsField("hobbyInput", event.target.value)}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter") {
-                          event.preventDefault();
-                          addProfileHobby();
-                        }
-                      }}
-                      placeholder="Add hobby..."
-                    />
-                  </div>
-                  <Button variant="gradient" icon="check" type="submit" disabled={saving === "profile-details"}>{saving === "profile-details" ? "Saving..." : "Save Profile Details"}</Button>
-                </form>
-              </Card>
-
-              <Card>
-                <SectionHeader title="Update Email" subtitle="Verify the new address with OTP." />
-                <form className="form-grid" onSubmit={sendEmailOtp}>
-                  <input className="ui-field" type="email" value={emailForm.newEmail} onChange={(e) => setEmailForm((prev) => ({ ...prev, newEmail: e.target.value }))} placeholder="New email" />
-                  <Button variant="gradient" icon="send" type="submit" disabled={saving === "email"}>{saving === "email" ? "Sending..." : "Send OTP"}</Button>
-                  <div className="inline-action-row">
-                    <input className="ui-field" value={emailForm.otp} onChange={(e) => setEmailForm((prev) => ({ ...prev, otp: e.target.value }))} placeholder="OTP code" />
-                    <Button icon="check" onClick={verifyEmailOtp} disabled={saving === "otp"}>{saving === "otp" ? "Verifying..." : "Verify"}</Button>
-                  </div>
-                </form>
-              </Card>
-
-              <Card>
-                <SectionHeader title="Update Password" subtitle="Use at least 8 characters." />
-                <form className="form-grid" onSubmit={updatePassword}>
-                  <input className="ui-field" type="password" placeholder="Current password" value={passwordForm.currentPassword} onChange={(e) => setPasswordForm((prev) => ({ ...prev, currentPassword: e.target.value }))} />
-                  <input className="ui-field" type="password" placeholder="New password" value={passwordForm.newPassword} onChange={(e) => setPasswordForm((prev) => ({ ...prev, newPassword: e.target.value }))} />
-                  <input className="ui-field" type="password" placeholder="Confirm password" value={passwordForm.confirmPassword} onChange={(e) => setPasswordForm((prev) => ({ ...prev, confirmPassword: e.target.value }))} />
-                  <Button variant="gradient" icon="check" type="submit" disabled={saving === "password"}>{saving === "password" ? "Updating..." : "Update Password"}</Button>
-                </form>
-              </Card>
+            <div className="profile-reward-strip">
+              <span><Icon name="star" /></span>
+              <p>Your posts, reels, saves, and community activity help you earn more XP and unlock achievements.</p>
             </div>
           ) : null}
+
         </div>
 
         <aside className="side-stack profile-right-stack">
+          <Card className="profile-xp-summary-card">
+            <div className="profile-xp-shield">
+              <Icon name="star" />
+            </div>
+            <div className="profile-xp-copy">
+              <span>Level {xp.level}</span>
+              <strong>{xp.xp.toLocaleString()} XP</strong>
+              <p>{xpRemaining.toLocaleString()} XP to reach Level {xp.level + 1}</p>
+            </div>
+            <div className="progress-track"><span style={{ width: `${xp.progress}%` }} /></div>
+          </Card>
+
           <Card className="profile-about-card">
-            <SectionHeader title="About Me" action={isOwnProfile ? <button type="button" className="text-link" onClick={() => document.querySelector(".profile-details-form-card")?.scrollIntoView({ behavior: "smooth", block: "start" })}>Edit</button> : null} />
+            <SectionHeader title="About Me" />
             <p className="profile-about-bio">{profileBio}</p>
             <div className="profile-about-list">
               {profileEmail ? <span><Icon name="send" /> {profileEmail}</span> : null}
@@ -898,41 +652,17 @@ export default function ProfilePage() {
               <span><Icon name="user" /> {profileLanguage}</span>
               {profileWebsite ? <span><Icon name="home" /> {profileWebsite}</span> : null}
             </div>
+            <h3 className="profile-chip-heading">Interests / Hobbies</h3>
             <div className="profile-chip-cloud">
-              {[...profileInterests, ...profileHobbies].slice(0, 12).map((item) => (
+              {profileInterestChips.map((item) => (
                 <span key={item}>{item}</span>
               ))}
-              {profileInterests.length + profileHobbies.length === 0 ? <small>No interests or hobbies added yet.</small> : null}
             </div>
           </Card>
 
-          <Card className="profile-xp-summary-card">
-            <div className="profile-xp-summary-head">
-              <div>
-                <p>Verified XP <Icon name="check" /></p>
-                <strong>{xp.xp.toLocaleString()}</strong>
-                <span>Total XP Earned</span>
-              </div>
-              <div className="profile-xp-chart">
-                <LineChart values={xpChartValues} tone="purple" />
-              </div>
-            </div>
-            <div className="profile-xp-level-row">
-              <StatusBadge status={`Level ${xp.level}`} tone="purple" />
-              <span>{xp.xp.toLocaleString()} / {xp.next.toLocaleString()} XP</span>
-            </div>
-            <div className="progress-track"><span style={{ width: `${xp.progress}%` }} /></div>
-          </Card>
-
-          <Card className="xp-system-card">
-            <div className="xp-system-hero">
-              <span><Icon name="spark" /></span>
-              <div>
-                <h2>Verified XP System</h2>
-                <p>Earn verified XP by sharing educational content, helping the community, and making positive contributions.</p>
-              </div>
-            </div>
-            <div className="xp-system-action-grid">
+          <Card className="xp-system-card profile-tips-card">
+            <SectionHeader title="Profile Tips" />
+            <div className="xp-system-action-grid profile-tips-grid">
               {XP_SYSTEM_STEPS.map((item) => (
                 <article key={item.title}>
                   <span><Icon name={item.icon} /></span>

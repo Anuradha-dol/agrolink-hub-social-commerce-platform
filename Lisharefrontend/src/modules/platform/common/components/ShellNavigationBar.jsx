@@ -13,6 +13,7 @@ export default function ShellNavigationBar() {
   const pageMeta = getPageMeta(location.pathname);
   const { displayName, userHandle, avatarSrc, avatarInitial } = getShellUser(user);
   const isHomeFeed = location.pathname === "/home" || location.pathname.startsWith("/home/");
+  const isProfilePage = location.pathname === "/profile" || location.pathname.startsWith("/profile/");
 
   const handleLogout = async () => {
     await logout();
@@ -27,7 +28,7 @@ export default function ShellNavigationBar() {
   };
 
   return (
-    <header className={`shell-header ${isHomeFeed ? "shell-header-home-feed" : ""}`}>
+    <header className={`shell-header ${isHomeFeed ? "shell-header-home-feed" : ""} ${isProfilePage ? "shell-header-profile-page" : ""}`.trim()}>
       <div className="shell-header-left">
         <div className="shell-page-meta">
           {isHomeFeed ? (
@@ -41,6 +42,14 @@ export default function ShellNavigationBar() {
               <span className="plant-title-word plant-title-feed">
                 Feed
                 <span className="plant-sprout plant-sprout-right" aria-hidden="true" />
+              </span>
+            </h1>
+          ) : isProfilePage ? (
+            <h1 className="shell-page-title shell-page-title-profile" aria-label={pageMeta.title}>
+              <span className="profile-title-word profile-title-main">
+                Profile
+                <span className="profile-title-spark profile-title-spark-left" aria-hidden="true" />
+                <span className="profile-title-spark profile-title-spark-top" aria-hidden="true" />
               </span>
             </h1>
           ) : (

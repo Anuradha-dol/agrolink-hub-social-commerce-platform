@@ -9,6 +9,15 @@ const SIDEBAR_COLLAPSED_KEY = "lishareSidebarCollapsed";
 export default function AppShell() {
   const location = useLocation();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "true");
+  const pathname = location.pathname;
+  const greenSidebarRoutes = ["/home", "/marketplace", "/orders", "/bookmarks", "/calendar"];
+  const usesGreenSidebar = greenSidebarRoutes.some((route) => pathname === route || pathname.startsWith(`${route}/`));
+  const usesProfileSidebar = pathname === "/profile" || pathname.startsWith("/profile/");
+  const sidebarThemeClass = usesProfileSidebar
+    ? "shell-sidebar-profile-theme"
+    : usesGreenSidebar
+      ? "shell-sidebar-green-theme"
+      : "shell-sidebar-neutral-theme";
 
   useEffect(() => {
     localStorage.setItem(THEME_MODE_KEY, "light");
@@ -19,7 +28,7 @@ export default function AppShell() {
   }, [sidebarCollapsed]);
 
   return (
-    <div className={`shell shell-home-theme shell-theme-light ${sidebarCollapsed ? "shell-sidebar-collapsed" : ""}`}>
+    <div className={`shell shell-home-theme shell-theme-light ${sidebarThemeClass} ${sidebarCollapsed ? "shell-sidebar-collapsed" : ""}`}>
       <ShellSidebar collapsed={sidebarCollapsed} onToggleCollapsed={() => setSidebarCollapsed((collapsed) => !collapsed)} />
       <div className="shell-main">
         <ShellNavigationBar />

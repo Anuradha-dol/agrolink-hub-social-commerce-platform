@@ -59,7 +59,7 @@ export const NAVIGATION_SECTIONS = [
 
 export const PAGE_META = [
   { key: "/home", title: "Home Feed", subtitle: "Community timeline and social updates", showDot: true },
-  { key: "/profile", title: "Profile", subtitle: "Personal details and account settings" },
+  { key: "/profile", title: "Profile", subtitle: "Posts, reels, saved items and profile overview", showDot: true },
   { key: "/friends", title: "Friends", subtitle: "Connections, followers and requests" },
   { key: "/chat", title: "Chat", subtitle: "Realtime conversations and groups" },
   { key: "/marketplace", title: "Marketplace", subtitle: "Products and shopping activity" },

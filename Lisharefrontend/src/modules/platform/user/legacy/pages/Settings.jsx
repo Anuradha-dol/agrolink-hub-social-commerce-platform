@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "/src/modules/platform/app/store";
 import { userService } from "/src/modules/platform/user/services/userService";
@@ -40,6 +40,8 @@ export default function SettingsPage() {
   const { user, refreshUser, logout } = useAuth();
   const { pushToast } = useToast();
   const navigate = useNavigate();
+  const avatarInputRef = useRef(null);
+  const coverInputRef = useRef(null);
   const [profile, setProfile] = useState(user || {});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState("");
@@ -63,6 +65,7 @@ export default function SettingsPage() {
   const profileName = displayName(profile);
   const roleLabel = compactRole(profile?.role || user?.role);
   const avatarUrl = profile?.profileImageUrl || profile?.imageUrl;
+  const coverUrl = profile?.coverImageUrl || "";
   const interests = splitCsv(profileDetailsForm.interests);
 
   const completionItems = useMemo(() => [
@@ -192,6 +195,31 @@ export default function SettingsPage() {
       pushToast("Profile details updated", "success");
     } catch (error) {
       pushToast(error?.response?.data?.message || "Failed to update profile details", "error");
+    } finally {
+      setSaving("");
+    }
+  };
+
+  const uploadProfileMedia = async (type, file) => {
+    if (!file) return;
+    const formData = new FormData();
+    formData.append("file", file);
+    setSaving(type);
+    try {
+      const response = type === "profile-image"
+        ? await userService.uploadProfileImage(formData)
+        : await userService.uploadCoverImage(formData);
+      const imageUrl = response?.data || "";
+      setProfile((previous) => ({
+        ...previous,
+        ...(type === "profile-image"
+          ? { profileImageUrl: imageUrl, imageUrl }
+          : { coverImageUrl: imageUrl })
+      }));
+      await refreshUser();
+      pushToast(type === "profile-image" ? "Profile picture updated" : "Cover picture updated", "success");
+    } catch (error) {
+      pushToast(error?.response?.data?.message || "Image upload failed", "error");
     } finally {
       setSaving("");
     }
@@ -331,6 +359,44 @@ export default function SettingsPage() {
 
       <div className="settings-layout">
         <main className="settings-main">
+          <Card className="settings-card settings-media-card">
+            <SectionHeader title="Profile Media" subtitle="Update your profile photo and cover image here. The profile page stays read-only." />
+            <div className="settings-media-preview">
+              <div className="settings-cover-preview">
+                {coverUrl ? <img src={toMediaUrl(coverUrl)} alt="Profile cover preview" /> : <span>Cover preview</span>}
+              </div>
+              <div className="settings-avatar-preview">
+                <Avatar name={profileName} src={avatarUrl ? toMediaUrl(avatarUrl) : null} size="xl" online />
+                <div>
+                  <strong>{profileName}</strong>
+                  <span>{profile?.email || "No email"}</span>
+                </div>
+              </div>
+            </div>
+            <div className="settings-media-actions">
+              <Button icon="image" onClick={() => coverInputRef.current?.click()} disabled={saving === "cover-image"}>
+                {saving === "cover-image" ? "Uploading..." : "Change Cover"}
+              </Button>
+              <Button icon="user" variant="gradient" onClick={() => avatarInputRef.current?.click()} disabled={saving === "profile-image"}>
+                {saving === "profile-image" ? "Uploading..." : "Change Profile Photo"}
+              </Button>
+              <input
+                ref={coverInputRef}
+                className="hidden-file-input"
+                type="file"
+                accept="image/*"
+                onChange={(event) => uploadProfileMedia("cover-image", event.target.files?.[0])}
+              />
+              <input
+                ref={avatarInputRef}
+                className="hidden-file-input"
+                type="file"
+                accept="image/*"
+                onChange={(event) => uploadProfileMedia("profile-image", event.target.files?.[0])}
+              />
+            </div>
+          </Card>
+
           <Card className="settings-card">
             <SectionHeader title="Display Name" subtitle="This name appears across posts, stories, marketplace, and admin workflows." />
             <form className="form-grid settings-form-grid" onSubmit={updateName}>
