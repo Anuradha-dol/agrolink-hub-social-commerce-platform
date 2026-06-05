@@ -1670,6 +1670,17 @@ textarea {
   height: 104px !important;
   border: 5px solid #fff;
   box-shadow: 0 18px 38px rgba(15, 23, 42, 0.16) !important;
+  overflow: hidden !important;
+  border-radius: 50% !important;
+  flex-shrink: 0 !important;
+}
+
+.profile-main-avatar img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  border-radius: 50% !important;
+  display: block !important;
 }
 
 .profile-identity-row h2 {
@@ -40813,12 +40824,16 @@ button.comment-author-avatar {
   font-size: 3.8rem !important;
   background: linear-gradient(135deg, #2458ff, #ff197c) !important;
   box-shadow: 0 20px 46px rgba(18, 27, 63, 0.3) !important;
+  overflow: hidden !important;
+  border-radius: 50% !important;
 }
 
 .shell.shell-theme-light .profile-main-avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: 50%;
+  display: block;
 }
 
 .shell.shell-theme-light .profile-avatar-upload-btn {
@@ -50639,7 +50654,7 @@ button.comment-author-avatar {
 
 .shell .account-pro-page .settings-hero-card {
   background:
-    linear-gradient(135deg, rgba(9, 23, 52, 0.9), rgba(47, 115, 232, 0.78) 48%, rgba(246, 91, 154, 0.62)),
+    linear-gradient(135deg, rgba(9, 23, 52, 0.45), rgba(30, 60, 100, 0.18) 48%, rgba(246, 91, 154, 0.12)),
     url("./assets/backgrounds/profile-cover-4k-background.png") center / cover no-repeat !important;
 }
 
@@ -51516,6 +51531,18 @@ button.comment-author-avatar {
   border: 5px solid #ffffff !important;
   font-size: 2rem !important;
   font-weight: 950 !important;
+  overflow: hidden !important;
+  border-radius: 50% !important;
+  flex-shrink: 0 !important;
+}
+
+.shell .account-pro-page .settings-avatar-preview .ui-avatar img,
+.shell .account-pro-page .settings-profile-summary .ui-avatar img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  border-radius: 50% !important;
+  display: block !important;
 }
 
 .shell .account-pro-page .ui-avatar.generated-avatar {
