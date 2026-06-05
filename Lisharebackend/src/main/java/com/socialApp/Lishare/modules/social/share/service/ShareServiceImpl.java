@@ -115,7 +115,9 @@ public class ShareServiceImpl implements ShareService {
                         .pollOptions(postService.getPollOptions(post))
                         .pollVotes(pollVotes)
                         .pollTotalVotes(pollVotes.stream().mapToLong(Long::longValue).sum())
+                        .allowMultipleVotes(Boolean.TRUE.equals(post.getAllowMultipleVotes()))
                         .viewerPollOptionIndex(postService.getViewerPollOptionIndex(post, viewerUserId))
+                        .viewerPollOptionIndexes(postService.getViewerPollOptionIndexes(post, viewerUserId))
                         .pollVoters(postService.getPollVoters(post))
                         .xpAwarded(resolvePostXp(post))
                         .authorVerifiedXp(calculateVerifiedXp(post.getUser()))
@@ -145,6 +147,7 @@ public class ShareServiceImpl implements ShareService {
                     String pollQuestion = originalPost != null ? originalPost.getPollQuestion() : null;
                     List<String> pollOptions = originalPost != null ? postService.getPollOptions(originalPost) : List.of();
                     List<Long> pollVotes = originalPost != null ? postService.getPollVotes(originalPost) : List.of();
+                    Boolean allowMultipleVotes = originalPost != null && Boolean.TRUE.equals(originalPost.getAllowMultipleVotes());
                     List<PollVoterResponse> pollVoters = originalPost != null ? postService.getPollVoters(originalPost) : List.of();
                     Integer xpAwarded = originalPost != null ? resolvePostXp(originalPost) : null;
                     Long authorVerifiedXp = originalPost != null && originalPost.getUser() != null
@@ -168,6 +171,7 @@ public class ShareServiceImpl implements ShareService {
                         pollQuestion = null;
                         pollOptions = List.of();
                         pollVotes = List.of();
+                        allowMultipleVotes = false;
                         pollVoters = List.of();
                         xpAwarded = null;
                         authorVerifiedXp = null;
@@ -196,7 +200,9 @@ public class ShareServiceImpl implements ShareService {
                             .pollOptions(pollOptions)
                             .pollVotes(pollVotes)
                             .pollTotalVotes(pollVotes.stream().mapToLong(Long::longValue).sum())
+                            .allowMultipleVotes(allowMultipleVotes)
                             .viewerPollOptionIndex(originalPost != null ? postService.getViewerPollOptionIndex(originalPost, viewerUserId) : null)
+                            .viewerPollOptionIndexes(originalPost != null ? postService.getViewerPollOptionIndexes(originalPost, viewerUserId) : List.of())
                             .pollVoters(pollVoters)
                             .xpAwarded(xpAwarded)
                             .authorVerifiedXp(authorVerifiedXp)

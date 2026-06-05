@@ -14,7 +14,9 @@ public interface PostPollVoteRepository extends JpaRepository<PostPollVote, Long
 
     List<PostPollVote> findByPostPostIdOrderByCreatedAtDesc(Long postId);
 
-    Optional<PostPollVote> findByPostPostIdAndUserUserId(Long postId, Long userId);
+    List<PostPollVote> findByPostPostIdAndUserUserId(Long postId, Long userId);
+
+    Optional<PostPollVote> findByPostPostIdAndUserUserIdAndOptionIndex(Long postId, Long userId, Integer optionIndex);
 
     void deleteByPostPostId(Long postId);
 }

@@ -68,6 +68,9 @@ public class Post {
     @Column(name = "poll_options_json", columnDefinition = "TEXT")
     private String pollOptionsJson;
 
+    @Column(name = "poll_allow_multiple_votes", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private Boolean allowMultipleVotes;
+
     @Column(name = "xp_awarded")
     private Integer xpAwarded;
 
@@ -106,6 +109,9 @@ public class Post {
         }
         if (this.xpAwarded == null || this.xpAwarded < 1) {
             this.xpAwarded = PostXpPolicy.xpForCategory(this.category);
+        }
+        if (this.allowMultipleVotes == null) {
+            this.allowMultipleVotes = false;
         }
     }
 

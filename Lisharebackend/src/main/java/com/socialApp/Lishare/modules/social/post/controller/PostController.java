@@ -35,6 +35,7 @@ public class PostController {
             @RequestParam(value = "locationName", required = false) String locationName,
             @RequestParam(value = "pollQuestion", required = false) String pollQuestion,
             @RequestParam(value = "pollOptions", required = false) String pollOptions,
+            @RequestParam(value = "allowMultipleVotes", required = false, defaultValue = "false") boolean allowMultipleVotes,
             @RequestParam(value = "audience", required = false) String audience
     ) {
         if (user == null) {
@@ -44,7 +45,7 @@ public class PostController {
             return ResponseEntity.badRequest().body(null);
         }
 
-        Post post = postService.createPost(user.getUserId(), content, image, List.of(), category, feeling, locationName, pollQuestion, pollOptions, audience);
+        Post post = postService.createPost(user.getUserId(), content, image, List.of(), category, feeling, locationName, pollQuestion, pollOptions, audience, allowMultipleVotes);
         return ResponseEntity.ok(toResponse(post, user.getUserId()));
     }
 
@@ -59,12 +60,13 @@ public class PostController {
             @RequestParam(value = "locationName", required = false) String locationName,
             @RequestParam(value = "pollQuestion", required = false) String pollQuestion,
             @RequestParam(value = "pollOptions", required = false) String pollOptions,
+            @RequestParam(value = "allowMultipleVotes", required = false) Boolean allowMultipleVotes,
             @RequestParam(value = "audience", required = false) String audience
     ) {
         if (user == null) {
             return ResponseEntity.status(401).body(null);
         }
-        Post post = postService.updatePost(user.getUserId(), postId, content, image, List.of(), removeMedia, feeling, locationName, pollQuestion, pollOptions, audience);
+        Post post = postService.updatePost(user.getUserId(), postId, content, image, List.of(), removeMedia, feeling, locationName, pollQuestion, pollOptions, audience, allowMultipleVotes);
         return ResponseEntity.ok(toResponse(post, user.getUserId()));
     }
 
@@ -157,7 +159,9 @@ public class PostController {
                 .pollOptions(postService.getPollOptions(post))
                 .pollVotes(pollVotes)
                 .pollTotalVotes(pollTotalVotes)
+                .allowMultipleVotes(Boolean.TRUE.equals(post.getAllowMultipleVotes()))
                 .viewerPollOptionIndex(postService.getViewerPollOptionIndex(post, viewerUserId))
+                .viewerPollOptionIndexes(postService.getViewerPollOptionIndexes(post, viewerUserId))
                 .pollVoters(postService.getPollVoters(post))
                 .xpAwarded(resolvePostXp(post))
                 .authorVerifiedXp(calculateVerifiedXp(post.getUser()))

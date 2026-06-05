@@ -28,7 +28,9 @@ public class PostResponse {
     private List<String> pollOptions;
     private List<Long> pollVotes;
     private Long pollTotalVotes;
+    private Boolean allowMultipleVotes;
     private Integer viewerPollOptionIndex;
+    private List<Integer> viewerPollOptionIndexes;
     private List<PollVoterResponse> pollVoters;
     private Integer xpAwarded;
     private Long authorVerifiedXp;

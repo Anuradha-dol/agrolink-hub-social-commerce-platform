@@ -40133,3 +40133,560 @@ button.comment-author-avatar {
     width: 100% !important;
   }
 }
+
+/* Icon dropdowns for edit-post and story privacy modals. */
+.shell.shell-home-theme .premium-edit-post-shell .edit-post-workspace,
+.shell.shell-home-theme .premium-edit-post-shell .edit-post-main-panel,
+.shell.shell-home-theme .premium-edit-post-shell .edit-post-meta-grid,
+.shell.shell-home-theme .premium-edit-post-shell .edit-post-category-row {
+  overflow: visible !important;
+}
+
+.shell.shell-home-theme .premium-edit-post-shell .edit-post-category-row {
+  position: relative !important;
+  z-index: 45 !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+  margin-top: 18px !important;
+}
+
+.shell.shell-home-theme .premium-edit-post-shell .edit-post-select-field {
+  position: relative !important;
+  min-width: 0 !important;
+  display: grid !important;
+  gap: 8px !important;
+}
+
+.shell.shell-home-theme .premium-edit-post-shell .edit-post-meta-select-field {
+  grid-column: 1 / -1 !important;
+}
+
+.shell.shell-home-theme .premium-edit-post-shell .edit-post-select-wrap {
+  position: relative !important;
+  min-width: 0 !important;
+}
+
+.shell.shell-home-theme .premium-edit-post-shell .edit-post-select-trigger {
+  width: 100% !important;
+  min-height: 58px !important;
+  display: grid !important;
+  grid-template-columns: 42px minmax(0, 1fr) 18px !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 8px 14px !important;
+  border: 1px solid rgba(22, 135, 255, 0.18) !important;
+  border-radius: 18px !important;
+  color: #10213c !important;
+  text-align: left !important;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(50, 229, 159, 0.11), transparent 38%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(242, 249, 255, 0.94)) !important;
+  box-shadow: 0 12px 26px rgba(49, 95, 189, 0.085), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+  cursor: pointer !important;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease !important;
+}
+
+.shell.shell-home-theme .premium-edit-post-shell .edit-post-select-trigger:hover,
+.shell.shell-home-theme .premium-edit-post-shell .edit-post-select-trigger:focus-visible,
+.shell.shell-home-theme .premium-edit-post-shell .edit-post-select-field.is-open .edit-post-select-trigger {
+  border-color: rgba(22, 135, 255, 0.42) !important;
+  box-shadow: 0 16px 32px rgba(22, 135, 255, 0.14), 0 0 0 4px rgba(50, 229, 159, 0.09) !important;
+  outline: 0 !important;
+  transform: translateY(-1px) !important;
+}
+
+.shell.shell-home-theme .premium-edit-post-shell .edit-post-select-icon,
+.shell.shell-home-theme .premium-edit-post-shell .edit-post-select-option-icon {
+  display: grid !important;
+  place-items: center !important;
+  border-radius: 14px !important;
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #32e59f 0%, #1687ff 66%, #8558ff 100%) !important;
+  box-shadow: 0 10px 20px rgba(22, 135, 255, 0.22) !important;
+}
+
+.shell.shell-home-theme .premium-edit-post-shell .edit-post-select-icon {
+  width: 42px !important;
+  height: 42px !important;
+}
+
+.shell.shell-home-theme .premium-edit-post-shell .edit-post-select-option-icon {
+  width: 36px !important;
+  height: 36px !important;
+}
+
+.shell.shell-home-theme .premium-edit-post-shell .edit-post-select-icon .share-value-icon-svg,
+.shell.shell-home-theme .premium-edit-post-shell .edit-post-select-option-icon .share-value-icon-svg {
+  width: 19px !important;
+  height: 19px !important;
+  color: currentColor !important;
+  stroke-width: 2.2px !important;
+}
+
+.shell.shell-home-theme .premium-edit-post-shell .edit-post-select-copy,
+.shell.shell-home-theme .premium-edit-post-shell .edit-post-select-option-copy {
+  min-width: 0 !important;
+  display: grid !important;
+  gap: 2px !important;
+}
+
+.shell.shell-home-theme .premium-edit-post-shell .edit-post-select-copy strong,
+.shell.shell-home-theme .premium-edit-post-shell .edit-post-select-option-copy strong {
+  overflow: hidden !important;
+  color: #10213c !important;
+  font-size: 0.92rem !important;
+  font-weight: 950 !important;
+  line-height: 1.15 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.shell.shell-home-theme .premium-edit-post-shell .edit-post-select-copy small,
+.shell.shell-home-theme .premium-edit-post-shell .edit-post-select-option-copy small {
+  overflow: hidden !important;
+  color: #667790 !important;
+  font-size: 0.72rem !important;
+  font-weight: 760 !important;
+  line-height: 1.2 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.shell.shell-home-theme .premium-edit-post-shell .edit-post-select-trigger .feed-chevron-icon {
+  width: 18px !important;
+  height: 18px !important;
+  color: #6180a8 !important;
+  transition: transform 160ms ease !important;
+}
+
+.shell.shell-home-theme .premium-edit-post-shell .edit-post-select-field.is-open .feed-chevron-icon {
+  transform: rotate(180deg) !important;
+}
+
+.shell.shell-home-theme .premium-edit-post-shell .edit-post-select-menu {
+  position: absolute !important;
+  top: calc(100% + 9px) !important;
+  left: 0 !important;
+  z-index: 180 !important;
+  width: max(100%, min(318px, calc(100vw - 48px))) !important;
+  max-height: min(340px, calc(100vh - 210px)) !important;
+  display: grid !important;
+  gap: 7px !important;
+  padding: 9px !important;
+  overflow-y: auto !important;
+  border: 1px solid rgba(22, 135, 255, 0.18) !important;
+  border-radius: 20px !important;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(50, 229, 159, 0.14), transparent 36%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.99), rgba(246, 251, 255, 0.98)) !important;
+  box-shadow: 0 24px 52px rgba(15, 42, 82, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.92) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+
+.shell.shell-home-theme .premium-edit-post-shell .edit-post-category-row .edit-post-select-field:nth-child(2) .edit-post-select-menu {
+  right: 0 !important;
+  left: auto !important;
+}
+
+.shell.shell-home-theme .premium-edit-post-shell .edit-post-select-option {
+  width: 100% !important;
+  min-height: 54px !important;
+  display: grid !important;
+  grid-template-columns: 36px minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 8px 10px !important;
+  border: 1px solid transparent !important;
+  border-radius: 15px !important;
+  color: #10213c !important;
+  text-align: left !important;
+  background: transparent !important;
+  cursor: pointer !important;
+  transition: border-color 150ms ease, background 150ms ease, transform 150ms ease !important;
+}
+
+.shell.shell-home-theme .premium-edit-post-shell .edit-post-select-option:hover,
+.shell.shell-home-theme .premium-edit-post-shell .edit-post-select-option:focus-visible,
+.shell.shell-home-theme .premium-edit-post-shell .edit-post-select-option.active {
+  border-color: rgba(22, 135, 255, 0.2) !important;
+  background: linear-gradient(135deg, rgba(50, 229, 159, 0.11), rgba(22, 135, 255, 0.09)) !important;
+  outline: 0 !important;
+  transform: translateY(-1px) !important;
+}
+
+.shell.shell-home-theme .premium-edit-post-shell .edit-post-select-option-meta {
+  align-self: center !important;
+  padding: 5px 9px !important;
+  border: 1px solid rgba(22, 135, 255, 0.14) !important;
+  border-radius: 999px !important;
+  color: #1687ff !important;
+  background: #ffffff !important;
+  font-size: 0.68rem !important;
+  font-weight: 950 !important;
+  white-space: nowrap !important;
+}
+
+.shell.shell-home-theme .story-create-privacy {
+  position: relative !important;
+  overflow: visible !important;
+}
+
+.shell.shell-home-theme .story-privacy-select {
+  position: relative !important;
+  min-width: 0 !important;
+}
+
+.shell.shell-home-theme .story-privacy-trigger {
+  width: 100% !important;
+  min-height: 54px !important;
+  display: grid !important;
+  grid-template-columns: 38px minmax(0, 1fr) 18px !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 7px 12px !important;
+  border: 1px solid rgba(40, 126, 232, 0.16) !important;
+  border-radius: 18px !important;
+  color: #10213c !important;
+  text-align: left !important;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(37, 197, 143, 0.11), transparent 38%),
+    linear-gradient(135deg, #ffffff, #f4fbff) !important;
+  box-shadow: 0 10px 22px rgba(40, 126, 232, 0.09), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+  cursor: pointer !important;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease !important;
+}
+
+.shell.shell-home-theme .story-privacy-trigger:hover,
+.shell.shell-home-theme .story-privacy-trigger:focus-visible,
+.shell.shell-home-theme .story-privacy-select.is-open .story-privacy-trigger {
+  border-color: rgba(40, 126, 232, 0.36) !important;
+  box-shadow: 0 14px 28px rgba(40, 126, 232, 0.14), 0 0 0 4px rgba(37, 197, 143, 0.08) !important;
+  outline: 0 !important;
+  transform: translateY(-1px) !important;
+}
+
+.shell.shell-home-theme .story-privacy-icon,
+.shell.shell-home-theme .story-privacy-option-icon {
+  display: grid !important;
+  place-items: center !important;
+  border-radius: 14px !important;
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #25c58f 0%, #287ee8 100%) !important;
+  box-shadow: 0 10px 20px rgba(40, 126, 232, 0.2) !important;
+}
+
+.shell.shell-home-theme .story-privacy-icon {
+  width: 38px !important;
+  height: 38px !important;
+}
+
+.shell.shell-home-theme .story-privacy-option-icon {
+  width: 36px !important;
+  height: 36px !important;
+}
+
+.shell.shell-home-theme .story-privacy-icon .feed-inline-icon,
+.shell.shell-home-theme .story-privacy-option-icon .feed-inline-icon {
+  width: 18px !important;
+  height: 18px !important;
+  color: currentColor !important;
+  fill: none !important;
+  stroke: currentColor !important;
+  stroke-width: 2.25px !important;
+  stroke-linecap: round !important;
+  stroke-linejoin: round !important;
+}
+
+.shell.shell-home-theme .story-privacy-copy,
+.shell.shell-home-theme .story-privacy-option-copy {
+  min-width: 0 !important;
+  display: grid !important;
+  gap: 2px !important;
+}
+
+.shell.shell-home-theme .story-privacy-copy strong,
+.shell.shell-home-theme .story-privacy-option-copy strong {
+  overflow: hidden !important;
+  color: #10213c !important;
+  font-size: 0.92rem !important;
+  font-weight: 950 !important;
+  line-height: 1.15 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.shell.shell-home-theme .story-privacy-copy small,
+.shell.shell-home-theme .story-privacy-option-copy small {
+  overflow: hidden !important;
+  color: #6b7c95 !important;
+  font-size: 0.72rem !important;
+  font-weight: 760 !important;
+  line-height: 1.2 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.shell.shell-home-theme .story-privacy-chevron {
+  width: 18px !important;
+  height: 18px !important;
+  color: #6b7c95 !important;
+  transition: transform 160ms ease !important;
+}
+
+.shell.shell-home-theme .story-privacy-select.is-open .story-privacy-chevron {
+  transform: rotate(180deg) !important;
+}
+
+.shell.shell-home-theme .story-privacy-menu {
+  position: absolute !important;
+  top: calc(100% + 9px) !important;
+  right: 0 !important;
+  z-index: 90 !important;
+  width: max(100%, min(268px, calc(100vw - 48px))) !important;
+  display: grid !important;
+  gap: 7px !important;
+  padding: 9px !important;
+  border: 1px solid rgba(40, 126, 232, 0.16) !important;
+  border-radius: 20px !important;
+  background:
+    radial-gradient(circle at 0% 0%, rgba(37, 197, 143, 0.13), transparent 38%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.99), rgba(247, 252, 255, 0.98)) !important;
+  box-shadow: 0 22px 48px rgba(16, 33, 60, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.92) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+
+.shell.shell-home-theme .story-privacy-option {
+  width: 100% !important;
+  min-height: 54px !important;
+  display: grid !important;
+  grid-template-columns: 36px minmax(0, 1fr) !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 8px 10px !important;
+  border: 1px solid transparent !important;
+  border-radius: 15px !important;
+  color: #10213c !important;
+  text-align: left !important;
+  background: transparent !important;
+  cursor: pointer !important;
+  transition: border-color 150ms ease, background 150ms ease, transform 150ms ease !important;
+}
+
+.shell.shell-home-theme .story-privacy-option:hover,
+.shell.shell-home-theme .story-privacy-option:focus-visible,
+.shell.shell-home-theme .story-privacy-option.active {
+  border-color: rgba(40, 126, 232, 0.2) !important;
+  background: linear-gradient(135deg, rgba(37, 197, 143, 0.11), rgba(40, 126, 232, 0.09)) !important;
+  outline: 0 !important;
+  transform: translateY(-1px) !important;
+}
+
+@media (max-width: 760px) {
+  .shell.shell-home-theme .premium-edit-post-shell .edit-post-category-row {
+    grid-template-columns: 1fr !important;
+  }
+
+  .shell.shell-home-theme .premium-edit-post-shell .edit-post-select-menu,
+  .shell.shell-home-theme .premium-edit-post-shell .edit-post-category-row .edit-post-select-field:nth-child(2) .edit-post-select-menu,
+  .shell.shell-home-theme .story-privacy-menu {
+    left: 0 !important;
+    right: auto !important;
+    width: 100% !important;
+  }
+
+  .shell.shell-home-theme .story-create-privacy {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Compact edit post form sizing. */
+.shell.shell-home-theme .feed-inline-edit-shell.premium-edit-post-shell .edit-post-modal-card,
+.shell.shell-home-theme .feed-inline-edit-shell.premium-edit-post-shell .grid-form.edit-post-modal-card,
+.shell.shell-home-theme .premium-edit-post-shell.feed-inline-edit-shell .edit-post-modal-card,
+.shell.shell-home-theme .premium-edit-post-shell.feed-inline-edit-shell .grid-form.edit-post-modal-card {
+  width: min(850px, calc(100vw - 44px)) !important;
+  max-height: min(790px, calc(100vh - 44px)) !important;
+  border-radius: 24px !important;
+}
+
+.shell.shell-home-theme .feed-inline-edit-shell.premium-edit-post-shell .edit-post-modal-head,
+.shell.shell-home-theme .premium-edit-post-shell.feed-inline-edit-shell .edit-post-modal-head {
+  grid-template-columns: 42px minmax(0, 1fr) 36px !important;
+  gap: 11px !important;
+  padding: 13px 17px 11px !important;
+}
+
+.shell.shell-home-theme .feed-inline-edit-shell.premium-edit-post-shell .edit-post-title-icon,
+.shell.shell-home-theme .feed-inline-edit-shell.premium-edit-post-shell .edit-post-title-icon.premium-icon-bg,
+.shell.shell-home-theme .premium-edit-post-shell.feed-inline-edit-shell .edit-post-title-icon,
+.shell.shell-home-theme .premium-edit-post-shell.feed-inline-edit-shell .edit-post-title-icon.premium-icon-bg {
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 13px !important;
+}
+
+.shell.shell-home-theme .feed-inline-edit-shell.premium-edit-post-shell .edit-post-title-copy h4,
+.shell.shell-home-theme .premium-edit-post-shell.feed-inline-edit-shell .edit-post-title-copy h4 {
+  font-size: 1.08rem !important;
+}
+
+.shell.shell-home-theme .feed-inline-edit-shell.premium-edit-post-shell .edit-post-title-copy p,
+.shell.shell-home-theme .premium-edit-post-shell.feed-inline-edit-shell .edit-post-title-copy p {
+  font-size: 0.72rem !important;
+}
+
+.shell.shell-home-theme .feed-inline-edit-shell.premium-edit-post-shell .edit-post-close-btn,
+.shell.shell-home-theme .premium-edit-post-shell.feed-inline-edit-shell .edit-post-close-btn {
+  width: 36px !important;
+  height: 36px !important;
+}
+
+.shell.shell-home-theme .feed-inline-edit-shell.premium-edit-post-shell .edit-post-author-panel,
+.shell.shell-home-theme .premium-edit-post-shell.feed-inline-edit-shell .edit-post-author-panel {
+  grid-template-columns: 40px minmax(0, 1fr) auto !important;
+  margin: 10px 17px 10px !important;
+  padding: 8px 10px !important;
+  border-radius: 16px !important;
+}
+
+.shell.shell-home-theme .feed-inline-edit-shell.premium-edit-post-shell .edit-post-avatar,
+.shell.shell-home-theme .premium-edit-post-shell.feed-inline-edit-shell .edit-post-avatar {
+  width: 40px !important;
+  height: 40px !important;
+  min-width: 40px !important;
+}
+
+.shell.shell-home-theme .feed-inline-edit-shell.premium-edit-post-shell .edit-post-author-status span,
+.shell.shell-home-theme .premium-edit-post-shell.feed-inline-edit-shell .edit-post-author-status span {
+  min-height: 24px !important;
+  padding: 0 8px !important;
+  font-size: 0.58rem !important;
+}
+
+.shell.shell-home-theme .feed-inline-edit-shell.premium-edit-post-shell .edit-post-scroll-area,
+.shell.shell-home-theme .premium-edit-post-shell.feed-inline-edit-shell .edit-post-scroll-area {
+  padding: 0 16px 0 !important;
+}
+
+.shell.shell-home-theme .feed-inline-edit-shell.premium-edit-post-shell .edit-post-workspace,
+.shell.shell-home-theme .premium-edit-post-shell.feed-inline-edit-shell .edit-post-workspace {
+  grid-template-columns: minmax(0, 1fr) 246px !important;
+  gap: 12px !important;
+}
+
+.shell.shell-home-theme .feed-inline-edit-shell.premium-edit-post-shell .edit-post-main-panel,
+.shell.shell-home-theme .feed-inline-edit-shell.premium-edit-post-shell .edit-post-review-card,
+.shell.shell-home-theme .feed-inline-edit-shell.premium-edit-post-shell .edit-post-media-section,
+.shell.shell-home-theme .premium-edit-post-shell.feed-inline-edit-shell .edit-post-main-panel,
+.shell.shell-home-theme .premium-edit-post-shell.feed-inline-edit-shell .edit-post-review-card,
+.shell.shell-home-theme .premium-edit-post-shell.feed-inline-edit-shell .edit-post-media-section {
+  gap: 10px !important;
+  padding: 12px !important;
+  border-radius: 18px !important;
+}
+
+.shell.shell-home-theme .feed-inline-edit-shell.premium-edit-post-shell .edit-post-panel-heading,
+.shell.shell-home-theme .premium-edit-post-shell.feed-inline-edit-shell .edit-post-panel-heading {
+  gap: 2px !important;
+}
+
+.shell.shell-home-theme .feed-inline-edit-shell.premium-edit-post-shell .edit-post-textarea-container,
+.shell.shell-home-theme .premium-edit-post-shell.feed-inline-edit-shell .edit-post-textarea-container {
+  border-radius: 18px !important;
+}
+
+.shell.shell-home-theme .feed-inline-edit-shell.premium-edit-post-shell .edit-post-textarea,
+.shell.shell-home-theme .premium-edit-post-shell.feed-inline-edit-shell .edit-post-textarea {
+  min-height: 86px !important;
+  padding: 14px 16px 24px !important;
+  font-size: 0.9rem !important;
+}
+
+.shell.shell-home-theme .feed-inline-edit-shell.premium-edit-post-shell .edit-post-tool-row-v2,
+.shell.shell-home-theme .premium-edit-post-shell.feed-inline-edit-shell .edit-post-tool-row-v2 {
+  gap: 8px !important;
+  margin-top: 8px !important;
+}
+
+.shell.shell-home-theme .feed-inline-edit-shell.premium-edit-post-shell .edit-post-tool-btn,
+.shell.shell-home-theme .premium-edit-post-shell.feed-inline-edit-shell .edit-post-tool-btn {
+  min-height: 36px !important;
+  padding: 0 12px !important;
+  border-radius: 13px !important;
+  font-size: 0.72rem !important;
+}
+
+.shell.shell-home-theme .feed-inline-edit-shell.premium-edit-post-shell .edit-post-category-row,
+.shell.shell-home-theme .premium-edit-post-shell.feed-inline-edit-shell .edit-post-category-row {
+  gap: 10px !important;
+  margin-top: 10px !important;
+}
+
+.shell.shell-home-theme .feed-inline-edit-shell.premium-edit-post-shell .edit-post-select-trigger,
+.shell.shell-home-theme .premium-edit-post-shell.feed-inline-edit-shell .edit-post-select-trigger {
+  min-height: 50px !important;
+  grid-template-columns: 34px minmax(0, 1fr) 16px !important;
+  gap: 10px !important;
+  padding: 7px 11px !important;
+  border-radius: 16px !important;
+}
+
+.shell.shell-home-theme .feed-inline-edit-shell.premium-edit-post-shell .edit-post-select-icon,
+.shell.shell-home-theme .premium-edit-post-shell.feed-inline-edit-shell .edit-post-select-icon {
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 12px !important;
+}
+
+.shell.shell-home-theme .feed-inline-edit-shell.premium-edit-post-shell .edit-post-select-copy strong,
+.shell.shell-home-theme .premium-edit-post-shell.feed-inline-edit-shell .edit-post-select-copy strong {
+  font-size: 0.84rem !important;
+}
+
+.shell.shell-home-theme .feed-inline-edit-shell.premium-edit-post-shell .edit-post-select-copy small,
+.shell.shell-home-theme .premium-edit-post-shell.feed-inline-edit-shell .edit-post-select-copy small {
+  font-size: 0.66rem !important;
+}
+
+.shell.shell-home-theme .feed-inline-edit-shell.premium-edit-post-shell .edit-post-meta-grid,
+.shell.shell-home-theme .premium-edit-post-shell.feed-inline-edit-shell .edit-post-meta-grid {
+  gap: 10px !important;
+}
+
+.shell.shell-home-theme .feed-inline-edit-shell.premium-edit-post-shell .edit-post-input-shell-v2,
+.shell.shell-home-theme .premium-edit-post-shell.feed-inline-edit-shell .edit-post-input-shell-v2 {
+  min-height: 50px !important;
+  padding: 0 13px !important;
+  border-radius: 16px !important;
+}
+
+.shell.shell-home-theme .feed-inline-edit-shell.premium-edit-post-shell .edit-post-review-item,
+.shell.shell-home-theme .premium-edit-post-shell.feed-inline-edit-shell .edit-post-review-item {
+  min-height: 50px !important;
+  grid-template-columns: 36px minmax(0, 1fr) auto !important;
+  gap: 9px !important;
+  padding: 8px 9px !important;
+  border-radius: 16px !important;
+}
+
+.shell.shell-home-theme .feed-inline-edit-shell.premium-edit-post-shell .edit-post-review-icon,
+.shell.shell-home-theme .premium-edit-post-shell.feed-inline-edit-shell .edit-post-review-icon {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 12px !important;
+}
+
+.shell.shell-home-theme .feed-inline-edit-shell.premium-edit-post-shell .edit-post-footer,
+.shell.shell-home-theme .premium-edit-post-shell.feed-inline-edit-shell .edit-post-footer {
+  padding: 10px 16px 12px !important;
+}
+
+@media (max-width: 900px) {
+  .shell.shell-home-theme .feed-inline-edit-shell.premium-edit-post-shell .edit-post-workspace,
+  .shell.shell-home-theme .premium-edit-post-shell.feed-inline-edit-shell .edit-post-workspace {
+    grid-template-columns: 1fr !important;
+  }
+}

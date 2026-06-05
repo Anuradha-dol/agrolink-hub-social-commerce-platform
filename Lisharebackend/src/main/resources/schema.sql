@@ -45,6 +45,19 @@ ALTER TABLE IF EXISTS posts
 ALTER TABLE IF EXISTS posts
     ADD COLUMN IF NOT EXISTS poll_options_json TEXT;
 
+ALTER TABLE IF EXISTS posts
+    ADD COLUMN IF NOT EXISTS poll_allow_multiple_votes BOOLEAN DEFAULT FALSE;
+
+UPDATE posts
+SET poll_allow_multiple_votes = FALSE
+WHERE poll_allow_multiple_votes IS NULL;
+
+ALTER TABLE IF EXISTS posts
+    ALTER COLUMN poll_allow_multiple_votes SET DEFAULT FALSE;
+
+ALTER TABLE IF EXISTS posts
+    ALTER COLUMN poll_allow_multiple_votes SET NOT NULL;
+
 CREATE TABLE IF NOT EXISTS post_poll_votes (
     id BIGSERIAL PRIMARY KEY,
     post_id BIGINT NOT NULL REFERENCES posts(post_id) ON DELETE CASCADE,
@@ -53,6 +66,12 @@ CREATE TABLE IF NOT EXISTS post_poll_votes (
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     CONSTRAINT uq_post_poll_votes_post_user UNIQUE (post_id, user_id)
 );
+
+ALTER TABLE IF EXISTS post_poll_votes
+    DROP CONSTRAINT IF EXISTS uq_post_poll_votes_post_user;
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_post_poll_votes_post_user_option
+    ON post_poll_votes(post_id, user_id, option_index);
 
 CREATE INDEX IF NOT EXISTS idx_post_poll_votes_post_id ON post_poll_votes(post_id);
 CREATE INDEX IF NOT EXISTS idx_post_poll_votes_user_id ON post_poll_votes(user_id);

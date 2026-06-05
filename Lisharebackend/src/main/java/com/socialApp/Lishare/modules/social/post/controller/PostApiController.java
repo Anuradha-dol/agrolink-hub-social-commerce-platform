@@ -46,13 +46,14 @@ public class PostApiController {
             @RequestParam(value = "locationName", required = false) String locationName,
             @RequestParam(value = "pollQuestion", required = false) String pollQuestion,
             @RequestParam(value = "pollOptions", required = false) String pollOptions,
+            @RequestParam(value = "allowMultipleVotes", required = false, defaultValue = "false") boolean allowMultipleVotes,
             @RequestParam(value = "audience", required = false) String audience
     ) {
         if (content.isBlank() && noMedia(image) && (pollQuestion == null || pollQuestion.isBlank())) {
             throw new IllegalArgumentException("Post content or image is required");
         }
 
-        Post post = postService.createPost(user.getUserId(), content, image, List.of(), category, feeling, locationName, pollQuestion, pollOptions, audience);
+        Post post = postService.createPost(user.getUserId(), content, image, List.of(), category, feeling, locationName, pollQuestion, pollOptions, audience, allowMultipleVotes);
         return ResponseEntity.ok(ApiResponse.success("Post created", toPostResponse(post, user.getUserId())));
     }
 
@@ -67,9 +68,10 @@ public class PostApiController {
             @RequestParam(value = "locationName", required = false) String locationName,
             @RequestParam(value = "pollQuestion", required = false) String pollQuestion,
             @RequestParam(value = "pollOptions", required = false) String pollOptions,
+            @RequestParam(value = "allowMultipleVotes", required = false) Boolean allowMultipleVotes,
             @RequestParam(value = "audience", required = false) String audience
     ) {
-        Post post = postService.updatePost(user.getUserId(), postId, content, image, List.of(), removeMedia, feeling, locationName, pollQuestion, pollOptions, audience);
+        Post post = postService.updatePost(user.getUserId(), postId, content, image, List.of(), removeMedia, feeling, locationName, pollQuestion, pollOptions, audience, allowMultipleVotes);
         return ResponseEntity.ok(ApiResponse.success("Post updated", toPostResponse(post, user.getUserId())));
     }
 
@@ -214,7 +216,9 @@ public class PostApiController {
                 .pollOptions(postService.getPollOptions(post))
                 .pollVotes(pollVotes)
                 .pollTotalVotes(pollTotalVotes)
+                .allowMultipleVotes(Boolean.TRUE.equals(post.getAllowMultipleVotes()))
                 .viewerPollOptionIndex(postService.getViewerPollOptionIndex(post, viewerUserId))
+                .viewerPollOptionIndexes(postService.getViewerPollOptionIndexes(post, viewerUserId))
                 .pollVoters(postService.getPollVoters(post))
                 .xpAwarded(resolvePostXp(post))
                 .authorVerifiedXp(calculateVerifiedXp(post.getUser()))

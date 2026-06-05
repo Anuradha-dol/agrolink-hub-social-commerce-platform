@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @Table(
         name = "post_poll_votes",
         uniqueConstraints = {
-                @UniqueConstraint(name = "uq_post_poll_votes_post_user", columnNames = {"post_id", "user_id"})
+                @UniqueConstraint(name = "uq_post_poll_votes_post_user_option", columnNames = {"post_id", "user_id", "option_index"})
         },
         indexes = {
                 @Index(name = "idx_post_poll_votes_post_id", columnList = "post_id"),

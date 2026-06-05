@@ -25,10 +25,10 @@ const SHARE_AUDIENCES = [
   { key: "friends", label: "Friends", icon: "🤝" }
 ];
 const AUDIENCE_OPTIONS = [
-  { key: "public", value: "PUBLIC", label: "Public", icon: "globe" },
-  { key: "friends_followers", value: "FRIENDS_FOLLOWERS", label: "Friends + followers", icon: "users" },
-  { key: "friends", value: "FRIENDS", label: "Friends", icon: "handshake" },
-  { key: "followers", value: "FOLLOWERS", label: "Followers", icon: "user" }
+  { key: "public", value: "PUBLIC", label: "Public", hint: "Everyone can view", icon: "globe" },
+  { key: "friends_followers", value: "FRIENDS_FOLLOWERS", label: "Friends + followers", hint: "Friends and followers", icon: "users" },
+  { key: "friends", value: "FRIENDS", label: "Friends", hint: "Accepted friends only", icon: "handshake" },
+  { key: "followers", value: "FOLLOWERS", label: "Followers", hint: "Followers only", icon: "user" }
 ];
 const POST_CATEGORIES = [
   { value: "GENERAL", label: "General", xp: 1, icon: "fileText" },
@@ -89,6 +89,15 @@ function normalizeViewerPollOption(value) {
   }
   const numeric = Number(value);
   return Number.isInteger(numeric) && numeric >= 0 ? numeric : null;
+}
+
+function normalizeViewerPollOptions(value, fallbackValue = null) {
+  const source = Array.isArray(value) ? value : [];
+  const normalized = source
+    .map((item) => normalizeViewerPollOption(item))
+    .filter((item) => item !== null);
+  const fallback = normalizeViewerPollOption(fallbackValue);
+  return [...new Set(fallback !== null && normalized.length === 0 ? [fallback] : normalized)].sort((a, b) => a - b);
 }
 
 function mediaTypeFromUrl(url = "") {
@@ -426,6 +435,89 @@ function PostValueIcon({ type }) {
     >
       {paths[type] || paths.medium}
     </svg>
+  );
+}
+
+function EditPostSelect({ label, value, options, open, onToggle, onClose, onChange, metaForOption, fallbackIcon = "fileText", className = "" }) {
+  const dropdownRef = useRef(null);
+  const selected = options.find((option) => option.value === value) || options[0];
+  const selectedMeta = selected ? (metaForOption?.(selected) || selected.hint) : "";
+
+  useEffect(() => {
+    if (!open) return undefined;
+
+    const closeFromOutside = (event) => {
+      if (!dropdownRef.current?.contains(event.target)) {
+        onClose();
+      }
+    };
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+
+    document.addEventListener("mousedown", closeFromOutside);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("mousedown", closeFromOutside);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [open, onClose]);
+
+  return (
+    <div className={`edit-post-select-field ${open ? "is-open" : ""} ${className}`.trim()} ref={dropdownRef}>
+      <span className="edit-post-field-label">{label}</span>
+      <div className="edit-post-select-wrap">
+        <button
+          type="button"
+          className="edit-post-select-trigger"
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          aria-label={`${label}: ${selected?.label || "Select option"}`}
+          onClick={onToggle}
+        >
+          <span className="edit-post-select-icon" aria-hidden="true">
+            <PostValueIcon type={selected?.icon || fallbackIcon} />
+          </span>
+          <span className="edit-post-select-copy">
+            <strong>{selected?.label || "Select option"}</strong>
+            {selectedMeta ? <small>{selectedMeta}</small> : null}
+          </span>
+          <ChevronDownIcon />
+        </button>
+
+        {open ? (
+          <div className="edit-post-select-menu" role="listbox" aria-label={label}>
+            {options.map((option) => {
+              const optionActive = option.value === value;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  className={`edit-post-select-option ${optionActive ? "active" : ""}`.trim()}
+                  role="option"
+                  aria-selected={optionActive}
+                  onClick={() => {
+                    onChange(option.value);
+                    onClose();
+                  }}
+                >
+                  <span className="edit-post-select-option-icon" aria-hidden="true">
+                    <PostValueIcon type={option.icon || fallbackIcon} />
+                  </span>
+                  <span className="edit-post-select-option-copy">
+                    <strong>{option.label}</strong>
+                    {option.hint ? <small>{option.hint}</small> : null}
+                  </span>
+                  {metaForOption ? <span className="edit-post-select-option-meta">{metaForOption(option)}</span> : null}
+                </button>
+              );
+            })}
+          </div>
+        ) : null}
+      </div>
+    </div>
   );
 }
 
@@ -901,6 +993,7 @@ export default function FeedCard({
   const normalizedItemPollOptions = normalizePollOptions(item.pollOptions);
   const [editingContent, setEditingContent] = useState(firstNonEmptyString(item.content, item.caption, item.postCaption, item.text));
   const [editingAudience, setEditingAudience] = useState(AUDIENCE_OPTIONS.find((option) => option.key === normalizeAudienceKey(item.audience || item.shareAudience))?.value || "PUBLIC");
+  const [editDropdownOpen, setEditDropdownOpen] = useState("");
   const [editingFeeling, setEditingFeeling] = useState(item.feeling || "");
   const [editingLocation, setEditingLocation] = useState(item.locationName || "");
   const itemHasEditablePoll = Boolean(item.pollQuestion || normalizedItemPollOptions.some((option) => String(option || "").trim()));
@@ -952,6 +1045,9 @@ export default function FeedCard({
   const pollVotes = normalizePollVotes(item.pollVotes, pollOptions.length);
   const pollTotalVotes = Number(item.pollTotalVotes ?? pollVotes.reduce((total, value) => total + Number(value || 0), 0));
   const viewerPollOptionIndex = normalizeViewerPollOption(item.viewerPollOptionIndex);
+  const pollAllowsMultipleVotes = Boolean(item.allowMultipleVotes);
+  const viewerPollOptionIndexes = normalizeViewerPollOptions(item.viewerPollOptionIndexes, viewerPollOptionIndex);
+  const viewerPollSelectionSet = new Set(viewerPollOptionIndexes);
   const hasPoll = Boolean(!originalPostDeleted && item.pollQuestion && pollOptions.length >= 2);
   const sharePreviewTitle = displayContent || (gifAsset ? "Shared GIF" : videoAsset ? "Shared reel" : "Shared post");
   const sharePreviewType = gifAsset ? "GIF" : videoAsset ? "Reel" : "Post";
@@ -1045,9 +1141,9 @@ export default function FeedCard({
   const leadingPollPercent = pollTotalVotes > 0
     ? Math.round((Number(pollVotes[leadingPollOptionIndex] || 0) / pollTotalVotes) * 100)
     : 0;
-  const viewerHasPollVote = Number.isInteger(viewerPollOptionIndex) && viewerPollOptionIndex >= 0;
+  const viewerHasPollVote = viewerPollOptionIndexes.length > 0;
   const inlinePollVoterOptionIndex = viewerHasPollVote
-    ? viewerPollOptionIndex
+    ? viewerPollOptionIndexes[0]
     : (pollTotalVotes > 0 ? leadingPollOptionIndex : null);
   const inlinePollVoters = Number.isInteger(inlinePollVoterOptionIndex)
     ? realPollVoters.filter((pollVoter) => Number(pollVoter?.optionIndex) === inlinePollVoterOptionIndex)
@@ -1161,8 +1257,11 @@ export default function FeedCard({
     setEditingPollVisible(itemHasEditablePoll);
     setEditingPollQuestion(item.pollQuestion || "");
     setEditingPollOptions(normalizedItemPollOptions.length ? normalizedItemPollOptions : ["", ""]);
+    setEditingAllowMultipleVotes(Boolean(item.allowMultipleVotes));
     setEditingFile(null);
     setEditingCategory(normalizeCategory(item.category));
+    setEditingAudience(AUDIENCE_OPTIONS.find((option) => option.key === normalizeAudienceKey(item.audience || item.shareAudience))?.value || "PUBLIC");
+    setEditDropdownOpen("");
     setRemoveMedia(false);
     setEditingOpen(false);
     setOpenReplyId(null);
@@ -1181,7 +1280,13 @@ export default function FeedCard({
     setReactionUserFilter("all");
     setReactionUserSearch("");
     setMediaFailed(false);
-  }, [item.postId, item.content, item.caption, item.postCaption, item.text, item.imageUrl, item.mediaUrls, item.feeling, item.locationName, item.pollQuestion, item.pollOptions, itemHasEditablePoll]);
+  }, [item.postId, item.content, item.caption, item.postCaption, item.text, item.imageUrl, item.mediaUrls, item.feeling, item.locationName, item.audience, item.shareAudience, item.category, item.pollQuestion, item.pollOptions, item.allowMultipleVotes, itemHasEditablePoll]);
+
+  useEffect(() => {
+    if (!editingOpen) {
+      setEditDropdownOpen("");
+    }
+  }, [editingOpen]);
 
   useEffect(() => {
     setAvatarFailed(false);
@@ -1686,9 +1791,9 @@ export default function FeedCard({
                 <span className="feed-poll-vote-count">{pollTotalVotes} {pollTotalVotes === 1 ? "vote" : "votes"}</span>
                 <span className="feed-poll-dot">-</span>
                 <span className="feed-poll-instruction">
-                  {viewerHasPollVote 
-                    ? "Your vote is saved" 
-                    : item.allowMultipleVotes 
+                  {viewerHasPollVote
+                    ? (pollAllowsMultipleVotes ? `${viewerPollOptionIndexes.length} ${viewerPollOptionIndexes.length === 1 ? "choice" : "choices"} saved` : "Your vote is saved")
+                    : pollAllowsMultipleVotes
                       ? "Select one or more options" 
                       : "Choose one option"}
                 </span>
@@ -1697,7 +1802,7 @@ export default function FeedCard({
           <div className="feed-poll-status-wrap">
             <span className="feed-poll-ended-badge feed-poll-live-badge">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M7 12h3l2-5 2 10 2-5h3"/></svg>
-              {viewerHasPollVote ? "Voted" : onVotePoll ? "Live" : "Results"}
+              {viewerHasPollVote ? (pollAllowsMultipleVotes ? "Multi vote" : "Voted") : onVotePoll ? "Live" : "Results"}
             </span>
           </div>
         </header>
@@ -1706,13 +1811,13 @@ export default function FeedCard({
           {pollOptions.map((option, index) => {
             const votes = Number(pollVotes[index] || 0);
             const percent = pollTotalVotes > 0 ? Math.round((votes / pollTotalVotes) * 100) : 0;
-            const selected = viewerPollOptionIndex === index;
+            const selected = viewerPollSelectionSet.has(index);
             
             const isLeading = index === leadingPollOptionIndex && pollTotalVotes > 0;
             const showVotersRow = isLeading && pollTotalVotes > 0;
             const isEmphasized = isLeading || selected;
             const optionVoteLabel = selected
-              ? "Your choice"
+              ? (pollAllowsMultipleVotes ? "Selected by you" : "Your choice")
               : isLeading
                 ? "Leading option"
                 : `${votes} ${votes === 1 ? "vote" : "votes"}`;
@@ -1826,7 +1931,11 @@ export default function FeedCard({
             <div className="feed-poll-stat-info">
               <small>Choices</small>
               <strong>{pollOptions.length}</strong>
-              <small className="sub">{viewerHasPollVote ? "You voted" : "Open voting"}</small>
+              <small className="sub">
+                {viewerHasPollVote
+                  ? (pollAllowsMultipleVotes ? `${viewerPollOptionIndexes.length} selected` : "You voted")
+                  : (pollAllowsMultipleVotes ? "Multi-select" : "Open voting")}
+              </small>
             </div>
           </div>
           <div className="feed-poll-stat-item graph-item">
@@ -3263,62 +3372,28 @@ export default function FeedCard({
                     </button>
                   </div>
 
-                  <div className="edit-post-category-row" style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
-                    <label className="edit-post-field-v2" style={{ flex: '1 1 200px' }}>
-                      <span style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Category</span>
-                      <div style={{ position: 'relative' }}>
-                        <select
-                          value={editingCategory}
-                          onChange={(e) => setEditingCategory(e.target.value)}
-                          style={{
-                            width: '100%',
-                            padding: '0.75rem 1rem 0.75rem 3.5rem',
-                            borderRadius: '10px',
-                            border: '1px solid var(--border-color, #ddd)',
-                            background: '#ffffff',
-                            color: '#0f172a',
-                            fontWeight: '600',
-                            fontSize: '0.95rem',
-                            appearance: 'none'
-                          }}
-                        >
-                          {POST_CATEGORIES.map((cat) => (
-                            <option key={cat.value} value={cat.value}>{cat.label} - {cat.xp} XP</option>
-                          ))}
-                        </select>
-                        <span style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', display: 'flex', alignItems: 'center', color: '#64748b' }}>
-                          <PostValueIcon type={POST_CATEGORIES.find(c => c.value === editingCategory)?.icon || 'fileText'} />
-                        </span>
-                      </div>
-                    </label>
-
-                    <label className="edit-post-field-v2" style={{ flex: '1 1 200px' }}>
-                      <span style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Audience</span>
-                      <div style={{ position: 'relative' }}>
-                        <select
-                          value={editingAudience}
-                          onChange={(e) => setEditingAudience(e.target.value)}
-                          style={{
-                            width: '100%',
-                            padding: '0.75rem 1rem 0.75rem 3.5rem',
-                            borderRadius: '10px',
-                            border: '1px solid var(--border-color, #ddd)',
-                            background: '#ffffff',
-                            color: '#0f172a',
-                            fontWeight: '600',
-                            fontSize: '0.95rem',
-                            appearance: 'none'
-                          }}
-                        >
-                          {AUDIENCE_OPTIONS.map((aud) => (
-                            <option key={aud.value} value={aud.value}>{aud.label}</option>
-                          ))}
-                        </select>
-                        <span style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', display: 'flex', alignItems: 'center', color: '#64748b' }}>
-                          <PostValueIcon type={AUDIENCE_OPTIONS.find(a => a.value === editingAudience)?.icon || 'globe'} />
-                        </span>
-                      </div>
-                    </label>
+                  <div className="edit-post-category-row">
+                    <EditPostSelect
+                      label="Category"
+                      value={editingCategory}
+                      options={POST_CATEGORIES}
+                      open={editDropdownOpen === "category"}
+                      onToggle={() => setEditDropdownOpen((previous) => previous === "category" ? "" : "category")}
+                      onClose={() => setEditDropdownOpen("")}
+                      onChange={setEditingCategory}
+                      metaForOption={(option) => `${option.xp} XP`}
+                      fallbackIcon="fileText"
+                    />
+                    <EditPostSelect
+                      label="Audience"
+                      value={editingAudience}
+                      options={AUDIENCE_OPTIONS}
+                      open={editDropdownOpen === "audience-primary"}
+                      onToggle={() => setEditDropdownOpen((previous) => previous === "audience-primary" ? "" : "audience-primary")}
+                      onClose={() => setEditDropdownOpen("")}
+                      onChange={setEditingAudience}
+                      fallbackIcon="globe"
+                    />
                   </div>
 
                   <div className="edit-post-meta-grid">
@@ -3347,19 +3422,17 @@ export default function FeedCard({
                         />
                       </div>
                     </div>
-                    <div className="edit-post-field-v2 edit-post-audience-field-v2">
-                      <span className="edit-post-field-label">Audience</span>
-                      <div className="edit-post-input-shell-v2">
-                        <GlobeIcon />
-                        <select value={editingAudience} onChange={(event) => setEditingAudience(event.target.value)}>
-                          {AUDIENCE_OPTIONS.map((option) => (
-                            <option key={option.value} value={option.value}>
-                              {option.label}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    </div>
+                    <EditPostSelect
+                      label="Audience"
+                      value={editingAudience}
+                      options={AUDIENCE_OPTIONS}
+                      open={editDropdownOpen === "audience-meta"}
+                      onToggle={() => setEditDropdownOpen((previous) => previous === "audience-meta" ? "" : "audience-meta")}
+                      onClose={() => setEditDropdownOpen("")}
+                      onChange={setEditingAudience}
+                      fallbackIcon="globe"
+                      className="edit-post-audience-field-v2 edit-post-meta-select-field"
+                    />
                   </div>
 
                   {editingPollVisible ? (

@@ -62,27 +62,35 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public Post createPost(Long userId, String content, MultipartFile imageFile, String category) {
-        return createPost(userId, content, imageFile, List.of(), category, null, null, null, null, null);
+        return createPost(userId, content, imageFile, List.of(), category, null, null, null, null, null, false);
     }
 
     @Override
     @Transactional
     public Post createPost(Long userId, String content, MultipartFile imageFile, String category,
                            String feeling, String locationName, String pollQuestion, String pollOptionsJson) {
-        return createPost(userId, content, imageFile, List.of(), category, feeling, locationName, pollQuestion, pollOptionsJson, null);
+        return createPost(userId, content, imageFile, List.of(), category, feeling, locationName, pollQuestion, pollOptionsJson, null, false);
     }
 
     @Override
     @Transactional
     public Post createPost(Long userId, String content, MultipartFile imageFile, List<MultipartFile> imageFiles, String category,
                            String feeling, String locationName, String pollQuestion, String pollOptionsJson) {
-        return createPost(userId, content, imageFile, imageFiles, category, feeling, locationName, pollQuestion, pollOptionsJson, null);
+        return createPost(userId, content, imageFile, imageFiles, category, feeling, locationName, pollQuestion, pollOptionsJson, null, false);
     }
 
     @Override
     @Transactional
     public Post createPost(Long userId, String content, MultipartFile imageFile, List<MultipartFile> imageFiles, String category,
                            String feeling, String locationName, String pollQuestion, String pollOptionsJson, String audience) {
+        return createPost(userId, content, imageFile, imageFiles, category, feeling, locationName, pollQuestion, pollOptionsJson, audience, false);
+    }
+
+    @Override
+    @Transactional
+    public Post createPost(Long userId, String content, MultipartFile imageFile, List<MultipartFile> imageFiles, String category,
+                           String feeling, String locationName, String pollQuestion, String pollOptionsJson, String audience,
+                           Boolean allowMultipleVotes) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
@@ -107,6 +115,7 @@ public class PostServiceImpl implements PostService {
                 .locationName(normalizeNullable(locationName))
                 .pollQuestion(hasValidPoll ? normalizedPollQuestion : null)
                 .pollOptionsJson(hasValidPoll ? serializePollOptions(pollOptions) : null)
+                .allowMultipleVotes(hasValidPoll && Boolean.TRUE.equals(allowMultipleVotes))
                 .xpAwarded(PostXpPolicy.xpForCategory(normalizedCategory))
                 .createdAt(LocalDateTime.now())
                 .reelViewCount(0L)
@@ -121,27 +130,35 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public Post updatePost(Long userId, Long postId, String content, MultipartFile imageFile, boolean removeMedia) {
-        return updatePost(userId, postId, content, imageFile, List.of(), removeMedia, null, null, null, null, null);
+        return updatePost(userId, postId, content, imageFile, List.of(), removeMedia, null, null, null, null, null, null);
     }
 
     @Override
     @Transactional
     public Post updatePost(Long userId, Long postId, String content, MultipartFile imageFile, boolean removeMedia,
                            String feeling, String locationName, String pollQuestion, String pollOptionsJson) {
-        return updatePost(userId, postId, content, imageFile, List.of(), removeMedia, feeling, locationName, pollQuestion, pollOptionsJson, null);
+        return updatePost(userId, postId, content, imageFile, List.of(), removeMedia, feeling, locationName, pollQuestion, pollOptionsJson, null, null);
     }
 
     @Override
     @Transactional
     public Post updatePost(Long userId, Long postId, String content, MultipartFile imageFile, List<MultipartFile> imageFiles, boolean removeMedia,
                            String feeling, String locationName, String pollQuestion, String pollOptionsJson) {
-        return updatePost(userId, postId, content, imageFile, imageFiles, removeMedia, feeling, locationName, pollQuestion, pollOptionsJson, null);
+        return updatePost(userId, postId, content, imageFile, imageFiles, removeMedia, feeling, locationName, pollQuestion, pollOptionsJson, null, null);
     }
 
     @Override
     @Transactional
     public Post updatePost(Long userId, Long postId, String content, MultipartFile imageFile, List<MultipartFile> imageFiles, boolean removeMedia,
                            String feeling, String locationName, String pollQuestion, String pollOptionsJson, String audience) {
+        return updatePost(userId, postId, content, imageFile, imageFiles, removeMedia, feeling, locationName, pollQuestion, pollOptionsJson, audience, null);
+    }
+
+    @Override
+    @Transactional
+    public Post updatePost(Long userId, Long postId, String content, MultipartFile imageFile, List<MultipartFile> imageFiles, boolean removeMedia,
+                           String feeling, String locationName, String pollQuestion, String pollOptionsJson, String audience,
+                           Boolean allowMultipleVotes) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
 
@@ -176,7 +193,7 @@ public class PostServiceImpl implements PostService {
         if (audience != null) {
             post.setAudience(normalizeAudience(audience));
         }
-        applyPollUpdate(post, pollQuestion, pollOptionsJson);
+        applyPollUpdate(post, pollQuestion, pollOptionsJson, allowMultipleVotes);
         post.setEditedAt(LocalDateTime.now());
         Post savedPost = postRepository.save(post);
         mentionNotificationService.notifyMentions(post.getUser(), savedPost.getContent(), savedPost.getPostId(), null, null, "POST");
@@ -280,13 +297,31 @@ public class PostServiceImpl implements PostService {
             throw new IllegalArgumentException("Invalid poll option");
         }
 
-        PostPollVote vote = postPollVoteRepository.findByPostPostIdAndUserUserId(postId, userId)
-                .orElseGet(() -> PostPollVote.builder()
+        if (Boolean.TRUE.equals(post.getAllowMultipleVotes())) {
+            postPollVoteRepository.findByPostPostIdAndUserUserIdAndOptionIndex(postId, userId, optionIndex)
+                    .ifPresentOrElse(
+                            postPollVoteRepository::delete,
+                            () -> postPollVoteRepository.save(PostPollVote.builder()
+                                    .post(post)
+                                    .user(user)
+                                    .optionIndex(optionIndex)
+                                    .build())
+                    );
+            return post;
+        }
+
+        List<PostPollVote> existingVotes = postPollVoteRepository.findByPostPostIdAndUserUserId(postId, userId);
+        PostPollVote vote = existingVotes.isEmpty()
+                ? PostPollVote.builder()
                         .post(post)
                         .user(user)
-                        .build());
+                        .build()
+                : existingVotes.get(0);
         vote.setOptionIndex(optionIndex);
         postPollVoteRepository.save(vote);
+        if (existingVotes.size() > 1) {
+            postPollVoteRepository.deleteAll(existingVotes.subList(1, existingVotes.size()));
+        }
         return post;
     }
 
@@ -317,12 +352,22 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public Integer getViewerPollOptionIndex(Post post, Long userId) {
-        if (post == null || post.getPostId() == null || userId == null) {
-            return null;
-        }
-        return postPollVoteRepository.findByPostPostIdAndUserUserId(post.getPostId(), userId)
-                .map(PostPollVote::getOptionIndex)
+        return getViewerPollOptionIndexes(post, userId).stream()
+                .findFirst()
                 .orElse(null);
+    }
+
+    @Override
+    public List<Integer> getViewerPollOptionIndexes(Post post, Long userId) {
+        if (post == null || post.getPostId() == null || userId == null) {
+            return List.of();
+        }
+        return postPollVoteRepository.findByPostPostIdAndUserUserId(post.getPostId(), userId).stream()
+                .map(PostPollVote::getOptionIndex)
+                .filter(index -> index != null && index >= 0)
+                .distinct()
+                .sorted()
+                .toList();
     }
 
     @Override
@@ -539,8 +584,16 @@ public class PostServiceImpl implements PostService {
         return "PUBLIC";
     }
 
-    private void applyPollUpdate(Post post, String pollQuestion, String pollOptionsJson) {
+    private void applyPollUpdate(Post post, String pollQuestion, String pollOptionsJson, Boolean allowMultipleVotes) {
+        if (pollQuestion == null && pollOptionsJson == null && allowMultipleVotes == null) {
+            return;
+        }
         if (pollQuestion == null && pollOptionsJson == null) {
+            boolean hasActivePoll = normalizeNullable(post.getPollQuestion()) != null && getPollOptions(post).size() >= 2;
+            post.setAllowMultipleVotes(hasActivePoll && Boolean.TRUE.equals(allowMultipleVotes));
+            if (!Boolean.TRUE.equals(allowMultipleVotes) && post.getPostId() != null) {
+                keepOnlyOneVotePerUser(post.getPostId());
+            }
             return;
         }
 
@@ -549,6 +602,7 @@ public class PostServiceImpl implements PostService {
         if (normalizedQuestion == null || options.size() < 2) {
             post.setPollQuestion(null);
             post.setPollOptionsJson(null);
+            post.setAllowMultipleVotes(false);
             if (post.getPostId() != null) {
                 postPollVoteRepository.deleteByPostPostId(post.getPostId());
             }
@@ -557,6 +611,7 @@ public class PostServiceImpl implements PostService {
 
         post.setPollQuestion(normalizedQuestion);
         post.setPollOptionsJson(serializePollOptions(options));
+        post.setAllowMultipleVotes(Boolean.TRUE.equals(allowMultipleVotes));
         if (post.getPostId() != null) {
             List<PostPollVote> existingVotes = postPollVoteRepository.findByPostPostId(post.getPostId());
             boolean invalidVoteExists = existingVotes.stream()
@@ -565,6 +620,27 @@ public class PostServiceImpl implements PostService {
             if (invalidVoteExists) {
                 postPollVoteRepository.deleteByPostPostId(post.getPostId());
             }
+            if (!Boolean.TRUE.equals(allowMultipleVotes)) {
+                keepOnlyOneVotePerUser(post.getPostId());
+            }
+        }
+    }
+
+    private void keepOnlyOneVotePerUser(Long postId) {
+        Map<Long, PostPollVote> firstVoteByUser = new HashMap<>();
+        List<PostPollVote> duplicateVotes = new ArrayList<>();
+        for (PostPollVote vote : postPollVoteRepository.findByPostPostIdOrderByCreatedAtDesc(postId)) {
+            Long voterId = vote.getUser() == null ? null : vote.getUser().getUserId();
+            if (voterId == null) {
+                duplicateVotes.add(vote);
+            } else if (firstVoteByUser.containsKey(voterId)) {
+                duplicateVotes.add(vote);
+            } else {
+                firstVoteByUser.put(voterId, vote);
+            }
+        }
+        if (!duplicateVotes.isEmpty()) {
+            postPollVoteRepository.deleteAll(duplicateVotes);
         }
     }
 

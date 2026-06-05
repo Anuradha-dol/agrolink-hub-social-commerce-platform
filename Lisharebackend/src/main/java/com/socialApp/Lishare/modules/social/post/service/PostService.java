@@ -19,6 +19,10 @@ public interface PostService {
     Post createPost(Long userId, String content, MultipartFile imageFile, List<MultipartFile> imageFiles, String category,
                     String feeling, String locationName, String pollQuestion, String pollOptionsJson, String audience);
 
+    Post createPost(Long userId, String content, MultipartFile imageFile, List<MultipartFile> imageFiles, String category,
+                    String feeling, String locationName, String pollQuestion, String pollOptionsJson, String audience,
+                    Boolean allowMultipleVotes);
+
     Post updatePost(Long userId, Long postId, String content, MultipartFile imageFile, boolean removeMedia);
 
     Post updatePost(Long userId, Long postId, String content, MultipartFile imageFile, boolean removeMedia,
@@ -29,6 +33,10 @@ public interface PostService {
 
     Post updatePost(Long userId, Long postId, String content, MultipartFile imageFile, List<MultipartFile> imageFiles, boolean removeMedia,
                     String feeling, String locationName, String pollQuestion, String pollOptionsJson, String audience);
+
+    Post updatePost(Long userId, Long postId, String content, MultipartFile imageFile, List<MultipartFile> imageFiles, boolean removeMedia,
+                    String feeling, String locationName, String pollQuestion, String pollOptionsJson, String audience,
+                    Boolean allowMultipleVotes);
 
     void deletePost(Long postId);
 
@@ -47,6 +55,8 @@ public interface PostService {
     List<Long> getPollVotes(Post post);
 
     Integer getViewerPollOptionIndex(Post post, Long userId);
+
+    List<Integer> getViewerPollOptionIndexes(Post post, Long userId);
 
     List<PollVoterResponse> getPollVoters(Post post);
 

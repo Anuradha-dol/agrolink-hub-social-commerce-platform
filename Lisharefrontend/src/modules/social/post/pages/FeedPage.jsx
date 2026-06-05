@@ -32,6 +32,11 @@ const STORY_REACTIONS = [
   { key: "fire", label: "Fire", emoji: "\u{1F525}" },
   { key: "wow", label: "Wow", emoji: "\u{1F62E}" }
 ];
+const STORY_PRIVACY_OPTIONS = [
+  { value: "public", label: "Public", hint: "Everyone can view", icon: "globe" },
+  { value: "friends", label: "Friends", hint: "Friends only", icon: "users" },
+  { value: "private", label: "Only me", hint: "Private story", icon: "lock" }
+];
 const POST_REPORT_REASONS = [
   { value: "CATEGORY_FAKE", label: "Fake or wrong category" },
   { value: "UNRELATED_CATEGORY", label: "Post does not match selected category" },
@@ -143,6 +148,28 @@ function FeedIcon({ name, className = "" }) {
         <circle cx="12" cy="12" r="2.5" />
       </>
     ),
+    globe: (
+      <>
+        <circle cx="12" cy="12" r="8.5" />
+        <path d="M3.5 12h17" />
+        <path d="M12 3.5c2 2.1 3 4.9 3 8.5s-1 6.4-3 8.5c-2-2.1-3-4.9-3-8.5s1-6.4 3-8.5z" />
+      </>
+    ),
+    users: (
+      <>
+        <path d="M8.8 12.5a3.6 3.6 0 1 0 0-7.2 3.6 3.6 0 0 0 0 7.2z" />
+        <path d="M2.8 20c.8-3.4 3-5.1 6-5.1s5.2 1.7 6 5.1" />
+        <path d="M16.7 12.4a3.1 3.1 0 0 0-.2-6" />
+        <path d="M15.7 15c2.5.4 4.3 2.1 5 5" />
+      </>
+    ),
+    lock: (
+      <>
+        <rect x="5" y="10" width="14" height="10" rx="2.3" />
+        <path d="M8.4 10V7.5a4.6 4.6 0 0 1 9.2 0V10" />
+        <path d="M12 14.2v2.3" />
+      </>
+    ),
     clock: (
       <>
         <circle cx="12" cy="12" r="8.5" />
@@ -186,6 +213,84 @@ function FeedIcon({ name, className = "" }) {
     <svg className={iconClassName} viewBox="0 0 24 24" aria-hidden="true">
       {icons[name] || icons.bolt}
     </svg>
+  );
+}
+
+function StoryPrivacySelect({ value, open, onToggle, onClose, onChange }) {
+  const dropdownRef = useRef(null);
+  const selected = STORY_PRIVACY_OPTIONS.find((option) => option.value === value) || STORY_PRIVACY_OPTIONS[0];
+
+  useEffect(() => {
+    if (!open) return undefined;
+
+    const closeFromOutside = (event) => {
+      if (!dropdownRef.current?.contains(event.target)) {
+        onClose();
+      }
+    };
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+
+    document.addEventListener("mousedown", closeFromOutside);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("mousedown", closeFromOutside);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [open, onClose]);
+
+  return (
+    <div className={`story-privacy-select ${open ? "is-open" : ""}`.trim()} ref={dropdownRef}>
+      <button
+        type="button"
+        className="story-privacy-trigger"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label={`Privacy: ${selected.label}`}
+        onClick={onToggle}
+      >
+        <span className="story-privacy-icon" aria-hidden="true">
+          <FeedIcon name={selected.icon} />
+        </span>
+        <span className="story-privacy-copy">
+          <strong>{selected.label}</strong>
+          <small>{selected.hint}</small>
+        </span>
+        <FeedIcon name="chevronDown" className="story-privacy-chevron" />
+      </button>
+
+      {open ? (
+        <div className="story-privacy-menu" role="listbox" aria-label="Story privacy">
+          {STORY_PRIVACY_OPTIONS.map((option) => {
+            const optionActive = option.value === value;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                className={`story-privacy-option ${optionActive ? "active" : ""}`.trim()}
+                role="option"
+                aria-selected={optionActive}
+                onClick={() => {
+                  onChange(option.value);
+                  onClose();
+                }}
+              >
+                <span className="story-privacy-option-icon" aria-hidden="true">
+                  <FeedIcon name={option.icon} />
+                </span>
+                <span className="story-privacy-option-copy">
+                  <strong>{option.label}</strong>
+                  <small>{option.hint}</small>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
+    </div>
   );
 }
 
@@ -570,6 +675,7 @@ export default function FeedPage() {
   const [storyFile, setStoryFile] = useState(null);
   const [storyCaption, setStoryCaption] = useState("");
   const [storyPrivacy, setStoryPrivacy] = useState("public");
+  const [storyPrivacyOpen, setStoryPrivacyOpen] = useState(false);
   const [storySourcePostId, setStorySourcePostId] = useState("");
   const [storyHours, setStoryHours] = useState("24");
   const [alsoAddStoryToFeed, setAlsoAddStoryToFeed] = useState(false);
@@ -1309,6 +1415,7 @@ export default function FeedPage() {
     setStoryFile(null);
     setStoryCaption("");
     setStoryPrivacy("public");
+    setStoryPrivacyOpen(false);
     setStorySourcePostId("");
     setStoryHours("24");
     setAlsoAddStoryToFeed(false);
@@ -2187,17 +2294,19 @@ export default function FeedPage() {
                 ))}
               </div>
 
-              <label className="story-create-privacy">
+              <div className="story-create-privacy">
                 <span>
                   <strong>Privacy</strong>
                   <small>Choose who can view this story.</small>
                 </span>
-                <select value={storyPrivacy} onChange={(event) => setStoryPrivacy(event.target.value)}>
-                  <option value="public">Public</option>
-                  <option value="friends">Friends</option>
-                  <option value="private">Only me</option>
-                </select>
-              </label>
+                <StoryPrivacySelect
+                  value={storyPrivacy}
+                  open={storyPrivacyOpen}
+                  onToggle={() => setStoryPrivacyOpen((previous) => !previous)}
+                  onClose={() => setStoryPrivacyOpen(false)}
+                  onChange={setStoryPrivacy}
+                />
+              </div>
 
               <div className="story-create-body">
                 <div className="story-create-fields">
