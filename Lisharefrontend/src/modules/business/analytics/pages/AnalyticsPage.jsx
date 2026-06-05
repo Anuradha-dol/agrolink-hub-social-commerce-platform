@@ -2,12 +2,14 @@ import { useEffect, useMemo, useState } from "react";
 import { adminService } from "/src/modules/business/admin/services/adminService";
 import { marketplaceService } from "/src/modules/business/product/services/marketplaceService";
 import { orderService } from "/src/modules/business/order/services/orderService";
+import { businessService } from "/src/modules/business/page/services/businessService";
 import { feedService } from "/src/modules/social/post/services/feedService";
 import { calendarService } from "/src/modules/platform/calendar/services/calendarService";
 import { getSavedProducts } from "/src/modules/business/product/utils/productStorage";
 import { useAuth } from "/src/modules/platform/app/store";
 import LoadingState from "/src/modules/platform/common/components/LoadingState";
 import { useToast } from "/src/modules/platform/common/hooks/useToast";
+import { toMediaUrl } from "/src/modules/platform/common/utils/mediaUrl";
 import { Button, Card, EmptyPanel, Icon, LineChart, PageGrid, SectionHeader, StatusBadge } from "/src/modules/platform/common/ui/DashboardUI";
 
 const SERIES_DAYS = 12;
@@ -15,6 +17,25 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 
 function unwrap(response) {
   return response?.data?.data?.content || response?.data?.data || response?.data?.content || response?.data || [];
+}
+
+function safeProductImageUrl(path) {
+  const value = String(path || "").trim();
+  if (!value) return "";
+  if (/^(data:image\/|blob:)/i.test(value)) return value;
+  if (/^https?:\/\//i.test(value) || value.startsWith("/") || value.startsWith("uploads/")) {
+    return toMediaUrl(value);
+  }
+  return "";
+}
+
+function normalizeProduct(product) {
+  const rawImageUrl = product.imageUrl || product.productImageUrl || "";
+  return {
+    ...product,
+    rawImageUrl,
+    imageUrl: safeProductImageUrl(rawImageUrl)
+  };
 }
 
 function formatMoney(value) {
@@ -102,33 +123,65 @@ function usagePercent(value, total) {
   return total ? Number(((value / total) * 100).toFixed(1)) : 0;
 }
 
+async function loadSellerCommerce() {
+  const pagesResponse = await businessService.listMyPages({ page: 0, size: 100 });
+  const pages = unwrap(pagesResponse);
+  const [productResults, ordersResponse] = await Promise.all([
+    Promise.allSettled(pages.map((page) => marketplaceService.listProductsByBusiness(page.id, { page: 0, size: 100 }))),
+    orderService.businessOrders({ page: 0, size: 100 })
+  ]);
+
+  return {
+    pages,
+    products: productResults.flatMap((result) => result.status === "fulfilled" ? unwrap(result.value).map(normalizeProduct) : []),
+    orders: unwrap(ordersResponse)
+  };
+}
+
+async function loadCustomerCommerce() {
+  const [productsResponse, ordersResponse] = await Promise.all([
+    marketplaceService.listProducts({ page: 0, size: 100 }),
+    orderService.myOrders({ page: 0, size: 100 })
+  ]);
+
+  return {
+    pages: [],
+    products: unwrap(productsResponse).map(normalizeProduct),
+    orders: unwrap(ordersResponse)
+  };
+}
+
 export default function AnalyticsPage() {
   const { pushToast } = useToast();
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const [loading, setLoading] = useState(true);
   const [adminStats, setAdminStats] = useState({});
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
+  const [businessPages, setBusinessPages] = useState([]);
   const [feed, setFeed] = useState([]);
   const [events, setEvents] = useState([]);
   const [saved, setSaved] = useState([]);
-  const roles = [user?.role, user?.roles, user?.authority, user?.authorities].flat().filter(Boolean).map(String);
+  const roles = [role, user?.role, user?.roles, user?.authority, user?.authorities].flat().filter(Boolean).map(String);
   const isAdmin = roles.some((role) => role === "ADMIN" || role === "ROLE_ADMIN");
+  const isBusiness = roles.some((role) => role === "BUSINESS" || role === "ROLE_BUSINESS" || role === "FARMER" || role === "ROLE_FARMER");
 
   useEffect(() => {
     const load = async () => {
       setLoading(true);
       try {
-        const [statsRes, productsRes, ordersRes, feedRes, eventsRes] = await Promise.allSettled([
+        const [statsRes, commerceRes, feedRes, eventsRes] = await Promise.allSettled([
           isAdmin ? adminService.getStats() : Promise.resolve({ data: { data: {} } }),
-          marketplaceService.listProducts({ page: 0, size: 100 }),
-          orderService.myOrders({ page: 0, size: 100 }),
+          isBusiness ? loadSellerCommerce() : loadCustomerCommerce(),
           feedService.getFeed(),
           calendarService.listMyEvents({ page: 0, size: 100 })
         ]);
         if (statsRes.status === "fulfilled") setAdminStats(statsRes.value?.data?.data || statsRes.value?.data || {});
-        if (productsRes.status === "fulfilled") setProducts(unwrap(productsRes.value));
-        if (ordersRes.status === "fulfilled") setOrders(unwrap(ordersRes.value));
+        if (commerceRes.status === "fulfilled") {
+          setProducts(commerceRes.value.products);
+          setOrders(commerceRes.value.orders);
+          setBusinessPages(commerceRes.value.pages);
+        }
         if (feedRes.status === "fulfilled") setFeed(Array.isArray(feedRes.value?.data) ? feedRes.value.data : unwrap(feedRes.value));
         if (eventsRes.status === "fulfilled") setEvents(unwrap(eventsRes.value));
         setSaved(getSavedProducts());
@@ -139,7 +192,7 @@ export default function AnalyticsPage() {
       }
     };
     load();
-  }, [isAdmin, pushToast]);
+  }, [isAdmin, isBusiness, pushToast]);
 
   const activeUsers = useMemo(() => {
     const map = new Map();
@@ -157,13 +210,14 @@ export default function AnalyticsPage() {
       users: adminStats.totalUsers ?? adminStats.users ?? 0,
       activeUsers: adminStats.activeUsers ?? activeUsers.length,
       posts: adminStats.totalPosts ?? feed.length,
-      orders: adminStats.productOrders ?? orders.length,
+      orders: adminStats.totalOrders ?? adminStats.productOrders ?? orders.length,
       revenue,
       engagement,
       saved: saved.length,
-      calendar: events.length
+      calendar: events.length,
+      businessPages: adminStats.totalBusinessPages ?? businessPages.length
     };
-  }, [activeUsers.length, adminStats, events.length, feed, orders, saved.length]);
+  }, [activeUsers.length, adminStats, businessPages.length, events.length, feed, orders, saved.length]);
 
   const productRows = useMemo(() => products.map((product) => {
     const relatedOrders = orders.filter((order) => matchesProduct(order, product));
@@ -186,15 +240,27 @@ export default function AnalyticsPage() {
   const likeCount = feed.reduce((sum, item) => sum + numberValue(item.likeCount || item.reactionCount), 0);
   const commentCount = feed.reduce((sum, item) => sum + numberValue(item.commentCount), 0);
   const shareCount = feed.reduce((sum, item) => sum + numberValue(item.shareCount), 0);
-  const saveCount = metrics.saved;
+  const saveCount = isBusiness ? 0 : metrics.saved;
   const engagementTotal = Math.max(1, likeCount + commentCount + shareCount + saveCount);
   const conversionRate = products.length ? (orders.length / products.length) * 100 : 0;
   const topCategory = productRows[0]?.category || products[0]?.category || products[0]?.productCategory || "Products";
   const mostSavedProduct = saved[0]?.name || saved[0]?.title || "No saved product";
-  const platformActivity = metrics.posts + metrics.orders + metrics.calendar + metrics.saved;
-  const usageTotal = Math.max(1, feed.length + products.length + orders.length + events.length + saved.length);
+  const platformActivity = metrics.posts + metrics.orders + metrics.calendar + (isBusiness ? products.length + businessPages.length : metrics.saved);
+  const stockUnits = products.reduce((sum, product) => sum + numberValue(product.stock), 0);
+  const lowStock = products.filter((product) => numberValue(product.stock) > 0 && numberValue(product.stock) <= 5).length;
+  const inventoryValue = products.reduce((sum, product) => sum + numberValue(product.price) * numberValue(product.stock), 0);
+  const usageTotal = Math.max(1, feed.length + products.length + orders.length + events.length + (isBusiness ? 0 : saved.length) + businessPages.length);
 
-  const metricCards = [
+  const metricCards = isBusiness ? [
+    { icon: "business", label: "Business Pages", value: formatNumber(businessPages.length), trend: "Owned seller pages", tone: "green" },
+    { icon: "bag", label: "Seller Products", value: formatNumber(products.length), trend: "Products from your pages", tone: "blue" },
+    { icon: "order", label: "Orders Received", value: formatNumber(orders.length), trend: "Business order records", tone: "purple" },
+    { icon: "analytics", label: "Seller Revenue", value: formatMoney(metrics.revenue), trend: `${orders.length} received orders loaded`, tone: "blue" },
+    { icon: "marketplace", label: "Inventory Value", value: formatMoney(inventoryValue), trend: `${stockUnits} stock units`, tone: "green" },
+    { icon: "bell", label: "Low Stock", value: formatNumber(lowStock), trend: "Products at 1-5 units", tone: "orange", negative: lowStock > 0 },
+    { icon: "heart", label: "Feed Engagement", value: formatNumber(metrics.engagement), trend: `${feed.length} feed records loaded`, tone: "pink" },
+    { icon: "calendar", label: "Calendar Usage", value: formatNumber(metrics.calendar), trend: metrics.calendar ? `${metrics.calendar} events loaded` : "No events yet", tone: "purple", negative: !metrics.calendar }
+  ] : [
     { icon: "users", label: "Total Users", value: formatNumber(metrics.users), trend: isAdmin ? "From admin stats" : "Admin-only count", tone: "blue" },
     { icon: "order", label: "Product Orders", value: formatNumber(metrics.orders), trend: `${orders.length} loaded order records`, tone: "purple" },
     { icon: "analytics", label: "Revenue", value: formatMoney(metrics.revenue), trend: `${orders.length} real orders loaded`, tone: "blue" },
@@ -213,11 +279,12 @@ export default function AnalyticsPage() {
   ];
 
   const usageRows = [
+    ...(isBusiness ? [{ label: "Business Pages", value: usagePercent(businessPages.length, usageTotal), tone: "green" }] : []),
     { label: "Social Feed", value: usagePercent(feed.length, usageTotal), tone: "purple" },
     { label: "Marketplace", value: usagePercent(products.length, usageTotal), tone: "blue" },
     { label: "Orders", value: usagePercent(orders.length, usageTotal), tone: "pink" },
     { label: "Calendar", value: usagePercent(events.length, usageTotal), tone: "orange" },
-    { label: "Bookmarks", value: usagePercent(saved.length, usageTotal), tone: "green" }
+    ...(!isBusiness ? [{ label: "Bookmarks", value: usagePercent(saved.length, usageTotal), tone: "green" }] : [])
   ];
 
   const feedSeries = dailySeries(feed, () => 1);
@@ -228,16 +295,16 @@ export default function AnalyticsPage() {
   if (loading) return <LoadingState text="Loading analytics..." />;
 
   return (
-    <PageGrid className="analytics-dashboard analytics-reference-page">
+    <PageGrid className="analytics-dashboard analytics-reference-page social-pro-page workspace-pro-page">
       <div className="analytics-reference-layout">
         <main className="analytics-reference-main">
           <div className="analytics-overview-grid">
             <Card className="analytics-hero-card">
               <span className="analytics-hero-icon"><Icon name="analytics" /></span>
               <div>
-                <p className="eyebrow">Platform Intelligence</p>
-                <h2>Analytics across social, marketplace, calendar, bookmarks and XP growth.</h2>
-                <p>Every visible number on this page is now calculated from loaded backend records or saved product records.</p>
+                <p className="eyebrow">{isBusiness ? "Seller Intelligence" : "Platform Intelligence"}</p>
+                <h2>{isBusiness ? "Real analytics for your business pages, products, orders and revenue." : "Analytics across social, marketplace, calendar, bookmarks and XP growth."}</h2>
+                <p>{isBusiness ? "Seller numbers are calculated from your owned business pages, product listings, and received backend orders." : "Every visible number on this page is now calculated from loaded backend records or saved product records."}</p>
                 <StatusBadge status="Real data" tone="green" />
               </div>
             </Card>
@@ -248,9 +315,9 @@ export default function AnalyticsPage() {
           </div>
 
           <div className="analytics-chart-row">
-            <ReferenceChartCard title="Feed Activity By Date" values={feedSeries} legends={["Feed records"]} />
-            <ReferenceChartCard title="Orders By Date" values={orderSeries} tone="blue" legends={["Orders"]} />
-            <ReferenceChartCard title="Revenue By Date" values={revenueSeries} tone="green" legends={["Revenue (USD)"]} />
+            <ReferenceChartCard title={isBusiness ? "Seller Products By Date" : "Feed Activity By Date"} values={isBusiness ? dailySeries(products, () => 1) : feedSeries} legends={[isBusiness ? "Products added" : "Feed records"]} />
+            <ReferenceChartCard title={isBusiness ? "Received Orders By Date" : "Orders By Date"} values={orderSeries} tone="blue" legends={[isBusiness ? "Received orders" : "Orders"]} />
+            <ReferenceChartCard title={isBusiness ? "Seller Revenue By Date" : "Revenue By Date"} values={revenueSeries} tone="green" legends={["Revenue (USD)"]} />
           </div>
 
           <div className="analytics-detail-row">
@@ -320,7 +387,11 @@ export default function AnalyticsPage() {
           <Card className="analytics-insights-card">
             <SectionHeader title="Insights" action={<Icon name="analytics" />} />
             <InsightCard icon="bag" title="Top Category" value={topCategory} subtitle={`${formatNumber(productRows[0]?.orders || 0)} orders`} tone="blue" />
-            <InsightCard icon="bookmark" title="Most Saved Product" value={mostSavedProduct} subtitle={`${formatNumber(metrics.saved)} saves`} tone="pink" />
+            {isBusiness ? (
+              <InsightCard icon="business" title="Seller Pages" value={formatNumber(businessPages.length)} subtitle="owned business profiles" tone="pink" />
+            ) : (
+              <InsightCard icon="bookmark" title="Most Saved Product" value={mostSavedProduct} subtitle={`${formatNumber(metrics.saved)} saves`} tone="pink" />
+            )}
             <InsightCard icon="analytics" title="Conversion Rate" value={percent(conversionRate)} subtitle="orders vs product listings" tone="green" />
             <InsightCard icon="bell" title="Reminder Activity" value={formatNumber(metrics.calendar)} subtitle="calendar events" tone="orange" />
             <InsightCard icon="spark" title="Platform Activity" value={formatNumber(platformActivity)} subtitle="loaded live records" tone="purple" />

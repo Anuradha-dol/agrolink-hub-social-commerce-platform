@@ -8,6 +8,7 @@ public interface BusinessPageService {
     BusinessPageResponse createPage(Long ownerId, BusinessPageRequest request);
     BusinessPageResponse updatePage(Long ownerId, Long pageId, BusinessPageRequest request);
     void deactivatePage(Long ownerId, Long pageId);
-    Page<BusinessPageResponse> getPublicPages(int page, int size);
+    Page<BusinessPageResponse> getPublicPages(int page, int size, String query);
+    BusinessPageResponse getPublicPage(Long pageId);
     Page<BusinessPageResponse> getOwnerPages(Long ownerId, int page, int size);
 }

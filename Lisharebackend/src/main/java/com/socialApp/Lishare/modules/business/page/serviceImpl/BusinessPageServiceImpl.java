@@ -65,8 +65,22 @@ public class BusinessPageServiceImpl implements BusinessPageService {
     }
 
     @Override
-    public Page<BusinessPageResponse> getPublicPages(int page, int size) {
-        return repository.findByActiveTrue(PageRequest.of(page, size)).map(mapper::toResponse);
+    public Page<BusinessPageResponse> getPublicPages(int page, int size, String query) {
+        PageRequest pageable = PageRequest.of(page, size);
+        if (query != null && !query.isBlank()) {
+            return repository.searchPublicPages(query.trim(), pageable).map(mapper::toResponse);
+        }
+        return repository.findByActiveTrue(pageable).map(mapper::toResponse);
+    }
+
+    @Override
+    public BusinessPageResponse getPublicPage(Long pageId) {
+        BusinessPage page = repository.findById(pageId)
+                .orElseThrow(() -> new RuntimeException("Business page not found"));
+        if (!page.isActive()) {
+            throw new RuntimeException("Business page is not active");
+        }
+        return mapper.toResponse(page);
     }
 
     @Override

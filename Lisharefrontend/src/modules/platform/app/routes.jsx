@@ -15,7 +15,7 @@ import NotificationsPage from "/src/modules/social/notification/pages/Notificati
 import ChatPage from "/src/modules/social/chat/pages/ChatPage";
 import MarketplacePage from "/src/modules/business/product/pages/MarketplacePage";
 import OrdersPage from "/src/modules/business/order/pages/OrdersPage";
-import BookmarksPage from "/src/modules/business/product/pages/BookmarksPage";
+import CartPage from "/src/modules/business/product/pages/BookmarksPage";
 import AnalyticsPage from "/src/modules/business/analytics/pages/AnalyticsPage";
 import CalendarPage from "/src/modules/platform/calendar/pages/CalendarPage";
 import BusinessPage from "/src/modules/business/page/pages/BusinessPage";
@@ -51,7 +51,8 @@ export default function AppRoutes() {
           <Route path="/chat" element={<ChatPage />} />
           <Route path="/marketplace" element={<MarketplacePage />} />
           <Route path="/orders" element={<OrdersPage />} />
-          <Route path="/bookmarks" element={<BookmarksPage />} />
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/bookmarks" element={<Navigate to="/cart" replace />} />
           <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="/calendar" element={<CalendarPage />} />
 

@@ -6,7 +6,6 @@ import com.socialApp.Lishare.modules.business.admin.dto.AdminDashboardStatsRespo
 import com.socialApp.Lishare.modules.business.admin.dto.AdminUserResponse;
 import com.socialApp.Lishare.modules.business.admin.dto.DeleteUserRequest;
 import com.socialApp.Lishare.modules.business.admin.dto.UpdateUserModerationRequest;
-import com.socialApp.Lishare.modules.business.admin.dto.UpdateUserRoleRequest;
 import com.socialApp.Lishare.modules.business.admin.mapper.AdminUserMapper;
 import com.socialApp.Lishare.modules.business.admin.service.AdminUserService;
 import com.socialApp.Lishare.modules.business.page.repository.BusinessPageRepository;
@@ -50,23 +49,6 @@ public class AdminUserServiceImpl implements AdminUserService {
             );
         }
         return users.map(mapper::toResponse);
-    }
-
-    @Override
-    @Transactional
-    public AdminUserResponse updateUserRole(Long userId, UpdateUserRoleRequest request) {
-        User user = userRepo.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        if (user.getRole() == Role.ROLE_ADMIN && request.role() != Role.ROLE_ADMIN) {
-            long admins = userRepo.countByRole(Role.ROLE_ADMIN);
-            if (admins <= 1) {
-                throw new RuntimeException("At least one admin account must remain");
-            }
-        }
-
-        user.setRole(request.role());
-        return mapper.toResponse(userRepo.save(user));
     }
 
     @Override

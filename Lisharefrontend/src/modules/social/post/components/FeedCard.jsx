@@ -42,6 +42,7 @@ const POST_CATEGORIES = [
 ];
 const VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov", ".m4v", ".ogg", ".avi"];
 
+
 function isVideoAsset(url = "") {
   const normalized = String(url).toLowerCase().split("?")[0];
   return VIDEO_EXTENSIONS.some((ext) => normalized.endsWith(ext));
@@ -49,6 +50,10 @@ function isVideoAsset(url = "") {
 
 function isGifAsset(url = "") {
   return String(url).toLowerCase().split("?")[0].endsWith(".gif");
+}
+
+function isPdfAsset(url = "") {
+  return String(url).toLowerCase().split("?")[0].endsWith(".pdf");
 }
 
 function parseListValue(value) {
@@ -101,6 +106,7 @@ function normalizeViewerPollOptions(value, fallbackValue = null) {
 }
 
 function mediaTypeFromUrl(url = "") {
+  if (isPdfAsset(url)) return "PDF";
   if (isGifAsset(url)) return "GIF";
   if (isVideoAsset(url)) return "VIDEO";
   return "IMAGE";
@@ -121,6 +127,7 @@ function mediaFileKind(file) {
   if (!file) return "Media";
   const type = String(file.type || "").toLowerCase();
   const name = String(file.name || "").toLowerCase();
+  if (type === "application/pdf" || name.endsWith(".pdf")) return "PDF";
   if (type === "image/gif" || name.endsWith(".gif")) return "GIF";
   if (type.startsWith("video")) return "Video";
   return "Photo";
@@ -227,6 +234,18 @@ function ImageIcon() {
 
 function GifIcon() {
   return <span className="feed-gif-icon" aria-hidden="true">GIF</span>;
+}
+
+function PdfIcon() {
+  return (
+    <svg className="feed-tool-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <path d="M14 2v6h6" />
+      <line x1="16" y1="13" x2="8" y2="13" />
+      <line x1="16" y1="17" x2="8" y2="17" />
+      <line x1="10" y1="9" x2="8" y2="9" />
+    </svg>
+  );
 }
 
 function ChevronDownIcon() {
@@ -854,6 +873,11 @@ function isCommentGif(comment) {
   return mediaType === "GIF" || isGifAsset(commentMediaUrl(comment));
 }
 
+function isCommentPdf(comment) {
+  const mediaType = String(comment?.mediaType || "").toUpperCase();
+  return mediaType === "PDF" || isPdfAsset(commentMediaUrl(comment));
+}
+
 function commentReactionCounts(comment) {
   return comment?.reactionCounts && typeof comment.reactionCounts === "object" ? comment.reactionCounts : {};
 }
@@ -969,7 +993,7 @@ export default function FeedCard({
   const [openReplyId, setOpenReplyId] = useState(null);
   const [replyDrafts, setReplyDrafts] = useState({});
   const [commentMediaFile, setCommentMediaFile] = useState(null);
-  const [commentMediaAccept, setCommentMediaAccept] = useState("image/*,video/*,.gif");
+  const [commentMediaAccept, setCommentMediaAccept] = useState("image/*,video/*,.gif,.pdf");
   const [replyMediaDrafts, setReplyMediaDrafts] = useState({});
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [editingCommentText, setEditingCommentText] = useState("");
@@ -1997,14 +2021,18 @@ export default function FeedCard({
     const src = toMediaUrl(media);
     const commentVideo = isCommentVideo(comment);
     const commentGif = isCommentGif(comment);
+    const commentPdf = isCommentPdf(comment);
     return (
-      <div className={`comment-media-card ${commentVideo ? "video" : "image"} ${commentGif ? "gif" : ""}`.trim()}>
+      <div className={`comment-media-card ${commentVideo ? "video" : commentPdf ? "pdf" : "image"} ${commentGif ? "gif" : ""}`.trim()}>
         {commentVideo ? (
           <video src={src} controls preload="metadata" />
+        ) : commentPdf ? (
+          <iframe src={src} className="feed-pdf" title="PDF attachment" style={{ width: '100%', height: '300px', border: 'none' }} />
         ) : (
           <img src={src} alt={commentGif ? "Animated GIF comment attachment" : "Comment attachment"} />
         )}
         {commentGif ? <span className="comment-gif-badge">GIF</span> : null}
+        {commentPdf ? <span className="comment-pdf-badge" style={{position: 'absolute', top: 8, right: 8, background: 'rgba(0,0,0,0.6)', color: 'white', padding: '2px 6px', borderRadius: '4px', fontSize: '12px'}}>PDF</span> : null}
       </div>
     );
   };
@@ -2075,7 +2103,7 @@ export default function FeedCard({
               if (node) replyMediaInputRefs.current[commentId] = node;
             }}
             type="file"
-            accept="image/*,video/*,.gif"
+            accept="image/*,video/*,.gif,.pdf"
             onChange={(event) => updateReplyMediaDraft(commentId, event.target.files?.[0] || null)}
           />
           <button
@@ -2841,10 +2869,10 @@ export default function FeedCard({
                 type="button"
                 className="feed-tool-button"
                 onClick={() => {
-                  setCommentMediaAccept("image/*,video/*,.gif");
+                  setCommentMediaAccept("image/*,video/*,.gif,.pdf");
                   window.setTimeout(() => commentMediaInputRef.current?.click(), 0);
                 }}
-                aria-label="Add photo or video"
+                aria-label="Add photo, video, or PDF"
                 disabled={!validTargetPost}
               >
                 <ImageIcon />

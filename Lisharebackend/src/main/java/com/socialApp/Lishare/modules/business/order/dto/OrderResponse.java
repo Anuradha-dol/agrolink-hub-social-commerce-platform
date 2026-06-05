@@ -13,9 +13,13 @@ public record OrderResponse(
         String sellerName,
         Long productId,
         String productName,
+        String productImageUrl,
+        Long businessPageId,
+        String businessName,
         Integer quantity,
         BigDecimal unitPrice,
         BigDecimal totalPrice,
+        String deliveryMethod,
         OrderStatus status,
         LocalDateTime createdAt,
         LocalDateTime updatedAt

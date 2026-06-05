@@ -4,13 +4,10 @@ import com.socialApp.Lishare.modules.business.admin.dto.AdminDashboardStatsRespo
 import com.socialApp.Lishare.modules.business.admin.dto.AdminUserResponse;
 import com.socialApp.Lishare.modules.business.admin.dto.DeleteUserRequest;
 import com.socialApp.Lishare.modules.business.admin.dto.UpdateUserModerationRequest;
-import com.socialApp.Lishare.modules.business.admin.dto.UpdateUserRoleRequest;
 import org.springframework.data.domain.Page;
 
 public interface AdminUserService {
     Page<AdminUserResponse> getUsers(int page, int size, String query);
-
-    AdminUserResponse updateUserRole(Long userId, UpdateUserRoleRequest request);
 
     AdminUserResponse updateUserModeration(Long userId, UpdateUserModerationRequest request);
 

@@ -1102,8 +1102,9 @@ textarea {
 
 .ui-avatar {
   position: relative;
-  display: inline-grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 50%;
   color: #fff;
   background: var(--dash-gradient);
@@ -25609,18 +25610,12 @@ button.comment-author-avatar {
 .shell.shell-home-theme .premium-feed-card,
 .shell.shell-home-theme .feed-card,
 .shell.shell-home-theme .card.feed-card,
-.shell.shell-home-theme .feed-thread-shell,
-.shell.shell-home-theme .comment-preview-list,
-.shell.shell-home-theme .comment-list,
-.shell.shell-home-theme .comments-modal-card,
 .shell.shell-home-theme .comment-thread-item.modal-comment-item,
 .shell.shell-home-theme .comment-bubble,
 .shell.shell-home-theme .comment-bubble.reply,
 .shell.shell-home-theme .comment-publisher-form,
 .shell.shell-home-theme .inline-form.feed-inline-form.comment-publisher-form,
-.shell.shell-home-theme .premium-comment-reply-form,
-.shell.shell-home-theme .reaction-users-card,
-.shell.shell-home-theme .reaction-users-modal-card {
+.shell.shell-home-theme .premium-comment-reply-form {
   opacity: 1 !important;
   background: #ffffff !important;
   background-color: #ffffff !important;
@@ -46260,8 +46255,43 @@ button.comment-author-avatar {
 
 .profile-post-viewer-modal .ui-modal-header,
 .profile-post-viewer-modal .ui-modal-footer {
-  border-color: rgba(219, 230, 246, 0.92) !important;
-  background: rgba(255, 255, 255, 0.84) !important;
+  border-color: transparent !important;
+  background: transparent !important;
+}
+
+.profile-post-viewer-modal .ui-modal-header {
+  padding: 24px 24px 12px 32px !important;
+}
+
+.profile-post-viewer-modal .ui-modal-header h2 {
+  font-size: 1.4rem !important;
+  font-weight: 950 !important;
+  color: #0b1529 !important;
+  letter-spacing: -0.02em !important;
+}
+
+.profile-post-viewer-modal .ui-modal-header p {
+  font-size: 0.9rem !important;
+  color: #52657f !important;
+  margin-top: 4px !important;
+}
+
+.profile-post-viewer-modal .ui-modal-header .ui-modal-close {
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 12px !important;
+  background: #ffffff !important;
+  border: 1px solid #e1e7f0 !important;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.04) !important;
+  transition: all 0.2s ease !important;
+}
+.profile-post-viewer-modal .ui-modal-header .ui-modal-close:hover {
+  background: #f1f5f9 !important;
+  transform: translateY(-1px) !important;
+}
+
+.profile-post-viewer-modal .ui-modal-footer {
+  padding: 12px 24px 24px !important;
 }
 
 .profile-post-viewer-modal .ui-modal-body {
@@ -46270,40 +46300,42 @@ button.comment-author-avatar {
 }
 
 .profile-post-viewer {
-  display: grid;
-  grid-template-columns: minmax(0, 1.12fr) minmax(360px, 0.88fr);
-  min-height: min(680px, calc(100vh - 190px));
+  display: flex;
+  height: min(680px, calc(100vh - 190px));
+  overflow: hidden;
 }
 
 .profile-post-viewer-media {
-  display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
+  flex: 1.12;
+  display: flex;
+  flex-direction: column;
   gap: 14px;
-  padding: 18px;
-  background:
-    radial-gradient(circle at 18% 16%, rgba(96, 165, 250, 0.24), transparent 30%),
-    linear-gradient(140deg, #06152f, #101827 54%, #0f172a);
+  padding: 16px;
+  margin: 16px 0 16px 16px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #100a26, #1c1440 50%, #291238);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.15), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
 
 .profile-post-viewer-stage {
   position: relative;
-  min-height: 510px;
-  display: grid;
-  place-items: center;
+  flex: 1;
+  min-height: 0; /* allows flex item to shrink below content size */
+  display: flex;
+  align-items: center;
+  justify-content: center;
   overflow: hidden;
-  border-radius: 24px;
-  background: rgba(2, 6, 23, 0.72);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1), 0 24px 60px rgba(0, 0, 0, 0.24);
+  border-radius: 18px;
+  background: #000000;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 .profile-post-viewer-stage img,
 .profile-post-viewer-stage video {
   width: 100%;
   height: 100%;
-  max-height: calc(100vh - 250px);
-  display: block;
   object-fit: contain;
-  background: #020617;
+  background: transparent;
 }
 
 .profile-post-viewer-stage.is-image img {
@@ -46318,12 +46350,12 @@ button.comment-author-avatar {
   align-items: center;
   gap: 7px;
   border-radius: 999px;
-  padding: 7px 11px;
-  color: #0f172a;
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 12px 30px rgba(2, 8, 23, 0.22);
-  font-size: 0.76rem;
-  font-weight: 950;
+  padding: 7px 16px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #6c22d6, #bd2c8d);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+  font-size: 0.8rem;
+  font-weight: 800;
 }
 
 .profile-post-viewer-placeholder {
@@ -46383,21 +46415,37 @@ button.comment-author-avatar {
 }
 
 .profile-post-viewer-panel {
-  display: grid;
-  grid-template-rows: auto auto auto auto minmax(0, 1fr);
-  gap: 16px;
-  padding: 22px;
+  flex: 0.88;
+  min-width: 360px;
+  display: flex;
+  flex-direction: column;
   color: #0f172a;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 251, 255, 0.98));
+  background: transparent;
+  overflow: hidden;
+  position: relative;
+}
+
+.profile-post-viewer-scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px 24px 0 16px;
 }
 
 .profile-post-viewer-author {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
+  display: flex;
   align-items: center;
   gap: 14px;
   padding-bottom: 14px;
-  border-bottom: 1px solid rgba(219, 230, 246, 0.95);
+  border-bottom: 1px solid rgba(219, 230, 246, 0.6);
+}
+
+.profile-post-viewer-author > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .profile-post-viewer-author strong,
@@ -46411,11 +46459,15 @@ button.comment-author-avatar {
 .profile-post-viewer-author small {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  margin: 4px 8px 0 0;
+  gap: 4px;
   color: #52657f;
   font-size: 0.78rem;
   font-weight: 850;
+}
+.profile-post-viewer-author .author-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .profile-post-viewer-copy {
@@ -46451,36 +46503,37 @@ button.comment-author-avatar {
 }
 
 .profile-post-viewer-tags span {
-  color: #2458ff;
-  background: #eef4ff;
+  color: #6322d4;
+  background: #f1edfa;
 }
 
 .profile-post-viewer-metrics span {
-  color: #34415f;
-  background: #f4f7fb;
-  border: 1px solid #e3eaf5;
+  color: #16604a;
+  background: #e8f9f3;
+  border: none;
 }
 
 .profile-post-reaction-row button {
   flex: 1 1 108px;
-  min-height: 44px;
+  min-height: 48px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border: 1px solid #dfe8f5;
-  border-radius: 15px;
-  color: #14233f;
+  border: 1px solid transparent;
+  border-radius: 18px;
+  color: #2c1a4d;
   background: #ffffff;
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+  box-shadow: 0 8px 20px rgba(100, 50, 200, 0.08);
   cursor: pointer;
-  font-size: 0.82rem;
-  font-weight: 950;
+  font-size: 0.9rem;
+  font-weight: 800;
+  transition: all 0.2s ease;
 }
 
 .profile-post-reaction-row button:hover {
-  border-color: rgba(37, 99, 235, 0.34);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(100, 50, 200, 0.12);
 }
 
 .profile-post-reaction-row button:disabled {
@@ -46489,23 +46542,34 @@ button.comment-author-avatar {
   transform: none;
 }
 
+.profile-post-reaction-row button:nth-child(1) strong {
+  background: #f43f5e;
+}
+.profile-post-reaction-row button:nth-child(2) strong {
+  background: #8b5cf6;
+}
+.profile-post-reaction-row button:nth-child(3) strong {
+  background: #f59e0b;
+}
+
 .profile-post-reaction-row strong {
-  min-width: 22px;
-  height: 22px;
+  min-width: 24px;
+  height: 24px;
   display: grid;
   place-items: center;
   border-radius: 999px;
   color: #ffffff;
   background: #2458ff;
-  font-size: 0.68rem;
+  font-size: 0.72rem;
 }
 
 .profile-post-comments-panel {
+  flex: 1;
   min-height: 0;
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  display: flex;
+  flex-direction: column;
   gap: 12px;
-  overflow: hidden;
+  padding-bottom: 24px;
 }
 
 .profile-post-comments-head {
@@ -46521,23 +46585,37 @@ button.comment-author-avatar {
   font-weight: 900;
 }
 
-.profile-post-comments-list {
-  min-height: 168px;
-  max-height: 250px;
-  display: grid;
-  gap: 10px;
-  overflow: auto;
-  padding-right: 4px;
-}
-
 .profile-post-comment {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   gap: 10px;
   padding: 11px;
-  border: 1px solid #e5edf8;
+  border: 1px solid transparent;
   border-radius: 16px;
   background: #ffffff;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+}
+
+.profile-post-comment-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.comment-more-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 50%;
+  display: flex;
+  transition: all 0.2s ease;
+}
+
+.comment-more-btn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
 }
 
 .profile-post-comment p,
@@ -46546,6 +46624,21 @@ button.comment-author-avatar {
   color: #52657f !important;
   line-height: 1.48;
   font-size: 0.82rem;
+}
+
+.profile-post-comments-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 10px 0;
+  gap: 12px;
+}
+.profile-post-comments-empty-state img {
+  width: 80px;
+  height: 80px;
+  opacity: 0.9;
 }
 
 .profile-post-replies {
@@ -46558,9 +46651,15 @@ button.comment-author-avatar {
   font-size: 0.76rem;
 }
 
+.profile-post-comment-form-wrapper {
+  background: #ffffff;
+  padding: 12px 24px 24px 16px;
+  border-top: 1px solid rgba(219, 230, 246, 0.6);
+  z-index: 10;
+}
+
 .profile-post-comment-form {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  display: flex;
   align-items: center;
   gap: 9px;
   padding: 9px;
@@ -46569,8 +46668,13 @@ button.comment-author-avatar {
   background: #ffffff;
 }
 
+.profile-post-comment-form .ui-avatar {
+  flex-shrink: 0;
+}
+
 .profile-post-comment-form input {
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   min-height: 42px;
   border: 0;
   outline: 0;
@@ -46582,6 +46686,7 @@ button.comment-author-avatar {
 }
 
 .profile-post-comment-form button {
+  flex-shrink: 0;
   width: 42px;
   height: 42px;
   display: grid;
@@ -46941,5 +47046,4874 @@ button.comment-author-avatar {
 
   .shell .notifications-dashboard .notification-row-card > .ui-btn {
     width: 100% !important;
+  }
+}
+
+/* Antigravity: Chat Dashboard Viewport Height Alignment and Independent Panel Scrolling */
+@media (min-width: 1181px) {
+  .shell .chat-dashboard .chat-dashboard-grid {
+    height: calc(100vh - 140px) !important;
+    max-height: calc(100vh - 140px) !important;
+    overflow: hidden !important;
+  }
+
+  .shell .chat-dashboard .messages-panel,
+  .shell .chat-dashboard .chat-profile-panel {
+    height: 100% !important;
+    min-height: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+  }
+
+  .shell .chat-dashboard .chat-thread-card {
+    height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    display: grid !important;
+    grid-template-rows: auto minmax(0, 1fr) auto auto auto !important;
+  }
+
+  .shell .chat-dashboard .conversation-list-v2 {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    min-height: 0 !important;
+  }
+
+  .shell .chat-dashboard .chat-profile-panel {
+    overflow-y: auto !important;
+  }
+}
+
+/* Antigravity: Improve Text Contrast on Active Conversation List Item */
+.shell .chat-dashboard .conversation-list-v2 button.active strong {
+  color: #ffffff !important;
+}
+
+.shell .chat-dashboard .conversation-list-v2 button.active small,
+.shell .chat-dashboard .conversation-list-v2 button.active time {
+  color: rgba(255, 255, 255, 0.82) !important;
+}
+
+.shell .chat-dashboard .conversation-list-v2 button.active .chat-presence-label {
+  color: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* Antigravity: Custom Scale & Precise Alignment of Avatar Presence Dots */
+.ui-avatar > .avatar-presence,
+.ui-avatar > i {
+  position: absolute !important;
+  border: 2px solid #ffffff !important;
+  border-radius: 999px !important;
+  display: block !important;
+}
+
+.avatar-xs > .avatar-presence,
+.avatar-xs > i {
+  width: 8px !important;
+  height: 8px !important;
+  right: 0px !important;
+  bottom: 0px !important;
+}
+
+.avatar-sm > .avatar-presence,
+.avatar-sm > i {
+  width: 10px !important;
+  height: 10px !important;
+  right: 0px !important;
+  bottom: 0px !important;
+}
+
+.avatar-md > .avatar-presence,
+.avatar-md > i {
+  width: 12px !important;
+  height: 12px !important;
+  right: 1px !important;
+  bottom: 1px !important;
+}
+
+.avatar-lg > .avatar-presence,
+.avatar-lg > i {
+  width: 14px !important;
+  height: 14px !important;
+  right: 2px !important;
+  bottom: 2px !important;
+}
+
+.avatar-xl > .avatar-presence,
+.avatar-xl > i {
+  width: 16px !important;
+  height: 16px !important;
+  right: 3px !important;
+  bottom: 3px !important;
+}
+
+/* Colors and Shadow Overrides for Online/Offline Indicator Dots */
+.ui-avatar > .avatar-presence.online,
+.ui-avatar > i.online,
+.ui-avatar > i:not(.offline) {
+  background: #16a34a !important;
+  box-shadow: 0 0 0 1px rgba(22, 163, 74, 0.16), 0 0 12px rgba(22, 163, 74, 0.36) !important;
+}
+
+.ui-avatar > .avatar-presence.offline,
+.ui-avatar > i.offline {
+  background: #ef4444 !important;
+  box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.16), 0 0 12px rgba(239, 68, 68, 0.32) !important;
+}
+
+/* Antigravity: UI Upgrades for a Premium Chat Experience */
+
+/* 1. Header Contact Name Contrast Fix */
+.shell .chat-dashboard .thread-topbar h2 {
+  color: var(--chat-ink) !important;
+  font-weight: 850 !important;
+  font-size: 1.15rem !important;
+  letter-spacing: -0.01em !important;
+}
+
+/* 2. Premium Frosted Glassmorphism for Card Panels */
+.shell .chat-dashboard .messages-panel,
+.shell .chat-dashboard .chat-thread-card,
+.shell .chat-dashboard .chat-profile-panel {
+  background: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.6) !important;
+  box-shadow: 0 20px 48px rgba(31, 45, 82, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.8) !important;
+}
+
+/* 3. Smooth Micro-Interactive Conversation List Buttons */
+.shell .chat-dashboard .conversation-list-v2 button {
+  transition: all 0.24s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border: 1px solid rgba(225, 235, 248, 0.6) !important;
+  background: rgba(255, 255, 255, 0.5) !important;
+  box-shadow: 0 4px 12px rgba(31, 45, 82, 0.02) !important;
+}
+
+.shell .chat-dashboard .conversation-list-v2 button:hover {
+  transform: translateY(-2px) scale(1.02);
+  background: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(55, 125, 255, 0.2) !important;
+  box-shadow: 0 10px 20px rgba(31, 45, 82, 0.06) !important;
+}
+
+.shell .chat-dashboard .conversation-list-v2 button.active {
+  transform: none !important;
+  background: linear-gradient(135deg, #377dff 0%, #5d8aff 46%, #ec6aa6 100%) !important;
+  border-color: transparent !important;
+  box-shadow: 0 14px 28px rgba(55, 125, 255, 0.25) !important;
+}
+
+/* 4. Elegant Custom Scrollbars for All Scroll Areas */
+.shell .chat-dashboard .conversation-list-v2::-webkit-scrollbar,
+.shell .chat-dashboard .chat-messages-v2::-webkit-scrollbar,
+.shell .chat-dashboard .chat-profile-panel::-webkit-scrollbar {
+  width: 6px;
+}
+
+.shell .chat-dashboard .conversation-list-v2::-webkit-scrollbar-track,
+.shell .chat-dashboard .chat-messages-v2::-webkit-scrollbar-track,
+.shell .chat-dashboard .chat-profile-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.shell .chat-dashboard .conversation-list-v2::-webkit-scrollbar-thumb,
+.shell .chat-dashboard .chat-messages-v2::-webkit-scrollbar-thumb,
+.shell .chat-dashboard .chat-profile-panel::-webkit-scrollbar-thumb {
+  background: rgba(120, 137, 160, 0.22);
+  border-radius: 99px;
+}
+
+.shell .chat-dashboard .conversation-list-v2::-webkit-scrollbar-thumb:hover,
+.shell .chat-dashboard .chat-messages-v2::-webkit-scrollbar-thumb:hover,
+.shell .chat-dashboard .chat-profile-panel::-webkit-scrollbar-thumb:hover {
+  background: rgba(120, 137, 160, 0.4);
+}
+
+/* 5. Floating Frosted Glass Message Input Bar with Focus Glow */
+.shell .chat-dashboard .message-input-bar {
+  margin: 16px !important;
+  border: 1px solid rgba(255, 255, 255, 0.8) !important;
+  border-radius: 20px !important;
+  background: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(14px) !important;
+  box-shadow: 0 10px 30px rgba(31, 45, 82, 0.05) !important;
+  transition: all 0.3s ease !important;
+}
+
+.shell .chat-dashboard .message-input-bar:focus-within {
+  border-color: rgba(55, 125, 255, 0.35) !important;
+  box-shadow: 0 12px 36px rgba(55, 125, 255, 0.1) !important;
+}
+
+.shell .chat-dashboard .message-input-bar > input {
+  border: 1px solid rgba(218, 228, 244, 0.6) !important;
+  background: rgba(255, 255, 255, 0.7) !important;
+  transition: all 0.25s ease !important;
+}
+
+.shell .chat-dashboard .message-input-bar > input:focus {
+  background: #ffffff !important;
+  border-color: var(--chat-blue) !important;
+  box-shadow: 0 0 0 3px rgba(55, 125, 255, 0.12) !important;
+}
+
+/* 6. Dynamic Interactive Chat Bubbles */
+.shell .chat-dashboard .message-bubble {
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.shell .chat-dashboard .message-bubble:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(23, 35, 60, 0.14) !important;
+}
+
+/* 7. Glowing Modern Chat Search Input */
+.shell .chat-dashboard .chat-search {
+  transition: all 0.25s ease !important;
+  border-color: rgba(218, 228, 244, 0.7) !important;
+}
+
+.shell .chat-dashboard .chat-search:focus-within {
+  border-color: var(--chat-blue) !important;
+  box-shadow: 0 0 0 3px rgba(55, 125, 255, 0.12) !important;
+  background: #ffffff !important;
+}
+
+/* 8. Premium Micro-Interactive Profile Buttons */
+.shell .chat-dashboard .profile-action-grid button {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border: 1px solid rgba(225, 235, 248, 0.6) !important;
+  box-shadow: 0 4px 12px rgba(31, 45, 82, 0.02) !important;
+}
+
+.shell .chat-dashboard .profile-action-grid button:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, rgba(55, 125, 255, 0.04), rgba(236, 106, 166, 0.04)) !important;
+  border-color: rgba(55, 125, 255, 0.2) !important;
+  box-shadow: 0 8px 16px rgba(31, 45, 82, 0.06) !important;
+  color: var(--chat-blue) !important;
+}
+
+/* Keep public profile actions compact inside the cover header. */
+.shell.shell-theme-light .profile-dashboard .profile-action-row:not(.profile-self-action-row) {
+  width: min(100%, 416px) !important;
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin-top: 56px !important;
+  margin-left: 0 !important;
+}
+
+.shell.shell-theme-light .profile-dashboard .profile-action-row:not(.profile-self-action-row) .profile-action-button {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  padding: 0 10px !important;
+  border-radius: 14px !important;
+  font-size: 0.78rem !important;
+  font-weight: 950 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  box-shadow: 0 10px 22px rgba(27, 39, 82, 0.1) !important;
+}
+
+.shell.shell-theme-light .profile-dashboard .profile-action-row:not(.profile-self-action-row) .profile-action-button .ui-icon {
+  width: 15px !important;
+  height: 15px !important;
+  flex: 0 0 auto !important;
+}
+
+@media (max-width: 920px) {
+  .shell.shell-theme-light .profile-dashboard .profile-action-row:not(.profile-self-action-row) {
+    width: min(100%, 420px) !important;
+    margin-top: 0 !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .shell.shell-theme-light .profile-dashboard .profile-action-row:not(.profile-self-action-row) {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Profile header action row: fixed desktop anchor prevents jumping after request state changes. */
+.shell.shell-theme-light .profile-dashboard .profile-identity-row > .profile-action-row:not(.profile-self-action-row) {
+  position: absolute !important;
+  right: 24px !important;
+  bottom: 14px !important;
+  z-index: 8 !important;
+  width: min(392px, calc(100% - 210px)) !important;
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+  margin: 0 !important;
+}
+
+.shell.shell-theme-light .profile-dashboard .profile-identity-row > .profile-action-row:not(.profile-self-action-row) .profile-action-button {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  padding: 0 9px !important;
+  border-radius: 13px !important;
+  font-size: 0.74rem !important;
+  letter-spacing: -0.01em !important;
+}
+
+@media (max-width: 920px) {
+  .shell.shell-theme-light .profile-dashboard .profile-identity-row > .profile-action-row:not(.profile-self-action-row) {
+    position: static !important;
+    width: min(100%, 420px) !important;
+    margin: 0 auto !important;
+  }
+}
+
+/* Full profile modal comment system: scoped to profile only, not the Home feed. */
+.profile-post-comments-list {
+  display: grid;
+  gap: 10px;
+}
+
+.profile-post-comment-thread {
+  margin-left: calc(var(--profile-comment-depth, 0) * 14px);
+  border-color: rgba(226, 235, 248, 0.86);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(249, 252, 255, 0.96));
+}
+
+.profile-post-comment-thread.is-reply {
+  padding: 9px;
+  border-color: rgba(210, 226, 247, 0.88);
+  background: #f8fbff;
+  box-shadow: none;
+}
+
+.profile-post-comment-header {
+  gap: 10px;
+}
+
+.profile-post-comment-header > div:first-child {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.profile-post-comment-header span {
+  color: #64748b;
+  font-size: 0.68rem;
+  font-weight: 850;
+}
+
+.profile-comment-owner-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.profile-comment-owner-actions button,
+.profile-comment-edit-form button,
+.profile-reply-form button {
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: 1px solid rgba(219, 229, 244, 0.9);
+  border-radius: 10px;
+  padding: 0 9px;
+  color: #31506e;
+  background: #ffffff;
+  font-size: 0.68rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.profile-comment-owner-actions button:hover,
+.profile-comment-edit-form button:hover,
+.profile-reply-form button:hover {
+  border-color: rgba(36, 88, 255, 0.28);
+  color: #2458ff;
+  background: #f4f8ff;
+}
+
+.profile-comment-owner-actions button:disabled,
+.profile-comment-edit-form button:disabled,
+.profile-reply-form button:disabled {
+  cursor: not-allowed;
+  opacity: 0.54;
+}
+
+.profile-comment-owner-actions .ui-icon,
+.profile-comment-edit-form .ui-icon,
+.profile-reply-form .ui-icon {
+  width: 13px;
+  height: 13px;
+}
+
+.profile-comment-edit-form,
+.profile-reply-form {
+  display: grid;
+  gap: 8px;
+  margin-top: 9px;
+}
+
+.profile-comment-edit-form textarea,
+.profile-reply-form textarea,
+.profile-post-comment-form textarea {
+  width: 100%;
+  min-height: 42px;
+  resize: vertical;
+  border: 1px solid rgba(218, 228, 244, 0.92);
+  border-radius: 13px;
+  padding: 10px 12px;
+  color: #102033;
+  background: #f7faff;
+  outline: none;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.profile-comment-edit-form textarea:focus,
+.profile-reply-form textarea:focus,
+.profile-post-comment-form textarea:focus {
+  border-color: rgba(36, 88, 255, 0.38);
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(36, 88, 255, 0.1);
+}
+
+.profile-comment-edit-form > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.profile-comment-media {
+  margin-top: 9px;
+  overflow: hidden;
+  border: 1px solid rgba(219, 229, 244, 0.9);
+  border-radius: 14px;
+  background: #f8fbff;
+}
+
+.profile-comment-media img,
+.profile-comment-media video {
+  width: 100%;
+  max-height: 220px;
+  display: block;
+  object-fit: contain;
+  background: #eef5ff;
+}
+
+.profile-comment-media-pdf {
+  display: grid;
+  gap: 8px;
+  padding: 9px;
+}
+
+.profile-comment-media-pdf a {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #2458ff;
+  font-size: 0.78rem;
+  font-weight: 950;
+  text-decoration: none;
+}
+
+.profile-comment-media-pdf iframe {
+  width: 100%;
+  height: 180px;
+  border: 0;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.profile-post-comment-form {
+  align-items: flex-start !important;
+}
+
+.profile-post-comment-composer {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.profile-post-comment-form input[type="file"],
+.profile-reply-form input[type="file"] {
+  display: none !important;
+}
+
+.profile-comment-form-tools {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.profile-comment-form-tools button,
+.profile-post-comment-form .profile-comment-form-tools button {
+  width: auto !important;
+  min-width: 38px !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  display: inline-flex !important;
+  gap: 6px !important;
+  border: 1px solid rgba(219, 229, 244, 0.9) !important;
+  border-radius: 12px !important;
+  padding: 0 11px !important;
+  color: #31506e !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+  font-size: 0.72rem !important;
+  font-weight: 900 !important;
+}
+
+.profile-post-comment-form .profile-comment-form-tools .gradient-btn {
+  min-width: 40px !important;
+  width: 40px !important;
+  padding: 0 !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+  background: linear-gradient(135deg, #2458ff, #10b981) !important;
+  box-shadow: 0 12px 24px rgba(36, 88, 255, 0.18) !important;
+}
+
+.profile-comment-attachment-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  max-width: 100%;
+  border: 1px solid rgba(36, 88, 255, 0.14);
+  border-radius: 12px;
+  padding: 7px 9px;
+  color: #2458ff;
+  background: #eef5ff;
+  font-size: 0.74rem;
+  font-weight: 900;
+}
+
+.profile-comment-attachment-chip span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-comment-attachment-chip button {
+  width: 24px !important;
+  min-width: 24px !important;
+  height: 24px !important;
+  min-height: 24px !important;
+  padding: 0 !important;
+  color: #2458ff !important;
+  background: rgba(255, 255, 255, 0.78) !important;
+}
+
+@media (max-width: 640px) {
+  .profile-post-comment-thread {
+    margin-left: calc(var(--profile-comment-depth, 0) * 8px);
+  }
+
+  .profile-comment-owner-actions,
+  .profile-comment-form-tools {
+    justify-content: flex-start;
+  }
+}
+
+/* Professional Messages workspace: scoped so Home/sidebar/navbar stay unchanged. */
+.shell .shell-header-chat .shell-page-title-chat,
+.shell .shell-header-chat .shell-page-subtitle,
+.shell .chat-dashboard {
+  font-family: "Manrope", "Aptos", "Segoe UI", sans-serif !important;
+}
+
+.shell .shell-header-chat .shell-page-title-chat {
+  color: #12664b !important;
+  font-size: clamp(1.28rem, 1.45vw, 1.58rem) !important;
+  font-weight: 680 !important;
+  letter-spacing: -0.018em !important;
+}
+
+.shell .shell-header-chat .shell-page-subtitle {
+  color: #5d6f86 !important;
+  font-weight: 480 !important;
+}
+
+.shell .chat-dashboard {
+  --chat-pro-ink: #102033;
+  --chat-pro-muted: #64748b;
+  --chat-pro-line: rgba(205, 220, 235, 0.78);
+  --chat-pro-soft: #f6fbf8;
+  --chat-pro-green: #10a36d;
+  --chat-pro-blue: #2563eb;
+  position: relative !important;
+}
+
+.shell .chat-dashboard .chat-dashboard-grid {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: calc(100vh - 132px) !important;
+  max-height: calc(100vh - 132px) !important;
+  display: grid !important;
+  grid-template-columns: minmax(282px, 310px) minmax(0, 1fr) minmax(264px, 296px) !important;
+  gap: 14px !important;
+  align-items: stretch !important;
+  overflow: hidden !important;
+}
+
+.shell .chat-dashboard .messages-panel,
+.shell .chat-dashboard .chat-thread-card,
+.shell .chat-dashboard .chat-profile-panel {
+  min-width: 0 !important;
+  min-height: 0 !important;
+  border: 1px solid var(--chat-pro-line) !important;
+  border-radius: 28px !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 252, 250, 0.92)) !important;
+  box-shadow: 0 18px 46px rgba(15, 35, 55, 0.08) !important;
+  backdrop-filter: blur(18px) !important;
+}
+
+.shell .chat-dashboard .messages-panel,
+.shell .chat-dashboard .chat-profile-panel {
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  padding: 18px !important;
+}
+
+.shell .chat-dashboard .chat-thread-card {
+  height: 100% !important;
+  display: grid !important;
+  grid-template-rows: auto minmax(0, 1fr) auto auto auto !important;
+  overflow: hidden !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(246, 251, 249, 0.96)) !important;
+}
+
+.shell .chat-dashboard .dash-section-header {
+  margin-bottom: 12px !important;
+}
+
+.shell .chat-dashboard .dash-section-header h2,
+.shell .chat-dashboard .thread-topbar h2,
+.shell .chat-dashboard .chat-profile-head h2,
+.shell .chat-dashboard .conversation-list-v2 strong,
+.shell .chat-dashboard .panel-row strong,
+.shell .chat-dashboard .strip-head strong {
+  color: var(--chat-pro-ink) !important;
+  font-weight: 660 !important;
+  letter-spacing: -0.014em !important;
+}
+
+.shell .chat-dashboard .dash-section-header h2 {
+  font-size: 1rem !important;
+}
+
+.shell .chat-dashboard .messages-panel .icon-button {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 14px !important;
+  border: 1px solid var(--chat-pro-line) !important;
+  color: #1d5f8f !important;
+  background: #ffffff !important;
+  box-shadow: 0 10px 22px rgba(15, 35, 55, 0.06) !important;
+}
+
+.shell .chat-dashboard .chat-search {
+  min-height: 46px !important;
+  margin: 0 0 12px !important;
+  border: 1px solid var(--chat-pro-line) !important;
+  border-radius: 18px !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.shell .chat-dashboard .chat-search input,
+.shell .chat-dashboard .message-input-bar > input {
+  color: var(--chat-pro-ink) !important;
+  font-weight: 450 !important;
+}
+
+.shell .chat-dashboard .dash-tabs {
+  height: 44px !important;
+  margin-bottom: 12px !important;
+  border: 1px solid var(--chat-pro-line) !important;
+  border-radius: 18px !important;
+  padding: 4px !important;
+  background: #ffffff !important;
+}
+
+.shell .chat-dashboard .dash-tabs button {
+  border-radius: 14px !important;
+  color: #607087 !important;
+  font-size: 0.78rem !important;
+  font-weight: 560 !important;
+}
+
+.shell .chat-dashboard .dash-tabs button.active {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, var(--chat-pro-green), var(--chat-pro-blue)) !important;
+  box-shadow: 0 10px 22px rgba(16, 163, 109, 0.2) !important;
+}
+
+.shell .chat-dashboard .messages-panel > .gradient-btn {
+  min-height: 42px !important;
+  margin: 0 0 14px !important;
+  border-radius: 16px !important;
+  background: linear-gradient(135deg, var(--chat-pro-green), var(--chat-pro-blue)) !important;
+  box-shadow: 0 14px 30px rgba(16, 163, 109, 0.2) !important;
+  font-size: 0.84rem !important;
+  font-weight: 650 !important;
+}
+
+.shell .chat-dashboard .new-message-box {
+  border: 1px solid var(--chat-pro-line) !important;
+  border-radius: 18px !important;
+  background: #f8fcfb !important;
+  box-shadow: none !important;
+}
+
+.shell .chat-dashboard .people-strip {
+  flex: 0 0 auto !important;
+  margin: 0 0 12px !important;
+  padding: 12px 0 !important;
+  border-color: rgba(205, 220, 235, 0.62) !important;
+}
+
+.shell .chat-dashboard .strip-head {
+  margin-bottom: 9px !important;
+  font-size: 0.78rem !important;
+}
+
+.shell .chat-dashboard .strip-head button,
+.shell .chat-dashboard .chat-profile-panel .dash-section-action button {
+  color: var(--chat-pro-blue) !important;
+  font-weight: 620 !important;
+}
+
+.shell .chat-dashboard .mini-avatar-row {
+  gap: 10px !important;
+  padding-bottom: 2px !important;
+}
+
+.shell .chat-dashboard .mini-avatar-row button {
+  min-width: 54px !important;
+  color: #31435b !important;
+  font-size: 0.72rem !important;
+  font-weight: 560 !important;
+}
+
+.shell .chat-dashboard .ui-avatar {
+  background: linear-gradient(135deg, #18b77b 0%, #2877ec 100%) !important;
+  box-shadow: 0 10px 24px rgba(31, 105, 164, 0.16) !important;
+}
+
+.shell .chat-dashboard .conversation-list-v2 {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  gap: 8px !important;
+  margin-top: 0 !important;
+  padding-right: 4px !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+.shell .chat-dashboard .conversation-list-v2 button {
+  grid-template-columns: 44px minmax(0, 1fr) auto !important;
+  gap: 10px !important;
+  min-height: 68px !important;
+  padding: 10px !important;
+  border: 1px solid rgba(214, 226, 238, 0.72) !important;
+  border-radius: 20px !important;
+  color: var(--chat-pro-ink) !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease !important;
+}
+
+.shell .chat-dashboard .conversation-list-v2 button:hover {
+  transform: none !important;
+  border-color: rgba(16, 163, 109, 0.28) !important;
+  background: #f7fcfa !important;
+  box-shadow: 0 12px 26px rgba(15, 35, 55, 0.06) !important;
+}
+
+.shell .chat-dashboard .conversation-list-v2 button.active {
+  transform: none !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+  background: linear-gradient(135deg, #119d69 0%, #2563eb 100%) !important;
+  box-shadow: 0 16px 34px rgba(16, 99, 180, 0.22) !important;
+}
+
+.shell .chat-dashboard .conversation-list-v2 small {
+  gap: 5px !important;
+  color: var(--chat-pro-muted) !important;
+  font-size: 0.73rem !important;
+  font-weight: 430 !important;
+}
+
+.shell .chat-dashboard .conversation-list-v2 time {
+  color: #7c8ca3 !important;
+  font-size: 0.68rem !important;
+  font-weight: 480 !important;
+}
+
+.shell .chat-dashboard .conversation-list-v2 button.active strong,
+.shell .chat-dashboard .conversation-list-v2 button.active small,
+.shell .chat-dashboard .conversation-list-v2 button.active time,
+.shell .chat-dashboard .conversation-list-v2 button.active .chat-presence-label {
+  color: rgba(255, 255, 255, 0.94) !important;
+}
+
+.shell .chat-dashboard .thread-topbar {
+  grid-template-columns: 54px minmax(0, 1fr) auto !important;
+  gap: 13px !important;
+  padding: 18px 20px !important;
+  border-bottom: 1px solid var(--chat-pro-line) !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+}
+
+.shell .chat-dashboard .thread-topbar h2 {
+  font-size: 1.06rem !important;
+}
+
+.shell .chat-dashboard .thread-topbar p {
+  color: var(--chat-pro-muted) !important;
+  font-size: 0.8rem !important;
+  font-weight: 430 !important;
+}
+
+.shell .chat-dashboard .thread-actions button {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 14px !important;
+  border-color: var(--chat-pro-line) !important;
+  color: #33506e !important;
+  background: #ffffff !important;
+}
+
+.shell .chat-dashboard .chat-messages-v2 {
+  align-content: end !important;
+  gap: 14px !important;
+  padding: 24px !important;
+  background:
+    radial-gradient(circle at 16% 14%, rgba(16, 163, 109, 0.1), transparent 32%),
+    radial-gradient(circle at 90% 12%, rgba(37, 99, 235, 0.08), transparent 28%),
+    linear-gradient(180deg, #f7fbfa 0%, #eef7f4 100%) !important;
+}
+
+.shell .chat-dashboard .day-separator {
+  padding: 6px 12px !important;
+  color: #5f738c !important;
+  background: rgba(255, 255, 255, 0.82) !important;
+  border: 1px solid rgba(214, 226, 238, 0.72) !important;
+  font-size: 0.72rem !important;
+  font-weight: 560 !important;
+}
+
+.shell .chat-dashboard .message-bubble {
+  max-width: min(72%, 520px) !important;
+  border: 1px solid rgba(214, 226, 238, 0.82) !important;
+  border-radius: 20px 20px 20px 8px !important;
+  padding: 11px 13px !important;
+  color: #213249 !important;
+  background: rgba(255, 255, 255, 0.98) !important;
+  box-shadow: 0 12px 26px rgba(15, 35, 55, 0.08) !important;
+}
+
+.shell .chat-dashboard .message-bubble-row.mine .message-bubble {
+  border: 0 !important;
+  border-radius: 20px 20px 8px 20px !important;
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #119d69 0%, #2563eb 100%) !important;
+  box-shadow: 0 18px 36px rgba(16, 99, 180, 0.24) !important;
+}
+
+.shell .chat-dashboard .message-bubble:hover {
+  transform: none !important;
+}
+
+.shell .chat-dashboard .message-bubble p {
+  line-height: 1.5 !important;
+  font-weight: 460 !important;
+}
+
+.shell .chat-dashboard .message-bubble small {
+  font-size: 0.68rem !important;
+  font-weight: 430 !important;
+}
+
+.shell .chat-dashboard .message-input-bar {
+  grid-template-columns: repeat(4, 38px) minmax(180px, 1fr) 38px minmax(76px, auto) !important;
+  gap: 8px !important;
+  margin: 12px 16px 16px !important;
+  padding: 12px !important;
+  border: 1px solid var(--chat-pro-line) !important;
+  border-radius: 22px !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+  box-shadow: 0 16px 34px rgba(15, 35, 55, 0.08) !important;
+  backdrop-filter: blur(16px) !important;
+}
+
+.shell .chat-dashboard .message-input-bar > button,
+.shell .chat-dashboard .message-input-bar > label {
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: 14px !important;
+  border-color: rgba(205, 220, 235, 0.9) !important;
+  color: #365573 !important;
+  background: #f9fcfb !important;
+}
+
+.shell .chat-dashboard .message-input-bar > input {
+  height: 38px !important;
+  border: 1px solid rgba(205, 220, 235, 0.86) !important;
+  border-radius: 14px !important;
+  padding-inline: 14px !important;
+  background: #ffffff !important;
+}
+
+.shell .chat-dashboard .message-input-bar > input:focus {
+  border-color: rgba(16, 163, 109, 0.45) !important;
+  box-shadow: 0 0 0 3px rgba(16, 163, 109, 0.11) !important;
+}
+
+.shell .chat-dashboard .message-input-bar .gradient-btn {
+  min-width: 76px !important;
+  min-height: 38px !important;
+  border-radius: 14px !important;
+  padding: 0 13px !important;
+  background: linear-gradient(135deg, #119d69 0%, #2563eb 100%) !important;
+  box-shadow: 0 12px 26px rgba(16, 99, 180, 0.22) !important;
+  font-size: 0.76rem !important;
+  font-weight: 650 !important;
+}
+
+.shell .chat-dashboard .chat-profile-panel {
+  padding: 18px !important;
+  overflow-x: hidden !important;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(16, 163, 109, 0.1), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 252, 250, 0.94)) !important;
+}
+
+.shell .chat-dashboard .chat-profile-head {
+  padding: 10px 0 16px !important;
+  border-bottom: 1px solid rgba(205, 220, 235, 0.62) !important;
+}
+
+.shell .chat-dashboard .chat-profile-head h2 {
+  margin-top: 6px !important;
+  font-size: 1.04rem !important;
+}
+
+.shell .chat-dashboard .chat-profile-head p {
+  max-width: 100% !important;
+  overflow: hidden !important;
+  color: var(--chat-pro-muted) !important;
+  font-size: 0.78rem !important;
+  font-weight: 430 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.shell .chat-dashboard .profile-action-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+  margin: 14px 0 16px !important;
+}
+
+.shell .chat-dashboard .profile-action-grid button {
+  min-width: 0 !important;
+  min-height: 56px !important;
+  border: 1px solid rgba(205, 220, 235, 0.78) !important;
+  border-radius: 18px !important;
+  padding: 8px 6px !important;
+  color: #2e4a65 !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+  font-size: 0.74rem !important;
+  font-weight: 600 !important;
+  line-height: 1.18 !important;
+  white-space: normal !important;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease !important;
+}
+
+.shell .chat-dashboard .profile-action-grid button:hover {
+  transform: none !important;
+  border-color: rgba(16, 163, 109, 0.32) !important;
+  color: #0f7f58 !important;
+  background: #f5fbf8 !important;
+  box-shadow: none !important;
+}
+
+.shell .chat-dashboard .profile-action-grid .ui-icon {
+  width: 17px !important;
+  height: 17px !important;
+}
+
+.shell .chat-dashboard .shared-media-grid,
+.shell .chat-dashboard .recent-strip {
+  gap: 7px !important;
+  margin-bottom: 14px !important;
+}
+
+.shell .chat-dashboard .shared-media-grid div {
+  border: 1px solid rgba(205, 220, 235, 0.7) !important;
+  border-radius: 14px !important;
+  background: #eef7f4 !important;
+}
+
+.shell .chat-dashboard .panel-list {
+  gap: 10px !important;
+}
+
+.shell .chat-dashboard .panel-row {
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  border: 1px solid rgba(205, 220, 235, 0.72) !important;
+  border-radius: 18px !important;
+  padding: 12px !important;
+  background: #ffffff !important;
+  box-shadow: none !important;
+}
+
+.shell .chat-dashboard .panel-row > div {
+  min-width: 0 !important;
+}
+
+.shell .chat-dashboard .panel-row span {
+  overflow: hidden !important;
+  color: var(--chat-pro-muted) !important;
+  font-size: 0.76rem !important;
+  font-weight: 430 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.shell .chat-dashboard .chat-profile-panel .dash-section-header {
+  margin: 14px 0 9px !important;
+}
+
+.shell .chat-dashboard .chat-profile-panel .dash-section-header h2 {
+  font-size: 0.96rem !important;
+}
+
+.shell .chat-dashboard .conversation-list-v2::-webkit-scrollbar,
+.shell .chat-dashboard .chat-messages-v2::-webkit-scrollbar,
+.shell .chat-dashboard .chat-profile-panel::-webkit-scrollbar {
+  width: 5px !important;
+}
+
+.shell .chat-dashboard .conversation-list-v2::-webkit-scrollbar-thumb,
+.shell .chat-dashboard .chat-messages-v2::-webkit-scrollbar-thumb,
+.shell .chat-dashboard .chat-profile-panel::-webkit-scrollbar-thumb {
+  background: rgba(93, 111, 134, 0.24) !important;
+}
+
+@media (max-width: 1360px) and (min-width: 1181px) {
+  .shell .chat-dashboard .chat-dashboard-grid {
+    grid-template-columns: minmax(260px, 284px) minmax(0, 1fr) minmax(244px, 268px) !important;
+    gap: 12px !important;
+  }
+
+  .shell .chat-dashboard .messages-panel,
+  .shell .chat-dashboard .chat-profile-panel {
+    padding: 15px !important;
+  }
+
+  .shell .chat-dashboard .message-input-bar {
+    grid-template-columns: repeat(4, 36px) minmax(128px, 1fr) 36px 44px !important;
+  }
+
+  .shell .chat-dashboard .message-input-bar .gradient-btn {
+    width: 44px !important;
+    min-width: 44px !important;
+    padding: 0 !important;
+    font-size: 0 !important;
+  }
+
+  .shell .chat-dashboard .message-input-bar .gradient-btn .ui-icon {
+    width: 17px !important;
+    height: 17px !important;
+  }
+}
+
+@media (max-width: 1180px) {
+  .shell .chat-dashboard .chat-dashboard-grid {
+    height: auto !important;
+    max-height: none !important;
+    grid-template-columns: 1fr !important;
+    overflow: visible !important;
+  }
+
+  .shell .chat-dashboard .messages-panel,
+  .shell .chat-dashboard .chat-thread-card,
+  .shell .chat-dashboard .chat-profile-panel {
+    min-height: 560px !important;
+  }
+}
+
+/* Commerce Marketplace System */
+.shell .commerce-pro-page {
+  --commerce-ink: #10231f;
+  --commerce-muted: #60756e;
+  --commerce-soft: #f4fbf5;
+  --commerce-panel: rgba(255, 255, 255, 0.88);
+  --commerce-line: rgba(165, 193, 178, 0.46);
+  --commerce-green: #17a76f;
+  --commerce-deep: #0b5f48;
+  --commerce-blue: #2266d8;
+  --commerce-gold: #f2a43b;
+  --commerce-rose: #e8566d;
+  position: relative;
+  isolation: isolate;
+  gap: 22px;
+  max-width: 100%;
+  overflow: hidden;
+  border-radius: 28px;
+  padding: clamp(16px, 2vw, 26px);
+  color: var(--commerce-ink);
+  font-family: "Manrope", "Plus Jakarta Sans", "Sora", "Nunito Sans", sans-serif;
+  background:
+    radial-gradient(circle at 8% 6%, rgba(55, 197, 134, 0.2), transparent 30%),
+    radial-gradient(circle at 92% 12%, rgba(72, 129, 237, 0.18), transparent 34%),
+    radial-gradient(circle at 48% 102%, rgba(242, 164, 59, 0.18), transparent 36%),
+    linear-gradient(135deg, #f7fff8 0%, #eef8ff 46%, #fff8ed 100%);
+}
+
+.shell .commerce-pro-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.34;
+  background-image:
+    linear-gradient(rgba(15, 95, 72, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 95, 72, 0.06) 1px, transparent 1px);
+  background-size: 42px 42px;
+  mask-image: linear-gradient(180deg, #000 0%, transparent 88%);
+}
+
+.shell .commerce-pro-page h2,
+.shell .commerce-pro-page h3,
+.shell .commerce-pro-page strong {
+  letter-spacing: -0.03em;
+}
+
+.shell .commerce-pro-page h2,
+.shell .commerce-pro-page h3 {
+  font-weight: 720;
+}
+
+.shell .commerce-pro-page p,
+.shell .commerce-pro-page span,
+.shell .commerce-pro-page small,
+.shell .commerce-pro-page input,
+.shell .commerce-pro-page select,
+.shell .commerce-pro-page textarea,
+.shell .commerce-business-modal p,
+.shell .commerce-business-modal span,
+.shell .commerce-business-modal small {
+  font-weight: 460;
+}
+
+.shell .commerce-kicker {
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+  padding: 0 12px;
+  border: 1px solid rgba(23, 167, 111, 0.26);
+  border-radius: 999px;
+  color: #0b6f50;
+  background: rgba(235, 252, 242, 0.88);
+  box-shadow: 0 10px 24px rgba(22, 120, 82, 0.08);
+  font-size: 0.76rem;
+  font-weight: 680 !important;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.shell .commerce-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.75fr);
+  gap: 22px;
+  align-items: stretch;
+  min-height: 310px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 34px;
+  padding: clamp(22px, 3vw, 38px);
+  background:
+    radial-gradient(circle at 12% 10%, rgba(255, 255, 255, 0.72), transparent 32%),
+    radial-gradient(circle at 86% 16%, rgba(65, 148, 238, 0.22), transparent 30%),
+    linear-gradient(135deg, rgba(8, 91, 67, 0.96), rgba(26, 146, 96, 0.9) 44%, rgba(235, 170, 70, 0.9));
+  box-shadow: 0 28px 70px rgba(12, 68, 50, 0.18);
+  color: #ffffff;
+}
+
+.shell .commerce-cart-hero {
+  background:
+    radial-gradient(circle at 12% 10%, rgba(255, 255, 255, 0.66), transparent 32%),
+    radial-gradient(circle at 92% 20%, rgba(47, 114, 238, 0.3), transparent 28%),
+    linear-gradient(135deg, #0b5f48 0%, #17875c 48%, #246bd8 100%);
+}
+
+.shell .commerce-orders-hero {
+  background:
+    radial-gradient(circle at 14% 10%, rgba(255, 255, 255, 0.66), transparent 32%),
+    radial-gradient(circle at 86% 14%, rgba(245, 177, 71, 0.32), transparent 30%),
+    linear-gradient(135deg, #092f32 0%, #0f7458 48%, #dc8b34 100%);
+}
+
+.shell .commerce-hero h2 {
+  max-width: 850px;
+  margin: 14px 0 12px;
+  color: #ffffff;
+  font-size: clamp(2rem, 4.4vw, 4.35rem);
+  line-height: 0.98;
+  text-wrap: balance;
+}
+
+.shell .commerce-hero p {
+  max-width: 720px;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: clamp(0.96rem, 1.3vw, 1.1rem);
+  line-height: 1.65;
+}
+
+.shell .commerce-hero-search {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  max-width: 790px;
+  margin-top: 26px;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24), 0 24px 46px rgba(4, 32, 24, 0.18);
+  backdrop-filter: blur(18px);
+}
+
+.shell .commerce-hero-search > .ui-icon {
+  width: 21px;
+  height: 21px;
+  margin-left: 10px;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.shell .commerce-hero-search input {
+  width: 100%;
+  height: 46px;
+  border: 0;
+  outline: 0;
+  color: #ffffff;
+  background: transparent;
+  font-size: 0.98rem;
+}
+
+.shell .commerce-hero-search input::placeholder {
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.shell .commerce-hero-search .gradient-btn,
+.shell .commerce-hero-search .ui-btn {
+  min-height: 46px;
+  border-radius: 16px;
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.14);
+}
+
+.shell .commerce-hero-panel {
+  display: grid;
+  gap: 12px;
+  align-content: end;
+}
+
+.shell .commerce-hero-panel .dash-card {
+  border-color: rgba(255, 255, 255, 0.26);
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24), 0 20px 38px rgba(3, 31, 24, 0.16);
+  backdrop-filter: blur(20px);
+}
+
+.shell .commerce-hero-panel .stat-card strong,
+.shell .commerce-hero-panel .stat-card span,
+.shell .commerce-hero-panel .stat-card small {
+  color: #ffffff;
+}
+
+.shell .commerce-pro-page .overview-hero {
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.72fr);
+}
+
+.shell .commerce-pro-page .overview-intro,
+.shell .commerce-pro-page .overview-stats,
+.shell .commerce-panel,
+.shell .commerce-toolbar-card {
+  border: 1px solid var(--commerce-line);
+  border-radius: 26px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 255, 250, 0.88)),
+    radial-gradient(circle at 0% 0%, rgba(23, 167, 111, 0.08), transparent 34%);
+  box-shadow: 0 24px 55px rgba(23, 88, 64, 0.1);
+  backdrop-filter: blur(18px);
+}
+
+.shell .commerce-market-layout,
+.shell .commerce-cart-layout,
+.shell .commerce-orders-layout {
+  display: grid;
+  gap: 22px;
+  align-items: start;
+}
+
+.shell .commerce-market-layout {
+  grid-template-columns: minmax(260px, 330px) minmax(0, 1fr);
+}
+
+.shell .commerce-cart-layout,
+.shell .commerce-orders-layout {
+  grid-template-columns: minmax(0, 1fr) minmax(290px, 360px);
+}
+
+.shell .commerce-filter-rail,
+.shell .commerce-cart-summary,
+.shell .commerce-order-side {
+  display: grid;
+  gap: 16px;
+  position: sticky;
+  top: 16px;
+}
+
+.shell .commerce-filter-rail label,
+.shell .commerce-product-form label,
+.shell .commerce-review-form label {
+  display: grid;
+  gap: 7px;
+  color: var(--commerce-muted);
+  font-size: 0.8rem;
+  font-weight: 700 !important;
+}
+
+.shell .commerce-filter-rail select,
+.shell .commerce-product-form input,
+.shell .commerce-product-form select,
+.shell .commerce-product-form textarea,
+.shell .commerce-review-form select,
+.shell .commerce-review-form textarea,
+.shell .commerce-order-actions select,
+.shell .commerce-hero-search input,
+.shell .cart-dashboard input,
+.shell .cart-dashboard select,
+.shell .orders-dashboard input,
+.shell .orders-dashboard select {
+  font-family: inherit;
+}
+
+.shell .commerce-filter-rail select,
+.shell .commerce-product-form input,
+.shell .commerce-product-form select,
+.shell .commerce-product-form textarea,
+.shell .commerce-review-form select,
+.shell .commerce-review-form textarea,
+.shell .commerce-order-actions select,
+.shell .cart-dashboard input,
+.shell .cart-dashboard select,
+.shell .orders-dashboard input,
+.shell .orders-dashboard select {
+  min-height: 44px;
+  border: 1px solid rgba(178, 203, 190, 0.72);
+  border-radius: 15px;
+  padding: 0 13px;
+  color: var(--commerce-ink);
+  background: rgba(255, 255, 255, 0.86);
+  outline: 0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.shell .commerce-product-form textarea,
+.shell .commerce-review-form textarea {
+  min-height: 104px;
+  padding: 12px 13px;
+  resize: vertical;
+}
+
+.shell .commerce-filter-rail select:focus,
+.shell .commerce-product-form input:focus,
+.shell .commerce-product-form select:focus,
+.shell .commerce-product-form textarea:focus,
+.shell .commerce-review-form select:focus,
+.shell .commerce-review-form textarea:focus,
+.shell .commerce-order-actions select:focus,
+.shell .cart-dashboard input:focus,
+.shell .orders-dashboard input:focus {
+  border-color: rgba(23, 167, 111, 0.58);
+  box-shadow: 0 0 0 4px rgba(23, 167, 111, 0.12);
+}
+
+.shell .commerce-rail-actions {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.shell .commerce-business-list {
+  display: grid;
+  gap: 10px;
+}
+
+.shell .commerce-business-list > button {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 11px;
+  align-items: center;
+  border: 1px solid rgba(177, 207, 190, 0.54);
+  border-radius: 18px;
+  padding: 11px;
+  color: var(--commerce-ink);
+  background: rgba(255, 255, 255, 0.72);
+  text-align: left;
+  cursor: pointer;
+}
+
+.shell .commerce-business-list strong,
+.shell .commerce-business-list small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shell .commerce-business-list small {
+  color: var(--commerce-muted);
+  font-size: 0.76rem;
+}
+
+.shell .commerce-products-main,
+.shell .commerce-cart-main,
+.shell .commerce-orders-main {
+  min-width: 0;
+}
+
+.shell .commerce-toolbar-card {
+  margin-bottom: 18px;
+}
+
+.shell .commerce-toolbar-card .dash-tabs {
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.shell .commerce-product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(276px, 1fr));
+  gap: 18px;
+}
+
+.shell .commerce-product-card {
+  display: grid;
+  overflow: hidden;
+  border: 1px solid rgba(168, 199, 183, 0.58);
+  border-radius: 28px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(247, 255, 250, 0.9)),
+    radial-gradient(circle at 80% 0%, rgba(251, 183, 80, 0.16), transparent 34%);
+  box-shadow: 0 22px 46px rgba(28, 86, 65, 0.11);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.shell .commerce-product-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(23, 167, 111, 0.42);
+  box-shadow: 0 30px 66px rgba(28, 86, 65, 0.16);
+}
+
+.shell .commerce-product-media {
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-height: 214px;
+  overflow: hidden;
+  color: rgba(11, 95, 72, 0.72);
+  background:
+    radial-gradient(circle at 36% 25%, rgba(255, 255, 255, 0.76), transparent 28%),
+    linear-gradient(135deg, #dff7e4, #e9f4ff 55%, #fff0d6);
+}
+
+.shell .commerce-product-media img,
+.shell .commerce-detail-media img,
+.shell .commerce-cart-media img,
+.shell .commerce-order-media img,
+.shell .commerce-business-products img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.shell .commerce-product-media .ui-icon,
+.shell .commerce-detail-media .ui-icon,
+.shell .commerce-cart-media .ui-icon,
+.shell .commerce-order-media .ui-icon {
+  width: 48px;
+  height: 48px;
+}
+
+.shell .commerce-product-media .status-badge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.68);
+  box-shadow: 0 12px 22px rgba(9, 50, 38, 0.12);
+}
+
+.shell .commerce-product-body {
+  display: grid;
+  gap: 10px;
+  padding: 17px 17px 12px;
+}
+
+.shell .commerce-product-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.shell .commerce-product-topline span {
+  max-width: 56%;
+  overflow: hidden;
+  color: #0b7353;
+  font-size: 0.78rem;
+  font-weight: 720 !important;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.shell .commerce-product-topline strong,
+.shell .commerce-detail-price {
+  color: #0b5f48;
+  font-size: 1.35rem;
+  font-weight: 780 !important;
+}
+
+.shell .commerce-product-card h3,
+.shell .commerce-cart-item h3,
+.shell .commerce-order-card h3 {
+  margin: 0;
+  color: var(--commerce-ink);
+  font-size: 1.08rem;
+}
+
+.shell .commerce-product-card p,
+.shell .commerce-cart-item p,
+.shell .commerce-order-card p,
+.shell .commerce-order-card span {
+  margin: 0;
+  color: var(--commerce-muted);
+  line-height: 1.5;
+}
+
+.shell .commerce-product-card p {
+  min-height: 45px;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.shell .commerce-product-meta {
+  display: grid;
+  gap: 8px;
+  color: var(--commerce-muted);
+  font-size: 0.82rem;
+}
+
+.shell .commerce-product-meta.detail {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.shell .commerce-product-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.shell .commerce-product-meta .ui-icon {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  color: var(--commerce-green);
+}
+
+.shell .commerce-product-actions,
+.shell .commerce-seller-actions,
+.shell .commerce-cart-actions,
+.shell .commerce-order-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  padding: 0 17px 17px;
+}
+
+.shell .commerce-product-actions .ui-btn,
+.shell .commerce-product-actions .gradient-btn,
+.shell .commerce-seller-actions .ui-btn,
+.shell .commerce-seller-actions .gradient-btn {
+  flex: 1 1 120px;
+  min-height: 40px;
+  border-radius: 14px;
+}
+
+.shell .commerce-seller-actions {
+  padding-top: 0;
+}
+
+.shell .commerce-cart-list,
+.shell .commerce-order-list {
+  display: grid;
+  gap: 14px;
+}
+
+.shell .commerce-cart-item,
+.shell .commerce-order-card {
+  display: grid;
+  gap: 16px;
+  align-items: center;
+  border: 1px solid rgba(172, 200, 186, 0.55);
+  border-radius: 24px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 18px 38px rgba(27, 86, 63, 0.08);
+}
+
+.shell .commerce-cart-item {
+  grid-template-columns: 112px minmax(0, 1fr) auto auto auto;
+}
+
+.shell .commerce-order-card {
+  grid-template-columns: 112px minmax(0, 1fr) minmax(90px, auto) minmax(170px, auto);
+}
+
+.shell .commerce-cart-media,
+.shell .commerce-order-media,
+.shell .commerce-detail-media {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  color: rgba(12, 95, 72, 0.72);
+  background: linear-gradient(135deg, #e3f8e7, #edf5ff 58%, #fff2da);
+}
+
+.shell .commerce-cart-media,
+.shell .commerce-order-media {
+  width: 112px;
+  height: 104px;
+  border-radius: 20px;
+}
+
+.shell .commerce-cart-media.large {
+  width: 100%;
+  height: 220px;
+}
+
+.shell .commerce-cart-copy,
+.shell .commerce-order-copy {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.shell .commerce-cart-copy > div,
+.shell .commerce-order-copy > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.shell .commerce-cart-copy strong {
+  color: #0b5f48;
+  font-size: 1.05rem;
+}
+
+.shell .commerce-cart-quantity {
+  display: grid;
+  grid-template-columns: 36px 58px 36px;
+  align-items: center;
+  overflow: hidden;
+  border: 1px solid rgba(173, 203, 188, 0.72);
+  border-radius: 15px;
+  background: #ffffff;
+}
+
+.shell .commerce-cart-quantity button {
+  height: 38px;
+  border: 0;
+  color: #0b6f50;
+  background: transparent;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.shell .commerce-cart-quantity button:disabled {
+  color: #a6b6af;
+  cursor: not-allowed;
+}
+
+.shell .commerce-cart-quantity input {
+  width: 58px;
+  min-height: 38px;
+  border: 0;
+  border-left: 1px solid rgba(173, 203, 188, 0.56);
+  border-right: 1px solid rgba(173, 203, 188, 0.56);
+  border-radius: 0;
+  padding: 0;
+  text-align: center;
+  box-shadow: none;
+}
+
+.shell .commerce-cart-total,
+.shell .commerce-order-numbers {
+  display: grid;
+  gap: 4px;
+  min-width: 88px;
+  text-align: right;
+}
+
+.shell .commerce-cart-total span,
+.shell .commerce-order-numbers span {
+  color: var(--commerce-muted);
+  font-size: 0.76rem;
+  text-transform: uppercase;
+}
+
+.shell .commerce-cart-total strong,
+.shell .commerce-order-numbers strong {
+  color: #0b5f48;
+  font-size: 1.06rem;
+  font-weight: 780 !important;
+}
+
+.shell .commerce-cart-actions,
+.shell .commerce-order-actions {
+  justify-content: flex-end;
+  padding: 0;
+}
+
+.shell .checkout-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.shell .commerce-total-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 42px;
+  border-bottom: 1px dashed rgba(156, 187, 172, 0.62);
+  color: var(--commerce-muted);
+}
+
+.shell .commerce-total-row strong {
+  color: var(--commerce-ink);
+  font-weight: 760 !important;
+}
+
+.shell .commerce-total-row.grand {
+  min-height: 56px;
+  border-bottom: 0;
+  color: var(--commerce-ink);
+  font-size: 1.05rem;
+}
+
+.shell .commerce-total-row.grand strong {
+  color: #0b5f48;
+  font-size: 1.38rem;
+}
+
+.shell .commerce-order-topbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.shell .commerce-order-topbar .dash-tabs {
+  overflow-x: auto;
+}
+
+.shell .commerce-mode-toggle {
+  display: inline-flex;
+  gap: 5px;
+  padding: 5px;
+  border: 1px solid rgba(169, 199, 184, 0.66);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.shell .commerce-mode-toggle button {
+  min-height: 36px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0 14px;
+  color: var(--commerce-muted);
+  background: transparent;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.shell .commerce-mode-toggle button.active {
+  color: #ffffff;
+  background: linear-gradient(135deg, #0c8f63, #2769d8);
+  box-shadow: 0 12px 24px rgba(18, 104, 86, 0.2);
+}
+
+.shell .commerce-mode-toggle button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.shell .commerce-order-actions select {
+  min-width: 170px;
+}
+
+.shell .commerce-status-pipeline {
+  display: grid;
+  gap: 10px;
+}
+
+.shell .commerce-status-pipeline > div {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  border: 1px solid rgba(178, 205, 190, 0.58);
+  border-radius: 18px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.68);
+}
+
+.shell .commerce-status-pipeline span {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  color: #ffffff;
+  background: linear-gradient(135deg, #0c8f63, #2769d8);
+  font-weight: 780 !important;
+}
+
+.shell .commerce-status-pipeline strong {
+  color: var(--commerce-ink);
+}
+
+.shell .commerce-detail-grid,
+.shell .commerce-order-detail-grid {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.92fr) minmax(0, 1.08fr);
+  gap: 20px;
+  align-items: stretch;
+}
+
+.shell .commerce-detail-media {
+  min-height: 330px;
+  border: 1px solid rgba(170, 200, 185, 0.58);
+  border-radius: 26px;
+}
+
+.shell .commerce-detail-copy {
+  display: grid;
+  align-content: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.shell .commerce-detail-copy h2 {
+  margin: 0;
+  color: var(--commerce-ink);
+  font-size: clamp(1.7rem, 2.5vw, 2.55rem);
+  line-height: 1.05;
+}
+
+.shell .commerce-detail-copy p {
+  margin: 0;
+  color: var(--commerce-muted);
+  line-height: 1.62;
+}
+
+.shell .commerce-order-detail-grid .span-two,
+.shell .commerce-tracker.span-two {
+  grid-column: 1 / -1;
+}
+
+.shell .commerce-tracker {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid rgba(170, 200, 185, 0.58);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.74);
+}
+
+.shell .commerce-tracker span {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  color: var(--commerce-muted);
+  font-size: 0.78rem;
+  text-align: center;
+}
+
+.shell .commerce-tracker i {
+  width: 18px;
+  height: 18px;
+  border: 3px solid rgba(168, 196, 182, 0.78);
+  border-radius: 999px;
+  background: #ffffff;
+}
+
+.shell .commerce-tracker span.done {
+  color: #0b6f50;
+  font-weight: 760 !important;
+}
+
+.shell .commerce-tracker span.done i {
+  border-color: #17a76f;
+  background: #17a76f;
+  box-shadow: 0 0 0 5px rgba(23, 167, 111, 0.12);
+}
+
+.shell .commerce-business-modal .ui-modal-body {
+  padding: 0;
+}
+
+.shell .commerce-business-profile {
+  display: grid;
+  gap: 20px;
+}
+
+.shell .commerce-business-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 18px;
+  align-items: center;
+  border: 1px solid rgba(170, 200, 185, 0.58);
+  border-radius: 28px;
+  padding: 22px;
+  background:
+    radial-gradient(circle at 92% 4%, rgba(246, 175, 61, 0.18), transparent 30%),
+    linear-gradient(135deg, rgba(239, 252, 244, 0.95), rgba(238, 246, 255, 0.92));
+}
+
+.shell .commerce-business-head h2 {
+  margin: 8px 0;
+  color: var(--commerce-ink);
+  font-size: clamp(1.7rem, 2.6vw, 2.7rem);
+}
+
+.shell .commerce-business-head p {
+  max-width: 800px;
+  margin: 0;
+  color: var(--commerce-muted);
+  line-height: 1.62;
+}
+
+.shell .commerce-profile-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.shell .commerce-business-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 390px);
+  gap: 20px;
+}
+
+.shell .commerce-business-products,
+.shell .commerce-review-list {
+  display: grid;
+  gap: 12px;
+}
+
+.shell .commerce-business-products article,
+.shell .commerce-review-list article {
+  display: grid;
+  gap: 12px;
+  align-items: center;
+  border: 1px solid rgba(172, 200, 186, 0.55);
+  border-radius: 20px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.74);
+}
+
+.shell .commerce-business-products article {
+  grid-template-columns: 76px minmax(0, 1fr) auto auto;
+}
+
+.shell .commerce-business-products img,
+.shell .commerce-business-products article > span {
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 72px;
+  overflow: hidden;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #e3f8e7, #edf5ff 58%, #fff2da);
+}
+
+.shell .commerce-business-products strong,
+.shell .commerce-business-products small {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shell .commerce-business-products small,
+.shell .commerce-review-list span {
+  color: var(--commerce-muted);
+  font-size: 0.78rem;
+}
+
+.shell .commerce-review-form {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.shell .commerce-review-list article {
+  align-items: start;
+}
+
+.shell .commerce-review-list article > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.shell .commerce-review-list p {
+  margin: 0;
+  color: var(--commerce-muted);
+  line-height: 1.55;
+}
+
+.shell .commerce-confirm-copy {
+  margin: 0;
+  color: var(--commerce-muted);
+  line-height: 1.6;
+}
+
+.shell .commerce-cart-detail {
+  display: grid;
+  gap: 12px;
+}
+
+.shell .business-dashboard .commerce-product-meta.detail {
+  margin: 4px 0 2px;
+}
+
+@media (max-width: 1380px) {
+  .shell .commerce-market-layout,
+  .shell .commerce-cart-layout,
+  .shell .commerce-orders-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .shell .commerce-filter-rail,
+  .shell .commerce-cart-summary,
+  .shell .commerce-order-side {
+    position: static;
+  }
+
+  .shell .commerce-filter-rail {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 980px) {
+  .shell .commerce-hero,
+  .shell .commerce-pro-page .overview-hero,
+  .shell .commerce-detail-grid,
+  .shell .commerce-order-detail-grid,
+  .shell .commerce-business-content {
+    grid-template-columns: 1fr;
+  }
+
+  .shell .commerce-hero-search {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .shell .commerce-hero-search .gradient-btn,
+  .shell .commerce-hero-search .ui-btn {
+    grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .shell .commerce-filter-rail,
+  .shell .commerce-hero-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .shell .commerce-cart-item,
+  .shell .commerce-order-card {
+    grid-template-columns: 92px minmax(0, 1fr);
+  }
+
+  .shell .commerce-cart-media,
+  .shell .commerce-order-media {
+    width: 92px;
+    height: 92px;
+  }
+
+  .shell .commerce-cart-quantity,
+  .shell .commerce-cart-total,
+  .shell .commerce-cart-actions,
+  .shell .commerce-order-numbers,
+  .shell .commerce-order-actions {
+    grid-column: 1 / -1;
+    width: 100%;
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  .shell .commerce-order-topbar {
+    grid-template-columns: 1fr;
+  }
+
+  .shell .commerce-tracker {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .shell .commerce-pro-page {
+    border-radius: 18px;
+    padding: 12px;
+  }
+
+  .shell .commerce-hero {
+    min-height: 0;
+    border-radius: 24px;
+    padding: 20px;
+  }
+
+  .shell .commerce-hero h2 {
+    font-size: 2rem;
+  }
+
+  .shell .commerce-product-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .shell .commerce-product-meta.detail,
+  .shell .commerce-business-products article,
+  .shell .commerce-business-head {
+    grid-template-columns: 1fr;
+  }
+
+  .shell .commerce-business-products article .ui-btn,
+.shell .commerce-business-products article .gradient-btn {
+    width: 100%;
+  }
+}
+
+/* Business commerce fixes: stable imagery, uploaded product previews, and real seller graphs. */
+.shell .marketplace-dashboard.commerce-pro-page,
+.shell .cart-dashboard.commerce-pro-page,
+.shell .orders-dashboard.commerce-pro-page {
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: scroll;
+}
+
+.shell .marketplace-dashboard.commerce-pro-page {
+  background-image:
+    linear-gradient(180deg, rgba(255, 248, 226, 0.54), rgba(239, 249, 231, 0.9) 42%, rgba(250, 255, 245, 0.96)),
+    url("./assets/backgrounds/commerce-golden-farm-road.png");
+}
+
+.shell .cart-dashboard.commerce-pro-page,
+.shell .orders-dashboard.commerce-pro-page {
+  background-image:
+    linear-gradient(135deg, rgba(233, 249, 239, 0.88), rgba(255, 248, 232, 0.88)),
+    url("./assets/backgrounds/commerce-greenfield-mist.png");
+}
+
+.shell .commerce-product-media img,
+.shell .commerce-detail-media img,
+.shell .commerce-cart-media img,
+.shell .commerce-order-media img,
+.shell .product-detail-media img,
+.shell .table-product img,
+.shell .analytics-product-mini img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+/* Commerce completion pass: portal modals, seller-only cart state, and stable product media. */
+.ui-modal.ui-modal-wide {
+  width: min(1120px, calc(100vw - 28px)) !important;
+  max-height: calc(100vh - 40px) !important;
+  display: grid !important;
+  grid-template-rows: auto minmax(0, 1fr) auto !important;
+  overflow: hidden !important;
+}
+
+.ui-modal.ui-modal-wide .ui-modal-body {
+  min-width: 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+.ui-modal.ui-modal-wide .ui-modal-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(16px);
+}
+
+.ui-modal.commerce-business-modal {
+  width: min(1160px, calc(100vw - 28px)) !important;
+}
+
+.commerce-business-profile,
+.commerce-business-profile * {
+  min-width: 0;
+}
+
+.commerce-business-profile {
+  overflow-x: hidden;
+}
+
+.commerce-business-content {
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 380px) !important;
+}
+
+.commerce-business-products article {
+  grid-template-columns: 88px minmax(0, 1fr) auto auto !important;
+}
+
+.commerce-business-product-media,
+.commerce-business-products article > span {
+  width: 88px !important;
+  height: 78px !important;
+  display: grid !important;
+  place-items: center !important;
+  overflow: hidden !important;
+  border-radius: 18px !important;
+  background:
+    radial-gradient(circle at 25% 20%, rgba(35, 180, 103, 0.26), transparent 38%),
+    linear-gradient(135deg, #e5f8e8, #f2f7ff 58%, #fff4d9) !important;
+}
+
+.commerce-business-product-media img,
+.commerce-business-product-media .ui-icon,
+.commerce-business-products article > span img,
+.commerce-business-products article > span .ui-icon {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+.commerce-business-product-media .ui-icon,
+.commerce-business-products article > span .ui-icon,
+.commerce-detail-media .ui-icon,
+.commerce-cart-media .ui-icon,
+.commerce-order-media .ui-icon,
+.product-detail-media .ui-icon {
+  padding: 20px;
+  color: rgba(15, 112, 73, 0.78);
+}
+
+.commerce-detail-grid,
+.commerce-order-detail-grid,
+.product-detail-grid {
+  display: grid !important;
+  grid-template-columns: minmax(260px, 0.92fr) minmax(0, 1.08fr) !important;
+  gap: 20px !important;
+  align-items: stretch !important;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.ui-modal.ui-modal-wide .commerce-detail-grid,
+.ui-modal.ui-modal-wide .commerce-order-detail-grid,
+.ui-modal.ui-modal-wide .product-detail-grid {
+  display: grid !important;
+  grid-template-columns: minmax(280px, 0.85fr) minmax(0, 1.15fr) !important;
+  gap: 22px !important;
+  align-items: stretch !important;
+  width: 100% !important;
+}
+
+.commerce-detail-media,
+.commerce-order-detail-grid .commerce-detail-media,
+.product-detail-media {
+  width: 100% !important;
+  min-height: 320px;
+  max-height: 430px;
+  aspect-ratio: 4 / 3;
+  border-radius: 26px;
+  display: grid !important;
+  place-items: center !important;
+  overflow: hidden !important;
+  background:
+    radial-gradient(circle at 22% 18%, rgba(31, 174, 99, 0.24), transparent 42%),
+    linear-gradient(135deg, #e8f8e8 0%, #eef6ff 58%, #fff3db 100%);
+}
+
+.commerce-detail-media img,
+.product-detail-media img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+.commerce-detail-copy,
+.product-detail-copy {
+  min-width: 0 !important;
+  display: grid !important;
+  align-content: center !important;
+  gap: 14px !important;
+  padding: 8px 4px !important;
+}
+
+.commerce-detail-copy h2,
+.product-detail-copy h2 {
+  margin: 0 !important;
+  color: #10251c !important;
+  font-size: clamp(1.7rem, 3vw, 2.6rem) !important;
+  line-height: 1.05 !important;
+}
+
+.commerce-detail-copy p,
+.product-detail-copy p {
+  margin: 0 !important;
+  color: #5f7169 !important;
+  font-size: 0.98rem !important;
+  line-height: 1.55 !important;
+}
+
+.commerce-detail-price,
+.product-detail-copy > strong {
+  color: #0a1e16 !important;
+  font-size: clamp(2rem, 4vw, 3.2rem) !important;
+  font-weight: 950 !important;
+  letter-spacing: -0.04em !important;
+}
+
+.ui-modal.ui-modal-wide .inline-action-row,
+.ui-modal.ui-modal-wide .commerce-product-meta.detail {
+  max-width: 100%;
+}
+
+.table-product .placeholder {
+  display: grid !important;
+  place-items: center !important;
+  overflow: hidden !important;
+}
+
+.table-product .placeholder img,
+.table-product .placeholder .ui-icon {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+.shell .business-dashboard {
+  background-image:
+    linear-gradient(135deg, rgba(247, 252, 239, 0.84), rgba(236, 250, 239, 0.92) 54%, rgba(255, 249, 232, 0.92)),
+    url("./assets/backgrounds/commerce-farmfresh-market.png") !important;
+  background-size: cover !important;
+  background-attachment: scroll !important;
+}
+
+.shell .cart-dashboard.commerce-pro-page {
+  min-height: calc(100vh - 120px);
+}
+
+.shell .cart-dashboard.commerce-pro-page > .commerce-panel:only-child {
+  min-height: 420px;
+  display: grid;
+  place-items: center;
+  border-radius: 34px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(239, 250, 231, 0.88)),
+    url("./assets/backgrounds/commerce-greenfield-mist.png") center / cover no-repeat;
+}
+
+@media (max-width: 860px) {
+  .commerce-business-content,
+  .commerce-business-products article,
+  .commerce-detail-grid,
+  .commerce-order-detail-grid,
+  .product-detail-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .commerce-business-products article .ui-btn,
+  .commerce-business-products article .gradient-btn {
+    width: 100%;
+  }
+}
+
+.shell .commerce-product-form input[type="file"],
+.shell .business-dashboard input[type="file"] {
+  padding: 12px;
+  cursor: pointer;
+}
+
+.shell .product-modal-preview {
+  min-height: 142px;
+  align-items: center;
+  border: 1px dashed rgba(31, 126, 88, 0.4);
+  background:
+    radial-gradient(circle at 10% 12%, rgba(18, 200, 115, 0.12), transparent 28%),
+    rgba(255, 255, 255, 0.78);
+}
+
+.shell .product-modal-preview img {
+  width: 120px;
+  height: 104px;
+  object-fit: cover;
+}
+
+.shell .business-chart-card {
+  padding: 18px;
+  border-color: rgba(187, 220, 199, 0.86);
+  background:
+    radial-gradient(circle at 8% 0%, rgba(18, 200, 115, 0.12), transparent 30%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(238, 250, 244, 0.82));
+}
+
+.shell .business-chart-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.shell .business-metric-chart {
+  display: grid;
+  gap: 14px;
+  min-height: 210px;
+  padding: 16px;
+  border: 1px solid rgba(190, 218, 204, 0.72);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 18px 42px rgba(21, 90, 62, 0.08);
+}
+
+.shell .business-metric-chart span,
+.shell .business-metric-chart small {
+  display: block;
+  color: #607087;
+  font-weight: 800;
+}
+
+.shell .business-metric-chart strong {
+  display: block;
+  margin: 4px 0;
+  color: #07162f;
+  font-size: 1.7rem;
+}
+
+.shell .business-metric-chart .line-chart {
+  width: 100%;
+  min-height: 96px;
+}
+
+.chart-green polyline {
+  stroke: #12b76a;
+}
+
+.chart-orange polyline {
+  stroke: #f79009;
+}
+
+@media (max-width: 980px) {
+  .shell .business-chart-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Marketplace reference-image redesign overrides */
+.shell .marketplace-dashboard.commerce-pro-page {
+  --market-glass: rgba(255, 255, 255, 0.82);
+  --market-glass-strong: rgba(255, 255, 255, 0.92);
+  --market-shadow: 0 28px 80px rgba(32, 69, 39, 0.22);
+  background:
+    linear-gradient(180deg, rgba(255, 248, 226, 0.58) 0%, rgba(239, 249, 231, 0.88) 38%, rgba(250, 255, 245, 0.96) 100%),
+    url("./assets/backgrounds/commerce-golden-farm-road.png") center top / cover fixed;
+}
+
+.shell .marketplace-dashboard.commerce-pro-page::before {
+  opacity: 0.28;
+  background:
+    radial-gradient(circle at 16% 18%, rgba(255, 214, 131, 0.34), transparent 28%),
+    radial-gradient(circle at 88% 4%, rgba(20, 90, 54, 0.22), transparent 24%),
+    linear-gradient(rgba(255, 255, 255, 0.14) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+  background-size: auto, auto, 46px 46px, 46px 46px;
+}
+
+.shell .marketplace-dashboard .commerce-market-hero {
+  min-height: clamp(430px, 45vw, 620px);
+  position: relative;
+  align-items: end;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.54);
+  background:
+    linear-gradient(90deg, rgba(14, 42, 25, 0.82) 0%, rgba(13, 58, 35, 0.66) 42%, rgba(255, 185, 88, 0.1) 100%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(22, 50, 25, 0.42)),
+    url("./assets/backgrounds/commerce-farmfresh-market.png") center center / cover no-repeat;
+  box-shadow: 0 34px 100px rgba(42, 82, 43, 0.28);
+}
+
+.shell .marketplace-dashboard .commerce-market-hero::after {
+  content: "";
+  position: absolute;
+  inset: auto -8% -18% -8%;
+  height: 42%;
+  background: linear-gradient(180deg, transparent, rgba(8, 32, 18, 0.58));
+  pointer-events: none;
+}
+
+.shell .marketplace-dashboard .commerce-market-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+.shell .marketplace-dashboard .commerce-market-hero h2 {
+  max-width: 980px;
+  text-shadow: 0 20px 44px rgba(0, 0, 0, 0.28);
+}
+
+.shell .marketplace-dashboard .commerce-market-hero p {
+  max-width: 760px;
+  color: rgba(255, 255, 255, 0.91);
+  text-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+}
+
+.shell .marketplace-dashboard .commerce-market-hero .commerce-kicker {
+  border-color: rgba(255, 255, 255, 0.34);
+  color: #fff8df;
+  background: rgba(14, 44, 26, 0.42);
+  backdrop-filter: blur(18px);
+}
+
+.shell .marketplace-dashboard .commerce-hero-search {
+  max-width: 920px;
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(12, 34, 22, 0.44);
+}
+
+.shell .marketplace-dashboard .commerce-search-examples {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 9px;
+  margin-top: 14px;
+}
+
+.shell .marketplace-dashboard .commerce-search-examples button {
+  min-height: 34px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 999px;
+  padding: 0 13px;
+  color: rgba(255, 255, 255, 0.88);
+  background: rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(14px);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
+.shell .marketplace-dashboard .commerce-search-examples button:hover {
+  border-color: rgba(255, 244, 190, 0.62);
+  color: #fff7d4;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.shell .marketplace-dashboard .commerce-hero-panel .dash-card {
+  border-color: rgba(255, 255, 255, 0.34);
+  background: rgba(10, 38, 24, 0.38);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24), 0 24px 52px rgba(6, 31, 18, 0.24);
+}
+
+.shell .marketplace-dashboard .overview-intro,
+.shell .marketplace-dashboard .overview-stats,
+.shell .marketplace-dashboard .commerce-panel,
+.shell .marketplace-dashboard .commerce-toolbar-card {
+  border-color: rgba(255, 255, 255, 0.7);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 252, 241, 0.82)),
+    radial-gradient(circle at 0% 0%, rgba(255, 197, 93, 0.16), transparent 34%);
+  box-shadow: var(--market-shadow);
+}
+
+.shell .marketplace-dashboard .commerce-filter-rail .commerce-panel:first-child {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(247, 255, 237, 0.86)),
+    url("./assets/backgrounds/commerce-greenfield-mist.png") center / cover;
+  background-blend-mode: screen, normal;
+}
+
+.shell .marketplace-dashboard .commerce-product-grid {
+  grid-template-columns: repeat(auto-fill, minmax(304px, 1fr));
+  gap: 22px;
+}
+
+.shell .marketplace-dashboard .commerce-product-card {
+  position: relative;
+  border-radius: 30px;
+  border-color: rgba(255, 255, 255, 0.74);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(255, 249, 231, 0.88)),
+    radial-gradient(circle at 90% 0%, rgba(255, 183, 79, 0.22), transparent 32%);
+  box-shadow: 0 26px 70px rgba(43, 84, 42, 0.16);
+}
+
+.shell .marketplace-dashboard .commerce-product-card::before {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.74);
+  border-radius: 24px;
+  pointer-events: none;
+}
+
+.shell .marketplace-dashboard .commerce-product-media {
+  min-height: 236px;
+  border-bottom: 1px solid rgba(172, 136, 70, 0.16);
+  background:
+    linear-gradient(135deg, rgba(244, 255, 226, 0.72), rgba(255, 241, 207, 0.82)),
+    url("./assets/backgrounds/commerce-greenfield-mist.png") center / cover;
+}
+
+.shell .marketplace-dashboard .commerce-product-media img {
+  transition: transform 0.35s ease, filter 0.35s ease;
+}
+
+.shell .marketplace-dashboard .commerce-product-card:hover .commerce-product-media img {
+  transform: scale(1.045);
+  filter: saturate(1.08) contrast(1.03);
+}
+
+.shell .marketplace-dashboard .commerce-product-body {
+  padding: 19px 19px 13px;
+}
+
+.shell .marketplace-dashboard .commerce-product-topline span {
+  color: #936018;
+}
+
+.shell .marketplace-dashboard .commerce-product-topline strong,
+.shell .marketplace-dashboard .commerce-detail-price {
+  color: #0b6848;
+}
+
+.shell .marketplace-dashboard .commerce-product-meta {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px 10px;
+}
+
+.shell .marketplace-dashboard .commerce-product-meta.detail {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.shell .marketplace-dashboard .commerce-product-meta span {
+  min-height: 34px;
+  overflow: hidden;
+  border: 1px solid rgba(171, 197, 168, 0.44);
+  border-radius: 13px;
+  padding: 0 9px;
+  background: rgba(255, 255, 255, 0.66);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shell .marketplace-dashboard .commerce-product-actions {
+  padding: 0 19px 19px;
+}
+
+.shell .marketplace-dashboard .commerce-product-actions .ui-btn,
+.shell .marketplace-dashboard .commerce-product-actions .gradient-btn,
+.shell .marketplace-dashboard .commerce-seller-actions .ui-btn,
+.shell .marketplace-dashboard .commerce-seller-actions .gradient-btn {
+  min-height: 42px;
+  border-radius: 15px;
+}
+
+.shell .marketplace-dashboard .commerce-business-list > button {
+  border-color: rgba(255, 255, 255, 0.64);
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 16px 36px rgba(48, 86, 48, 0.1);
+}
+
+.shell .marketplace-dashboard .commerce-email-line {
+  color: #0b7353 !important;
+  font-weight: 650 !important;
+}
+
+.shell .marketplace-dashboard .commerce-business-head {
+  min-height: 280px;
+  align-items: end;
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.5);
+  background:
+    linear-gradient(90deg, rgba(10, 39, 23, 0.82), rgba(15, 80, 47, 0.58), rgba(255, 180, 74, 0.1)),
+    url("./assets/backgrounds/commerce-farmfresh-market.png") center / cover;
+  box-shadow: 0 28px 70px rgba(22, 58, 31, 0.2);
+}
+
+.shell .marketplace-dashboard .commerce-business-head h2,
+.shell .marketplace-dashboard .commerce-business-head p {
+  color: #ffffff;
+  text-shadow: 0 14px 30px rgba(0, 0, 0, 0.24);
+}
+
+@media (max-width: 980px) {
+  .shell .marketplace-dashboard.commerce-pro-page,
+  .shell .marketplace-dashboard .commerce-market-hero {
+    background-attachment: scroll;
+  }
+
+  .shell .marketplace-dashboard .commerce-product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .shell .marketplace-dashboard .commerce-product-meta,
+  .shell .marketplace-dashboard .commerce-product-meta.detail {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Marketplace perfection pass: cleaner hierarchy, controlled hero, equal cards */
+.shell .marketplace-dashboard.commerce-pro-page {
+  gap: 18px;
+  padding: clamp(14px, 1.6vw, 22px);
+  background:
+    linear-gradient(180deg, rgba(255, 251, 237, 0.76) 0%, rgba(244, 250, 235, 0.94) 48%, rgba(250, 255, 247, 0.98) 100%),
+    url("./assets/backgrounds/commerce-golden-farm-road.png") center top / cover no-repeat;
+}
+
+.shell .marketplace-dashboard .commerce-market-hero {
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 372px);
+  min-height: clamp(360px, 34vw, 500px);
+  padding: clamp(24px, 3vw, 44px);
+  border-radius: 34px;
+  background:
+    linear-gradient(90deg, rgba(9, 35, 21, 0.88) 0%, rgba(11, 59, 34, 0.72) 46%, rgba(255, 193, 100, 0.08) 100%),
+    linear-gradient(180deg, rgba(0, 0, 0, 0.06), rgba(8, 34, 18, 0.46)),
+    url("./assets/backgrounds/commerce-farmfresh-market.png") center 54% / cover no-repeat;
+}
+
+.shell .marketplace-dashboard .commerce-market-hero h2 {
+  max-width: 850px;
+  margin: 16px 0 14px;
+  font-size: clamp(2.35rem, 4.6vw, 5rem);
+  line-height: 0.94;
+  letter-spacing: -0.075em;
+}
+
+.shell .marketplace-dashboard .commerce-market-hero p {
+  max-width: 720px;
+  font-size: clamp(0.98rem, 1.2vw, 1.14rem);
+}
+
+.shell .marketplace-dashboard .commerce-market-hero-card {
+  align-self: end;
+  display: grid;
+  gap: 14px;
+  min-height: 330px;
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  border-radius: 30px;
+  padding: 22px;
+  color: #fffef4;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(15, 48, 29, 0.28)),
+    rgba(8, 34, 20, 0.38);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 28px 58px rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(22px);
+}
+
+.shell .marketplace-dashboard .commerce-hero-card-label {
+  width: fit-content;
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  padding: 0 12px;
+  color: #fff1bd;
+  background: rgba(255, 255, 255, 0.12);
+  font-size: 0.76rem;
+  font-weight: 760 !important;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.shell .marketplace-dashboard .commerce-market-hero-card > strong {
+  color: #ffffff;
+  font-size: clamp(4rem, 7vw, 6.4rem);
+  line-height: 0.86;
+  letter-spacing: -0.08em;
+}
+
+.shell .marketplace-dashboard .commerce-market-hero-card > p {
+  margin: -4px 0 2px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.96rem;
+  line-height: 1.5;
+}
+
+.shell .marketplace-dashboard .commerce-market-hero-card > div {
+  display: grid;
+  gap: 9px;
+}
+
+.shell .marketplace-dashboard .commerce-market-hero-card > div span {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 38px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 14px;
+  padding: 0 11px;
+  color: rgba(255, 255, 255, 0.88);
+  background: rgba(255, 255, 255, 0.11);
+}
+
+.shell .marketplace-dashboard .commerce-market-hero-card .ui-icon {
+  width: 16px;
+  height: 16px;
+  color: #fff0a5;
+}
+
+.shell .marketplace-dashboard .commerce-market-hero-card .gradient-btn {
+  width: 100%;
+  min-height: 46px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #f2a43b 0%, #20a66b 100%);
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.22);
+}
+
+.shell .marketplace-dashboard .commerce-hero-search {
+  margin-top: 24px;
+  max-width: 840px;
+  border-radius: 20px;
+  padding: 8px;
+  background: rgba(7, 28, 17, 0.54);
+}
+
+.shell .marketplace-dashboard .commerce-search-examples {
+  max-width: 840px;
+}
+
+.shell .commerce-market-command {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(330px, 0.7fr);
+  gap: 16px;
+  align-items: stretch;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 28px;
+  padding: 18px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 251, 235, 0.78)),
+    radial-gradient(circle at 95% 0%, rgba(242, 164, 59, 0.18), transparent 34%);
+  box-shadow: 0 24px 68px rgba(48, 86, 48, 0.14);
+  backdrop-filter: blur(18px);
+}
+
+.shell .commerce-market-command > div:first-child {
+  display: grid;
+  align-content: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.shell .commerce-market-command h3 {
+  max-width: 780px;
+  margin: 0;
+  color: #143527;
+  font-size: clamp(1.12rem, 1.8vw, 1.8rem);
+  line-height: 1.16;
+  letter-spacing: -0.045em;
+}
+
+.shell .commerce-market-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  grid-column: 1 / -1;
+}
+
+.shell .commerce-market-metrics span {
+  display: grid;
+  gap: 3px;
+  min-height: 76px;
+  border: 1px solid rgba(169, 198, 177, 0.48);
+  border-radius: 20px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.shell .commerce-market-metrics strong {
+  overflow: hidden;
+  color: #0b6848;
+  font-size: clamp(1.12rem, 1.8vw, 1.56rem);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shell .commerce-market-metrics small {
+  color: #6f7e68;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+}
+
+.shell .commerce-market-filter-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  grid-column: 1 / -1;
+}
+
+.shell .commerce-market-filter-strip label {
+  display: grid;
+  gap: 7px;
+  color: #52695b;
+  font-size: 0.77rem;
+  font-weight: 740 !important;
+  text-transform: uppercase;
+}
+
+.shell .commerce-market-filter-strip select {
+  width: 100%;
+  min-height: 46px;
+  border: 1px solid rgba(167, 196, 177, 0.72);
+  border-radius: 16px;
+  padding: 0 13px;
+  color: #183527;
+  background: rgba(255, 255, 255, 0.88);
+  font-family: inherit;
+  outline: 0;
+}
+
+.shell .marketplace-dashboard .commerce-market-layout {
+  grid-template-columns: minmax(260px, 315px) minmax(0, 1fr);
+  gap: 18px;
+}
+
+.shell .marketplace-dashboard .commerce-filter-rail {
+  gap: 14px;
+}
+
+.shell .commerce-side-proof {
+  display: grid;
+  gap: 9px;
+  margin-top: 14px;
+}
+
+.shell .commerce-side-proof span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  border: 1px solid rgba(167, 196, 177, 0.46);
+  border-radius: 14px;
+  padding: 0 10px;
+  color: #375543;
+  background: rgba(255, 255, 255, 0.64);
+  font-size: 0.78rem;
+}
+
+.shell .commerce-side-proof .ui-icon {
+  width: 15px;
+  height: 15px;
+  color: #16a36a;
+}
+
+.shell .marketplace-dashboard .commerce-toolbar-card {
+  margin-bottom: 16px;
+  padding: 18px;
+}
+
+.shell .marketplace-dashboard .commerce-toolbar-card .dash-section-header {
+  align-items: center;
+  gap: 14px;
+}
+
+.shell .marketplace-dashboard .commerce-toolbar-card .dash-section-header h2 {
+  font-size: clamp(1.25rem, 2vw, 2rem);
+}
+
+.shell .marketplace-dashboard .commerce-product-grid {
+  grid-template-columns: repeat(auto-fill, minmax(292px, 1fr));
+  gap: 18px;
+  align-items: stretch;
+}
+
+.shell .marketplace-dashboard .commerce-product-card {
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr auto auto;
+  overflow: hidden;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.91);
+}
+
+.shell .marketplace-dashboard .commerce-product-card::before {
+  display: none;
+}
+
+.shell .marketplace-dashboard .commerce-product-media {
+  min-height: 210px;
+  max-height: 230px;
+}
+
+.shell .marketplace-dashboard .commerce-product-body {
+  display: grid;
+  grid-template-rows: auto auto auto 1fr;
+  gap: 11px;
+  min-height: 260px;
+  padding: 17px 17px 12px;
+}
+
+.shell .marketplace-dashboard .commerce-product-card h3 {
+  display: -webkit-box;
+  min-height: 2.6em;
+  overflow: hidden;
+  color: #142f24;
+  font-size: 1.12rem;
+  line-height: 1.28;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.shell .marketplace-dashboard .commerce-product-card p {
+  min-height: 3em;
+  font-size: 0.88rem;
+}
+
+.shell .marketplace-dashboard .commerce-product-meta {
+  align-self: end;
+  grid-template-columns: 1fr;
+  gap: 7px;
+}
+
+.shell .marketplace-dashboard .commerce-product-meta span {
+  min-height: 32px;
+  max-width: 100%;
+  font-size: 0.78rem;
+}
+
+.shell .marketplace-dashboard .commerce-product-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+  padding: 0 17px 17px;
+}
+
+.shell .marketplace-dashboard .commerce-product-actions .ui-btn,
+.shell .marketplace-dashboard .commerce-product-actions .gradient-btn {
+  min-width: 0;
+  width: 100%;
+  justify-content: center;
+  padding-inline: 10px;
+  font-size: 0.78rem;
+}
+
+.shell .marketplace-dashboard .commerce-product-actions .ui-btn:last-child {
+  grid-column: 1 / -1;
+}
+
+.shell .marketplace-dashboard .commerce-seller-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 0 17px 17px;
+}
+
+.shell .marketplace-dashboard .commerce-business-list > button {
+  min-height: 78px;
+  border-radius: 18px;
+}
+
+.shell .marketplace-dashboard .commerce-business-list > button:hover {
+  transform: translateY(-2px);
+  border-color: rgba(32, 166, 107, 0.38);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+@media (max-width: 1380px) {
+  .shell .marketplace-dashboard .commerce-market-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .shell .marketplace-dashboard .commerce-filter-rail {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 980px) {
+  .shell .marketplace-dashboard .commerce-market-hero,
+  .shell .commerce-market-command {
+    grid-template-columns: 1fr;
+  }
+
+  .shell .marketplace-dashboard .commerce-market-hero-card {
+    min-height: auto;
+  }
+
+  .shell .commerce-market-metrics,
+  .shell .commerce-market-filter-strip,
+  .shell .marketplace-dashboard .commerce-filter-rail {
+    grid-template-columns: 1fr;
+  }
+
+  .shell .marketplace-dashboard .commerce-product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(255px, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .shell .marketplace-dashboard .commerce-market-hero {
+    min-height: 0;
+    padding: 20px;
+    border-radius: 24px;
+  }
+
+  .shell .marketplace-dashboard .commerce-market-hero h2 {
+    font-size: 2.3rem;
+  }
+
+  .shell .marketplace-dashboard .commerce-product-grid,
+  .shell .marketplace-dashboard .commerce-product-actions,
+  .shell .marketplace-dashboard .commerce-seller-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .shell .marketplace-dashboard .commerce-product-actions .ui-btn:last-child {
+    grid-column: auto;
+  }
+}
+
+/* Final commerce hardening overrides. Keep last so generated route theme blocks cannot hide images or seller graphs. */
+.shell .marketplace-dashboard.commerce-pro-page,
+.shell .cart-dashboard.commerce-pro-page,
+.shell .orders-dashboard.commerce-pro-page {
+  background-repeat: no-repeat !important;
+  background-size: cover !important;
+  background-attachment: scroll !important;
+}
+
+.shell .marketplace-dashboard.commerce-pro-page {
+  background-image:
+    linear-gradient(180deg, rgba(255, 248, 226, 0.54), rgba(239, 249, 231, 0.9) 42%, rgba(250, 255, 245, 0.96)),
+    url("./assets/backgrounds/commerce-golden-farm-road.png") !important;
+}
+
+.shell .cart-dashboard.commerce-pro-page,
+.shell .orders-dashboard.commerce-pro-page {
+  background-image:
+    linear-gradient(135deg, rgba(233, 249, 239, 0.88), rgba(255, 248, 232, 0.88)),
+    url("./assets/backgrounds/commerce-greenfield-mist.png") !important;
+}
+
+.shell .commerce-product-media img,
+.shell .commerce-detail-media img,
+.shell .commerce-cart-media img,
+.shell .commerce-order-media img,
+.shell .product-detail-media img,
+.shell .table-product img,
+.shell .analytics-product-mini img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+/* Marketplace business modal final override: portal-safe product cards and review form. */
+.ui-modal.commerce-business-modal {
+  width: min(1080px, calc(100vw - 32px)) !important;
+}
+
+.ui-modal.commerce-business-modal .ui-modal-body {
+  overflow-x: hidden !important;
+}
+
+.ui-modal.commerce-business-modal .commerce-business-profile {
+  display: grid !important;
+  gap: 22px !important;
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+}
+
+.ui-modal.commerce-business-modal .commerce-business-head {
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr) !important;
+  gap: 16px !important;
+  align-items: center !important;
+  padding: 18px !important;
+  border: 1px solid rgba(190, 211, 200, 0.6) !important;
+  border-radius: 24px !important;
+  background: linear-gradient(135deg, rgba(247, 255, 246, 0.92), rgba(255, 250, 234, 0.86)) !important;
+}
+
+.ui-modal.commerce-business-modal .commerce-business-content {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 370px) !important;
+  gap: 20px !important;
+  align-items: start !important;
+  min-width: 0 !important;
+}
+
+.ui-modal.commerce-business-modal .commerce-business-products {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important;
+  gap: 14px !important;
+}
+
+.ui-modal.commerce-business-modal .commerce-business-products article {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 10px !important;
+  align-items: stretch !important;
+  min-width: 0 !important;
+  padding: 12px !important;
+  border: 1px solid rgba(176, 202, 188, 0.58) !important;
+  border-radius: 22px !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+  box-shadow: 0 14px 34px rgba(28, 82, 58, 0.08) !important;
+}
+
+.ui-modal.commerce-business-modal .commerce-business-product-media,
+.ui-modal.commerce-business-modal .commerce-business-products article > span {
+  width: 100% !important;
+  height: 150px !important;
+  display: grid !important;
+  place-items: center !important;
+  overflow: hidden !important;
+  border-radius: 18px !important;
+  background: linear-gradient(135deg, #e7f8e7, #eef6ff 58%, #fff3dc) !important;
+}
+
+.ui-modal.commerce-business-modal .commerce-business-product-media img,
+.ui-modal.commerce-business-modal .commerce-business-product-media .ui-icon,
+.ui-modal.commerce-business-modal .commerce-business-products article > span img,
+.ui-modal.commerce-business-modal .commerce-business-products article > span .ui-icon {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+.ui-modal.commerce-business-modal .commerce-business-product-media .ui-icon,
+.ui-modal.commerce-business-modal .commerce-business-products article > span .ui-icon {
+  padding: 36px !important;
+  color: rgba(17, 121, 80, 0.78) !important;
+}
+
+.ui-modal.commerce-business-modal .commerce-business-products article > div {
+  min-width: 0 !important;
+}
+
+.ui-modal.commerce-business-modal .commerce-business-products strong,
+.ui-modal.commerce-business-modal .commerce-business-products small {
+  display: block !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.ui-modal.commerce-business-modal .commerce-business-products article .ui-btn,
+.ui-modal.commerce-business-modal .commerce-business-products article .gradient-btn {
+  width: 100% !important;
+  min-width: 0 !important;
+  justify-content: center !important;
+}
+
+.ui-modal.commerce-business-modal .commerce-review-form select,
+.ui-modal.commerce-business-modal .commerce-review-form textarea {
+  width: 100% !important;
+  border: 1px solid rgba(181, 202, 190, 0.7) !important;
+  border-radius: 16px !important;
+  color: #10251c !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+}
+
+.ui-modal.commerce-business-modal .commerce-review-form textarea {
+  min-height: 112px !important;
+}
+
+@media (max-width: 900px) {
+  .ui-modal.commerce-business-modal .commerce-business-content,
+  .ui-modal.commerce-business-modal .commerce-business-head {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Cart detail modal final override: wide, no horizontal scroll, readable summary. */
+.ui-modal.commerce-cart-detail-modal {
+  width: min(1080px, calc(100vw - 32px)) !important;
+  max-height: calc(100vh - 44px) !important;
+  overflow: hidden !important;
+}
+
+.ui-modal.commerce-cart-detail-modal .ui-modal-body {
+  overflow-x: hidden !important;
+}
+
+.ui-modal.commerce-cart-detail-modal .commerce-cart-detail {
+  display: grid !important;
+  grid-template-columns: minmax(320px, 0.95fr) minmax(0, 1.05fr) !important;
+  gap: 24px !important;
+  align-items: stretch !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+.ui-modal.commerce-cart-detail-modal .commerce-cart-media.large {
+  width: 100% !important;
+  height: auto !important;
+  min-height: 360px !important;
+  max-height: 520px !important;
+  aspect-ratio: 4 / 3 !important;
+  display: grid !important;
+  place-items: center !important;
+  overflow: hidden !important;
+  border-radius: 28px !important;
+  background: linear-gradient(135deg, #e7f8e7, #eef6ff 58%, #fff3dc) !important;
+}
+
+.ui-modal.commerce-cart-detail-modal .commerce-cart-media.large img,
+.ui-modal.commerce-cart-detail-modal .commerce-cart-media.large .ui-icon {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+.ui-modal.commerce-cart-detail-modal .commerce-cart-media.large .ui-icon {
+  padding: 72px !important;
+  color: rgba(17, 121, 80, 0.78) !important;
+}
+
+.ui-modal.commerce-cart-detail-modal .commerce-cart-detail-copy {
+  min-width: 0 !important;
+  display: grid !important;
+  align-content: center !important;
+  gap: 14px !important;
+  padding: 6px 2px !important;
+}
+
+.ui-modal.commerce-cart-detail-modal .commerce-cart-detail-copy h2 {
+  margin: 0 !important;
+  color: #10251c !important;
+  font-size: clamp(2rem, 4vw, 3.2rem) !important;
+  line-height: 1.05 !important;
+  font-weight: 950 !important;
+  letter-spacing: -0.04em !important;
+}
+
+.ui-modal.commerce-cart-detail-modal .commerce-cart-detail-copy p {
+  margin: 0 !important;
+  color: #5f7169 !important;
+  font-size: 1rem !important;
+}
+
+.ui-modal.commerce-cart-detail-modal .commerce-total-row {
+  min-height: 48px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 14px !important;
+  padding: 10px 14px !important;
+  border: 1px solid rgba(181, 202, 190, 0.62) !important;
+  border-radius: 16px !important;
+  background: rgba(255, 255, 255, 0.82) !important;
+}
+
+.ui-modal.commerce-cart-detail-modal .commerce-total-row.grand {
+  color: #0c261b !important;
+  background: linear-gradient(135deg, rgba(230, 249, 232, 0.95), rgba(255, 246, 220, 0.92)) !important;
+}
+
+@media (max-width: 860px) {
+  .ui-modal.commerce-cart-detail-modal .commerce-cart-detail {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Marketplace compact product cards and direct-order actions. */
+.shell .marketplace-dashboard .commerce-product-grid {
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)) !important;
+  gap: 14px !important;
+}
+
+.shell .marketplace-dashboard .commerce-product-card {
+  grid-template-rows: auto minmax(0, 1fr) auto auto !important;
+  border-radius: 22px !important;
+}
+
+.shell .marketplace-dashboard .commerce-product-media {
+  min-height: 145px !important;
+  max-height: 165px !important;
+}
+
+.shell .marketplace-dashboard .commerce-product-body {
+  min-height: 0 !important;
+  gap: 8px !important;
+  padding: 13px 14px 10px !important;
+}
+
+.shell .marketplace-dashboard .commerce-product-card h3 {
+  min-height: 0 !important;
+  font-size: 1rem !important;
+  line-height: 1.2 !important;
+  -webkit-line-clamp: 1 !important;
+}
+
+.shell .marketplace-dashboard .commerce-product-card p {
+  min-height: 0 !important;
+  font-size: 0.82rem !important;
+  line-height: 1.35 !important;
+  -webkit-line-clamp: 2 !important;
+}
+
+.shell .marketplace-dashboard .commerce-product-meta {
+  gap: 5px !important;
+}
+
+.shell .marketplace-dashboard .commerce-product-meta span {
+  min-height: 28px !important;
+  padding: 5px 9px !important;
+  font-size: 0.73rem !important;
+}
+
+.shell .marketplace-dashboard .commerce-product-actions {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+  padding: 0 14px 14px !important;
+}
+
+.shell .marketplace-dashboard .commerce-product-actions .ui-btn,
+.shell .marketplace-dashboard .commerce-product-actions .gradient-btn {
+  min-height: 42px !important;
+  padding: 8px 10px !important;
+  font-size: 0.75rem !important;
+}
+
+.shell .marketplace-dashboard .commerce-product-actions .ui-btn:last-child {
+  grid-column: 1 / -1 !important;
+}
+
+.ui-modal.ui-modal-wide .commerce-detail-media {
+  min-height: 260px !important;
+  max-height: 340px !important;
+}
+
+/* Home/Profile aligned professional page system for Commerce, Workspace, and Account pages. */
+.shell .social-pro-page {
+  --social-blue: #2f73e8;
+  --social-blue-dark: #1854c4;
+  --social-green: #19b984;
+  --social-green-dark: #0f8d65;
+  --social-rose: #f65b9a;
+  --social-amber: #f6a935;
+  --social-ink: #0b1730;
+  --social-muted: #61708a;
+  --social-card: rgba(255, 255, 255, 0.92);
+  --social-soft: rgba(247, 251, 255, 0.84);
+  --social-border: rgba(47, 115, 232, 0.14);
+  --social-shadow: 0 28px 70px rgba(20, 40, 86, 0.14);
+  --social-shadow-soft: 0 16px 38px rgba(20, 40, 86, 0.1);
+  position: relative;
+  isolation: isolate;
+  padding-bottom: 42px;
+  color: var(--social-ink);
+}
+
+.shell .social-pro-page::before,
+.shell .social-pro-page::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  z-index: -2;
+}
+
+.shell .social-pro-page::before {
+  inset: -28px -28px auto -28px;
+  min-height: 420px;
+  border-radius: 0 0 42px 42px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(238, 248, 255, 0.74) 34%, rgba(235, 252, 244, 0.76)),
+    radial-gradient(circle at 8% 18%, rgba(47, 115, 232, 0.22), transparent 32%),
+    radial-gradient(circle at 82% 16%, rgba(25, 185, 132, 0.2), transparent 30%),
+    radial-gradient(circle at 52% 84%, rgba(246, 91, 154, 0.14), transparent 32%);
+}
+
+.shell .social-pro-page::after {
+  inset: 110px 18px auto auto;
+  width: min(42vw, 520px);
+  height: 340px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(47, 115, 232, 0.13), transparent 68%);
+  filter: blur(10px);
+}
+
+.shell .social-commerce-page::before {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.92), rgba(241, 251, 245, 0.84) 42%, rgba(236, 246, 255, 0.86)),
+    linear-gradient(90deg, rgba(10, 22, 45, 0.1), rgba(255, 255, 255, 0.58)),
+    url("./assets/backgrounds/commerce-farmfresh-market.png") center / cover no-repeat;
+}
+
+.shell .workspace-pro-page::before {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(241, 246, 255, 0.86) 44%, rgba(239, 253, 246, 0.9)),
+    linear-gradient(90deg, rgba(24, 84, 196, 0.12), rgba(255, 255, 255, 0.68)),
+    url("./assets/backgrounds/commerce-greenfield-mist.png") center / cover no-repeat;
+}
+
+.shell .account-pro-page::before {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(242, 247, 255, 0.86) 44%, rgba(255, 245, 250, 0.88)),
+    linear-gradient(90deg, rgba(47, 115, 232, 0.1), rgba(255, 255, 255, 0.68)),
+    url("./assets/backgrounds/profile-cover-4k-background.png") center / cover no-repeat;
+}
+
+.shell .social-pro-page :is(.dash-card, .card, .commerce-panel, .calendar-form-card, .calendar-month-card, .smart-reminder-card, .analytics-metric-card, .analytics-engagement-card, .analytics-insights-card, .top-products-card, .platform-usage-card, .active-creators-card, .settings-card, .settings-side-card, .business-control-card, .business-profile-card, .business-chart-card, .business-table-card) {
+  border: 1px solid var(--social-border) !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 252, 255, 0.9)) !important;
+  box-shadow: var(--social-shadow-soft) !important;
+  border-radius: 28px !important;
+  backdrop-filter: blur(18px);
+}
+
+.shell .social-pro-page :is(.commerce-hero, .overview-hero, .analytics-hero-card, .settings-hero-card) {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.66) !important;
+  border-radius: 34px !important;
+  background:
+    linear-gradient(135deg, rgba(12, 28, 60, 0.92), rgba(33, 112, 228, 0.86) 48%, rgba(25, 185, 132, 0.82)),
+    url("./assets/backgrounds/commerce-golden-farm-road.png") center / cover no-repeat !important;
+  box-shadow: 0 34px 90px rgba(18, 50, 105, 0.24) !important;
+  color: #fff;
+}
+
+.shell .workspace-pro-page :is(.overview-hero, .analytics-hero-card) {
+  background:
+    linear-gradient(135deg, rgba(7, 25, 55, 0.9), rgba(47, 115, 232, 0.82) 48%, rgba(111, 78, 255, 0.68)),
+    url("./assets/backgrounds/commerce-greenfield-mist.png") center / cover no-repeat !important;
+}
+
+.shell .account-pro-page .settings-hero-card {
+  background:
+    linear-gradient(135deg, rgba(9, 23, 52, 0.9), rgba(47, 115, 232, 0.78) 48%, rgba(246, 91, 154, 0.62)),
+    url("./assets/backgrounds/profile-cover-4k-background.png") center / cover no-repeat !important;
+}
+
+.shell .social-pro-page :is(.commerce-hero, .overview-hero, .analytics-hero-card, .settings-hero-card)::after {
+  content: "";
+  position: absolute;
+  inset: auto -90px -120px auto;
+  width: 360px;
+  height: 360px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.36), transparent 68%);
+  pointer-events: none;
+}
+
+.shell .social-pro-page :is(.commerce-kicker, .eyebrow, .commerce-hero-card-label) {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  border-radius: 999px;
+  padding: 8px 13px;
+  border: 1px solid rgba(255, 255, 255, 0.52);
+  background: rgba(255, 255, 255, 0.16);
+  color: inherit;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 800;
+}
+
+.shell .social-pro-page :is(input, select, textarea, .ui-field) {
+  border: 1px solid rgba(47, 115, 232, 0.16) !important;
+  border-radius: 18px !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78), 0 10px 24px rgba(20, 40, 86, 0.06) !important;
+  color: var(--social-ink) !important;
+}
+
+.shell .social-pro-page :is(input, select, textarea, .ui-field):focus {
+  border-color: rgba(47, 115, 232, 0.56) !important;
+  box-shadow: 0 0 0 4px rgba(47, 115, 232, 0.12), 0 14px 30px rgba(20, 40, 86, 0.08) !important;
+  outline: none !important;
+}
+
+.shell .social-pro-page :is(label, .form-grid label, .modal-grid label) {
+  color: var(--social-muted);
+  font-weight: 800;
+}
+
+.shell .social-pro-page :is(.gradient-btn, .ui-btn.gradient, button.gradient, .button-gradient),
+.shell .social-pro-page .btn-gradient,
+.shell .social-pro-page .inline-action-row .gradient,
+.shell .social-pro-page button[class*="gradient"] {
+  border: 0 !important;
+  background: linear-gradient(135deg, var(--social-blue), var(--social-green)) !important;
+  box-shadow: 0 16px 32px rgba(47, 115, 232, 0.24) !important;
+  color: #fff !important;
+}
+
+.shell .social-pro-page :is(button, .ui-btn, .text-link) {
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.shell .social-pro-page :is(button, .ui-btn):hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.shell .social-pro-page :is(.status-badge, .pill, .commerce-product-topline span, .commerce-filter-label) {
+  border-radius: 999px !important;
+  font-weight: 800;
+}
+
+.shell .social-commerce-page .commerce-market-command {
+  border: 1px solid rgba(255, 255, 255, 0.68) !important;
+  border-radius: 30px !important;
+  background: rgba(255, 255, 255, 0.72) !important;
+  box-shadow: var(--social-shadow-soft) !important;
+  backdrop-filter: blur(18px);
+}
+
+.shell .social-commerce-page .commerce-market-filter-strip label {
+  gap: 8px;
+}
+
+.shell .social-commerce-page .commerce-filter-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--social-ink);
+}
+
+.shell .social-commerce-page .commerce-filter-label .icon {
+  color: var(--social-blue);
+}
+
+.shell .social-commerce-page .commerce-product-grid {
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+  gap: 20px !important;
+}
+
+.shell .social-commerce-page .commerce-product-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(47, 115, 232, 0.13) !important;
+  border-radius: 30px !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+  box-shadow: 0 24px 58px rgba(20, 40, 86, 0.12) !important;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.shell .social-commerce-page .commerce-product-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 34px 76px rgba(20, 40, 86, 0.18) !important;
+}
+
+.shell .social-commerce-page .commerce-product-media {
+  height: 205px !important;
+  border-radius: 24px !important;
+  overflow: hidden;
+  background:
+    linear-gradient(135deg, rgba(47, 115, 232, 0.14), rgba(25, 185, 132, 0.16)),
+    url("./assets/backgrounds/commerce-greenfield-mist.png") center / cover no-repeat !important;
+}
+
+.shell .social-commerce-page .commerce-product-media::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 42%;
+  background: linear-gradient(180deg, transparent, rgba(7, 18, 42, 0.24));
+  pointer-events: none;
+}
+
+.shell .social-commerce-page .commerce-product-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.shell .social-commerce-page .commerce-product-body {
+  padding: 18px 18px 10px !important;
+}
+
+.shell .social-commerce-page .commerce-product-body h3 {
+  margin: 8px 0 6px;
+  color: var(--social-ink);
+  font-size: 1.14rem;
+  line-height: 1.25;
+}
+
+.shell .social-commerce-page .commerce-product-body p {
+  display: -webkit-box;
+  min-height: 42px;
+  margin: 0 0 12px;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  color: var(--social-muted);
+}
+
+.shell .social-commerce-page .commerce-product-meta {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px !important;
+}
+
+.shell .social-commerce-page .commerce-product-meta span {
+  min-width: 0;
+  border: 1px solid rgba(47, 115, 232, 0.11);
+  border-radius: 14px;
+  padding: 8px 9px;
+  background: rgba(246, 250, 255, 0.9);
+  color: #33415f;
+  font-size: 0.78rem;
+}
+
+.shell .social-commerce-page .commerce-product-meta span:nth-child(3) {
+  color: #9a5c00;
+  background: rgba(255, 247, 230, 0.92);
+  border-color: rgba(246, 169, 53, 0.22);
+}
+
+.shell .social-commerce-page .commerce-product-actions {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 9px !important;
+  padding: 12px 18px 18px !important;
+}
+
+.shell .social-commerce-page .commerce-product-actions button:first-child,
+.shell .social-commerce-page .commerce-product-actions button:last-child {
+  grid-column: span 2;
+}
+
+.shell .social-commerce-page .commerce-business-list button,
+.shell .social-commerce-page :is(.commerce-cart-item, .commerce-order-card, .panel-row, .business-action-row) {
+  border: 1px solid rgba(47, 115, 232, 0.12) !important;
+  border-radius: 22px !important;
+  background: rgba(255, 255, 255, 0.82) !important;
+  box-shadow: 0 14px 32px rgba(20, 40, 86, 0.08) !important;
+}
+
+.shell .social-commerce-page :is(.commerce-cart-item, .commerce-order-card):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 24px 54px rgba(20, 40, 86, 0.13) !important;
+}
+
+.shell .social-commerce-page :is(.commerce-cart-item-media, .commerce-business-product-media, .table-product span, .product-detail-media) {
+  border-radius: 22px !important;
+  background:
+    linear-gradient(135deg, rgba(47, 115, 232, 0.12), rgba(25, 185, 132, 0.14)),
+    url("./assets/backgrounds/commerce-greenfield-mist.png") center / cover no-repeat !important;
+  overflow: hidden;
+}
+
+.shell .social-commerce-page :is(.commerce-tracker, .order-tracker, .commerce-status-track) {
+  border-radius: 22px;
+  background: linear-gradient(90deg, rgba(47, 115, 232, 0.09), rgba(25, 185, 132, 0.09));
+  padding: 12px;
+}
+
+.shell .social-commerce-page .dashboard-table-wrap {
+  border-radius: 26px !important;
+  border: 1px solid rgba(47, 115, 232, 0.12) !important;
+  background: rgba(255, 255, 255, 0.78) !important;
+  box-shadow: var(--social-shadow-soft) !important;
+}
+
+.shell .social-commerce-page .dashboard-table th {
+  color: #20345f !important;
+  background: rgba(240, 247, 255, 0.92) !important;
+  font-weight: 900 !important;
+}
+
+.shell .social-commerce-page .dashboard-table td {
+  border-color: rgba(47, 115, 232, 0.08) !important;
+}
+
+.shell .workspace-pro-page .calendar-layout,
+.shell .workspace-pro-page .analytics-reference-layout,
+.shell .account-pro-page .settings-layout,
+.shell .social-commerce-page .business-layout,
+.shell .social-commerce-page .commerce-market-layout {
+  gap: 22px !important;
+}
+
+.shell .workspace-pro-page .calendar-toolbar,
+.shell .workspace-pro-page .month-nav,
+.shell .workspace-pro-page .calendar-legend {
+  border-radius: 22px;
+  border: 1px solid rgba(47, 115, 232, 0.12);
+  background: rgba(255, 255, 255, 0.74);
+  padding: 10px;
+}
+
+.shell .workspace-pro-page .calendar-grid {
+  gap: 10px !important;
+}
+
+.shell .workspace-pro-page .calendar-cell {
+  min-height: 112px;
+  border: 1px solid rgba(47, 115, 232, 0.11) !important;
+  border-radius: 22px !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(247, 251, 255, 0.84)) !important;
+  box-shadow: 0 10px 24px rgba(20, 40, 86, 0.06) !important;
+}
+
+.shell .workspace-pro-page .calendar-cell:hover {
+  border-color: rgba(47, 115, 232, 0.34) !important;
+  box-shadow: 0 18px 36px rgba(20, 40, 86, 0.1) !important;
+}
+
+.shell .workspace-pro-page :is(.event-chip, .event-type-grid button, .reminder-option-grid button) {
+  border-radius: 16px !important;
+  border: 1px solid rgba(47, 115, 232, 0.12) !important;
+  background: rgba(255, 255, 255, 0.82) !important;
+  box-shadow: 0 8px 20px rgba(20, 40, 86, 0.06) !important;
+}
+
+.shell .workspace-pro-page .analytics-overview-grid,
+.shell .workspace-pro-page .analytics-metric-grid,
+.shell .workspace-pro-page .engagement-breakdown-grid,
+.shell .social-commerce-page .business-kpi-grid,
+.shell .social-commerce-page .business-chart-grid {
+  gap: 16px !important;
+}
+
+.shell .workspace-pro-page .analytics-metric-card,
+.shell .social-commerce-page .business-kpi-grid > * {
+  position: relative;
+  overflow: hidden;
+}
+
+.shell .workspace-pro-page .analytics-metric-card::after,
+.shell .social-commerce-page .business-kpi-grid > *::after {
+  content: "";
+  position: absolute;
+  inset: auto -35px -55px auto;
+  width: 140px;
+  height: 140px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(47, 115, 232, 0.18), transparent 70%);
+}
+
+.shell .workspace-pro-page :is(.analytics-chart-row, .analytics-product-mini, .engagement-legend-row, .usage-breakdown-list li) {
+  border-radius: 18px !important;
+  background: rgba(255, 255, 255, 0.74) !important;
+  border: 1px solid rgba(47, 115, 232, 0.1) !important;
+}
+
+.shell .workspace-pro-page .analytics-table-wrap,
+.shell .workspace-pro-page .analytics-product-table {
+  border-radius: 24px !important;
+  overflow: hidden;
+  border: 1px solid rgba(47, 115, 232, 0.12) !important;
+  background: rgba(255, 255, 255, 0.86) !important;
+}
+
+.shell .account-pro-page .settings-profile-summary,
+.shell .account-pro-page .settings-account-metadata,
+.shell .account-pro-page .settings-media-preview,
+.shell .account-pro-page .settings-interest-grid button,
+.shell .account-pro-page .settings-check-list li {
+  border-radius: 22px !important;
+  border: 1px solid rgba(47, 115, 232, 0.12) !important;
+  background: rgba(255, 255, 255, 0.78) !important;
+  box-shadow: 0 12px 28px rgba(20, 40, 86, 0.07) !important;
+}
+
+.shell .account-pro-page .settings-avatar-preview,
+.shell .account-pro-page .settings-cover-preview {
+  border-radius: 26px !important;
+  overflow: hidden;
+  background:
+    linear-gradient(135deg, rgba(47, 115, 232, 0.14), rgba(246, 91, 154, 0.12)),
+    url("./assets/backgrounds/profile-cover-4k-background.png") center / cover no-repeat !important;
+}
+
+.shell .account-pro-page .settings-danger-card {
+  border-color: rgba(239, 68, 68, 0.22) !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 246, 246, 0.94)) !important;
+}
+
+.ui-modal.ui-modal-wide,
+.ui-modal.commerce-business-modal,
+.ui-modal.commerce-cart-detail-modal {
+  border: 1px solid rgba(47, 115, 232, 0.14) !important;
+  border-radius: 32px !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 252, 255, 0.95)) !important;
+  box-shadow: 0 34px 90px rgba(9, 23, 52, 0.22) !important;
+}
+
+.ui-modal.ui-modal-wide :is(input, select, textarea, .ui-field),
+.ui-modal.commerce-business-modal :is(input, select, textarea, .ui-field),
+.ui-modal.commerce-cart-detail-modal :is(input, select, textarea, .ui-field) {
+  border: 1px solid rgba(47, 115, 232, 0.16) !important;
+  border-radius: 18px !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  box-shadow: 0 10px 24px rgba(20, 40, 86, 0.06) !important;
+}
+
+.ui-modal.ui-modal-wide .modal-grid,
+.ui-modal.commerce-business-modal .modal-grid {
+  gap: 16px !important;
+}
+
+@media (max-width: 980px) {
+  .shell .social-pro-page::before {
+    inset-inline: -16px;
+    min-height: 360px;
+  }
+
+  .shell .social-commerce-page .commerce-product-actions,
+  .shell .social-commerce-page .commerce-product-meta {
+    grid-template-columns: 1fr !important;
+  }
+
+  .shell .social-commerce-page .commerce-product-actions button:first-child,
+  .shell .social-commerce-page .commerce-product-actions button:last-child {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .shell .social-pro-page {
+    padding-bottom: 26px;
+  }
+
+  .shell .social-pro-page :is(.commerce-hero, .overview-hero, .analytics-hero-card, .settings-hero-card) {
+    border-radius: 24px !important;
+  }
+
+  .shell .social-commerce-page .commerce-product-media {
+    height: 190px !important;
+  }
+}
+
+/* Commerce background tint correction: remove blue wash from marketplace/cart/orders/business hero images. */
+.shell .social-commerce-page::before {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 253, 244, 0.82) 42%, rgba(255, 249, 238, 0.82)),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.68), rgba(255, 255, 255, 0.34)),
+    url("./assets/backgrounds/commerce-farmfresh-market.png") center / cover no-repeat !important;
+}
+
+.shell .social-commerce-page :is(.commerce-hero, .overview-hero) {
+  background:
+    linear-gradient(135deg, rgba(16, 42, 27, 0.68), rgba(37, 83, 43, 0.52) 48%, rgba(123, 86, 33, 0.38)),
+    url("./assets/backgrounds/commerce-golden-farm-road.png") center / cover no-repeat !important;
+}
+
+.shell .social-commerce-page .commerce-market-hero {
+  background:
+    linear-gradient(135deg, rgba(14, 37, 24, 0.64), rgba(48, 92, 45, 0.48) 46%, rgba(142, 96, 35, 0.34)),
+    url("./assets/backgrounds/commerce-farmfresh-market.png") center / cover no-repeat !important;
+}
+
+.shell .social-commerce-page .commerce-market-hero-card {
+  background: rgba(255, 255, 255, 0.18) !important;
+  border-color: rgba(255, 255, 255, 0.42) !important;
+  backdrop-filter: blur(16px);
+}
+
+/* Commerce hero redesign: clean marketplace card instead of full-image banner. */
+.shell .social-commerce-page .commerce-market-hero {
+  min-height: 0 !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 360px) !important;
+  align-items: stretch !important;
+  gap: 24px !important;
+  padding: 34px !important;
+  color: #10223d !important;
+  border: 1px solid rgba(29, 107, 77, 0.12) !important;
+  border-radius: 34px !important;
+  background:
+    radial-gradient(circle at 8% 12%, rgba(31, 164, 115, 0.12), transparent 30%),
+    radial-gradient(circle at 96% 12%, rgba(245, 158, 11, 0.14), transparent 28%),
+    linear-gradient(135deg, #ffffff 0%, #f7fbf3 48%, #fff7e8 100%) !important;
+  box-shadow: 0 28px 70px rgba(34, 62, 48, 0.12) !important;
+}
+
+.shell .social-commerce-page .commerce-market-hero::before {
+  content: "";
+  position: absolute;
+  inset: 20px 20px 20px auto;
+  width: min(42%, 520px);
+  border-radius: 28px;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.74), rgba(255, 255, 255, 0.18)),
+    url("./assets/backgrounds/commerce-farmfresh-market.png") center / cover no-repeat;
+  opacity: 0.34;
+  pointer-events: none;
+}
+
+.shell .social-commerce-page .commerce-market-hero::after {
+  content: "";
+  position: absolute;
+  inset: auto 44px 34px auto;
+  width: 150px;
+  height: 150px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(31, 164, 115, 0.16), transparent 68%);
+  pointer-events: none;
+}
+
+.shell .social-commerce-page .commerce-market-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+.shell .social-commerce-page .commerce-market-hero .commerce-kicker {
+  border: 1px solid rgba(31, 164, 115, 0.18) !important;
+  background: rgba(31, 164, 115, 0.1) !important;
+  color: #127250 !important;
+}
+
+.shell .social-commerce-page .commerce-market-hero h2 {
+  max-width: 780px !important;
+  margin: 14px 0 12px !important;
+  color: #0c1f36 !important;
+  font-size: clamp(2.1rem, 4.4vw, 4.2rem) !important;
+  line-height: 0.98 !important;
+  letter-spacing: -0.075em !important;
+  text-wrap: balance;
+}
+
+.shell .social-commerce-page .commerce-market-hero p {
+  max-width: 680px !important;
+  color: #53627a !important;
+  font-size: 1rem !important;
+  line-height: 1.7 !important;
+  text-shadow: none !important;
+}
+
+.shell .social-commerce-page .commerce-hero-search {
+  max-width: 720px !important;
+  margin-top: 22px !important;
+  padding: 8px !important;
+  border: 1px solid rgba(31, 164, 115, 0.16) !important;
+  border-radius: 24px !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  box-shadow: 0 18px 42px rgba(28, 74, 58, 0.11) !important;
+}
+
+.shell .social-commerce-page .commerce-hero-search .icon {
+  color: #127250 !important;
+}
+
+.shell .social-commerce-page .commerce-hero-search input {
+  min-height: 48px !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  color: #12213a !important;
+}
+
+.shell .social-commerce-page .commerce-hero-search button {
+  min-height: 48px !important;
+  border-radius: 17px !important;
+  background: linear-gradient(135deg, #12845d, #1dbf8b) !important;
+  box-shadow: 0 12px 28px rgba(18, 132, 93, 0.24) !important;
+}
+
+.shell .social-commerce-page .commerce-search-examples {
+  max-width: 740px !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 9px !important;
+  margin-top: 16px !important;
+}
+
+.shell .social-commerce-page .commerce-search-examples button {
+  width: auto !important;
+  min-height: 34px !important;
+  padding: 8px 13px !important;
+  border: 1px solid rgba(31, 164, 115, 0.15) !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.78) !important;
+  color: #28415f !important;
+  box-shadow: 0 8px 18px rgba(28, 74, 58, 0.06) !important;
+  font-size: 0.78rem !important;
+  font-weight: 850 !important;
+}
+
+.shell .social-commerce-page .commerce-search-examples button:hover {
+  color: #0f6e4d !important;
+  border-color: rgba(31, 164, 115, 0.32) !important;
+  background: #ffffff !important;
+}
+
+.shell .social-commerce-page .commerce-market-hero-card {
+  align-self: stretch !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: space-between !important;
+  gap: 14px !important;
+  padding: 24px !important;
+  border: 1px solid rgba(31, 164, 115, 0.16) !important;
+  border-radius: 28px !important;
+  background: rgba(255, 255, 255, 0.78) !important;
+  box-shadow: 0 22px 54px rgba(34, 62, 48, 0.12) !important;
+  backdrop-filter: blur(18px);
+}
+
+.shell .social-commerce-page .commerce-market-hero-card .commerce-hero-card-label {
+  border-color: rgba(31, 164, 115, 0.18) !important;
+  background: rgba(31, 164, 115, 0.1) !important;
+  color: #127250 !important;
+}
+
+.shell .social-commerce-page .commerce-market-hero-card strong {
+  color: #10223d !important;
+  font-size: clamp(3rem, 7vw, 5.2rem) !important;
+  line-height: 0.9 !important;
+  letter-spacing: -0.08em !important;
+}
+
+.shell .social-commerce-page .commerce-market-hero-card p {
+  color: #647088 !important;
+  line-height: 1.5 !important;
+}
+
+.shell .social-commerce-page .commerce-market-hero-card > div {
+  display: grid !important;
+  gap: 9px !important;
+}
+
+.shell .social-commerce-page .commerce-market-hero-card > div span {
+  border: 1px solid rgba(31, 164, 115, 0.12) !important;
+  border-radius: 16px !important;
+  background: rgba(248, 252, 247, 0.86) !important;
+  color: #30435f !important;
+}
+
+.shell .social-commerce-page .commerce-market-hero-card button {
+  min-height: 48px !important;
+  border-radius: 17px !important;
+  background: linear-gradient(135deg, #12845d, #1dbf8b) !important;
+  box-shadow: 0 14px 30px rgba(18, 132, 93, 0.2) !important;
+}
+
+@media (max-width: 980px) {
+  .shell .social-commerce-page .commerce-market-hero {
+    grid-template-columns: 1fr !important;
+    padding: 24px !important;
+  }
+
+  .shell .social-commerce-page .commerce-market-hero::before {
+    inset: auto 18px 18px 18px;
+    width: auto;
+    height: 180px;
+    opacity: 0.18;
+  }
+
+  .shell .social-commerce-page .commerce-market-hero-card {
+    max-width: none !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .shell .social-commerce-page .commerce-market-hero h2 {
+    font-size: 2.45rem !important;
+  }
+
+  .shell .social-commerce-page .commerce-hero-search {
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr) !important;
+  }
+
+  .shell .social-commerce-page .commerce-hero-search button {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Commerce image visibility correction: keep clean hero, but make the farm background visible. */
+.shell .social-commerce-page::before {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.74), rgba(250, 255, 246, 0.64) 42%, rgba(255, 250, 239, 0.62)),
+    url("./assets/backgrounds/commerce-farmfresh-market.png") center / cover no-repeat !important;
+}
+
+.shell .social-commerce-page .commerce-market-hero {
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.94) 48%, rgba(255, 255, 255, 0.68) 66%, rgba(255, 255, 255, 0.18) 100%),
+    url("./assets/backgrounds/commerce-farmfresh-market.png") right center / 58% cover no-repeat !important;
+}
+
+.shell .social-commerce-page .commerce-market-hero::before {
+  inset: 18px 18px 18px auto !important;
+  width: min(44%, 520px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.44);
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02)),
+    url("./assets/backgrounds/commerce-farmfresh-market.png") center / cover no-repeat !important;
+  opacity: 0.92 !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.32), 0 24px 58px rgba(35, 58, 42, 0.16);
+}
+
+.shell .social-commerce-page .commerce-market-hero-card {
+  background: rgba(255, 255, 255, 0.72) !important;
+}
+
+@media (max-width: 980px) {
+  .shell .social-commerce-page .commerce-market-hero {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 255, 255, 0.9) 62%, rgba(255, 255, 255, 0.68) 100%),
+      url("./assets/backgrounds/commerce-farmfresh-market.png") center bottom / cover no-repeat !important;
+  }
+
+  .shell .social-commerce-page .commerce-market-hero::before {
+    inset: auto 18px 18px 18px !important;
+    width: auto !important;
+    height: 190px !important;
+    opacity: 0.6 !important;
+  }
+}
+
+/* Marketplace hero cleanup: remove right metrics panel and keep background image readable. */
+.shell .social-commerce-page .commerce-market-hero {
+  grid-template-columns: minmax(0, 760px) 1fr !important;
+  min-height: 430px !important;
+  align-items: center !important;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.94) 48%, rgba(255, 255, 255, 0.36) 68%, rgba(255, 255, 255, 0.02) 100%),
+    url("./assets/backgrounds/commerce-farmfresh-market.png") right center / 58% cover no-repeat !important;
+}
+
+.shell .social-commerce-page .commerce-market-hero::before {
+  display: none !important;
+}
+
+.shell .social-commerce-page .commerce-market-hero > div:first-child {
+  max-width: 760px !important;
+}
+
+.shell .social-commerce-page .commerce-market-hero-card {
+  display: none !important;
+}
+
+.shell .social-commerce-page .commerce-market-hero h2 {
+  max-width: 720px !important;
+}
+
+.shell .social-commerce-page .commerce-market-hero p {
+  max-width: 650px !important;
+}
+
+@media (max-width: 980px) {
+  .shell .social-commerce-page .commerce-market-hero {
+    grid-template-columns: 1fr !important;
+    min-height: 390px !important;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.92) 58%, rgba(255, 255, 255, 0.46) 100%),
+      url("./assets/backgrounds/commerce-farmfresh-market.png") center bottom / cover no-repeat !important;
+  }
+}
+
+/* Final UI issue pass: marketplace visibility, professional modals, locked admin roles, and settings avatar polish. */
+.shell .social-pro-page,
+.modal-backdrop .ui-modal {
+  font-family: "Manrope", "Segoe UI", sans-serif !important;
+}
+
+.shell .social-pro-page :is(.commerce-hero h2, .overview-intro h2, .settings-hero-copy h2),
+.shell.shell-theme-light :is(.shell-page-title-marketplace, .shell-page-title-business, .shell-page-title-orders, .shell-page-title-settings, .shell-page-title-admin-users) {
+  font-family: "Fraunces", "Manrope", serif !important;
+  letter-spacing: -0.055em !important;
+}
+
+.shell .marketplace-dashboard.social-commerce-page::before {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(248, 255, 243, 0.56) 42%, rgba(255, 247, 230, 0.58)),
+    url("./assets/backgrounds/commerce-farmfresh-market.png") center / cover no-repeat !important;
+}
+
+.shell .marketplace-dashboard .commerce-market-hero {
+  position: relative !important;
+  grid-template-columns: minmax(0, 740px) minmax(320px, 1fr) !important;
+  min-height: clamp(420px, 44vw, 560px) !important;
+  align-items: center !important;
+  overflow: hidden !important;
+  border-color: rgba(28, 126, 83, 0.16) !important;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.95) 46%, rgba(255, 255, 255, 0.42) 64%, rgba(255, 255, 255, 0.03) 100%),
+    url("./assets/backgrounds/commerce-farmfresh-market.png") right center / 64% cover no-repeat !important;
+  box-shadow: 0 32px 86px rgba(35, 76, 50, 0.16) !important;
+}
+
+.shell .marketplace-dashboard .commerce-market-hero::after {
+  display: block !important;
+  content: "" !important;
+  position: absolute !important;
+  inset: 28px 28px 28px auto !important;
+  width: min(36%, 460px) !important;
+  height: auto !important;
+  border: 1px solid rgba(255, 255, 255, 0.44) !important;
+  border-radius: 30px !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02)),
+    url("./assets/backgrounds/commerce-farmfresh-market.png") center / cover no-repeat !important;
+  opacity: 0.92 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.38), 0 26px 58px rgba(32, 66, 41, 0.2) !important;
+  pointer-events: none !important;
+}
+
+.shell .marketplace-dashboard .commerce-market-hero > div:first-child {
+  position: relative !important;
+  z-index: 2 !important;
+  max-width: 740px !important;
+}
+
+.shell .marketplace-dashboard .commerce-market-hero h2 {
+  color: #071b2f !important;
+  text-shadow: none !important;
+}
+
+.shell .marketplace-dashboard .commerce-market-hero p {
+  color: #52657a !important;
+  font-weight: 700 !important;
+}
+
+.shell .social-commerce-page .commerce-hero-search > .ui-icon {
+  color: #0f8d65 !important;
+}
+
+.shell .social-commerce-page .commerce-hero:not(.commerce-market-hero) {
+  color: #ffffff !important;
+}
+
+.shell .social-commerce-page .commerce-hero:not(.commerce-market-hero) .commerce-hero-panel .stat-card {
+  border: 1px solid rgba(255, 255, 255, 0.52) !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+  box-shadow: 0 22px 46px rgba(17, 48, 32, 0.2) !important;
+}
+
+.shell .social-commerce-page .commerce-hero:not(.commerce-market-hero) .commerce-hero-panel .stat-card strong,
+.shell .social-commerce-page .commerce-hero:not(.commerce-market-hero) .commerce-hero-panel .stat-card span,
+.shell .social-commerce-page .commerce-hero:not(.commerce-market-hero) .commerce-hero-panel .stat-card small {
+  color: #11223a !important;
+  opacity: 1 !important;
+}
+
+.admin-users-table-v2 .admin-role-lock {
+  min-height: 42px;
+  width: max-content;
+  max-width: 100%;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 13px;
+  border: 1px solid rgba(47, 115, 232, 0.16);
+  border-radius: 999px;
+  color: #174263;
+  background: linear-gradient(135deg, rgba(238, 245, 255, 0.96), rgba(255, 255, 255, 0.9));
+  box-shadow: 0 10px 22px rgba(20, 40, 86, 0.07);
+  font-size: 0.82rem;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+.admin-users-table-v2 .admin-role-lock .ui-icon {
+  width: 17px;
+  height: 17px;
+}
+
+.admin-users-table-v2 .admin-role-lock.role-green {
+  color: #0f6d4f;
+  border-color: rgba(25, 185, 132, 0.22);
+  background: linear-gradient(135deg, rgba(232, 252, 244, 0.96), rgba(255, 255, 255, 0.92));
+}
+
+.admin-users-table-v2 .admin-role-lock.role-purple {
+  color: #6436a8;
+  border-color: rgba(139, 92, 246, 0.24);
+  background: linear-gradient(135deg, rgba(246, 240, 255, 0.96), rgba(255, 255, 255, 0.92));
+}
+
+.admin-users-table-v2 .admin-role-lock.role-pink {
+  color: #a22d66;
+  border-color: rgba(236, 72, 153, 0.24);
+  background: linear-gradient(135deg, rgba(255, 240, 247, 0.96), rgba(255, 255, 255, 0.92));
+}
+
+.shell .admin-role-section .dash-section-header p::after {
+  content: " Role changes are disabled.";
+  color: #0f8d65;
+  font-weight: 950;
+}
+
+.shell .account-pro-page .settings-cover-preview {
+  min-height: clamp(190px, 22vw, 280px) !important;
+  border-radius: 28px !important;
+  box-shadow: inset 0 -80px 120px rgba(10, 20, 46, 0.22), 0 20px 48px rgba(20, 40, 86, 0.12) !important;
+}
+
+.shell .account-pro-page .settings-avatar-preview {
+  position: relative !important;
+  grid-template-columns: 96px minmax(0, 1fr) !important;
+  gap: 16px !important;
+  align-items: center !important;
+  width: calc(100% - 34px) !important;
+  margin: -50px 17px 0 !important;
+  padding: 14px 18px !important;
+  border: 1px solid rgba(255, 255, 255, 0.72) !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.82) !important;
+  box-shadow: 0 22px 52px rgba(20, 40, 86, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.92) !important;
+  backdrop-filter: blur(18px);
+}
+
+.shell .account-pro-page .settings-avatar-preview .ui-avatar,
+.shell .account-pro-page .settings-profile-summary .ui-avatar {
+  width: 86px !important;
+  height: 86px !important;
+  border: 5px solid #ffffff !important;
+  font-size: 2rem !important;
+  font-weight: 950 !important;
+}
+
+.shell .account-pro-page .ui-avatar.generated-avatar {
+  background:
+    radial-gradient(circle at 28% 24%, rgba(255, 255, 255, 0.34), transparent 24%),
+    linear-gradient(135deg, #19b984 0%, #2f73e8 58%, #f65b9a 100%) !important;
+  color: #ffffff !important;
+  text-shadow: 0 2px 12px rgba(5, 18, 42, 0.24) !important;
+  box-shadow: 0 18px 38px rgba(47, 115, 232, 0.24), 0 0 0 10px rgba(255, 255, 255, 0.24) !important;
+}
+
+.shell .account-pro-page .settings-avatar-preview strong,
+.shell .account-pro-page .settings-profile-summary strong {
+  color: #071b2f !important;
+  font-size: 1.04rem !important;
+  font-weight: 950 !important;
+}
+
+.shell .account-pro-page .settings-avatar-preview span,
+.shell .account-pro-page .settings-profile-summary span {
+  color: #53657c !important;
+  font-weight: 800 !important;
+}
+
+.modal-backdrop .ui-modal.ui-modal-wide {
+  width: min(1160px, calc(100vw - 32px)) !important;
+  max-height: calc(100vh - 32px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+.modal-backdrop .ui-modal.ui-modal-wide .ui-modal-body {
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+  padding: 24px !important;
+}
+
+.modal-backdrop .ui-modal.ui-modal-wide .ui-modal-footer {
+  flex-wrap: wrap !important;
+  gap: 12px !important;
+  padding: 16px 24px !important;
+}
+
+.modal-backdrop .ui-modal.ui-modal-wide .modal-grid.two {
+  grid-template-columns: repeat(2, minmax(260px, 1fr)) !important;
+  gap: 18px !important;
+}
+
+.modal-backdrop .modal-grid label {
+  gap: 8px !important;
+  color: #12233a !important;
+  font-size: 0.8rem !important;
+  font-weight: 950 !important;
+}
+
+.modal-backdrop .modal-grid input,
+.modal-backdrop .modal-grid select,
+.modal-backdrop .modal-grid textarea {
+  min-height: 48px !important;
+  border-radius: 17px !important;
+}
+
+.modal-backdrop .modal-grid textarea {
+  min-height: 112px !important;
+}
+
+.modal-backdrop .commerce-upload-field {
+  display: grid !important;
+}
+
+.modal-backdrop .commerce-field-title {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  color: #12233a !important;
+  font-size: 0.8rem !important;
+  font-weight: 950 !important;
+}
+
+.modal-backdrop .commerce-upload-control {
+  position: relative !important;
+  min-height: 82px !important;
+  display: grid !important;
+  grid-template-columns: 54px minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 14px !important;
+  padding: 13px 15px !important;
+  border: 1px dashed rgba(25, 145, 101, 0.36) !important;
+  border-radius: 22px !important;
+  color: #10233a !important;
+  background:
+    radial-gradient(circle at 6% 10%, rgba(25, 185, 132, 0.13), transparent 34%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(242, 251, 246, 0.9)) !important;
+  box-shadow: 0 14px 30px rgba(20, 70, 50, 0.08) !important;
+  cursor: pointer !important;
+}
+
+.modal-backdrop .commerce-upload-control:hover {
+  border-color: rgba(25, 145, 101, 0.58) !important;
+  transform: translateY(-1px);
+}
+
+.modal-backdrop .commerce-upload-icon {
+  width: 54px !important;
+  height: 54px !important;
+  display: grid !important;
+  place-items: center !important;
+  border-radius: 18px !important;
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #19b984, #2f73e8) !important;
+  box-shadow: 0 14px 28px rgba(25, 145, 101, 0.22) !important;
+}
+
+.modal-backdrop .commerce-upload-icon .ui-icon {
+  width: 24px !important;
+  height: 24px !important;
+}
+
+.modal-backdrop .commerce-upload-control strong,
+.modal-backdrop .commerce-upload-control small {
+  display: block !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.modal-backdrop .commerce-upload-control strong {
+  color: #0b1e34 !important;
+  font-size: 0.94rem !important;
+  font-weight: 950 !important;
+}
+
+.modal-backdrop .commerce-upload-control small {
+  margin-top: 3px !important;
+  color: #65738a !important;
+  font-size: 0.78rem !important;
+  font-weight: 750 !important;
+}
+
+.modal-backdrop .commerce-upload-control em {
+  min-height: 34px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  padding: 0 12px !important;
+  border-radius: 999px !important;
+  color: #0d7655 !important;
+  background: rgba(232, 252, 244, 0.96) !important;
+  font-size: 0.74rem !important;
+  font-style: normal !important;
+  font-weight: 950 !important;
+  white-space: nowrap !important;
+}
+
+.modal-backdrop .commerce-upload-control input[type="file"] {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  opacity: 0 !important;
+  cursor: pointer !important;
+}
+
+.modal-backdrop .product-modal-preview {
+  display: grid !important;
+  grid-template-columns: 136px minmax(0, 1fr) !important;
+  gap: 16px !important;
+  align-items: center !important;
+  min-height: 154px !important;
+  padding: 14px !important;
+  border-radius: 24px !important;
+  border-color: rgba(25, 145, 101, 0.28) !important;
+  background:
+    radial-gradient(circle at 10% 12%, rgba(25, 185, 132, 0.12), transparent 30%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(245, 251, 247, 0.9)) !important;
+}
+
+.modal-backdrop .product-modal-preview img,
+.modal-backdrop .product-modal-preview > .ui-icon {
+  width: 136px !important;
+  height: 112px !important;
+  border-radius: 20px !important;
+  object-fit: cover !important;
+  background: linear-gradient(135deg, #e4f8e8, #edf5ff 58%, #fff2da) !important;
+}
+
+.modal-backdrop .product-modal-preview > .ui-icon {
+  padding: 34px !important;
+  color: #0f8d65 !important;
+}
+
+.ui-modal.ui-modal-wide .commerce-detail-grid,
+.ui-modal.ui-modal-wide .commerce-order-detail-grid,
+.ui-modal.ui-modal-wide .product-detail-grid,
+.ui-modal.commerce-cart-detail-modal .commerce-cart-detail {
+  grid-template-columns: minmax(300px, 0.92fr) minmax(0, 1.08fr) !important;
+  gap: 24px !important;
+  overflow: visible !important;
+}
+
+.ui-modal.ui-modal-wide .commerce-detail-media,
+.ui-modal.ui-modal-wide .product-detail-media,
+.ui-modal.ui-modal-wide .commerce-order-detail-grid .commerce-detail-media,
+.ui-modal.commerce-cart-detail-modal .commerce-cart-media.large {
+  min-height: 340px !important;
+  max-height: 520px !important;
+  border-radius: 30px !important;
+  border: 1px solid rgba(25, 145, 101, 0.18) !important;
+  background:
+    linear-gradient(135deg, rgba(234, 250, 237, 0.92), rgba(239, 246, 255, 0.92)),
+    url("./assets/backgrounds/commerce-greenfield-mist.png") center / cover no-repeat !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72), 0 20px 46px rgba(22, 70, 48, 0.12) !important;
+}
+
+.ui-modal.ui-modal-wide .commerce-detail-copy,
+.ui-modal.ui-modal-wide .product-detail-copy,
+.ui-modal.commerce-cart-detail-modal .commerce-cart-detail-copy {
+  align-content: center !important;
+  gap: 16px !important;
+}
+
+.ui-modal.ui-modal-wide .commerce-product-meta.detail {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+.ui-modal.ui-modal-wide .commerce-product-meta.detail span {
+  min-height: 40px !important;
+  padding: 8px 10px !important;
+  border: 1px solid rgba(25, 145, 101, 0.13) !important;
+  border-radius: 14px !important;
+  background: rgba(255, 255, 255, 0.78) !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.ui-modal.ui-modal-wide .commerce-tracker.span-two {
+  grid-column: 1 / -1 !important;
+  display: grid !important;
+  grid-template-columns: repeat(5, minmax(120px, 1fr)) !important;
+  gap: 10px !important;
+  padding: 14px !important;
+  border: 1px solid rgba(25, 145, 101, 0.16) !important;
+  border-radius: 24px !important;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(242, 251, 246, 0.82)) !important;
+}
+
+.ui-modal.ui-modal-wide .commerce-tracker.span-two span {
+  min-height: 56px !important;
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr) !important;
+  align-items: center !important;
+  justify-items: start !important;
+  gap: 9px !important;
+  padding: 9px 11px !important;
+  border-radius: 16px !important;
+  color: #64748b !important;
+  background: rgba(255, 255, 255, 0.76) !important;
+  font-size: 0.8rem !important;
+  font-weight: 900 !important;
+  text-align: left !important;
+  white-space: normal !important;
+}
+
+.ui-modal.ui-modal-wide .commerce-tracker.span-two span.done {
+  color: #0f6d4f !important;
+  background: rgba(232, 252, 244, 0.94) !important;
+}
+
+.ui-modal.ui-modal-wide .commerce-tracker.span-two i {
+  width: 18px !important;
+  height: 18px !important;
+  border-width: 3px !important;
+}
+
+.shell .business-products-table,
+.shell .business-orders-table,
+.shell .admin-users-table-v2 {
+  min-width: 1080px !important;
+  table-layout: fixed !important;
+}
+
+.shell .business-products-table th:nth-child(1),
+.shell .business-products-table td:nth-child(1) {
+  width: 270px !important;
+}
+
+.shell .business-products-table th:nth-child(7),
+.shell .business-products-table td:nth-child(7),
+.shell .admin-users-table-v2 th:nth-child(7),
+.shell .admin-users-table-v2 td:nth-child(7) {
+  width: 230px !important;
+}
+
+.shell .table-product {
+  display: grid !important;
+  grid-template-columns: 64px minmax(0, 1fr) !important;
+  gap: 12px !important;
+  align-items: center !important;
+  min-width: 0 !important;
+}
+
+.shell .table-product .placeholder {
+  width: 58px !important;
+  height: 58px !important;
+  border-radius: 18px !important;
+  flex: 0 0 auto !important;
+  background:
+    linear-gradient(135deg, rgba(232, 252, 244, 0.92), rgba(239, 246, 255, 0.9)),
+    url("./assets/backgrounds/commerce-greenfield-mist.png") center / cover no-repeat !important;
+}
+
+.shell .table-product > div {
+  min-width: 0 !important;
+}
+
+.shell .table-product strong,
+.shell .table-product span:not(.placeholder) {
+  display: block !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.shell .table-product strong {
+  color: #0b1e34 !important;
+  font-size: 0.9rem !important;
+  font-weight: 950 !important;
+}
+
+.shell .table-product span:not(.placeholder) {
+  margin-top: 3px !important;
+  color: #64748b !important;
+  font-size: 0.78rem !important;
+  font-weight: 760 !important;
+}
+
+.shell .commerce-cart-item,
+.shell .commerce-order-card {
+  background: rgba(255, 255, 255, 0.9) !important;
+}
+
+.shell .commerce-status-pipeline > div {
+  min-height: 62px !important;
+  border-radius: 20px !important;
+  background: rgba(255, 255, 255, 0.84) !important;
+  box-shadow: 0 12px 28px rgba(20, 70, 48, 0.08) !important;
+}
+
+@media (max-width: 980px) {
+  .shell .marketplace-dashboard .commerce-market-hero {
+    grid-template-columns: 1fr !important;
+    min-height: 430px !important;
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.92) 58%, rgba(255, 255, 255, 0.36) 100%),
+      url("./assets/backgrounds/commerce-farmfresh-market.png") center bottom / cover no-repeat !important;
+  }
+
+  .shell .marketplace-dashboard .commerce-market-hero::after {
+    display: none !important;
+  }
+
+  .modal-backdrop .ui-modal.ui-modal-wide .modal-grid.two,
+  .ui-modal.ui-modal-wide .commerce-detail-grid,
+  .ui-modal.ui-modal-wide .commerce-order-detail-grid,
+  .ui-modal.ui-modal-wide .product-detail-grid,
+  .ui-modal.commerce-cart-detail-modal .commerce-cart-detail {
+    grid-template-columns: 1fr !important;
+  }
+
+  .ui-modal.ui-modal-wide .commerce-tracker.span-two {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 680px) {
+  .shell .account-pro-page .settings-avatar-preview {
+    grid-template-columns: 76px minmax(0, 1fr) !important;
+    border-radius: 26px !important;
+    margin-top: -36px !important;
+  }
+
+  .shell .account-pro-page .settings-avatar-preview .ui-avatar,
+  .shell .account-pro-page .settings-profile-summary .ui-avatar {
+    width: 72px !important;
+    height: 72px !important;
+    font-size: 1.6rem !important;
+  }
+
+  .modal-backdrop .commerce-upload-control,
+  .modal-backdrop .product-modal-preview {
+    grid-template-columns: 1fr !important;
+  }
+
+  .modal-backdrop .commerce-upload-control em {
+    width: fit-content !important;
   }
 }

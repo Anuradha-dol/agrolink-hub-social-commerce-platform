@@ -4,7 +4,6 @@ import com.socialApp.Lishare.modules.business.admin.dto.AdminDashboardStatsRespo
 import com.socialApp.Lishare.modules.business.admin.dto.AdminUserResponse;
 import com.socialApp.Lishare.modules.business.admin.dto.DeleteUserRequest;
 import com.socialApp.Lishare.modules.business.admin.dto.UpdateUserModerationRequest;
-import com.socialApp.Lishare.modules.business.admin.dto.UpdateUserRoleRequest;
 import com.socialApp.Lishare.modules.business.admin.service.AdminUserService;
 import com.socialApp.Lishare.modules.platform.common.response.ApiResponse;
 import jakarta.validation.Valid;
@@ -29,14 +28,6 @@ public class AdminUserController {
             @RequestParam(required = false) String q
     ) {
         return ResponseEntity.ok(ApiResponse.success("Users fetched", service.getUsers(page, size, q)));
-    }
-
-    @PutMapping("/users/{userId}/role")
-    public ResponseEntity<ApiResponse<AdminUserResponse>> updateRole(
-            @PathVariable Long userId,
-            @Valid @RequestBody UpdateUserRoleRequest request
-    ) {
-        return ResponseEntity.ok(ApiResponse.success("User role updated", service.updateUserRole(userId, request)));
     }
 
     @PutMapping("/users/{userId}/moderation")

@@ -45,6 +45,15 @@ public class FriendController {
         return ResponseEntity.ok(response);
     }
 
+    @DeleteMapping("/{receiverId}/cancel")
+    public ResponseEntity<FriendActionResponse> cancelRequest(
+            @AuthenticationPrincipal User user,
+            @PathVariable Long receiverId) {
+
+        FriendActionResponse response = friendService.cancelFriendRequest(user.getUserId(), receiverId);
+        return ResponseEntity.ok(response);
+    }
+
     @DeleteMapping("/{otherUserId}/unfriend")
     public ResponseEntity<FriendActionResponse> unfriend(
             @AuthenticationPrincipal User user,

@@ -23,4 +23,6 @@ public interface AppOrderRepository extends JpaRepository<AppOrder, Long> {
     Optional<AppOrder> findByIdForSeller(@Param("orderId") Long orderId, @Param("sellerId") Long sellerId);
 
     boolean existsByProductId(Long productId);
+
+    boolean existsByBuyerUserIdAndProductBusinessPageId(Long buyerId, Long businessPageId);
 }

@@ -198,3 +198,63 @@ ALTER TABLE IF EXISTS notifications
 
 ALTER TABLE IF EXISTS notifications
     ADD COLUMN IF NOT EXISTS reply_id BIGINT;
+
+ALTER TABLE IF EXISTS products
+    ADD COLUMN IF NOT EXISTS delivery_method VARCHAR(80) DEFAULT 'Pickup';
+
+UPDATE products
+SET delivery_method = 'Pickup'
+WHERE delivery_method IS NULL OR delivery_method = '';
+
+ALTER TABLE IF EXISTS products
+    ALTER COLUMN delivery_method SET DEFAULT 'Pickup';
+
+ALTER TABLE IF EXISTS products
+    ALTER COLUMN delivery_method SET NOT NULL;
+
+UPDATE products
+SET available = TRUE
+WHERE stock > 0 AND available = FALSE;
+
+ALTER TABLE IF EXISTS orders
+    ADD COLUMN IF NOT EXISTS delivery_method VARCHAR(80) DEFAULT 'Pickup';
+
+UPDATE orders
+SET delivery_method = 'Pickup'
+WHERE delivery_method IS NULL OR delivery_method = '';
+
+ALTER TABLE IF EXISTS orders
+    ALTER COLUMN delivery_method SET DEFAULT 'Pickup';
+
+ALTER TABLE IF EXISTS orders
+    ALTER COLUMN delivery_method SET NOT NULL;
+
+UPDATE orders
+SET status = 'ON_THE_WAY'
+WHERE status = 'SHIPPED';
+
+UPDATE orders
+SET status = 'COMPLETED'
+WHERE status = 'DELIVERED';
+
+ALTER TABLE IF EXISTS reviews
+    ADD COLUMN IF NOT EXISTS business_page_id BIGINT;
+
+ALTER TABLE IF EXISTS reviews
+    ADD COLUMN IF NOT EXISTS business_page_name VARCHAR(255);
+
+ALTER TABLE IF EXISTS reviews
+    ADD COLUMN IF NOT EXISTS order_id BIGINT;
+
+CREATE TABLE IF NOT EXISTS cart_items (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+    product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+    quantity INTEGER NOT NULL DEFAULT 1,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_cart_items_user_product UNIQUE (user_id, product_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_cart_items_user_id ON cart_items(user_id);
+CREATE INDEX IF NOT EXISTS idx_cart_items_product_id ON cart_items(product_id);

@@ -9,10 +9,20 @@ import com.socialApp.Lishare.modules.business.product.entity.Product;
 import com.socialApp.Lishare.modules.business.product.mapper.ProductMapper;
 import com.socialApp.Lishare.modules.business.product.repository.ProductRepository;
 import com.socialApp.Lishare.modules.business.product.service.ProductService;
+import com.socialApp.Lishare.modules.platform.storage.UploadPathResolver;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.Locale;
+import java.util.Set;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -22,9 +32,17 @@ public class ProductServiceImpl implements ProductService {
     private final BusinessPageRepository businessPageRepository;
     private final AppOrderRepository appOrderRepository;
     private final ProductMapper mapper;
+    private final UploadPathResolver uploadPathResolver;
+
+    private static final Set<String> ALLOWED_IMAGE_EXTENSIONS = Set.of(".jpg", ".jpeg", ".png", ".webp", ".gif");
 
     @Override
     public ProductResponse createProduct(Long userId, ProductRequest request) {
+        return createProduct(userId, request, null);
+    }
+
+    @Override
+    public ProductResponse createProduct(Long userId, ProductRequest request, MultipartFile imageFile) {
         BusinessPage page = businessPageRepository.findById(request.businessPageId())
                 .orElseThrow(() -> new RuntimeException("Business page not found"));
 
@@ -37,7 +55,8 @@ public class ProductServiceImpl implements ProductService {
                 .price(request.price())
                 .stock(request.stock())
                 .category(request.category())
-                .imageUrl(request.imageUrl())
+                .imageUrl(resolveImageUrl(request.imageUrl(), imageFile))
+                .deliveryMethod(normalizeDeliveryMethod(request.deliveryMethod()))
                 .available(request.stock() != null && request.stock() > 0)
                 .build();
 
@@ -46,6 +65,11 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductResponse updateProduct(Long userId, Long productId, ProductRequest request) {
+        return updateProduct(userId, productId, request, null);
+    }
+
+    @Override
+    public ProductResponse updateProduct(Long userId, Long productId, ProductRequest request, MultipartFile imageFile) {
         Product product = repository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found"));
 
@@ -63,7 +87,8 @@ public class ProductServiceImpl implements ProductService {
         product.setPrice(request.price());
         product.setStock(request.stock());
         product.setCategory(request.category());
-        product.setImageUrl(request.imageUrl());
+        product.setImageUrl(resolveImageUrl(request.imageUrl(), imageFile));
+        product.setDeliveryMethod(normalizeDeliveryMethod(request.deliveryMethod()));
         product.setAvailable(request.stock() != null && request.stock() > 0);
 
         return mapper.toResponse(repository.save(product));
@@ -89,14 +114,17 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Page<ProductResponse> getProducts(int page, int size, String category, String query) {
         PageRequest pageable = PageRequest.of(page, size);
+        String normalizedCategory = category == null || category.isBlank() ? null : category.trim();
+        String normalizedQuery = query == null || query.isBlank() ? null : query.trim();
         Page<Product> products;
-
-        if (query != null && !query.isBlank()) {
-            products = repository.findByAvailableTrueAndNameContainingIgnoreCase(query, pageable);
-        } else if (category != null && !category.isBlank()) {
-            products = repository.findByAvailableTrueAndCategoryIgnoreCase(category, pageable);
+        if (normalizedCategory == null && normalizedQuery == null) {
+            products = repository.findListedMarketplaceProducts(pageable);
+        } else if (normalizedQuery == null) {
+            products = repository.findListedMarketplaceProductsByCategory(normalizedCategory, pageable);
+        } else if (normalizedCategory == null) {
+            products = repository.searchMarketplace(normalizedQuery, pageable);
         } else {
-            products = repository.findByAvailableTrue(pageable);
+            products = repository.searchMarketplaceByCategory(normalizedCategory, normalizedQuery, pageable);
         }
         return products.map(mapper::toResponse);
     }
@@ -117,5 +145,66 @@ public class ProductServiceImpl implements ProductService {
         if (!page.getOwner().getUserId().equals(userId)) {
             throw new RuntimeException("Only business page owner can manage products");
         }
+    }
+
+    private String normalizeDeliveryMethod(String deliveryMethod) {
+        if (deliveryMethod == null || deliveryMethod.isBlank()) {
+            return "Pickup";
+        }
+        return deliveryMethod.trim();
+    }
+
+    private String resolveImageUrl(String imageUrl, MultipartFile imageFile) {
+        if (imageFile != null && !imageFile.isEmpty()) {
+            return saveProductImage(imageFile);
+        }
+        return normalizeStoredImageUrl(imageUrl);
+    }
+
+    private String normalizeStoredImageUrl(String imageUrl) {
+        if (imageUrl == null || imageUrl.isBlank()) {
+            return null;
+        }
+        String trimmed = imageUrl.trim();
+        int uploadsIndex = trimmed.indexOf("/uploads/");
+        if (uploadsIndex >= 0) {
+            return trimmed.substring(uploadsIndex);
+        }
+        return trimmed;
+    }
+
+    private String saveProductImage(MultipartFile file) {
+        String contentType = file.getContentType();
+        if (contentType == null || !contentType.toLowerCase(Locale.ROOT).startsWith("image/")) {
+            throw new RuntimeException("Product image must be an image file");
+        }
+
+        String extension = fileExtension(file.getOriginalFilename());
+        Path uploadDirectory = uploadPathResolver.ensurePrimaryUploadPath().resolve("products").normalize();
+        try {
+            Files.createDirectories(uploadDirectory);
+            String filename = "product-" + UUID.randomUUID() + extension;
+            Path target = uploadDirectory.resolve(filename).normalize();
+            if (!target.startsWith(uploadDirectory)) {
+                throw new RuntimeException("Invalid product image path");
+            }
+            Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
+            return "/uploads/products/" + filename;
+        } catch (IOException exception) {
+            throw new RuntimeException("Failed to save product image", exception);
+        }
+    }
+
+    private String fileExtension(String originalFilename) {
+        if (originalFilename == null || originalFilename.isBlank()) {
+            return ".jpg";
+        }
+        String cleaned = Path.of(originalFilename).getFileName().toString().toLowerCase(Locale.ROOT);
+        int dotIndex = cleaned.lastIndexOf('.');
+        if (dotIndex < 0) {
+            return ".jpg";
+        }
+        String extension = cleaned.substring(dotIndex);
+        return ALLOWED_IMAGE_EXTENSIONS.contains(extension) ? extension : ".jpg";
     }
 }

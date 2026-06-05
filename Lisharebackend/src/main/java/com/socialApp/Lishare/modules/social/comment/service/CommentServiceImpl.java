@@ -309,6 +309,9 @@ public class CommentServiceImpl implements CommentService {
 
     private String resolveMediaType(MultipartFile mediaFile, String mediaUrl) {
         if (mediaFile != null && mediaFile.getContentType() != null) {
+            if ("application/pdf".equalsIgnoreCase(mediaFile.getContentType())) {
+                return "PDF";
+            }
             if ("image/gif".equalsIgnoreCase(mediaFile.getContentType())) {
                 return "GIF";
             }
@@ -321,6 +324,9 @@ public class CommentServiceImpl implements CommentService {
         }
         if (mediaUrl != null) {
             String normalized = mediaUrl.toLowerCase(Locale.ROOT);
+            if (normalized.endsWith(".pdf")) {
+                return "PDF";
+            }
             if (normalized.endsWith(".gif")) {
                 return "GIF";
             }

@@ -16,9 +16,13 @@ public class AppOrderMapper {
                 order.getSeller().getFirstname() + " " + order.getSeller().getLastName(),
                 order.getProduct().getId(),
                 order.getProduct().getName(),
+                order.getProduct().getImageUrl(),
+                order.getProduct().getBusinessPage().getId(),
+                order.getProduct().getBusinessPage().getName(),
                 order.getQuantity(),
                 order.getUnitPrice(),
                 order.getTotalPrice(),
+                order.getDeliveryMethod(),
                 order.getStatus(),
                 order.getCreatedAt(),
                 order.getUpdatedAt()

@@ -1,238 +1,295 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  addCartItem,
-  getCompareProducts,
-  getSavedProducts,
-  removeSavedProduct,
-  toggleCompareProduct
-} from "../utils/productStorage";
+import { cartService } from "/src/modules/business/cart/services/cartService";
+import { useAuth } from "/src/modules/platform/app/store";
+import LoadingState from "/src/modules/platform/common/components/LoadingState";
 import { useToast } from "/src/modules/platform/common/hooks/useToast";
+import { toMediaUrl } from "/src/modules/platform/common/utils/mediaUrl";
 import {
   Button,
   Card,
   EmptyPanel,
   Icon,
+  Modal,
   OverviewHero,
   PageGrid,
-  ProductCard,
   SectionHeader,
-  StatusBadge,
-  Tabs
+  StatCard,
+  StatusBadge
 } from "/src/modules/platform/common/ui/DashboardUI";
 
-export default function BookmarksPage() {
+function unwrap(response) {
+  return response?.data?.data?.content || response?.data?.data || response?.data?.content || [];
+}
+
+function money(value) {
+  return `$${Number(value || 0).toFixed(2)}`;
+}
+
+function lineTotal(item) {
+  return Number(item.lineTotal ?? Number(item.unitPrice || 0) * Number(item.quantity || 1));
+}
+
+function itemImage(item) {
+  const value = String(item.productImageUrl || "").trim();
+  if (!value) return "";
+  if (/^(data:image\/|blob:)/i.test(value)) return value;
+  if (/^https?:\/\//i.test(value) || value.startsWith("/") || value.startsWith("uploads/")) return toMediaUrl(value);
+  return "";
+}
+
+function ProductImage({ src, alt }) {
+  const [failed, setFailed] = useState(false);
+  if (!src || failed) return <Icon name="bag" />;
+  return <img src={src} alt={alt} loading="lazy" onError={() => setFailed(true)} />;
+}
+
+export default function CartPage() {
+  const { role } = useAuth();
   const { pushToast } = useToast();
   const navigate = useNavigate();
-  const [saved, setSaved] = useState([]);
-  const [compare, setCompare] = useState([]);
-  const [tab, setTab] = useState("all");
-  const [viewMode, setViewMode] = useState("grid");
+  const isBusiness = role === "ROLE_BUSINESS" || role === "ROLE_FARMER";
+  const [loading, setLoading] = useState(true);
+  const [cart, setCart] = useState([]);
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState("");
-  const [availability, setAvailability] = useState("");
-  const [sort, setSort] = useState("newest");
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [modal, setModal] = useState("");
+  const [busy, setBusy] = useState("");
 
-  const sync = () => {
-    setSaved(getSavedProducts());
-    setCompare(getCompareProducts());
+  const load = async () => {
+    setLoading(true);
+    if (isBusiness) {
+      setCart([]);
+      setLoading(false);
+      return;
+    }
+    try {
+      const response = await cartService.list();
+      setCart(unwrap(response));
+    } catch {
+      pushToast("Failed to load cart", "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
-    sync();
-    window.addEventListener("lishare-product-storage", sync);
-    return () => window.removeEventListener("lishare-product-storage", sync);
-  }, []);
+    load();
+  }, [role]);
 
-  const collections = useMemo(() => {
-    const map = new Map();
-    saved.forEach((item) => {
-      const collection = item.collection || "Wishlist";
-      if (!map.has(collection)) map.set(collection, []);
-      map.get(collection).push(item);
-    });
-    return [...map.entries()].map(([name, items]) => ({ name, items }));
-  }, [saved]);
-
-  const priceDrops = useMemo(() => saved.filter((item) => Number(item.oldPrice || 0) > Number(item.price || 0)), [saved]);
-  const categories = useMemo(() => [...new Set(saved.map((item) => item.category).filter(Boolean))], [saved]);
-
-  const visibleProducts = useMemo(() => {
-    let list = [...saved];
+  const visibleCart = useMemo(() => {
     const search = query.trim().toLowerCase();
-    if (search) list = list.filter((item) => String(item.name || "").toLowerCase().includes(search) || String(item.businessPageName || "").toLowerCase().includes(search));
-    if (category) list = list.filter((item) => item.category === category);
-    if (availability === "available") list = list.filter((item) => item.available !== false && Number(item.stock ?? 1) > 0);
-    if (tab === "wishlist") list = list.filter((item) => (item.collection || "Wishlist") === "Wishlist");
-    if (tab === "price") list = priceDrops;
-    if (tab === "recent") list = list.sort((a, b) => new Date(b.savedAt || 0) - new Date(a.savedAt || 0));
-    else if (sort === "priceAsc") list.sort((a, b) => Number(a.price || 0) - Number(b.price || 0));
-    else if (sort === "priceDesc") list.sort((a, b) => Number(b.price || 0) - Number(a.price || 0));
-    return list;
-  }, [availability, category, priceDrops, query, saved, sort, tab]);
+    if (!search) return cart;
+    return cart.filter((item) => [item.productName, item.businessName, item.category, item.deliveryMethod]
+      .some((value) => String(value || "").toLowerCase().includes(search)));
+  }, [cart, query]);
 
-  const moveToCart = (product) => {
-    addCartItem(product, 1);
-    pushToast("Saved product moved to cart", "success");
+  const subtotal = cart.reduce((sum, item) => sum + lineTotal(item), 0);
+  const serviceFee = subtotal > 0 ? Math.max(1.5, subtotal * 0.025) : 0;
+  const total = subtotal + serviceFee;
+  const quantity = cart.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+
+  const updateQuantity = async (item, quantityValue) => {
+    const nextQuantity = Number(quantityValue);
+    if (!Number.isFinite(nextQuantity) || nextQuantity < 1) return;
+    setBusy(`qty-${item.id}`);
+    try {
+      await cartService.update(item.id, { productId: item.productId, quantity: nextQuantity });
+      await load();
+      pushToast("Cart quantity updated", "success");
+    } catch {
+      pushToast("Failed to update cart quantity", "error");
+    } finally {
+      setBusy("");
+    }
   };
 
-  const remove = (product) => {
-    setSaved(removeSavedProduct(product.id));
-    pushToast("Product removed from bookmarks", "success");
+  const removeItem = async (item) => {
+    setBusy(`remove-${item.id}`);
+    try {
+      await cartService.remove(item.id);
+      await load();
+      setModal("");
+      pushToast("Item removed from cart", "success");
+    } catch {
+      pushToast("Failed to remove cart item", "error");
+    } finally {
+      setBusy("");
+    }
   };
 
-  const compareProduct = (product) => {
-    setCompare(toggleCompareProduct(product));
-    pushToast("Compare list updated", "success");
+  const clearCart = async () => {
+    setBusy("clear");
+    try {
+      await cartService.clear();
+      await load();
+      setModal("");
+      pushToast("Cart cleared", "success");
+    } catch {
+      pushToast("Failed to clear cart", "error");
+    } finally {
+      setBusy("");
+    }
   };
+
+  const checkout = async () => {
+    if (!cart.length) return;
+    setBusy("checkout");
+    try {
+      await cartService.checkout();
+      await load();
+      pushToast("Order placed successfully", "success");
+      navigate("/orders");
+    } catch {
+      pushToast("Checkout failed. Check stock and seller availability.", "error");
+    } finally {
+      setBusy("");
+    }
+  };
+
+  if (loading) return <LoadingState text="Loading cart..." />;
+
+  if (isBusiness) {
+    return (
+      <PageGrid className="cart-dashboard commerce-pro-page social-pro-page social-commerce-page">
+        <Card className="commerce-panel">
+          <EmptyPanel
+            icon="business"
+            title="Seller accounts do not use cart checkout"
+            subtitle="Business and farmer accounts sell products and manage received orders from Business Studio."
+            action={<Button icon="business" variant="gradient" onClick={() => navigate("/business")}>Open Business Studio</Button>}
+          />
+        </Card>
+      </PageGrid>
+    );
+  }
 
   return (
-    <PageGrid className="bookmarks-dashboard">
+    <PageGrid className="cart-dashboard commerce-pro-page social-pro-page social-commerce-page">
+      <section className="commerce-hero commerce-cart-hero">
+        <div>
+          <span className="commerce-kicker">Persistent Cart</span>
+          <h2>Your selected products are saved in the backend.</h2>
+          <p>Refresh the page and your cart remains synced. Update quantities, remove products, or place orders directly from this section.</p>
+          <form className="commerce-hero-search" onSubmit={(event) => event.preventDefault()}>
+            <Icon name="search" />
+            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search cart products, sellers or delivery methods..." />
+            <Button icon="bag" variant="gradient" onClick={() => navigate("/marketplace")}>Shop More</Button>
+          </form>
+        </div>
+        <div className="commerce-hero-panel">
+          <StatCard icon="bag" label="Items" value={quantity} trend="Selected quantity" tone="green" />
+          <StatCard icon="business" label="Businesses" value={new Set(cart.map((item) => item.businessPageId)).size} trend="Seller count" tone="blue" />
+          <StatCard icon="order" label="Total" value={money(total)} trend="Before checkout" tone="orange" />
+        </div>
+      </section>
+
       <OverviewHero
-        icon="bookmark"
-        eyebrow="Your saved space"
-        title="All your favorite products in one place"
-        subtitle="Saved products stay here for later viewing. Saving does not place an order."
+        icon="bag"
+        eyebrow="Checkout Flow"
+        title="Cart items move into Orders after checkout."
+        subtitle="Every checkout creates backend order records, clears the cart, and the Orders page fetches the persisted order status after refresh."
         stats={[
-          { label: "Saved Products", value: saved.length, trend: "Reference only" },
-          { label: "Collections", value: collections.length, trend: "Organized" },
-          { label: "Price Drops", value: priceDrops.length, trend: "Alerts" },
-          { label: "Followed Shops", value: new Set(saved.map((item) => item.businessPageId)).size, trend: "Sellers" }
+          { label: "Products", value: cart.length, trend: "Cart rows" },
+          { label: "Quantity", value: quantity, trend: "Total units" },
+          { label: "Subtotal", value: money(subtotal), trend: "Products" },
+          { label: "Service", value: money(serviceFee), trend: "Estimated" }
         ]}
       />
 
-      <div className="bookmarks-layout">
-        <main className="bookmarks-main">
-          <Card className="filter-panel">
-            <Tabs
-              active={tab}
-              onChange={setTab}
-              tabs={[
-                { value: "all", label: "All Saved", icon: "bookmark", count: saved.length },
-                { value: "wishlist", label: "Wishlist", icon: "heart", count: saved.filter((item) => (item.collection || "Wishlist") === "Wishlist").length },
-                { value: "collections", label: "Collections", icon: "grid", count: collections.length },
-                { value: "price", label: "Price Alerts", icon: "bell", count: priceDrops.length },
-                { value: "recent", label: "Recently Saved", icon: "calendar" }
-              ]}
-            />
-            <div className="filter-grid bookmark-filter-grid">
-              <label><Icon name="search" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search saved products..." /></label>
-              <select value={category} onChange={(event) => setCategory(event.target.value)}>
-                <option value="">All Categories</option>
-                {categories.map((item) => <option key={item} value={item}>{item}</option>)}
-              </select>
-              <select>
-                <option>All Price Ranges</option>
-                <option>Under $50</option>
-                <option>$50 - $200</option>
-                <option>$200+</option>
-              </select>
-              <select value={availability} onChange={(event) => setAvailability(event.target.value)}>
-                <option value="">All Availability</option>
-                <option value="available">Available</option>
-              </select>
-              <select value={sort} onChange={(event) => setSort(event.target.value)}>
-                <option value="newest">Sort: Newest</option>
-                <option value="priceAsc">Price: Low</option>
-                <option value="priceDesc">Price: High</option>
-              </select>
-              <Button icon="analytics" onClick={() => pushToast("Bookmark filters applied", "success")}>Filters</Button>
-            </div>
-          </Card>
-
-          {tab === "collections" ? (
-            <Card>
-              <SectionHeader title="Your Collections" action={<Button icon="plus" onClick={() => pushToast("Create a collection by saving products with a collection name.", "success")}>New Collection</Button>} />
-              <div className="collection-grid">
-                {collections.map((collection) => (
-                  <article key={collection.name}>
-                    <div>{collection.items.slice(0, 3).map((item) => item.imageUrl ? <img key={item.id} src={item.imageUrl} alt={item.name} /> : <span key={item.id}><Icon name="bag" /></span>)}</div>
-                    <strong>{collection.name}</strong>
-                    <span>{collection.items.length} items</span>
+      <div className="commerce-cart-layout">
+        <main className="commerce-cart-main">
+          <Card className="commerce-panel">
+            <SectionHeader title="Cart Products" subtitle="Update quantity, remove items, and proceed to order." action={<Button icon="bag" variant="gradient" onClick={() => navigate("/marketplace")}>Continue Shopping</Button>} />
+            {visibleCart.length ? (
+              <div className="commerce-cart-list">
+                {visibleCart.map((item) => (
+                  <article className="commerce-cart-item" key={item.id}>
+                    <div className="commerce-cart-media"><ProductImage src={itemImage(item)} alt={item.productName} /></div>
+                    <div className="commerce-cart-copy">
+                      <div>
+                        <StatusBadge status={item.available ? "Available" : "Unavailable"} tone={item.available ? "green" : "red"} />
+                        <StatusBadge status={item.deliveryMethod || "Pickup"} tone="blue" />
+                      </div>
+                      <h3>{item.productName}</h3>
+                      <p>{item.businessName || "AgroLink Seller"} - {item.category || "General"}</p>
+                      <strong>{money(item.unitPrice)} each</strong>
+                    </div>
+                    <div className="commerce-cart-quantity">
+                      <button type="button" onClick={() => updateQuantity(item, Number(item.quantity || 1) - 1)} disabled={Number(item.quantity || 1) <= 1 || busy === `qty-${item.id}`}>-</button>
+                      <input type="number" min="1" max={item.stock || 999} value={item.quantity || 1} onChange={(event) => updateQuantity(item, event.target.value)} />
+                      <button type="button" onClick={() => updateQuantity(item, Number(item.quantity || 1) + 1)} disabled={busy === `qty-${item.id}` || Number(item.quantity || 1) >= Number(item.stock || 999)}>+</button>
+                    </div>
+                    <div className="commerce-cart-total">
+                      <span>Line total</span>
+                      <strong>{money(lineTotal(item))}</strong>
+                    </div>
+                    <div className="commerce-cart-actions">
+                      <Button icon="eye" onClick={() => { setSelectedItem(item); setModal("details"); }}>View</Button>
+                      <Button icon="trash" variant="danger" onClick={() => removeItem(item)} disabled={busy === `remove-${item.id}`}>Remove</Button>
+                    </div>
                   </article>
                 ))}
-                {!collections.length ? <EmptyPanel icon="grid" title="No collections yet" subtitle="Saved product groups will appear here." /> : null}
               </div>
-            </Card>
-          ) : (
-            <Card>
-              <SectionHeader title={`${visibleProducts.length} Saved Products`} action={<div className="view-toggle"><button type="button" className={viewMode === "grid" ? "active" : ""} onClick={() => setViewMode("grid")}><Icon name="grid" /></button><button type="button" className={viewMode === "list" ? "active" : ""} onClick={() => setViewMode("list")}><Icon name="order" /></button></div>} />
-              {visibleProducts.length === 0 ? <EmptyPanel icon="bookmark" title="No saved products" subtitle="Save products in Marketplace to view them here later." action={<Button variant="gradient" icon="bag" onClick={() => navigate("/marketplace")}>Open Marketplace</Button>} /> : null}
-              <div className="products-grid-v2">
-                {visibleProducts.map((product) => (
-                  <ProductCard
-                    key={product.id}
-                    product={{
-                      ...product,
-                      description: product.oldPrice && Number(product.oldPrice) > Number(product.price)
-                        ? `Price drop from $${Number(product.oldPrice).toFixed(2)}`
-                        : product.description
-                    }}
-                    saved
-                    cta="Move to Cart"
-                    onSave={() => remove(product)}
-                    onView={() => pushToast("Product details opened from saved list", "success")}
-                    onCart={() => moveToCart(product)}
-                  />
-                ))}
-              </div>
-              <div className="bookmark-secondary-actions">
-                {visibleProducts.map((product) => (
-                  <div key={`actions-${product.id}`}>
-                    <Button icon="analytics" onClick={() => compareProduct(product)}>Compare</Button>
-                    <Button icon="trash" variant="danger" onClick={() => remove(product)}>Remove</Button>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          )}
+            ) : (
+              <EmptyPanel icon="bag" title="Your cart is empty" subtitle="Add products from Marketplace and they will persist here." action={<Button icon="marketplace" variant="gradient" onClick={() => navigate("/marketplace")}>Open Marketplace</Button>} />
+            )}
+          </Card>
         </main>
 
-        <aside className="side-stack">
-          <Card>
-            <SectionHeader title="Saved Summary" action={<button type="button" className="text-link" onClick={() => setTab("all")}>View all</button>} />
-            <ul className="panel-list">
-              <li className="panel-row"><div><strong>Total Saved Products</strong><span>Reference only</span></div><strong>{saved.length}</strong></li>
-              <li className="panel-row"><div><strong>Total Collections</strong><span>Product groups</span></div><strong>{collections.length}</strong></li>
-              <li className="panel-row"><div><strong>Price Drop Alerts</strong><span>Potential savings</span></div><strong>{priceDrops.length}</strong></li>
-              <li className="panel-row"><div><strong>Estimated Value</strong><span>Saved catalog</span></div><strong>${saved.reduce((sum, item) => sum + Number(item.price || 0), 0).toFixed(2)}</strong></li>
-            </ul>
-            <Button variant="gradient" icon="bookmark" onClick={() => setTab("all")}>View All Saved</Button>
+        <aside className="commerce-cart-summary">
+          <Card className="commerce-panel checkout-panel">
+            <SectionHeader title="Order Summary" />
+            <div className="commerce-total-row"><span>Subtotal</span><strong>{money(subtotal)}</strong></div>
+            <div className="commerce-total-row"><span>Service fee</span><strong>{money(serviceFee)}</strong></div>
+            <div className="commerce-total-row grand"><span>Total</span><strong>{money(total)}</strong></div>
+            <Button icon="order" variant="gradient" onClick={checkout} disabled={!cart.length || busy === "checkout"}>{busy === "checkout" ? "Placing..." : "Proceed to Order"}</Button>
+            <Button icon="trash" variant="danger" onClick={() => setModal("clear")} disabled={!cart.length}>Clear Cart</Button>
           </Card>
 
-          <Card>
-            <SectionHeader title="Price Drop Alerts" action={<button type="button" className="text-link" onClick={() => setTab("price")}>View all</button>} />
+          <Card className="commerce-panel">
+            <SectionHeader title="Delivery Methods" />
             <ul className="panel-list">
-              {priceDrops.slice(0, 4).map((item) => (
-                <li key={`drop-${item.id}`} className="panel-row">
-                  <div className="cart-product-mini">
-                    {item.imageUrl ? <img src={item.imageUrl} alt={item.name} /> : <Icon name="bag" />}
-                    <div><strong>{item.name}</strong><span>${Number(item.price).toFixed(2)} was ${Number(item.oldPrice).toFixed(2)}</span></div>
-                  </div>
-                  <StatusBadge status="Drop" tone="green" />
-                </li>
+              {[...new Set(cart.map((item) => item.deliveryMethod || "Pickup"))].map((method) => (
+                <li className="panel-row" key={method}><div><strong>{method}</strong><span>{cart.filter((item) => (item.deliveryMethod || "Pickup") === method).length} cart rows</span></div><Icon name="truck" /></li>
               ))}
-              {!priceDrops.length ? <li><EmptyPanel icon="bell" title="No price drops" subtitle="Alerts show when old price is above current price." /></li> : null}
+              {!cart.length ? <li><EmptyPanel icon="truck" title="No delivery yet" subtitle="Delivery methods appear after adding products." /></li> : null}
             </ul>
-          </Card>
-
-          <Card>
-            <SectionHeader title="Recently Viewed" action={<button type="button" className="text-link" onClick={() => setTab("recent")}>View all</button>} />
-            <div className="recent-strip">
-              {saved.slice(0, 6).map((item) => item.imageUrl ? <img key={item.id} src={item.imageUrl} alt={item.name} /> : <span key={item.id}><Icon name="bag" /></span>)}
-            </div>
-          </Card>
-
-          <Card>
-            <SectionHeader title="Compare List" action={<StatusBadge status={`${compare.length} items`} tone="blue" />} />
-            <div className="recent-strip">
-              {compare.map((item) => item.imageUrl ? <img key={item.id} src={item.imageUrl} alt={item.name} /> : <span key={item.id}><Icon name="bag" /></span>)}
-              <button type="button" className="compare-add" onClick={() => pushToast("Use Compare on a saved product to add it here.", "success")}><Icon name="plus" />Add</button>
-            </div>
-            <Button icon="analytics" onClick={() => pushToast(compare.length ? "Compare list ready" : "Add saved products before comparing", compare.length ? "success" : "error")}>View Compare</Button>
           </Card>
         </aside>
       </div>
+
+      <Modal open={modal === "details"} title={selectedItem?.productName || "Cart Item"} subtitle={selectedItem?.businessName || "Cart product"} onClose={() => setModal("")} className="ui-modal-wide commerce-cart-detail-modal">
+        {selectedItem ? (
+          <div className="commerce-cart-detail">
+            <div className="commerce-cart-media large"><ProductImage src={itemImage(selectedItem)} alt={selectedItem.productName} /></div>
+            <div className="commerce-cart-detail-copy">
+              <StatusBadge status={selectedItem.available ? "Available" : "Unavailable"} tone={selectedItem.available ? "green" : "red"} />
+              <h2>{selectedItem.productName}</h2>
+              <p>{selectedItem.businessName || "AgroLink Seller"} - {selectedItem.category || "General"}</p>
+              <div className="commerce-total-row"><span>Unit price</span><strong>{money(selectedItem.unitPrice)}</strong></div>
+              <div className="commerce-total-row"><span>Quantity</span><strong>{selectedItem.quantity}</strong></div>
+              <div className="commerce-total-row"><span>Delivery</span><strong>{selectedItem.deliveryMethod || "Pickup"}</strong></div>
+              <div className="commerce-total-row grand"><span>Total</span><strong>{money(lineTotal(selectedItem))}</strong></div>
+            </div>
+          </div>
+        ) : null}
+      </Modal>
+
+      <Modal
+        open={modal === "clear"}
+        title="Clear Cart"
+        subtitle="This removes all selected products from your backend cart."
+        onClose={() => setModal("")}
+        footer={(
+          <>
+            <Button onClick={() => setModal("")}>Cancel</Button>
+            <Button icon="trash" variant="danger" onClick={clearCart} disabled={busy === "clear"}>{busy === "clear" ? "Clearing..." : "Clear Cart"}</Button>
+          </>
+        )}
+      >
+        <p className="commerce-confirm-copy">Remove all products from your cart?</p>
+      </Modal>
     </PageGrid>
   );
 }

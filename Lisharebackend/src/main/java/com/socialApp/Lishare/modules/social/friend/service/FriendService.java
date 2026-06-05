@@ -20,6 +20,9 @@ public interface FriendService {
     // Reject a friend request
     FriendActionResponse rejectFriendRequest(Long senderId, Long receiverId);
 
+    // Cancel an outgoing pending friend request
+    FriendActionResponse cancelFriendRequest(Long senderId, Long receiverId);
+
     // Remove a friend (unfriend)
     FriendActionResponse unfriend(Long user1Id, Long user2Id);
 

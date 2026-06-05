@@ -18,6 +18,19 @@ export function Icon({ name = "spark", className = "" }) {
     ),
     chat: <path d="M5 4h14a2 2 0 0 1 2 2v8.5a2 2 0 0 1-2 2H9.4L4 20.2V6a2 2 0 0 1 2-2z" />,
     bag: <path d="M5.2 7.2h13.6l-1 12.2a1 1 0 0 1-1 .9H7.2a1 1 0 0 1-1-.9zM8.3 7.2a3.7 3.7 0 0 1 7.4 0" />,
+    marketplace: (
+      <>
+        <path d="M4 9h16l-1 11H5z" />
+        <path d="M7 9V7a5 5 0 0 1 10 0v2M4.8 9l1.4-4h11.6l1.4 4" />
+        <path d="M8.5 13h7M8.5 16h4" />
+      </>
+    ),
+    business: (
+      <>
+        <path d="M4 21V7l8-4 8 4v14" />
+        <path d="M8 21v-6h8v6M8 10h.1M12 10h.1M16 10h.1" />
+      </>
+    ),
     order: (
       <>
         <rect x="4" y="4" width="16" height="16" rx="2" />
@@ -33,6 +46,12 @@ export function Icon({ name = "spark", className = "" }) {
     bookmark: <path d="M7 4h10a1 1 0 0 1 1 1v16l-6-4-6 4V5a1 1 0 0 1 1-1z" />,
     analytics: <path d="M4 20V9M9.3 20V4M14.7 20v-7M20 20v-4" />,
     search: <path d="M21 21l-4.4-4.4M18 11a7 7 0 1 1-14 0 7 7 0 0 1 14 0z" />,
+    mail: (
+      <>
+        <rect x="4" y="6" width="16" height="12" rx="2" />
+        <path d="m5 8 7 5 7-5" />
+      </>
+    ),
     bell: (
       <>
         <path d="M18 15.7V11a6 6 0 0 0-12 0v4.7L4.5 18h15z" />

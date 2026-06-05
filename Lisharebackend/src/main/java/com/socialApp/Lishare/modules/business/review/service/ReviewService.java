@@ -1,5 +1,7 @@
 package com.socialApp.Lishare.modules.business.review.service;
 
+import com.socialApp.Lishare.modules.business.page.entity.BusinessPage;
+import com.socialApp.Lishare.modules.business.page.repository.BusinessPageRepository;
 import com.socialApp.Lishare.modules.business.review.dto.ReviewDto;
 import com.socialApp.Lishare.modules.business.review.entity.Review;
 import com.socialApp.Lishare.modules.business.review.repository.ReviewRepository;
@@ -13,6 +15,7 @@ import java.util.List;
 public class ReviewService {
 
     private final ReviewRepository reviewRepository;
+    private final BusinessPageRepository businessPageRepository;
 
     // Get all reviews
     public List<Review> getAllReviews() {
@@ -23,9 +26,17 @@ public class ReviewService {
         return reviewRepository.findByUserId(userId);
     }
 
+    public List<Review> getReviewsByBusinessPageId(Long businessPageId) {
+        return reviewRepository.findByBusinessPageIdOrderByCreatedAtDesc(businessPageId);
+    }
 
     // Create review
     public Review createReview(Review review) {
+        if (review.getBusinessPageId() != null) {
+            BusinessPage page = businessPageRepository.findById(review.getBusinessPageId())
+                    .orElseThrow(() -> new RuntimeException("Business page not found"));
+            review.setBusinessPageName(page.getName());
+        }
         return reviewRepository.save(review);
     }
 

@@ -375,14 +375,14 @@ export default function SettingsPage() {
 
   if (loading) {
     return (
-      <PageGrid className="settings-dashboard">
+      <PageGrid className="settings-dashboard social-pro-page account-pro-page">
         <Card className="settings-loading-card">Loading settings...</Card>
       </PageGrid>
     );
   }
 
   return (
-    <PageGrid className="settings-dashboard">
+    <PageGrid className="settings-dashboard social-pro-page account-pro-page">
       <Card className="settings-hero-card">
         <div className="settings-hero-copy">
           <span className="auth-badge">Private Settings</span>
@@ -390,7 +390,7 @@ export default function SettingsPage() {
           <p>Update identity, optional profile details, login email, password, and account safety from one protected page.</p>
         </div>
         <div className="settings-profile-summary">
-          <Avatar name={profileName} src={avatarUrl ? toMediaUrl(avatarUrl) : null} size="xl" online />
+          <Avatar name={profileName} src={avatarUrl ? toMediaUrl(avatarUrl) : null} size="xl" online className={hasCustomAvatar ? "has-photo" : "generated-avatar"} />
           <div>
             <strong>{profileName}</strong>
             <span>{profile?.email || "No email"}</span>
@@ -408,7 +408,7 @@ export default function SettingsPage() {
                 <img src={coverUrl ? toMediaUrl(coverUrl) : defaultProfileCover} alt="Profile cover preview" />
               </div>
               <div className="settings-avatar-preview">
-                <Avatar name={profileName} src={avatarUrl ? toMediaUrl(avatarUrl) : null} size="xl" online />
+                <Avatar name={profileName} src={avatarUrl ? toMediaUrl(avatarUrl) : null} size="xl" online className={hasCustomAvatar ? "has-photo" : "generated-avatar"} />
                 <div>
                   <strong>{profileName}</strong>
                   <span>{profile?.email || "No email"}</span>

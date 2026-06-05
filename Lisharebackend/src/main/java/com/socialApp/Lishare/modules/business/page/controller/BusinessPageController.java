@@ -52,9 +52,15 @@ public class BusinessPageController {
     @GetMapping
     public ResponseEntity<ApiResponse<Page<BusinessPageResponse>>> listPages(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String q
     ) {
-        return ResponseEntity.ok(ApiResponse.success("Business pages fetched", service.getPublicPages(page, size)));
+        return ResponseEntity.ok(ApiResponse.success("Business pages fetched", service.getPublicPages(page, size, q)));
+    }
+
+    @GetMapping("/{pageId}")
+    public ResponseEntity<ApiResponse<BusinessPageResponse>> getPage(@PathVariable Long pageId) {
+        return ResponseEntity.ok(ApiResponse.success("Business page fetched", service.getPublicPage(pageId)));
     }
 
     @PreAuthorize("hasAnyRole('BUSINESS','FARMER')")

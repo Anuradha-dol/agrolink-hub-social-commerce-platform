@@ -50,6 +50,9 @@ public class AppOrder {
     @Column(name = "total_price", nullable = false, precision = 12, scale = 2)
     private BigDecimal totalPrice;
 
+    @Column(name = "delivery_method", nullable = false, length = 80)
+    private String deliveryMethod;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private OrderStatus status;
@@ -67,10 +70,16 @@ public class AppOrder {
         if (status == null) {
             status = OrderStatus.PENDING;
         }
+        if (deliveryMethod == null || deliveryMethod.isBlank()) {
+            deliveryMethod = "Pickup";
+        }
     }
 
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+        if (deliveryMethod == null || deliveryMethod.isBlank()) {
+            deliveryMethod = "Pickup";
+        }
     }
 }

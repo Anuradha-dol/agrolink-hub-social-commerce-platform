@@ -306,7 +306,7 @@ export default function ChatPage() {
           />
           <label className="chat-search">
             <Icon name="search" />
-            <input value={conversationQuery} onChange={(event) => setConversationQuery(event.target.value)} placeholder="Search people or conversations..." />
+            <input value={conversationQuery} onChange={(event) => setConversationQuery(event.target.value)} placeholder="Search people or chats..." />
           </label>
           <Tabs
             active={filter}

@@ -16,10 +16,14 @@ import {
   PageGrid,
   SectionHeader,
   StatCard,
+  LineChart,
   StatusBadge
 } from "/src/modules/platform/common/ui/DashboardUI";
 
 const initialPageForm = { name: "", description: "", category: "" };
+const DELIVERY_METHODS = ["Shipping", "Motorcycle delivery", "Pickup", "Other delivery method"];
+const SERIES_DAYS = 12;
+const DAY_MS = 24 * 60 * 60 * 1000;
 const initialProductForm = {
   businessPageId: "",
   name: "",
@@ -27,7 +31,10 @@ const initialProductForm = {
   price: "",
   stock: "",
   category: "",
-  imageUrl: ""
+  imageUrl: "",
+  imageFile: null,
+  imagePreview: "",
+  deliveryMethod: "Pickup"
 };
 
 function unwrapList(response) {
@@ -45,6 +52,27 @@ function statusLabel(status = "") {
   return String(status || "Processing").replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
 }
 
+function safeProductImageUrl(path) {
+  const value = String(path || "").trim();
+  if (!value) return "";
+  if (/^(data:image\/|blob:)/i.test(value)) return value;
+  if (/^https?:\/\//i.test(value) || value.startsWith("/") || value.startsWith("uploads/")) {
+    return toMediaUrl(value);
+  }
+  return "";
+}
+
+function normalizeProduct(product) {
+  const rawImageUrl = product.imageUrl || product.productImageUrl || "";
+  const stock = Number(product.stock || 0);
+  return {
+    ...product,
+    rawImageUrl,
+    imageUrl: safeProductImageUrl(rawImageUrl),
+    available: product.available !== false || stock > 0
+  };
+}
+
 function productPayload(form) {
   return {
     businessPageId: Number(form.businessPageId),
@@ -53,8 +81,43 @@ function productPayload(form) {
     price: Number(form.price),
     stock: Number(form.stock),
     category: form.category.trim(),
-    imageUrl: form.imageUrl.trim()
+    imageUrl: form.imageUrl.trim(),
+    imageFile: form.imageFile,
+    deliveryMethod: form.deliveryMethod || "Pickup"
   };
+}
+
+function dateValue(item) {
+  const raw = item?.createdAt || item?.updatedAt || item?.date || item?.orderedAt;
+  if (!raw) return null;
+  const date = new Date(raw);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function dailySeries(items = [], valueFn = () => 1, days = SERIES_DAYS) {
+  const buckets = Array.from({ length: days }, () => 0);
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  start.setDate(start.getDate() - days + 1);
+
+  items.forEach((item) => {
+    const date = dateValue(item);
+    if (!date) return;
+    const itemDay = new Date(date);
+    itemDay.setHours(0, 0, 0, 0);
+    const index = Math.floor((itemDay.getTime() - start.getTime()) / DAY_MS);
+    if (index >= 0 && index < buckets.length) {
+      buckets[index] += Number(valueFn(item) || 0);
+    }
+  });
+
+  return buckets;
+}
+
+function ProductImage({ src, alt }) {
+  const [failed, setFailed] = useState(false);
+  if (!src || failed) return <Icon name="bag" />;
+  return <img src={src} alt={alt} loading="lazy" onError={() => setFailed(true)} />;
 }
 
 export default function BusinessPage() {
@@ -86,6 +149,14 @@ export default function BusinessPage() {
   const activeProducts = products.filter((item) => Number(item.stock || 0) > 0).length;
   const lowStock = products.filter((item) => Number(item.stock || 0) > 0 && Number(item.stock || 0) <= 5).length;
   const totalEarnings = orders.reduce((sum, order) => sum + orderTotal(order), 0);
+  const productPreviewUrl = productForm.imagePreview || safeProductImageUrl(productForm.imageUrl);
+  const selectedPageOrders = useMemo(
+    () => orders.filter((order) => !selectedPageId || String(order.businessPageId || "") === String(selectedPageId)),
+    [orders, selectedPageId]
+  );
+  const productSeries = useMemo(() => dailySeries(products, () => 1), [products]);
+  const orderSeries = useMemo(() => dailySeries(selectedPageOrders, () => 1), [selectedPageOrders]);
+  const revenueSeries = useMemo(() => dailySeries(selectedPageOrders, orderTotal), [selectedPageOrders]);
 
   const loadPages = async () => {
     setLoading(true);
@@ -114,7 +185,7 @@ export default function BusinessPage() {
     }
     try {
       const response = await marketplaceService.listProductsByBusiness(pageId, { page: 0, size: 80 });
-      setProducts(unwrapList(response));
+      setProducts(unwrapList(response).map(normalizeProduct));
     } catch {
       pushToast("Failed to load products", "error");
     }
@@ -147,9 +218,21 @@ export default function BusinessPage() {
       price: product.price || "",
       stock: product.stock || "",
       category: product.category || "",
-      imageUrl: product.imageUrl || ""
+      imageUrl: product.rawImageUrl || "",
+      imageFile: null,
+      imagePreview: product.imageUrl || "",
+      deliveryMethod: product.deliveryMethod || "Pickup"
     } : { ...initialProductForm, businessPageId: selectedPageId || "" });
     setModal(mode);
+  };
+
+  const handleProductImageChange = (event) => {
+    const file = event.target.files?.[0] || null;
+    setProductForm((prev) => ({
+      ...prev,
+      imageFile: file,
+      imagePreview: file ? URL.createObjectURL(file) : safeProductImageUrl(prev.imageUrl)
+    }));
   };
 
   const savePage = async (event) => {
@@ -234,7 +317,7 @@ export default function BusinessPage() {
   if (loading) return <LoadingState text="Loading business dashboard..." />;
 
   return (
-    <PageGrid className="business-dashboard">
+    <PageGrid className="business-dashboard social-pro-page social-commerce-page">
       <OverviewHero
         icon="bag"
         eyebrow="Business Studio"
@@ -288,6 +371,19 @@ export default function BusinessPage() {
             <StatCard icon="bell" label="Low Stock" value={lowStock} trend="Needs attention" tone="orange" />
           </div>
 
+          <Card className="business-chart-card">
+            <SectionHeader
+              title="Business Performance Graphs"
+              subtitle="Real product, order, and revenue activity for the selected business page."
+              action={<StatusBadge status="Live seller data" tone="green" />}
+            />
+            <div className="business-chart-grid">
+              <BusinessMetricChart title="Products Added" value={products.length} values={productSeries} tone="green" />
+              <BusinessMetricChart title="Orders Received" value={selectedPageOrders.length} values={orderSeries} tone="blue" />
+              <BusinessMetricChart title="Revenue" value={`$${selectedPageOrders.reduce((sum, order) => sum + orderTotal(order), 0).toFixed(0)}`} values={revenueSeries} tone="purple" />
+            </div>
+          </Card>
+
           <Card className="business-table-card">
             <SectionHeader title="My Products" subtitle="Manage and monitor all listed products." action={<Button icon="plus" variant="gradient" onClick={() => openProductModal("add-product")} disabled={!selectedPageId}>Add Product</Button>} />
             <div className="dashboard-table-wrap">
@@ -296,6 +392,7 @@ export default function BusinessPage() {
                   <tr>
                     <th>Product</th>
                     <th>Category</th>
+                    <th>Delivery</th>
                     <th>Price</th>
                     <th>Stock</th>
                     <th>Status</th>
@@ -307,11 +404,12 @@ export default function BusinessPage() {
                     <tr key={product.id}>
                       <td>
                         <div className="table-product">
-                          {product.imageUrl ? <img src={toMediaUrl(product.imageUrl)} alt={product.name} /> : <span className="placeholder"><Icon name="bag" /></span>}
+                          <span className="placeholder"><ProductImage src={product.imageUrl} alt={product.name} /></span>
                           <div><strong>{product.name}</strong><span>{product.description || "Marketplace listing"}</span></div>
                         </div>
                       </td>
                       <td><StatusBadge status={product.category || "General"} tone="green" /></td>
+                      <td><StatusBadge status={product.deliveryMethod || "Pickup"} tone="blue" /></td>
                       <td>${Number(product.price || 0).toFixed(2)}</td>
                       <td>{Number(product.stock || 0)} units</td>
                       <td><StatusBadge status={Number(product.stock || 0) > 0 ? "Active" : "Out of stock"} tone={Number(product.stock || 0) > 0 ? "green" : "red"} /></td>
@@ -451,14 +549,30 @@ export default function BusinessPage() {
             </select>
           </label>
           <label>Category<input value={productForm.category} onChange={(event) => setProductForm((prev) => ({ ...prev, category: event.target.value }))} placeholder="Vegetables, Honey, Services..." /></label>
+          <label>Delivery method
+            <select value={productForm.deliveryMethod} onChange={(event) => setProductForm((prev) => ({ ...prev, deliveryMethod: event.target.value }))}>
+              {DELIVERY_METHODS.map((method) => <option key={method} value={method}>{method}</option>)}
+            </select>
+          </label>
           <label>Product name<input value={productForm.name} onChange={(event) => setProductForm((prev) => ({ ...prev, name: event.target.value }))} /></label>
           <label>Price<input type="number" min="0" step="0.01" value={productForm.price} onChange={(event) => setProductForm((prev) => ({ ...prev, price: event.target.value }))} /></label>
           <label>Stock<input type="number" min="0" value={productForm.stock} onChange={(event) => setProductForm((prev) => ({ ...prev, stock: event.target.value }))} /></label>
-          <label>Image URL<input value={productForm.imageUrl} onChange={(event) => setProductForm((prev) => ({ ...prev, imageUrl: event.target.value }))} /></label>
+          <label className="span-two commerce-upload-field">
+            <span className="commerce-field-title">Product image</span>
+            <span className="commerce-upload-control">
+              <span className="commerce-upload-icon"><Icon name="image" /></span>
+              <span>
+                <strong>{productForm.imageFile?.name || "Choose product photo"}</strong>
+                <small>Upload a clean product image for marketplace cards and orders.</small>
+              </span>
+              <em>{productForm.imageFile ? "Selected" : productPreviewUrl ? "Current photo" : "No file chosen"}</em>
+              <input type="file" accept="image/*" onChange={handleProductImageChange} />
+            </span>
+          </label>
           <label className="span-two">Description<textarea value={productForm.description} onChange={(event) => setProductForm((prev) => ({ ...prev, description: event.target.value }))} /></label>
           <div className="product-modal-preview span-two">
-            {productForm.imageUrl ? <img src={toMediaUrl(productForm.imageUrl)} alt="Product preview" /> : <Icon name="image" />}
-            <div><strong>Upload-ready product area</strong><p>Paste an image URL for now. The styling is ready for a backend product media upload endpoint.</p></div>
+            {productPreviewUrl ? <img src={productPreviewUrl} alt="Product preview" /> : <Icon name="image" />}
+            <div><strong>Product photo upload</strong><p>Select an image from your device. The backend saves it under uploads and returns a real product image URL.</p></div>
           </div>
         </form>
       </Modal>
@@ -466,11 +580,15 @@ export default function BusinessPage() {
       <Modal open={modal === "view-product"} title={selectedProduct?.name || "Product Details"} subtitle={activePage?.name || "Business product"} onClose={() => setModal("")} className="ui-modal-wide">
         {selectedProduct ? (
           <div className="product-detail-grid">
-            <div className="product-detail-media">{selectedProduct.imageUrl ? <img src={toMediaUrl(selectedProduct.imageUrl)} alt={selectedProduct.name} /> : <Icon name="bag" />}</div>
+            <div className="product-detail-media"><ProductImage src={selectedProduct.imageUrl} alt={selectedProduct.name} /></div>
             <div className="product-detail-copy">
               <StatusBadge status={Number(selectedProduct.stock || 0) > 0 ? "Active" : "Out of stock"} tone={Number(selectedProduct.stock || 0) > 0 ? "green" : "red"} />
               <h2>{selectedProduct.name}</h2>
               <p>{selectedProduct.description || "No product description provided."}</p>
+              <div className="commerce-product-meta detail">
+                <span><Icon name="truck" />{selectedProduct.deliveryMethod || "Pickup"}</span>
+                <span><Icon name="bag" />{Number(selectedProduct.stock || 0)} units</span>
+              </div>
               <strong>${Number(selectedProduct.price || 0).toFixed(2)}</strong>
               <div className="inline-action-row">
                 <Button icon="edit" variant="gradient" onClick={() => openProductModal("edit-product", selectedProduct)}>Edit Product</Button>
@@ -515,5 +633,18 @@ export default function BusinessPage() {
         <p className="business-confirm-copy">Remove <strong>{selectedPage?.name}</strong>? Products attached to this business may stop showing for customers.</p>
       </Modal>
     </PageGrid>
+  );
+}
+
+function BusinessMetricChart({ title, value, values, tone }) {
+  return (
+    <article className={`business-metric-chart chart-card-${tone}`}>
+      <div>
+        <span>{title}</span>
+        <strong>{value}</strong>
+        <small>Last {SERIES_DAYS} days</small>
+      </div>
+      <LineChart values={values} tone={tone} />
+    </article>
   );
 }

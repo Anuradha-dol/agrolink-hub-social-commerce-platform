@@ -9,5 +9,7 @@ public record OrderCreateRequest(
 
         @NotNull(message = "Quantity is required")
         @Min(value = 1, message = "Quantity must be at least 1")
-        Integer quantity
+        Integer quantity,
+
+        String deliveryMethod
 ) {}

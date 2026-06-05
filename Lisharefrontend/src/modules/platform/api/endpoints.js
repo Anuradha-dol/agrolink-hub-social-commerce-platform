@@ -74,6 +74,7 @@ export const ENDPOINTS = {
     request: (userId) => `/api/friends/${userId}/request`,
     accept: (userId) => `/api/friends/${userId}/accept`,
     reject: (userId) => `/api/friends/${userId}/reject`,
+    cancel: (userId) => `/api/friends/${userId}/cancel`,
     unfriend: (userId) => `/api/friends/${userId}/unfriend`
   },
   notifications: {
@@ -85,7 +86,8 @@ export const ENDPOINTS = {
   },
   business: {
     pages: "/api/business/pages",
-    myPages: "/api/business/pages/mine"
+    myPages: "/api/business/pages/mine",
+    page: (id) => `/api/business/pages/${id}`
   },
   products: {
     list: "/api/products",
@@ -100,9 +102,13 @@ export const ENDPOINTS = {
     cancel: (id) => `/api/orders/${id}`,
     updateStatus: (id) => `/api/orders/${id}/status`
   },
+  cart: {
+    list: "/api/cart",
+    item: (id) => `/api/cart/${id}`,
+    checkout: "/api/cart/checkout"
+  },
   admin: {
     users: "/api/admin/users",
-    updateRole: (userId) => `/api/admin/users/${userId}/role`,
     updateModeration: (userId) => `/api/admin/users/${userId}/moderation`,
     deleteUser: (userId) => `/api/admin/users/${userId}`,
     stats: "/api/admin/stats",
@@ -112,6 +118,7 @@ export const ENDPOINTS = {
   reviews: {
     list: "/reviews",
     mine: "/reviews/gets",
+    business: (businessPageId) => `/reviews/business/${businessPageId}`,
     create: "/reviews",
     update: (id) => `/reviews/${id}`,
     delete: (id) => `/reviews/${id}`

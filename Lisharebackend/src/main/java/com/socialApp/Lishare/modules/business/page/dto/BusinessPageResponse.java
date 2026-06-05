@@ -6,6 +6,7 @@ public record BusinessPageResponse(
         Long id,
         Long ownerId,
         String ownerName,
+        String ownerEmail,
         String name,
         String description,
         String category,

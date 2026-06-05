@@ -19,6 +19,9 @@ public class Review {
 
     private Long userId;
     private String username;
+    private Long businessPageId;
+    private String businessPageName;
+    private Long orderId;
 
     public Review() {}
 
@@ -40,4 +43,10 @@ public class Review {
     public void setUserId(Long userId) { this.userId = userId; }
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
+    public Long getBusinessPageId() { return businessPageId; }
+    public void setBusinessPageId(Long businessPageId) { this.businessPageId = businessPageId; }
+    public String getBusinessPageName() { return businessPageName; }
+    public void setBusinessPageName(String businessPageName) { this.businessPageName = businessPageName; }
+    public Long getOrderId() { return orderId; }
+    public void setOrderId(Long orderId) { this.orderId = orderId; }
 }

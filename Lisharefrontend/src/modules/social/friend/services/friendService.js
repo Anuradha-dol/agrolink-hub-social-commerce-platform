@@ -9,5 +9,6 @@ export const friendService = {
   request: (userId) => axiosInstance.post(ENDPOINTS.friend.request(userId)),
   accept: (userId) => axiosInstance.post(ENDPOINTS.friend.accept(userId)),
   reject: (userId) => axiosInstance.post(ENDPOINTS.friend.reject(userId)),
+  cancel: (userId) => axiosInstance.delete(ENDPOINTS.friend.cancel(userId)),
   unfriend: (userId) => axiosInstance.delete(ENDPOINTS.friend.unfriend(userId))
 };

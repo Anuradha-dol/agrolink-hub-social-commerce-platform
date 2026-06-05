@@ -27,5 +27,8 @@ public record ProductRequest(
         String category,
 
         @Size(max = 500, message = "Image URL must be at most 500 characters")
-        String imageUrl
+        String imageUrl,
+
+        @Size(max = 80, message = "Delivery method must be at most 80 characters")
+        String deliveryMethod
 ) {}

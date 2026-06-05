@@ -13,6 +13,7 @@ public class BusinessPageMapper {
                 page.getId(),
                 page.getOwner().getUserId(),
                 ownerName.trim(),
+                page.getOwner().getEmail(),
                 page.getName(),
                 page.getDescription(),
                 page.getCategory(),

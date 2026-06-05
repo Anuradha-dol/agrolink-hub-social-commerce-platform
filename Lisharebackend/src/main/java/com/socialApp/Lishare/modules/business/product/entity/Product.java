@@ -49,6 +49,9 @@ public class Product {
     @Column(length = 500)
     private String imageUrl;
 
+    @Column(name = "delivery_method", nullable = false, length = 80)
+    private String deliveryMethod;
+
     @Column(nullable = false)
     private boolean available;
 
@@ -62,12 +65,18 @@ public class Product {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = createdAt;
+        if (deliveryMethod == null || deliveryMethod.isBlank()) {
+            deliveryMethod = "Pickup";
+        }
         available = available && stock != null && stock > 0;
     }
 
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
+        if (deliveryMethod == null || deliveryMethod.isBlank()) {
+            deliveryMethod = "Pickup";
+        }
         available = stock != null && stock > 0;
     }
 }

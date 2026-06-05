@@ -9,7 +9,9 @@ public class ReviewDto {
     public record CreateReviewDto(
             @NotBlank String comment,
             @Min(1) @Max(5) int rating,
-            @NotBlank String status
+            @NotBlank String status,
+            Long businessPageId,
+            Long orderId
     ) {}
 
     public record UpdateReviewDto(

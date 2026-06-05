@@ -14,6 +14,7 @@ import com.socialApp.Lishare.modules.business.order.repository.AppOrderRepositor
 import com.socialApp.Lishare.modules.business.order.service.OrderService;
 import com.socialApp.Lishare.modules.business.product.entity.Product;
 import com.socialApp.Lishare.modules.business.product.repository.ProductRepository;
+import com.socialApp.Lishare.modules.platform.common.enums.Role;
 import com.socialApp.Lishare.modules.platform.user.repository.UserRepo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -41,6 +42,7 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponse createOrder(Long buyerId, OrderCreateRequest request) {
         User buyer = userRepo.findById(buyerId)
                 .orElseThrow(() -> new RuntimeException("Buyer not found"));
+        ensureBuyerAccount(buyer);
 
         Product product = productRepository.findById(request.productId())
                 .orElseThrow(() -> new RuntimeException("Product not found"));
@@ -67,6 +69,7 @@ public class OrderServiceImpl implements OrderService {
                 .quantity(request.quantity())
                 .unitPrice(unitPrice)
                 .totalPrice(totalPrice)
+                .deliveryMethod(resolveDeliveryMethod(request.deliveryMethod(), product.getDeliveryMethod()))
                 .status(OrderStatus.PENDING)
                 .createdAt(LocalDateTime.now())
                 .build();
@@ -188,9 +191,9 @@ public class OrderServiceImpl implements OrderService {
         return switch (current) {
             case PENDING -> in(next, OrderStatus.ACCEPTED, OrderStatus.CANCELLED);
             case ACCEPTED -> in(next, OrderStatus.PROCESSING, OrderStatus.CANCELLED);
-            case PROCESSING -> in(next, OrderStatus.SHIPPED);
-            case SHIPPED -> in(next, OrderStatus.DELIVERED);
-            case DELIVERED, CANCELLED -> false;
+            case PROCESSING -> in(next, OrderStatus.ON_THE_WAY, OrderStatus.SHIPPED, OrderStatus.CANCELLED);
+            case ON_THE_WAY, SHIPPED -> in(next, OrderStatus.COMPLETED, OrderStatus.DELIVERED, OrderStatus.CANCELLED);
+            case COMPLETED, DELIVERED, CANCELLED -> false;
         };
     }
 
@@ -200,5 +203,21 @@ public class OrderServiceImpl implements OrderService {
             allowedSet.add(orderStatus);
         }
         return allowedSet.contains(value);
+    }
+
+    private String resolveDeliveryMethod(String requestedMethod, String productMethod) {
+        if (requestedMethod != null && !requestedMethod.isBlank()) {
+            return requestedMethod.trim();
+        }
+        if (productMethod != null && !productMethod.isBlank()) {
+            return productMethod.trim();
+        }
+        return "Pickup";
+    }
+
+    private void ensureBuyerAccount(User user) {
+        if (user.getRole() == Role.ROLE_BUSINESS || user.getRole() == Role.ROLE_FARMER) {
+            throw new RuntimeException("Business seller accounts cannot place marketplace orders");
+        }
     }
 }

@@ -123,6 +123,27 @@ public class FriendServiceImpl implements FriendService {
     }
 
     @Override
+    public FriendActionResponse cancelFriendRequest(Long senderId, Long receiverId) {
+
+        User sender = userRepository.findById(senderId).orElseThrow();
+        User receiver = userRepository.findById(receiverId).orElseThrow();
+
+        Friend friend = friendRepository.findFriendship(sender, receiver)
+                .orElseThrow(() -> new RuntimeException("Friend request not found"));
+
+        if (friend.getStatus() != FriendStatus.PENDING) {
+            return new FriendActionResponse("Request is not pending");
+        }
+
+        if (!friend.getSender().getUserId().equals(senderId)) {
+            return new FriendActionResponse("Only the request sender can cancel this request");
+        }
+
+        friendRepository.delete(friend);
+        return new FriendActionResponse("Friend request cancelled");
+    }
+
+    @Override
     public FriendActionResponse unfriend(Long user1Id, Long user2Id) {
 
         User user1 = userRepository.findById(user1Id).orElseThrow();

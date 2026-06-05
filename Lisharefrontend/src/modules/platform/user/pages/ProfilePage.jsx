@@ -9,6 +9,7 @@ import LoadingState from "/src/modules/platform/common/components/LoadingState";
 import { useToast } from "/src/modules/platform/common/hooks/useToast";
 import { toMediaUrl } from "/src/modules/platform/common/utils/mediaUrl";
 import defaultProfileCover from "/src/assets/backgrounds/profile-cover-4k-background.png";
+import chatBubbleEmptyState from "/src/assets/chat_bubble_empty.png";
 import {
   Avatar,
   Button,
@@ -25,6 +26,8 @@ import {
 
 const VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov", ".m4v", ".ogg", ".avi"];
 const PROFILE_MEDIA_MAX_BYTES = 8 * 1024 * 1024;
+const PROFILE_COMMENT_MEDIA_MAX_BYTES = 12 * 1024 * 1024;
+const PROFILE_COMMENT_MEDIA_ACCEPT = "image/*,application/pdf,.pdf";
 const EMPTY_MEDIA_DRAFT = { type: "", file: null, previewUrl: "", error: "" };
 
 const PROFILE_MEDIA_COPY = {
@@ -50,6 +53,10 @@ function payload(response) {
 
 function isVideoAsset(url = "") {
   return VIDEO_EXTENSIONS.some((ext) => String(url).toLowerCase().split("?")[0].endsWith(ext));
+}
+
+function isPdfAsset(url = "") {
+  return String(url).toLowerCase().split("?")[0].endsWith(".pdf");
 }
 
 function isVideoItem(item) {
@@ -286,6 +293,46 @@ function commentAuthorName(comment) {
     || "Community member";
 }
 
+function commentIdValue(comment) {
+  return Number(comment?.commentId || comment?.id || 0);
+}
+
+function commentAuthorIdValue(comment) {
+  return Number(comment?.authorId || comment?.userId || comment?.user?.userId || comment?.user?.id || 0);
+}
+
+function commentMediaUrl(comment) {
+  return comment?.mediaUrl || comment?.attachmentUrl || comment?.fileUrl || "";
+}
+
+function commentMediaType(comment) {
+  const mediaType = String(comment?.mediaType || "").toUpperCase();
+  const mediaUrl = commentMediaUrl(comment);
+  if (mediaType) return mediaType;
+  if (isPdfAsset(mediaUrl)) return "PDF";
+  if (isVideoAsset(mediaUrl)) return "VIDEO";
+  return mediaUrl ? "IMAGE" : "";
+}
+
+function commentFileKind(file) {
+  if (!file) return "Attachment";
+  const type = String(file.type || "").toLowerCase();
+  const name = String(file.name || "").toLowerCase();
+  if (type === "application/pdf" || name.endsWith(".pdf")) return "PDF";
+  if (type.startsWith("image")) return "Image";
+  return "Attachment";
+}
+
+function validateProfileCommentMedia(file) {
+  if (!file) return "";
+  const type = String(file.type || "").toLowerCase();
+  const name = String(file.name || "").toLowerCase();
+  const allowed = type.startsWith("image/") || type === "application/pdf" || name.endsWith(".pdf");
+  if (!allowed) return "Only image or PDF files are allowed for comments.";
+  if (file.size > PROFILE_COMMENT_MEDIA_MAX_BYTES) return "Comment attachment must be 12 MB or smaller.";
+  return "";
+}
+
 function postAuthorNameForModal(post, fallbackName) {
   return post?.authorName
     || post?.ownerName
@@ -311,6 +358,8 @@ export default function ProfilePage() {
   const { pushToast } = useToast();
   const coverInputRef = useRef(null);
   const profileInputRef = useRef(null);
+  const profileCommentMediaInputRef = useRef(null);
+  const profileReplyMediaInputRefs = useRef({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState("");
   const [mediaDraft, setMediaDraft] = useState(EMPTY_MEDIA_DRAFT);
@@ -329,6 +378,12 @@ export default function ProfilePage() {
   const [profilePostComments, setProfilePostComments] = useState([]);
   const [profilePostCommentsLoading, setProfilePostCommentsLoading] = useState(false);
   const [profilePostCommentDraft, setProfilePostCommentDraft] = useState("");
+  const [profilePostCommentMedia, setProfilePostCommentMedia] = useState(null);
+  const [profileReplyDrafts, setProfileReplyDrafts] = useState({});
+  const [profileReplyMediaDrafts, setProfileReplyMediaDrafts] = useState({});
+  const [openProfileReplyId, setOpenProfileReplyId] = useState(null);
+  const [profileEditingCommentId, setProfileEditingCommentId] = useState(null);
+  const [profileEditingCommentText, setProfileEditingCommentText] = useState("");
   const [profilePostActionBusy, setProfilePostActionBusy] = useState("");
   const viewingUserId = Number(routeUserId || 0);
   const isOwnProfile = !viewingUserId || viewingUserId === Number(user?.userId || user?.id || 0);
@@ -472,6 +527,12 @@ export default function ProfilePage() {
     if (!postId) {
       setProfilePostComments([]);
       setProfilePostCommentDraft("");
+      setProfilePostCommentMedia(null);
+      setProfileReplyDrafts({});
+      setProfileReplyMediaDrafts({});
+      setOpenProfileReplyId(null);
+      setProfileEditingCommentId(null);
+      setProfileEditingCommentText("");
       return undefined;
     }
 
@@ -479,6 +540,12 @@ export default function ProfilePage() {
     setProfilePostCommentsLoading(true);
     setProfilePostComments([]);
     setProfilePostCommentDraft("");
+    setProfilePostCommentMedia(null);
+    setProfileReplyDrafts({});
+    setProfileReplyMediaDrafts({});
+    setOpenProfileReplyId(null);
+    setProfileEditingCommentId(null);
+    setProfileEditingCommentText("");
 
     feedService.getComments(postId)
       .then((response) => {
@@ -510,6 +577,54 @@ export default function ProfilePage() {
     )));
   };
 
+  const syncProfilePostComments = (postId, comments) => {
+    const commentCount = countCommentThread(comments);
+    setProfilePostComments(comments);
+    updateProfilePostMetrics(postId, { comments, commentCount });
+  };
+
+  const refreshProfilePostComments = async (postId = activeProfilePostId) => {
+    if (!postId) return [];
+    const response = await feedService.getComments(postId);
+    const comments = listFromResponse(response);
+    syncProfilePostComments(postId, comments);
+    return comments;
+  };
+
+  const canManageProfileComment = (comment) => commentAuthorIdValue(comment) === currentUserId;
+
+  const selectProfileCommentMedia = (file) => {
+    if (!file) {
+      setProfilePostCommentMedia(null);
+      if (profileCommentMediaInputRef.current) profileCommentMediaInputRef.current.value = "";
+      return;
+    }
+    const error = validateProfileCommentMedia(file);
+    if (error) {
+      pushToast(error, "error");
+      setProfilePostCommentMedia(null);
+      if (profileCommentMediaInputRef.current) profileCommentMediaInputRef.current.value = "";
+      return;
+    }
+    setProfilePostCommentMedia(file || null);
+  };
+
+  const selectProfileReplyMedia = (commentId, file) => {
+    if (!file) {
+      setProfileReplyMediaDrafts((previous) => ({ ...previous, [commentId]: null }));
+      if (profileReplyMediaInputRefs.current[commentId]) profileReplyMediaInputRefs.current[commentId].value = "";
+      return;
+    }
+    const error = validateProfileCommentMedia(file);
+    if (error) {
+      pushToast(error, "error");
+      setProfileReplyMediaDrafts((previous) => ({ ...previous, [commentId]: null }));
+      if (profileReplyMediaInputRefs.current[commentId]) profileReplyMediaInputRefs.current[commentId].value = "";
+      return;
+    }
+    setProfileReplyMediaDrafts((previous) => ({ ...previous, [commentId]: file || null }));
+  };
+
   const openSavedItem = (post) => {
     const postId = Number(post?.postId);
     if (!postId) return;
@@ -529,6 +644,12 @@ export default function ProfilePage() {
     setActiveProfilePost(null);
     setProfilePostComments([]);
     setProfilePostCommentDraft("");
+    setProfilePostCommentMedia(null);
+    setProfileReplyDrafts({});
+    setProfileReplyMediaDrafts({});
+    setOpenProfileReplyId(null);
+    setProfileEditingCommentId(null);
+    setProfileEditingCommentText("");
     setActiveProfilePostMediaIndex(0);
   };
 
@@ -553,19 +674,89 @@ export default function ProfilePage() {
     event.preventDefault();
     const postId = postIdForItem(activeProfilePost);
     const content = profilePostCommentDraft.trim();
-    if (!postId || !content) return;
+    if (!postId || (!content && !profilePostCommentMedia)) return;
     setProfilePostActionBusy("comment");
     try {
-      await feedService.addComment(postId, content);
-      const response = await feedService.getComments(postId);
-      const comments = listFromResponse(response);
-      const commentCount = countCommentThread(comments);
-      setProfilePostComments(comments);
+      await feedService.addComment(postId, content, profilePostCommentMedia);
+      await refreshProfilePostComments(postId);
       setProfilePostCommentDraft("");
-      updateProfilePostMetrics(postId, { comments, commentCount });
+      setProfilePostCommentMedia(null);
+      if (profileCommentMediaInputRef.current) profileCommentMediaInputRef.current.value = "";
       pushToast("Comment added", "success");
     } catch {
       pushToast("Failed to add comment", "error");
+    } finally {
+      setProfilePostActionBusy("");
+    }
+  };
+
+  const submitProfileReply = async (event, comment) => {
+    event.preventDefault();
+    const postId = postIdForItem(activeProfilePost);
+    const commentId = commentIdValue(comment);
+    const content = String(profileReplyDrafts[commentId] || "").trim();
+    const mediaFile = profileReplyMediaDrafts[commentId] || null;
+    if (!postId || !commentId || (!content && !mediaFile)) return;
+
+    setProfilePostActionBusy(`reply-${commentId}`);
+    try {
+      await feedService.addReply(postId, commentId, content, mediaFile);
+      await refreshProfilePostComments(postId);
+      setProfileReplyDrafts((previous) => ({ ...previous, [commentId]: "" }));
+      setProfileReplyMediaDrafts((previous) => ({ ...previous, [commentId]: null }));
+      if (profileReplyMediaInputRefs.current[commentId]) profileReplyMediaInputRefs.current[commentId].value = "";
+      setOpenProfileReplyId(null);
+      pushToast("Reply added", "success");
+    } catch {
+      pushToast("Failed to add reply", "error");
+    } finally {
+      setProfilePostActionBusy("");
+    }
+  };
+
+  const startProfileCommentEdit = (comment) => {
+    const commentId = commentIdValue(comment);
+    if (!commentId || !canManageProfileComment(comment)) return;
+    setProfileEditingCommentId(commentId);
+    setProfileEditingCommentText(comment?.content || comment?.body || "");
+    setOpenProfileReplyId(null);
+  };
+
+  const submitProfileCommentEdit = async (event, comment) => {
+    event.preventDefault();
+    const postId = postIdForItem(activeProfilePost);
+    const commentId = commentIdValue(comment);
+    const content = profileEditingCommentText.trim();
+    if (!postId || !commentId || !content || !canManageProfileComment(comment)) return;
+
+    setProfilePostActionBusy(`edit-${commentId}`);
+    try {
+      await feedService.updateComment(commentId, content);
+      await refreshProfilePostComments(postId);
+      setProfileEditingCommentId(null);
+      setProfileEditingCommentText("");
+      pushToast("Comment updated", "success");
+    } catch {
+      pushToast("Failed to update comment", "error");
+    } finally {
+      setProfilePostActionBusy("");
+    }
+  };
+
+  const deleteProfileComment = async (comment) => {
+    const postId = postIdForItem(activeProfilePost);
+    const commentId = commentIdValue(comment);
+    if (!postId || !commentId || !canManageProfileComment(comment)) return;
+    const confirmed = typeof window === "undefined" ? true : window.confirm("Delete this comment?");
+    if (!confirmed) return;
+
+    setProfilePostActionBusy(`delete-${commentId}`);
+    try {
+      await feedService.deleteComment(commentId);
+      await refreshProfilePostComments(postId);
+      pushToast("Comment deleted", "success");
+    } catch {
+      pushToast("Failed to delete comment", "error");
     } finally {
       setProfilePostActionBusy("");
     }
@@ -706,6 +897,11 @@ export default function ProfilePage() {
           friends: prev.friends.filter((entry) => Number(entry.userId) !== currentUserId)
         }));
         pushToast("Friend removed", "success");
+      } else if (relationship.requested) {
+        const response = await friendService.cancel(viewingUserId);
+        const message = String(response?.data?.message || "");
+        setRelationship((prev) => ({ ...prev, requested: false, incomingRequest: false }));
+        pushToast(message || "Friend request cancelled", "success");
       } else if (relationship.incomingRequest) {
         const response = await friendService.accept(viewingUserId);
         const message = String(response?.data?.message || "");
@@ -754,6 +950,175 @@ export default function ProfilePage() {
     } finally {
       setSaving("");
     }
+  };
+
+  const renderProfileAttachmentChip = (file, onRemove) => file ? (
+    <div className="profile-comment-attachment-chip">
+      <Icon name={commentFileKind(file) === "PDF" ? "invoice" : "image"} />
+      <span>{commentFileKind(file)} attached: {file.name}</span>
+      <button type="button" onClick={onRemove} aria-label="Remove attachment">
+        <Icon name="close" />
+      </button>
+    </div>
+  ) : null;
+
+  const renderProfileCommentMedia = (comment) => {
+    const mediaUrl = commentMediaUrl(comment);
+    if (!mediaUrl) return null;
+    const src = toMediaUrl(mediaUrl);
+    const mediaType = commentMediaType(comment);
+
+    if (mediaType === "PDF") {
+      return (
+        <div className="profile-comment-media profile-comment-media-pdf">
+          <a href={src} target="_blank" rel="noreferrer">
+            <Icon name="invoice" />
+            Open PDF attachment
+          </a>
+          <iframe src={src} title="Comment PDF attachment" />
+        </div>
+      );
+    }
+
+    if (mediaType === "VIDEO") {
+      return (
+        <div className="profile-comment-media">
+          <video src={src} controls preload="metadata" />
+        </div>
+      );
+    }
+
+    return (
+      <div className="profile-comment-media">
+        <img src={src} alt="Comment attachment" />
+      </div>
+    );
+  };
+
+  const renderProfileCommentItem = (comment, depth = 0) => {
+    const commentId = commentIdValue(comment);
+    const replies = Array.isArray(comment?.replies) ? comment.replies : [];
+    const authorName = commentAuthorName(comment);
+    const canManage = canManageProfileComment(comment);
+    const isEditing = profileEditingCommentId === commentId;
+    const replyOpen = openProfileReplyId === commentId;
+    const replyDraft = String(profileReplyDrafts[commentId] || "");
+    const replyMediaFile = profileReplyMediaDrafts[commentId] || null;
+    const busyReply = profilePostActionBusy === `reply-${commentId}`;
+    const busyEdit = profilePostActionBusy === `edit-${commentId}`;
+    const busyDelete = profilePostActionBusy === `delete-${commentId}`;
+
+    return (
+      <article
+        key={commentId}
+        className={`profile-post-comment profile-post-comment-thread ${depth ? "is-reply" : ""}`.trim()}
+        style={{ "--profile-comment-depth": Math.min(depth, 3) }}
+      >
+        <Avatar name={authorName} src={comment.authorProfileImageUrl ? toMediaUrl(comment.authorProfileImageUrl) : null} size={depth ? "xs" : "sm"} />
+        <div className="profile-post-comment-content">
+          <div className="profile-post-comment-header">
+            <div>
+              <strong>{authorName}</strong>
+              <span>{comment.relationshipLabel || (canManage ? "You" : "Member")} · {formatProfileDate(comment.createdAt)}</span>
+            </div>
+            <div className="profile-comment-owner-actions">
+              <button
+                type="button"
+                onClick={() => {
+                  setOpenProfileReplyId(replyOpen ? null : commentId);
+                  setProfileEditingCommentId(null);
+                  setProfileEditingCommentText("");
+                }}
+                disabled={Boolean(profilePostActionBusy)}
+              >
+                <Icon name="chat" />
+                Reply
+              </button>
+              {canManage ? (
+                <>
+                  <button type="button" onClick={() => startProfileCommentEdit(comment)} disabled={Boolean(profilePostActionBusy)}>
+                    <Icon name="edit" />
+                    Edit
+                  </button>
+                  <button type="button" onClick={() => deleteProfileComment(comment)} disabled={busyDelete}>
+                    <Icon name="trash" />
+                    Delete
+                  </button>
+                </>
+              ) : null}
+            </div>
+          </div>
+
+          {isEditing ? (
+            <form className="profile-comment-edit-form" onSubmit={(event) => submitProfileCommentEdit(event, comment)}>
+              <textarea
+                value={profileEditingCommentText}
+                onChange={(event) => setProfileEditingCommentText(event.target.value)}
+                placeholder="Update your comment..."
+                disabled={busyEdit}
+              />
+              <div>
+                <button type="submit" disabled={!profileEditingCommentText.trim() || busyEdit}>
+                  <Icon name="check" />
+                  Save
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setProfileEditingCommentId(null);
+                    setProfileEditingCommentText("");
+                  }}
+                  disabled={busyEdit}
+                >
+                  Cancel
+                </button>
+              </div>
+            </form>
+          ) : (
+            <>
+              {comment.content || comment.body ? <p>{comment.content || comment.body}</p> : null}
+              {renderProfileCommentMedia(comment)}
+            </>
+          )}
+
+          {replyOpen ? (
+            <form className="profile-reply-form" onSubmit={(event) => submitProfileReply(event, comment)}>
+              <textarea
+                value={replyDraft}
+                onChange={(event) => setProfileReplyDrafts((previous) => ({ ...previous, [commentId]: event.target.value }))}
+                placeholder={`Reply to ${authorName}`}
+                disabled={busyReply}
+              />
+              {renderProfileAttachmentChip(replyMediaFile, () => selectProfileReplyMedia(commentId, null))}
+              <div className="profile-comment-form-tools">
+                <input
+                  ref={(node) => {
+                    if (node) profileReplyMediaInputRefs.current[commentId] = node;
+                  }}
+                  type="file"
+                  accept={PROFILE_COMMENT_MEDIA_ACCEPT}
+                  onChange={(event) => selectProfileReplyMedia(commentId, event.target.files?.[0] || null)}
+                />
+                <button type="button" onClick={() => profileReplyMediaInputRefs.current[commentId]?.click()} disabled={busyReply}>
+                  <Icon name="attach" />
+                  Image / PDF
+                </button>
+                <button type="submit" disabled={(!replyDraft.trim() && !replyMediaFile) || busyReply}>
+                  <Icon name="send" />
+                  Reply
+                </button>
+              </div>
+            </form>
+          ) : null}
+
+          {replies.length ? (
+            <div className="profile-post-replies">
+              {replies.map((reply) => renderProfileCommentItem(reply, depth + 1))}
+            </div>
+          ) : null}
+        </div>
+      </article>
+    );
   };
 
   if (loading) return <LoadingState text="Loading profile..." />;
@@ -873,10 +1238,10 @@ export default function ProfilePage() {
               icon={relationship.isFriend ? "trash" : relationship.incomingRequest ? "check" : "users"}
               variant={relationship.isFriend ? "danger" : "secondary"}
               className="profile-action-button"
-              disabled={saving === "friend" || relationship.requested}
+              disabled={saving === "friend"}
               onClick={toggleProfileFriend}
             >
-              {relationship.isFriend ? "Unfriend" : relationship.incomingRequest ? "Accept Request" : relationship.requested ? "Request Sent" : "Add Friend"}
+              {relationship.isFriend ? "Unfriend" : relationship.incomingRequest ? "Accept Request" : relationship.requested ? "Cancel Request" : "Add Friend"}
             </Button>
             <Button icon="chat" className="profile-action-button" onClick={() => navigate("/chat", { state: { startUserId: viewingUserId } })}>Chat</Button>
             </div>
@@ -1092,7 +1457,7 @@ export default function ProfilePage() {
         title={activeProfilePostVideo ? "Reel Preview" : "Post Preview"}
         subtitle="Preview, react, and comment without leaving this profile."
         onClose={closeProfilePostViewer}
-        footer={<Button onClick={closeProfilePostViewer} disabled={Boolean(profilePostActionBusy)}>Close</Button>}
+        footer={<Button variant="gradient" onClick={closeProfilePostViewer} disabled={Boolean(profilePostActionBusy)}>Close</Button>}
         className={`profile-post-viewer-modal ${activeProfilePostVideo ? "profile-reel-viewer-modal" : "profile-feed-viewer-modal"}`}
       >
         {activeProfilePost ? (
@@ -1138,93 +1503,100 @@ export default function ProfilePage() {
             </section>
 
             <section className="profile-post-viewer-panel">
-              <header className="profile-post-viewer-author">
-                <Avatar name={activeProfilePostAuthorName} src={activeProfilePostAuthorAvatar ? toMediaUrl(activeProfilePostAuthorAvatar) : null} size="xl" online={isOnlineUser(profileUser)} />
-                <div>
-                  <strong>{activeProfilePostAuthorName}</strong>
-                  <span>
-                    <Icon name={activeProfilePostRoleIcon} />
-                    {activeProfilePostRoleLabel}
-                  </span>
-                  <small>{formatProfileDate(activeProfilePost.createdAt || activeProfilePost.sharedAt)}</small>
-                </div>
-              </header>
+              <div className="profile-post-viewer-scroll-area">
+                <header className="profile-post-viewer-author">
+                  <Avatar name={activeProfilePostAuthorName} src={activeProfilePostAuthorAvatar ? toMediaUrl(activeProfilePostAuthorAvatar) : null} size="md" online={isOnlineUser(profileUser)} />
+                  <div>
+                    <strong>{activeProfilePostAuthorName}</strong>
+                    <div className="author-meta-row">
+                      <span>
+                        <Icon name={activeProfilePostRoleIcon} />
+                        {activeProfilePostRoleLabel}
+                      </span>
+                      <small>{formatProfileDate(activeProfilePost.createdAt || activeProfilePost.sharedAt)}</small>
+                    </div>
+                  </div>
+                </header>
 
-              <div className="profile-post-viewer-copy">
-                <p>{compactText(activeProfilePost.content || activeProfilePost.caption || activeProfilePost.shareCaption, activeProfilePostVideo ? "Reel from this profile." : "Post from this profile.")}</p>
-                <div className="profile-post-viewer-tags">
-                  {activeProfilePostTags.length ? activeProfilePostTags.map((tag) => <span key={tag}>{tag}</span>) : <span>{activeProfilePostVideo ? "#reel" : "#post"}</span>}
+                <div className="profile-post-viewer-copy">
+                  <p>{compactText(activeProfilePost.content || activeProfilePost.caption || activeProfilePost.shareCaption, activeProfilePostVideo ? "Reel from this profile." : "Post from this profile.")}</p>
+                  <div className="profile-post-viewer-tags">
+                    {activeProfilePostTags.length ? activeProfilePostTags.map((tag) => <span key={tag}>{tag}</span>) : <span>{activeProfilePostVideo ? "#reel" : "#post"}</span>}
+                  </div>
+                </div>
+
+                <div className="profile-post-viewer-metrics">
+                  <span><Icon name="heart" /> {formatMetricValue(postReactionCount(activeProfilePost))} reactions</span>
+                  <span><Icon name="chat" /> {formatMetricValue(postCommentCount(activeProfilePost))} comments</span>
+                  {activeProfilePostVideo ? <span><Icon name="eye" /> {formatMetricValue(activeProfilePost.reelViewCount)} views</span> : null}
+                </div>
+
+                <div className="profile-post-reaction-row">
+                  {[
+                    { type: "like", label: "Like", icon: "heart" },
+                    { type: "love", label: "Love", icon: "spark" },
+                    { type: "wow", label: "Wow", icon: "star" }
+                  ].map((reaction) => (
+                    <button
+                      key={reaction.type}
+                      type="button"
+                      disabled={profilePostActionBusy === `react-${reaction.type}`}
+                      onClick={() => reactToProfilePost(reaction.type)}
+                    >
+                      <Icon name={reaction.icon} />
+                      {reaction.label}
+                      <strong>{Number(activeProfilePost?.reactionCounts?.[reaction.type] || 0)}</strong>
+                    </button>
+                  ))}
+                </div>
+
+                <div className="profile-post-comments-panel">
+                  <div className="profile-post-comments-head">
+                    <strong>Comments</strong>
+                    <span>{profilePostCommentsLoading ? "Loading..." : `${countCommentThread(profilePostComments)} comments`}</span>
+                  </div>
+                  <div className="profile-post-comments-list">
+                    {profilePostCommentsLoading ? (
+                      <p className="profile-post-comments-empty">Loading comments...</p>
+                    ) : profilePostComments.length ? (
+                      profilePostComments.map((comment) => renderProfileCommentItem(comment))
+                    ) : (
+                      <div className="profile-post-comments-empty-state">
+                        <img src={chatBubbleEmptyState} alt="No comments" />
+                        <p className="profile-post-comments-empty">No comments yet. Start the conversation here.</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              <div className="profile-post-viewer-metrics">
-                <span><Icon name="heart" /> {formatMetricValue(postReactionCount(activeProfilePost))} reactions</span>
-                <span><Icon name="chat" /> {formatMetricValue(postCommentCount(activeProfilePost))} comments</span>
-                {activeProfilePostVideo ? <span><Icon name="eye" /> {formatMetricValue(activeProfilePost.reelViewCount)} views</span> : null}
-              </div>
-
-              <div className="profile-post-reaction-row">
-                {[
-                  { type: "like", label: "Like", icon: "heart" },
-                  { type: "love", label: "Love", icon: "spark" },
-                  { type: "wow", label: "Wow", icon: "star" }
-                ].map((reaction) => (
-                  <button
-                    key={reaction.type}
-                    type="button"
-                    disabled={profilePostActionBusy === `react-${reaction.type}`}
-                    onClick={() => reactToProfilePost(reaction.type)}
-                  >
-                    <Icon name={reaction.icon} />
-                    {reaction.label}
-                    <strong>{Number(activeProfilePost?.reactionCounts?.[reaction.type] || 0)}</strong>
-                  </button>
-                ))}
-              </div>
-
-              <div className="profile-post-comments-panel">
-                <div className="profile-post-comments-head">
-                  <strong>Comments</strong>
-                  <span>{profilePostCommentsLoading ? "Loading..." : `${countCommentThread(profilePostComments)} total`}</span>
-                </div>
-                <div className="profile-post-comments-list">
-                  {profilePostCommentsLoading ? (
-                    <p className="profile-post-comments-empty">Loading comments...</p>
-                  ) : profilePostComments.length ? (
-                    profilePostComments.slice(0, 6).map((comment) => (
-                      <article key={comment.commentId || comment.id} className="profile-post-comment">
-                        <Avatar name={commentAuthorName(comment)} src={comment.authorProfileImageUrl ? toMediaUrl(comment.authorProfileImageUrl) : null} size="sm" />
-                        <div>
-                          <strong>{commentAuthorName(comment)}</strong>
-                          <p>{comment.content || comment.body || ""}</p>
-                          {Array.isArray(comment.replies) && comment.replies.length ? (
-                            <div className="profile-post-replies">
-                              {comment.replies.slice(0, 2).map((reply) => (
-                                <span key={reply.commentId || reply.id}>
-                                  <b>{commentAuthorName(reply)}:</b> {reply.content || reply.body || ""}
-                                </span>
-                              ))}
-                            </div>
-                          ) : null}
-                        </div>
-                      </article>
-                    ))
-                  ) : (
-                    <p className="profile-post-comments-empty">No comments yet. Start the conversation here.</p>
-                  )}
-                </div>
-
+              <div className="profile-post-comment-form-wrapper">
                 <form className="profile-post-comment-form" onSubmit={submitProfilePostComment}>
                   <Avatar name={displayName(user)} src={user?.profileImageUrl || user?.imageUrl ? toMediaUrl(user.profileImageUrl || user.imageUrl) : null} size="sm" />
-                  <input
-                    value={profilePostCommentDraft}
-                    onChange={(event) => setProfilePostCommentDraft(event.target.value)}
-                    placeholder="Write a real comment..."
-                    disabled={profilePostActionBusy === "comment"}
-                  />
-                  <button type="submit" disabled={!profilePostCommentDraft.trim() || profilePostActionBusy === "comment"}>
-                    <Icon name="send" />
-                  </button>
+                  <div className="profile-post-comment-composer">
+                    <textarea
+                      placeholder="Write a real comment..."
+                      value={profilePostCommentDraft}
+                      onChange={(event) => setProfilePostCommentDraft(event.target.value)}
+                      disabled={profilePostActionBusy === "comment"}
+                    />
+                    {renderProfileAttachmentChip(profilePostCommentMedia, () => selectProfileCommentMedia(null))}
+                    <div className="profile-comment-form-tools">
+                      <input
+                        ref={profileCommentMediaInputRef}
+                        type="file"
+                        accept={PROFILE_COMMENT_MEDIA_ACCEPT}
+                        onChange={(event) => selectProfileCommentMedia(event.target.files?.[0] || null)}
+                      />
+                      <button type="button" onClick={() => profileCommentMediaInputRef.current?.click()} disabled={profilePostActionBusy === "comment"}>
+                        <Icon name="attach" />
+                        Image / PDF
+                      </button>
+                      <Button variant="gradient" type="submit" disabled={(!profilePostCommentDraft.trim() && !profilePostCommentMedia) || profilePostActionBusy === "comment"}>
+                        <Icon name="send" />
+                      </Button>
+                    </div>
+                  </div>
                 </form>
               </div>
             </section>

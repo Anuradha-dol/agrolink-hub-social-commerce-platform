@@ -171,7 +171,7 @@ export default function CalendarPage() {
   if (loading) return <LoadingState text="Loading calendar..." />;
 
   return (
-    <PageGrid className="calendar-dashboard">
+    <PageGrid className="calendar-dashboard social-pro-page workspace-pro-page">
       <OverviewHero
         icon="calendar"
         eyebrow="Plan ahead. Stay organized."

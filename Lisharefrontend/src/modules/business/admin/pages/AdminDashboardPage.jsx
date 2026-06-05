@@ -118,19 +118,6 @@ export default function AdminDashboardPage() {
     }
   }, [loading, pathname]);
 
-  const updateRole = async (userId, role) => {
-    setBusy(`role-${userId}`);
-    try {
-      await adminService.updateRole(userId, role);
-      pushToast("User role updated", "success");
-      await load();
-    } catch {
-      pushToast("Failed to update role", "error");
-    } finally {
-      setBusy("");
-    }
-  };
-
   const openDeleteUser = (entry) => {
     setDeleteTarget(entry);
     setDeleteReason("");
@@ -274,7 +261,7 @@ export default function AdminDashboardPage() {
           </div>
 
           <Card className="admin-role-section">
-            <SectionHeader title="User Management" subtitle="Filter by account type, then update roles, moderation, or account removal." />
+            <SectionHeader title="User Management" subtitle="Filter by account type. Roles are read-only here; admins can update moderation status and safe deletion notices." />
             <div className="admin-role-grid-v2">
               {ROLES.map((role) => (
                 <Link key={role} className={`admin-role-card-v2 ${routeRoleFilter === role ? "active" : ""}`} to={role === "ROLE_USER" ? "/admin/users" : role === "ROLE_BUSINESS" ? "/admin/business-users" : role === "ROLE_FARMER" ? "/admin/farmers" : role === "ROLE_CREATOR" ? "/admin/creators" : "/admin/admins"}>
@@ -290,7 +277,7 @@ export default function AdminDashboardPage() {
           <Card className="admin-table-card-v2" id="admin-users">
             <SectionHeader
               title={userSectionTitle}
-              subtitle="Manage roles, verification status, moderation messages, and safe deletion notices."
+              subtitle="Review locked roles, verification status, moderation messages, and safe deletion notices."
               action={(
                 <label className="admin-search-field">
                   <Icon name="search" />
@@ -322,9 +309,10 @@ export default function AdminDashboardPage() {
                       </td>
                       <td>{entry.email}</td>
                       <td>
-                        <select value={entry.role} onChange={(event) => updateRole(entry.userId, event.target.value)} disabled={busy === `role-${entry.userId}`}>
-                          {ROLES.map((role) => <option key={role} value={role}>{ROLE_LABELS[role] || role.replace("ROLE_", "")}</option>)}
-                        </select>
+                        <span className={`admin-role-lock role-${roleTone(entry.role)}`}>
+                          <Icon name={entry.role === "ROLE_ADMIN" ? "settings" : entry.role === "ROLE_BUSINESS" || entry.role === "ROLE_FARMER" ? "bag" : entry.role === "ROLE_CREATOR" ? "spark" : "user"} />
+                          {ROLE_LABELS[entry.role] || String(entry.role || "ROLE_USER").replace("ROLE_", "")}
+                        </span>
                       </td>
                       <td><StatusBadge status={entry.verified ? "Verified" : "Unverified"} tone={entry.verified ? "green" : "orange"} /></td>
                       <td>

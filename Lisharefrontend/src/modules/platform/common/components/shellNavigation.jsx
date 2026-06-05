@@ -19,7 +19,7 @@ export const NAVIGATION_SECTIONS = [
     items: [
       { to: "/marketplace", label: "Marketplace", icon: "marketplace" },
       { to: "/orders", label: "Orders", icon: "orders" },
-      { to: "/bookmarks", label: "Saved Items", icon: "bookmark" }
+      { to: "/cart", label: "Cart", icon: "marketplace", roles: ["ROLE_USER", "ROLE_CREATOR"] }
     ]
   },
   {
@@ -64,8 +64,9 @@ export const PAGE_META = [
   { key: "/chat", title: "Messages", subtitle: "Realtime chats, direct messages and group conversations", searchPlaceholder: "Search conversations or people..." },
   { key: "/marketplace", title: "Marketplace", subtitle: "Shop products, compare sellers, manage carts and saved deals", searchPlaceholder: "Search products, sellers, categories..." },
   { key: "/orders", title: "Orders", subtitle: "Track purchases, delivery status, order history and seller updates", searchPlaceholder: "Search orders, products, sellers..." },
+  { key: "/cart", title: "Cart", subtitle: "Review selected products, update quantities and place orders", searchPlaceholder: "Search cart products or businesses..." },
   { key: "/calendar", title: "Calendar", subtitle: "Plan events, reminders, farm tasks and business schedules", searchPlaceholder: "Search events, dates, reminders..." },
-  { key: "/bookmarks", title: "Saved Items", subtitle: "Saved products, bookmarked posts, collections and price alerts", searchPlaceholder: "Search saved products or posts..." },
+  { key: "/bookmarks", title: "Cart", subtitle: "Review selected products, update quantities and place orders", searchPlaceholder: "Search cart products or businesses..." },
   { key: "/analytics", title: "Insights", subtitle: "Platform, marketplace, engagement and growth analytics", searchPlaceholder: "Search metrics, products, activity..." },
   { key: "/notifications", title: "Notifications", subtitle: "Requests, alerts, system updates and recent activity", searchPlaceholder: "Search notifications or people..." },
   { key: "/support", title: "Support Center", subtitle: "Submit issues, review admin replies and manage support tickets", searchPlaceholder: "Search tickets, topics, reviews..." },

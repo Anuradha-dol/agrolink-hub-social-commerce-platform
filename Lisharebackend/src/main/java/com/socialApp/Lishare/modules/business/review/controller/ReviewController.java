@@ -3,6 +3,7 @@ package com.socialApp.Lishare.modules.business.review.controller;
 import com.socialApp.Lishare.modules.business.review.service.ReviewService;
 import com.socialApp.Lishare.modules.business.review.dto.ReviewDto;
 import com.socialApp.Lishare.modules.business.review.entity.Review;
+import com.socialApp.Lishare.modules.platform.common.enums.Role;
 import com.socialApp.Lishare.modules.platform.user.entity.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,11 @@ public class ReviewController {
         return ResponseEntity.ok(reviewService.getAllReviews());
     }
 
+    @GetMapping("/business/{businessPageId}")
+    public ResponseEntity<List<Review>> getBusinessReviews(@PathVariable Long businessPageId) {
+        return ResponseEntity.ok(reviewService.getReviewsByBusinessPageId(businessPageId));
+    }
+
     @PreAuthorize("hasAnyRole('USER','BUSINESS','FARMER','CREATOR')")
     @GetMapping("/gets")
     public ResponseEntity<List<Review>> getMyReviews(
@@ -38,11 +44,14 @@ public class ReviewController {
 
 
     // 2️⃣ Create review (only logged-in user)
-    @PreAuthorize("hasAnyRole('USER','BUSINESS','FARMER','CREATOR')")
+    @PreAuthorize("hasAnyRole('USER','CREATOR')")
     @PostMapping
     public ResponseEntity<Review> createReview(
             @AuthenticationPrincipal User loggedUser,
             @Valid @RequestBody ReviewDto.CreateReviewDto dto) {
+        if (loggedUser.getRole() == Role.ROLE_BUSINESS || loggedUser.getRole() == Role.ROLE_FARMER) {
+            throw new RuntimeException("Business seller accounts cannot submit customer feedback");
+        }
 
         Review review = new Review();
         review.setComment(dto.comment());
@@ -50,6 +59,8 @@ public class ReviewController {
         review.setStatus(dto.status());
         review.setUserId(loggedUser.getUserId());
         review.setUsername(loggedUser.getFirstname() + " " + loggedUser.getLastName());
+        review.setBusinessPageId(dto.businessPageId());
+        review.setOrderId(dto.orderId());
 
         return ResponseEntity.ok(reviewService.createReview(review));
     }
