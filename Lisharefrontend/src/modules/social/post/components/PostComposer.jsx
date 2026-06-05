@@ -432,7 +432,7 @@ export default function PostComposer({ onSubmit, submitting, onSearchMentionUser
                 onChange={(event) => setCategory(event.target.value)} 
                 required
                 style={{ 
-                  paddingLeft: '2.5rem',
+                  paddingLeft: '3rem',
                   color: '#0f172a',
                   fontWeight: '600'
                 }}
@@ -444,7 +444,7 @@ export default function PostComposer({ onSubmit, submitting, onSearchMentionUser
                   </option>
                 ))}
               </select>
-              <span style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', display: 'flex', alignItems: 'center' }}>
+              <span style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', display: 'flex', alignItems: 'center' }}>
                 <svg
                   width="18"
                   height="18"
@@ -468,7 +468,7 @@ export default function PostComposer({ onSubmit, submitting, onSearchMentionUser
                 value={audience} 
                 onChange={(event) => setAudience(event.target.value)}
                 style={{ 
-                  paddingLeft: '2.5rem',
+                  paddingLeft: '3rem',
                   color: '#0f172a',
                   fontWeight: '600'
                 }}
@@ -479,7 +479,7 @@ export default function PostComposer({ onSubmit, submitting, onSearchMentionUser
                   </option>
                 ))}
               </select>
-              <span style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', display: 'flex', alignItems: 'center' }}>
+              <span style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', display: 'flex', alignItems: 'center' }}>
                 <svg
                   width="18"
                   height="18"
