@@ -3267,13 +3267,13 @@ export default function FeedCard({
                     <label className="edit-post-field-v2" style={{ flex: '1 1 200px' }}>
                       <span style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Category</span>
                       <div style={{ position: 'relative' }}>
-                        <select 
-                          value={editingCategory} 
+                        <select
+                          value={editingCategory}
                           onChange={(e) => setEditingCategory(e.target.value)}
-                          style={{ 
-                            width: '100%', 
-                            padding: '0.75rem 1rem 0.75rem 3rem', 
-                            borderRadius: '10px', 
+                          style={{
+                            width: '100%',
+                            padding: '0.75rem 1rem 0.75rem 3.5rem',
+                            borderRadius: '10px',
                             border: '1px solid var(--border-color, #ddd)',
                             background: '#ffffff',
                             color: '#0f172a',
@@ -3295,13 +3295,13 @@ export default function FeedCard({
                     <label className="edit-post-field-v2" style={{ flex: '1 1 200px' }}>
                       <span style={{ display: 'block', fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '0.5rem', color: 'var(--text-secondary)' }}>Audience</span>
                       <div style={{ position: 'relative' }}>
-                        <select 
-                          value={editingAudience} 
+                        <select
+                          value={editingAudience}
                           onChange={(e) => setEditingAudience(e.target.value)}
-                          style={{ 
-                            width: '100%', 
-                            padding: '0.75rem 1rem 0.75rem 3rem', 
-                            borderRadius: '10px', 
+                          style={{
+                            width: '100%',
+                            padding: '0.75rem 1rem 0.75rem 3.5rem',
+                            borderRadius: '10px',
                             border: '1px solid var(--border-color, #ddd)',
                             background: '#ffffff',
                             color: '#0f172a',

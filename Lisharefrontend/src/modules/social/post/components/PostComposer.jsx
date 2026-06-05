@@ -88,6 +88,11 @@ function ComposerToolIcon({ name }) {
         <polyline points="9 18 15 12 9 6" />
       </>
     ),
+    chevronDown: (
+      <>
+        <polyline points="6 9 12 15 18 9" />
+      </>
+    ),
     send: (
       <>
         <line x1="22" y1="2" x2="11" y2="13" />
@@ -245,12 +250,96 @@ function ComposerToolButton({ label, icon, active = false, onClick }) {
   );
 }
 
+function ComposerDropdown({ label, value, placeholder, options, open, onToggle, onClose, onChange, metaForOption, fallbackIcon = "fileText" }) {
+  const dropdownRef = useRef(null);
+  const selected = options.find((item) => item.value === value);
+  const currentIcon = selected?.icon || fallbackIcon;
+
+  useEffect(() => {
+    if (!open) return undefined;
+
+    const closeFromOutside = (event) => {
+      if (!dropdownRef.current?.contains(event.target)) {
+        onClose();
+      }
+    };
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    };
+
+    document.addEventListener("mousedown", closeFromOutside);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("mousedown", closeFromOutside);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [open, onClose]);
+
+  return (
+    <div className={`composer-category-field composer-pretty-select-field ${open ? "is-open" : ""}`.trim()} ref={dropdownRef}>
+      <span>{label}</span>
+      <div className="composer-pretty-select">
+        <button
+          type="button"
+          className={`composer-pretty-select-trigger ${selected ? "" : "is-placeholder"}`.trim()}
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          aria-label={`${label}: ${selected?.label || placeholder}`}
+          onClick={onToggle}
+        >
+          <span className="composer-select-icon-badge" aria-hidden="true">
+            <ComposerToolIcon name={currentIcon} />
+          </span>
+          <span className="composer-select-value">
+            <strong>{selected?.label || placeholder}</strong>
+            {selected && metaForOption ? <small>{metaForOption(selected)}</small> : null}
+          </span>
+          <ComposerToolIcon name="chevronDown" />
+        </button>
+
+        {open ? (
+          <div className="composer-pretty-select-menu" role="listbox" aria-label={label}>
+            {options.map((item) => {
+              const selectedOption = item.value === value;
+              return (
+                <button
+                  key={item.value}
+                  type="button"
+                  className={`composer-pretty-select-option ${selectedOption ? "active" : ""}`.trim()}
+                  role="option"
+                  aria-selected={selectedOption}
+                  onClick={() => {
+                    onChange(item.value);
+                    onClose();
+                  }}
+                >
+                  <span className="composer-select-option-icon" aria-hidden="true">
+                    <ComposerToolIcon name={item.icon || fallbackIcon} />
+                  </span>
+                  <span className="composer-select-option-copy">
+                    <strong>{item.label}</strong>
+                    {item.hint ? <small>{item.hint}</small> : null}
+                  </span>
+                  {metaForOption ? <span className="composer-select-option-meta">{metaForOption(item)}</span> : null}
+                </button>
+              );
+            })}
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 export default function PostComposer({ onSubmit, submitting, onSearchMentionUsers }) {
   const { user } = useAuth();
   const [content, setContent] = useState("");
   const [mediaFile, setMediaFile] = useState(null);
   const [category, setCategory] = useState("");
   const [audience, setAudience] = useState("PUBLIC");
+  const [openDropdown, setOpenDropdown] = useState("");
   const [fileAccept, setFileAccept] = useState("image/*,video/*,.gif");
   const [activeTool, setActiveTool] = useState("");
   const [locationText, setLocationText] = useState("");
@@ -321,7 +410,10 @@ export default function PostComposer({ onSubmit, submitting, onSearchMentionUser
 
   const submit = async (event) => {
     event.preventDefault();
-    if (!category) return;
+    if (!category) {
+      setOpenDropdown("category");
+      return;
+    }
     const trimmedLocation = locationText.trim();
     const filledPollOptions = pollOptions.map((option) => option.trim()).filter(Boolean);
     const trimmedPollQuestion = pollQuestion.trim();
@@ -346,6 +438,7 @@ export default function PostComposer({ onSubmit, submitting, onSearchMentionUser
     setMediaFile(null);
     setCategory("");
     setAudience("PUBLIC");
+    setOpenDropdown("");
     setActiveTool("");
     setLocationText("");
     setFeeling("");
@@ -424,79 +517,29 @@ export default function PostComposer({ onSubmit, submitting, onSearchMentionUser
         </div>
         {fileLabel ? <small className="composer-file-name">{fileLabel}</small> : null}
         <div className="composer-category-stack">
-          <label className="composer-category-field">
-            <span>Category</span>
-            <div style={{ position: 'relative' }}>
-              <select 
-                value={category} 
-                onChange={(event) => setCategory(event.target.value)} 
-                required
-                style={{ 
-                  paddingLeft: '3rem',
-                  color: '#0f172a',
-                  fontWeight: '600'
-                }}
-              >
-                <option value="">Choose category</option>
-                {POST_CATEGORIES.map((item) => (
-                  <option key={item.value} value={item.value}>
-                    {item.label} - {item.xp} XP
-                  </option>
-                ))}
-              </select>
-              <span style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', display: 'flex', alignItems: 'center' }}>
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  style={{ color: '#64748b' }}
-                >
-                  <ComposerToolIcon name={POST_CATEGORIES.find(c => c.value === category)?.icon || 'fileText'} />
-                </svg>
-              </span>
-            </div>
-          </label>
-          <label className="composer-category-field composer-audience-field">
-            <span>Audience</span>
-            <div style={{ position: 'relative' }}>
-              <select 
-                value={audience} 
-                onChange={(event) => setAudience(event.target.value)}
-                style={{ 
-                  paddingLeft: '3rem',
-                  color: '#0f172a',
-                  fontWeight: '600'
-                }}
-              >
-                {AUDIENCE_OPTIONS.map((item) => (
-                  <option key={item.value} value={item.value}>
-                    {item.label}
-                  </option>
-                ))}
-              </select>
-              <span style={{ position: 'absolute', left: '0.85rem', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', display: 'flex', alignItems: 'center' }}>
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  style={{ color: '#64748b' }}
-                >
-                  <ComposerToolIcon name={AUDIENCE_OPTIONS.find(a => a.value === audience)?.icon || 'globe'} />
-                </svg>
-              </span>
-            </div>
-            <small>{AUDIENCE_OPTIONS.find((item) => item.value === audience)?.hint}</small>
-          </label>
+          <ComposerDropdown
+            label="Category"
+            value={category}
+            placeholder="Choose category"
+            options={POST_CATEGORIES}
+            open={openDropdown === "category"}
+            onToggle={() => setOpenDropdown((previous) => previous === "category" ? "" : "category")}
+            onClose={() => setOpenDropdown("")}
+            onChange={setCategory}
+            metaForOption={(item) => `${item.xp} XP`}
+            fallbackIcon="fileText"
+          />
+          <ComposerDropdown
+            label="Audience"
+            value={audience}
+            placeholder="Choose audience"
+            options={AUDIENCE_OPTIONS}
+            open={openDropdown === "audience"}
+            onToggle={() => setOpenDropdown((previous) => previous === "audience" ? "" : "audience")}
+            onClose={() => setOpenDropdown("")}
+            onChange={setAudience}
+            fallbackIcon="globe"
+          />
         </div>
         <button type="submit" className="btn btn-primary composer-publish-btn" disabled={submitting}>
           {submitting ? "Posting..." : "Post"}

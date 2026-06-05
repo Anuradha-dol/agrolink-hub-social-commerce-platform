@@ -39858,28 +39858,28 @@ button.comment-author-avatar {
 .feed-poll-card-container.premium-feed-poll-card .feed-poll-question-text {
   color: #0f2544 !important;
   font-family: "Fraunces", "Outfit", "Segoe UI", serif !important;
-  font-size: clamp(1.05rem, 1.55vw, 1.3rem) !important;
-  font-weight: 850 !important;
-  line-height: 1.25 !important;
-  letter-spacing: -0.015em !important;
+  font-size: clamp(1rem, 1.4vw, 1.25rem) !important;
+  font-weight: 700 !important;
+  line-height: 1.35 !important;
+  letter-spacing: -0.01em !important;
 }
 
 .shell.shell-home-theme .feed-poll-card-container.premium-feed-poll-card .feed-poll-option-name,
 .feed-poll-card-container.premium-feed-poll-card .feed-poll-option-name {
-  color: #233653 !important;
+  color: #334155 !important;
   font-family: "Outfit", "Inter", "Segoe UI", sans-serif !important;
-  font-size: 0.94rem !important;
-  font-weight: 700 !important;
+  font-size: 0.92rem !important;
+  font-weight: 600 !important;
   line-height: 1.4 !important;
-  letter-spacing: -0.01em !important;
+  letter-spacing: 0.005em !important;
 }
 
 .shell.shell-home-theme .feed-poll-card-container.premium-feed-poll-card .feed-poll-option-block.is-selected .feed-poll-option-name,
 .shell.shell-home-theme .feed-poll-card-container.premium-feed-poll-card .feed-poll-option-block.is-leading .feed-poll-option-name,
 .feed-poll-card-container.premium-feed-poll-card .feed-poll-option-block.is-selected .feed-poll-option-name,
 .feed-poll-card-container.premium-feed-poll-card .feed-poll-option-block.is-leading .feed-poll-option-name {
-  color: #172b49 !important;
-  font-weight: 800 !important;
+  color: #1e293b !important;
+  font-weight: 700 !important;
 }
 
 /* Stronger edit form focus: keep dashboard visible, but push it farther behind the modal. */
@@ -39904,4 +39904,232 @@ button.comment-author-avatar {
     0 34px 90px rgba(8, 26, 44, 0.26),
     0 0 0 1px rgba(255, 255, 255, 0.72),
     inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Final composer dropdown icon alignment: keep selected icons and option icons inside their own slots. */
+.shell.shell-home-theme:not(.shell-app-blue) .composer-premium {
+  overflow: visible !important;
+}
+
+.shell.shell-home-theme .premium-composer-actions,
+.shell.shell-home-theme .premium-composer-actions .composer-category-stack {
+  overflow: visible !important;
+}
+
+.shell.shell-home-theme .premium-composer-actions .composer-pretty-select-field {
+  position: relative !important;
+  width: auto !important;
+  min-width: 176px !important;
+  max-width: 230px !important;
+  display: grid !important;
+  gap: 0 !important;
+  overflow: visible !important;
+}
+
+.shell.shell-home-theme .premium-composer-actions .composer-pretty-select-field > span {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  margin: 0 !important;
+}
+
+.shell.shell-home-theme .premium-composer-actions .composer-pretty-select {
+  position: relative !important;
+  min-width: 0 !important;
+  overflow: visible !important;
+}
+
+.shell.shell-home-theme .premium-composer-actions .composer-pretty-select-trigger {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 42px !important;
+  display: grid !important;
+  grid-template-columns: 28px minmax(0, 1fr) 15px !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 0 10px !important;
+  border: 1px solid rgba(22, 135, 255, 0.18) !important;
+  border-radius: 15px !important;
+  color: #10213c !important;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.99), rgba(239, 248, 255, 0.94)) !important;
+  box-shadow: 0 10px 22px rgba(49, 95, 189, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+  cursor: pointer !important;
+  transition: border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease !important;
+}
+
+.shell.shell-home-theme .premium-composer-actions .composer-pretty-select-trigger:hover,
+.shell.shell-home-theme .premium-composer-actions .composer-pretty-select-trigger:focus-visible,
+.shell.shell-home-theme .premium-composer-actions .composer-pretty-select-field.is-open .composer-pretty-select-trigger {
+  border-color: rgba(22, 135, 255, 0.35) !important;
+  box-shadow: 0 14px 26px rgba(22, 135, 255, 0.14), 0 0 0 4px rgba(50, 229, 159, 0.08) !important;
+  outline: 0 !important;
+  transform: translateY(-1px) !important;
+}
+
+.shell.shell-home-theme .premium-composer-actions .composer-pretty-select-trigger.is-placeholder {
+  color: #64748b !important;
+}
+
+.shell.shell-home-theme .premium-composer-actions .composer-select-icon-badge,
+.shell.shell-home-theme .premium-composer-actions .composer-select-option-icon {
+  display: grid !important;
+  place-items: center !important;
+  border-radius: 11px !important;
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #32e59f 0%, #1687ff 66%, #8558ff 100%) !important;
+  box-shadow: 0 8px 16px rgba(22, 135, 255, 0.2) !important;
+}
+
+.shell.shell-home-theme .premium-composer-actions .composer-select-icon-badge {
+  width: 28px !important;
+  height: 28px !important;
+}
+
+.shell.shell-home-theme .premium-composer-actions .composer-select-option-icon {
+  width: 34px !important;
+  height: 34px !important;
+}
+
+.shell.shell-home-theme .premium-composer-actions .composer-select-icon-badge .composer-inline-icon,
+.shell.shell-home-theme .premium-composer-actions .composer-select-option-icon .composer-inline-icon {
+  width: 16px !important;
+  height: 16px !important;
+  stroke-width: 2.2px !important;
+}
+
+.shell.shell-home-theme .premium-composer-actions .composer-pretty-select-trigger > .composer-inline-icon {
+  width: 15px !important;
+  height: 15px !important;
+  color: #64748b !important;
+  justify-self: end !important;
+  transition: transform 160ms ease !important;
+}
+
+.shell.shell-home-theme .premium-composer-actions .composer-pretty-select-field.is-open .composer-pretty-select-trigger > .composer-inline-icon {
+  transform: rotate(180deg) !important;
+}
+
+.shell.shell-home-theme .premium-composer-actions .composer-select-value {
+  min-width: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+.shell.shell-home-theme .premium-composer-actions .composer-select-value strong {
+  min-width: 0 !important;
+  overflow: hidden !important;
+  color: inherit !important;
+  font-size: 0.78rem !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.shell.shell-home-theme .premium-composer-actions .composer-select-value small,
+.shell.shell-home-theme .premium-composer-actions .composer-select-option-meta {
+  flex: 0 0 auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 20px !important;
+  padding: 0 7px !important;
+  border-radius: 999px !important;
+  color: #155bd6 !important;
+  background: rgba(22, 135, 255, 0.1) !important;
+  font-size: 0.66rem !important;
+  font-weight: 950 !important;
+  white-space: nowrap !important;
+}
+
+.shell.shell-home-theme .premium-composer-actions .composer-pretty-select-menu {
+  position: absolute !important;
+  top: calc(100% + 8px) !important;
+  left: 0 !important;
+  z-index: 80 !important;
+  width: max(100%, min(286px, calc(100vw - 32px))) !important;
+  max-height: 320px !important;
+  display: grid !important;
+  gap: 6px !important;
+  padding: 8px !important;
+  overflow-y: auto !important;
+  border: 1px solid rgba(22, 135, 255, 0.16) !important;
+  border-radius: 18px !important;
+  background:
+    radial-gradient(circle at 0 0, rgba(50, 229, 159, 0.13), transparent 35%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.99), rgba(246, 251, 255, 0.98)) !important;
+  box-shadow: 0 22px 48px rgba(15, 42, 82, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.92) !important;
+}
+
+.shell.shell-home-theme .premium-composer-actions .composer-pretty-select-field:last-child .composer-pretty-select-menu {
+  right: 0 !important;
+  left: auto !important;
+}
+
+.shell.shell-home-theme .premium-composer-actions .composer-pretty-select-option {
+  width: 100% !important;
+  min-height: 50px !important;
+  display: grid !important;
+  grid-template-columns: 34px minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 8px 9px !important;
+  border: 1px solid transparent !important;
+  border-radius: 14px !important;
+  color: #10213c !important;
+  text-align: left !important;
+  background: transparent !important;
+  cursor: pointer !important;
+}
+
+.shell.shell-home-theme .premium-composer-actions .composer-pretty-select-option:hover,
+.shell.shell-home-theme .premium-composer-actions .composer-pretty-select-option:focus-visible,
+.shell.shell-home-theme .premium-composer-actions .composer-pretty-select-option.active {
+  border-color: rgba(22, 135, 255, 0.18) !important;
+  background: linear-gradient(135deg, rgba(50, 229, 159, 0.1), rgba(22, 135, 255, 0.08)) !important;
+  outline: 0 !important;
+}
+
+.shell.shell-home-theme .premium-composer-actions .composer-select-option-copy {
+  min-width: 0 !important;
+  display: grid !important;
+  gap: 2px !important;
+}
+
+.shell.shell-home-theme .premium-composer-actions .composer-select-option-copy strong {
+  overflow: hidden !important;
+  color: #10213c !important;
+  font-size: 0.82rem !important;
+  font-weight: 950 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.shell.shell-home-theme .premium-composer-actions .composer-select-option-copy small {
+  overflow: hidden !important;
+  color: #6b7c95 !important;
+  font-size: 0.7rem !important;
+  font-weight: 720 !important;
+  line-height: 1.25 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+@media (max-width: 760px) {
+  .shell.shell-home-theme .premium-composer-actions .composer-pretty-select-field,
+  .shell.shell-home-theme .premium-composer-actions .composer-pretty-select-trigger {
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  .shell.shell-home-theme .premium-composer-actions .composer-pretty-select-menu,
+  .shell.shell-home-theme .premium-composer-actions .composer-pretty-select-field:last-child .composer-pretty-select-menu {
+    left: 0 !important;
+    right: auto !important;
+    width: 100% !important;
+  }
 }
