@@ -252,12 +252,20 @@ export function StatusBadge({ status, tone }) {
   return <span className={`status-badge status-${tone || normalized}`}>{status}</span>;
 }
 
-export function Avatar({ name = "User", src, size = "md", online = false, className = "" }) {
+export function Avatar({ name = "User", src, size = "md", online = null, className = "" }) {
   const initial = String(name || "U").trim().slice(0, 1).toUpperCase() || "U";
+  const showPresence = typeof online === "boolean";
+  const isOnline = Boolean(online);
   return (
     <span className={`ui-avatar avatar-${size} ${className}`.trim()}>
       {src ? <img src={src} alt={name} /> : initial}
-      {online ? <i aria-hidden="true" /> : null}
+      {showPresence ? (
+        <i
+          className={`avatar-presence ${isOnline ? "online" : "offline"}`}
+          title={isOnline ? "Online" : "Offline"}
+          aria-hidden="true"
+        />
+      ) : null}
     </span>
   );
 }

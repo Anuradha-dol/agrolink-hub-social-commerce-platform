@@ -41,6 +41,17 @@ function isOnlineUser(user) {
   return Boolean(user?.online || user?.isOnline || user?.presence === "ONLINE");
 }
 
+function isOnlineConversation(conversation, viewerId) {
+  const members = Array.isArray(conversation?.members) ? conversation.members : [];
+  const otherMember = members.find((member) => Number(member.userId) !== Number(viewerId)) || members[0] || null;
+  return Boolean(
+    isOnlineUser(otherMember) ||
+    conversation?.online ||
+    conversation?.isOnline ||
+    conversation?.presence === "ONLINE"
+  );
+}
+
 function normalizeContact(user) {
   if (!user?.userId) return null;
   return {
@@ -204,7 +215,29 @@ export default function ChatPage() {
     setTypingUser(payload.typing ? payload.userName : null);
   }, [user?.userId]);
 
-  const { connected, sendTyping } = useChatSocket(activeConversationId, onIncomingMessage, onTyping);
+  const onPresence = useCallback((payload) => {
+    if (!payload || !payload.userId) return;
+    setConversations((prev) => prev.map((conv) => {
+      const isRelevant = conv.members?.some(m => Number(m.userId) === Number(payload.userId));
+      if (!isRelevant) return conv;
+      return {
+        ...conv,
+        online: payload.status === "ONLINE",
+        isOnline: payload.status === "ONLINE",
+        presence: payload.status,
+        members: conv.members.map(m =>
+          Number(m.userId) === Number(payload.userId)
+            ? { ...m, presence: payload.status, isOnline: payload.status === "ONLINE" }
+            : m
+        )
+      };
+    }));
+  }, []);
+
+  const { connected, sendTyping } = useChatSocket(activeConversationId, onIncomingMessage, onTyping, onPresence);
+  const selectedUserOnline = activeConversation
+    ? (selectedUser ? (isOnlineUser(selectedUser) || isOnlineConversation(activeConversation, user?.userId)) : isOnlineConversation(activeConversation, user?.userId))
+    : false;
 
   const searchAccounts = async (event) => {
     event?.preventDefault();
@@ -297,7 +330,13 @@ export default function ChatPage() {
                 {(accountResults.length ? accountResults : contacts.slice(0, 6)).map((contact) => (
                   <button key={contact.userId} type="button" onClick={() => openDirectConversationById(contact.userId)}>
                     <Avatar name={fullName(contact)} src={contact.profileImageUrl ? toMediaUrl(contact.profileImageUrl) : null} size="sm" online={isOnlineUser(contact)} />
-                    <span>{fullName(contact)}<small>{contact.email || `ID ${contact.userId}`}</small></span>
+                    <span>
+                      {fullName(contact)}
+                      <small>
+                        <span className={`chat-presence-label ${isOnlineUser(contact) ? "online" : "offline"}`}>{isOnlineUser(contact) ? "Online" : "Offline"}</span>
+                        {contact.email || `ID ${contact.userId}`}
+                      </small>
+                    </span>
                     <Icon name="send" />
                   </button>
                 ))}
@@ -318,23 +357,29 @@ export default function ChatPage() {
           </div>
 
           <ul className="conversation-list-v2">
-            {filteredConversations.map((conversation) => (
-              <li key={conversation.conversationId}>
-                <button
-                  type="button"
-                  className={activeConversationId === conversation.conversationId ? "active" : ""}
-                  onClick={() => setActiveConversationId(conversation.conversationId)}
-                >
-                  <Avatar name={conversation.title || "Chat"} size="md" online={Boolean(conversation.online || conversation.isOnline)} />
-                  <span>
-                    <strong>{conversation.title || `Chat #${conversation.conversationId}`}</strong>
-                    <small>{conversation.lastMessage || "No messages yet"}</small>
-                  </span>
-                  <time>{formatTime(conversation.lastMessageAt) || "Now"}</time>
-                  {conversation.unreadCount > 0 ? <b>{conversation.unreadCount}</b> : null}
-                </button>
-              </li>
-            ))}
+            {filteredConversations.map((conversation) => {
+              const conversationOnline = isOnlineConversation(conversation, user?.userId);
+              return (
+                <li key={conversation.conversationId}>
+                  <button
+                    type="button"
+                    className={activeConversationId === conversation.conversationId ? "active" : ""}
+                    onClick={() => setActiveConversationId(conversation.conversationId)}
+                  >
+                    <Avatar name={conversation.title || "Chat"} size="md" online={conversationOnline} />
+                    <span>
+                      <strong>{conversation.title || `Chat #${conversation.conversationId}`}</strong>
+                      <small>
+                        <span className={`chat-presence-label ${conversationOnline ? "online" : "offline"}`}>{conversationOnline ? "Online" : "Offline"}</span>
+                        {conversation.lastMessage || "No messages yet"}
+                      </small>
+                    </span>
+                    <time>{formatTime(conversation.lastMessageAt) || "Now"}</time>
+                    {conversation.unreadCount > 0 ? <b>{conversation.unreadCount}</b> : null}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </Card>
 
@@ -342,10 +387,10 @@ export default function ChatPage() {
           {activeConversation ? (
             <>
               <header className="thread-topbar">
-                <Avatar name={activeConversation.title || "Chat"} src={selectedUser?.profileImageUrl ? toMediaUrl(selectedUser.profileImageUrl) : null} size="lg" online={connected} />
+                <Avatar name={activeConversation.title || "Chat"} src={selectedUser?.profileImageUrl ? toMediaUrl(selectedUser.profileImageUrl) : null} size="lg" online={selectedUserOnline} />
                 <div>
                   <h2>{activeConversation.title || selectedUser?.fullName || `Conversation #${activeConversation.conversationId}`}</h2>
-                  <p>{connected ? "Connected" : "Offline"} - {activeConversation.type === "GROUP" ? "Group chat" : "Direct message"}</p>
+                  <p><span className={`chat-presence-label ${selectedUserOnline ? "online" : "offline"}`}>{selectedUserOnline ? "Online" : "Offline"}</span> - {activeConversation.type === "GROUP" ? "Group chat" : "Direct message"}</p>
                 </div>
                 <div className="thread-actions">
                   <button type="button" aria-label="Info" onClick={() => pushToast("Conversation details are shown in the right panel.", "success")}><Icon name="more" /></button>
@@ -419,10 +464,10 @@ export default function ChatPage() {
           {activeConversation ? (
             <>
               <div className="chat-profile-head">
-                <Avatar name={activeConversation.title || "User"} src={selectedUser?.profileImageUrl ? toMediaUrl(selectedUser.profileImageUrl) : null} size="xl" online={connected} />
+                <Avatar name={activeConversation.title || "User"} src={selectedUser?.profileImageUrl ? toMediaUrl(selectedUser.profileImageUrl) : null} size="xl" online={selectedUserOnline} />
                 <h2>{selectedUser?.fullName || activeConversation.title || "Conversation"}</h2>
                 <p>{selectedUser?.email || activeConversation.type}</p>
-                <StatusBadge status={connected ? "Connected" : "Offline"} tone={connected ? "green" : "blue"} />
+                <StatusBadge status={selectedUserOnline ? "Online" : "Offline"} tone={selectedUserOnline ? "green" : "red"} />
               </div>
               <div className="profile-action-grid">
                 <button type="button" onClick={() => navigate(selectedUser?.userId ? `/profile/${selectedUser.userId}` : "/profile")}><Icon name="user" />Profile</button>

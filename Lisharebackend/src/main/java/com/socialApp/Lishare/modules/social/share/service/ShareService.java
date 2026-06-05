@@ -10,9 +10,9 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface ShareService {
-    Share sharePost(Long userId, Long postId, String caption, boolean notifyFollowers, List<Long> mentionedUserIds, String postValue);
+    Share sharePost(Long userId, Long postId, String caption, boolean notifyFollowers, List<Long> mentionedUserIds, String postValue, String audience);
 
-    List<FeedResponse> getFullFeed();
+    List<FeedResponse> getFullFeed(Long viewerUserId);
 
     void deleteShare(Long userId, Long shareId);
 

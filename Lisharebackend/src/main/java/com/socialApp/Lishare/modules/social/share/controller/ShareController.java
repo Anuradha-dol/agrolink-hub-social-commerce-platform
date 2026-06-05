@@ -34,7 +34,8 @@ public class ShareController {
                 request != null ? request.getCaption() : null,
                 request == null || request.getNotifyFollowers() == null || request.getNotifyFollowers(),
                 request != null ? request.getMentionedUserIds() : null,
-                request != null ? request.getPostValue() : null
+                request != null ? request.getPostValue() : null,
+                request != null ? request.getAudience() : null
         );
 
         ShareResponse response = ShareResponse.builder()
@@ -50,14 +51,15 @@ public class ShareController {
                 .originalImageUrl(share.getOriginalImageUrl())
                 .originalAuthorName(share.getOriginalAuthorName())
                 .postValue(share.getPostValue())
+                .audience(share.getAudience())
                 .build();
 
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/feed")
-    public ResponseEntity<List<FeedResponse>> getFeed() {
-        return ResponseEntity.ok(shareService.getFullFeed());
+    public ResponseEntity<List<FeedResponse>> getFeed(@AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(shareService.getFullFeed(user != null ? user.getUserId() : null));
     }
 
 

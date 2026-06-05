@@ -1,15 +1,19 @@
 package com.socialApp.Lishare.modules.social.share.service;
 
 import com.socialApp.Lishare.modules.platform.user.entity.User;
+import com.socialApp.Lishare.modules.platform.user.repository.UserBlockRepository;
 import com.socialApp.Lishare.modules.platform.user.repository.UserRepo;
 import com.socialApp.Lishare.modules.social.follow.repository.FollowRepository;
+import com.socialApp.Lishare.modules.social.friend.dto.FriendStatus;
 import com.socialApp.Lishare.modules.social.friend.entity.Friend;
 import com.socialApp.Lishare.modules.social.friend.repository.FriendRepository;
 import com.socialApp.Lishare.modules.social.notification.entity.Notification;
 import com.socialApp.Lishare.modules.social.notification.entity.NotificationType;
 import com.socialApp.Lishare.modules.social.notification.service.NotificationService;
+import com.socialApp.Lishare.modules.social.post.dto.PollVoterResponse;
 import com.socialApp.Lishare.modules.social.post.entity.Post;
 import com.socialApp.Lishare.modules.social.post.repository.PostRepository;
+import com.socialApp.Lishare.modules.social.post.service.PostService;
 import com.socialApp.Lishare.modules.social.post.support.PostXpPolicy;
 import com.socialApp.Lishare.modules.social.share.dto.FeedResponse;
 import com.socialApp.Lishare.modules.social.share.entity.Share;
@@ -32,15 +36,20 @@ public class ShareServiceImpl implements ShareService {
     private final NotificationService notificationService;
     private final FollowRepository followRepository;
     private final FriendRepository friendRepository;
+    private final PostService postService;
+    private final UserBlockRepository userBlockRepository;
 
     @Override
     @Transactional
-    public Share sharePost(Long userId, Long postId, String caption, boolean notifyFollowers, List<Long> mentionedUserIds, String postValue) {
+    public Share sharePost(Long userId, Long postId, String caption, boolean notifyFollowers, List<Long> mentionedUserIds, String postValue, String audience) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
+        if (!canViewPost(post, user)) {
+            throw new RuntimeException("You cannot share a post outside your audience");
+        }
 
         Share share = Share.builder()
                 .user(user)
@@ -53,6 +62,7 @@ public class ShareServiceImpl implements ShareService {
                 .originalMediaType(post.getMediaType())
                 .originalPostDeleted(false)
                 .postValue(normalizePostValue(postValue))
+                .audience(normalizeAudience(audience))
                 .build();
 
         Share savedShare = shareRepository.save(share);
@@ -78,12 +88,16 @@ public class ShareServiceImpl implements ShareService {
     }
 
     @Override
-    public List<FeedResponse> getFullFeed() {
+    public List<FeedResponse> getFullFeed(Long viewerUserId) {
+        User viewer = viewerUserId == null ? null : userRepository.findById(viewerUserId).orElse(null);
         List<Post> posts = postRepository.findAll();
         List<Share> shares = shareRepository.findAllByOrderByCreatedAtDesc();
 
         List<FeedResponse> postFeed = posts.stream()
-                .map(post -> FeedResponse.builder()
+                .filter(post -> canViewPost(post, viewer))
+                .map(post -> {
+                    List<Long> pollVotes = postService.getPollVotes(post);
+                    return FeedResponse.builder()
                         .type("POST")
                         .postId(post.getPostId())
                         .authorId(post.getUser().getUserId())
@@ -91,16 +105,29 @@ public class ShareServiceImpl implements ShareService {
                         .content(post.getContent())
                         .imageUrl(post.getImageUrl())
                         .mediaType(post.getMediaType())
+                        .mediaUrls(postService.getMediaUrls(post))
+                        .mediaTypes(postService.getMediaTypes(post))
                         .category(resolvePostCategory(post))
+                        .audience(normalizeAudience(post.getAudience()))
+                        .feeling(post.getFeeling())
+                        .locationName(post.getLocationName())
+                        .pollQuestion(post.getPollQuestion())
+                        .pollOptions(postService.getPollOptions(post))
+                        .pollVotes(pollVotes)
+                        .pollTotalVotes(pollVotes.stream().mapToLong(Long::longValue).sum())
+                        .viewerPollOptionIndex(postService.getViewerPollOptionIndex(post, viewerUserId))
+                        .pollVoters(postService.getPollVoters(post))
                         .xpAwarded(resolvePostXp(post))
                         .authorVerifiedXp(calculateVerifiedXp(post.getUser()))
                         .reelViewCount(post.getReelViewCount())
                         .authorProfileImageUrl(post.getUser().getImageUrl())
                         .createdAt(post.getCreatedAt())
-                        .build())
+                        .build();
+                })
                 .toList();
 
         List<FeedResponse> shareFeed = shares.stream()
+                .filter(share -> canViewShare(share, viewer))
                 .map(share -> {
                     Post originalPost = share.getPost();
                     boolean originalDeleted = originalPost == null || share.isOriginalPostDeleted();
@@ -109,7 +136,16 @@ public class ShareServiceImpl implements ShareService {
                     String originalContent = originalPost != null ? originalPost.getContent() : share.getOriginalContent();
                     String originalImage = originalPost != null ? originalPost.getImageUrl() : share.getOriginalImageUrl();
                     String mediaType = originalPost != null ? originalPost.getMediaType() : share.getOriginalMediaType();
+                    List<String> mediaUrls = originalPost != null ? postService.getMediaUrls(originalPost) : List.of();
+                    List<String> mediaTypes = originalPost != null ? postService.getMediaTypes(originalPost) : List.of();
                     String category = originalPost != null ? resolvePostCategory(originalPost) : null;
+                    String audience = originalPost != null ? normalizeAudience(originalPost.getAudience()) : null;
+                    String feeling = originalPost != null ? originalPost.getFeeling() : null;
+                    String locationName = originalPost != null ? originalPost.getLocationName() : null;
+                    String pollQuestion = originalPost != null ? originalPost.getPollQuestion() : null;
+                    List<String> pollOptions = originalPost != null ? postService.getPollOptions(originalPost) : List.of();
+                    List<Long> pollVotes = originalPost != null ? postService.getPollVotes(originalPost) : List.of();
+                    List<PollVoterResponse> pollVoters = originalPost != null ? postService.getPollVoters(originalPost) : List.of();
                     Integer xpAwarded = originalPost != null ? resolvePostXp(originalPost) : null;
                     Long authorVerifiedXp = originalPost != null && originalPost.getUser() != null
                             ? calculateVerifiedXp(originalPost.getUser())
@@ -123,7 +159,16 @@ public class ShareServiceImpl implements ShareService {
                         originalContent = null;
                         originalImage = null;
                         mediaType = null;
+                        mediaUrls = List.of();
+                        mediaTypes = List.of();
                         category = null;
+                        audience = null;
+                        feeling = null;
+                        locationName = null;
+                        pollQuestion = null;
+                        pollOptions = List.of();
+                        pollVotes = List.of();
+                        pollVoters = List.of();
                         xpAwarded = null;
                         authorVerifiedXp = null;
                         reelViewCount = 0L;
@@ -141,7 +186,18 @@ public class ShareServiceImpl implements ShareService {
                             .content(originalContent)
                             .imageUrl(originalImage)
                             .mediaType(mediaType)
+                            .mediaUrls(mediaUrls)
+                            .mediaTypes(mediaTypes)
                             .category(category)
+                            .audience(audience)
+                            .feeling(feeling)
+                            .locationName(locationName)
+                            .pollQuestion(pollQuestion)
+                            .pollOptions(pollOptions)
+                            .pollVotes(pollVotes)
+                            .pollTotalVotes(pollVotes.stream().mapToLong(Long::longValue).sum())
+                            .viewerPollOptionIndex(originalPost != null ? postService.getViewerPollOptionIndex(originalPost, viewerUserId) : null)
+                            .pollVoters(pollVoters)
                             .xpAwarded(xpAwarded)
                             .authorVerifiedXp(authorVerifiedXp)
                             .sharedByVerifiedXp(calculateVerifiedXp(share.getUser()))
@@ -152,6 +208,7 @@ public class ShareServiceImpl implements ShareService {
                             .sharedByProfileImageUrl(share.getUser().getImageUrl())
                             .shareCaption(share.getCaption())
                             .postValue(share.getPostValue())
+                            .shareAudience(normalizeAudience(share.getAudience()))
                             .sharedAt(share.getCreatedAt())
                             .build();
                 })
@@ -182,6 +239,74 @@ public class ShareServiceImpl implements ShareService {
             throw new RuntimeException("You cannot delete this share");
         }
         shareRepository.delete(share);
+    }
+
+    private boolean canViewShare(Share share, User viewer) {
+        if (share == null || share.getUser() == null) {
+            return false;
+        }
+        User sharer = share.getUser();
+        boolean shareAudienceVisible = canViewAudience(share.getAudience(), viewer, sharer);
+        if (!shareAudienceVisible) {
+            return false;
+        }
+        Post originalPost = share.getPost();
+        boolean originalDeleted = originalPost == null || share.isOriginalPostDeleted();
+        return originalDeleted || canViewPost(originalPost, viewer);
+    }
+
+    private boolean canViewPost(Post post, User viewer) {
+        if (post == null || post.getUser() == null) {
+            return false;
+        }
+        User author = post.getUser();
+        if (viewer == null) {
+            return "PUBLIC".equals(normalizeAudience(post.getAudience()));
+        }
+        if (author.getUserId().equals(viewer.getUserId())) {
+            return true;
+        }
+        if (userBlockRepository.hasBlockBetween(viewer.getUserId(), author.getUserId())) {
+            return false;
+        }
+        return canViewAudience(post.getAudience(), viewer, author);
+    }
+
+    private boolean canViewAudience(String audience, User viewer, User owner) {
+        String normalized = normalizeAudience(audience);
+        if (owner == null) {
+            return false;
+        }
+        if ("PUBLIC".equals(normalized)) {
+            return viewer == null || !userBlockRepository.hasBlockBetween(viewer.getUserId(), owner.getUserId());
+        }
+        if (viewer == null) {
+            return false;
+        }
+        if (owner.getUserId().equals(viewer.getUserId())) {
+            return true;
+        }
+        if (userBlockRepository.hasBlockBetween(viewer.getUserId(), owner.getUserId())) {
+            return false;
+        }
+        boolean friend = isAcceptedFriend(viewer, owner);
+        boolean follower = followRepository.existsByFollowerUserIdAndFollowingUserId(viewer.getUserId(), owner.getUserId());
+        return switch (normalized) {
+            case "FRIENDS" -> friend;
+            case "FOLLOWERS" -> follower;
+            case "FRIENDS_FOLLOWERS" -> friend || follower;
+            default -> true;
+        };
+    }
+
+    private boolean isAcceptedFriend(User user1, User user2) {
+        if (user1 == null || user2 == null) {
+            return false;
+        }
+        return friendRepository.findFriendship(user1, user2)
+                .map(Friend::getStatus)
+                .filter(FriendStatus.ACCEPTED::equals)
+                .isPresent();
     }
 
     private void notifyFollowersAndFriendsOnShare(Share share) {
@@ -252,6 +377,20 @@ public class ShareServiceImpl implements ShareService {
             return normalized;
         }
         return "medium";
+    }
+
+    private String normalizeAudience(String audience) {
+        if (audience == null || audience.isBlank()) {
+            return "PUBLIC";
+        }
+        String normalized = audience.trim().toUpperCase(Locale.ROOT).replace('-', '_');
+        if (normalized.equals("FRIENDS_AND_FOLLOWERS") || normalized.equals("FOLLOWERS_FRIENDS")) {
+            return "FRIENDS_FOLLOWERS";
+        }
+        if (normalized.equals("PUBLIC") || normalized.equals("FRIENDS") || normalized.equals("FOLLOWERS") || normalized.equals("FRIENDS_FOLLOWERS")) {
+            return normalized;
+        }
+        return "PUBLIC";
     }
 
     private long calculateVerifiedXp(User user) {

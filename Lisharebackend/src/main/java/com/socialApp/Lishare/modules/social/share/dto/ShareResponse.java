@@ -20,4 +20,5 @@ public class ShareResponse {
     private String originalImageUrl;
     private String originalAuthorName;
     private String postValue;
+    private String audience;
 }

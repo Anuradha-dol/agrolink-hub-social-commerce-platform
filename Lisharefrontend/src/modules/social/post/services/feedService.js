@@ -41,6 +41,7 @@ export const feedService = {
   },
   markReelView: (postId) => axiosInstance.post(`/posts/${postId}/reel-view`),
   votePoll: (postId, optionIndex) => axiosInstance.post(ENDPOINTS.feed.pollVote(postId), null, { params: { optionIndex } }),
+  getPollVoters: (postId) => axiosInstance.get(ENDPOINTS.feed.pollVoters(postId)),
   addComment: (postId, content, mediaFile = null) => {
     const payload = buildCommentPayload(content, mediaFile);
     return axiosInstance.post(ENDPOINTS.feed.commentAdd(postId), payload.body, payload.config);
@@ -62,7 +63,8 @@ export const feedService = {
       caption,
       notifyFollowers: options.notifyFollowers ?? true,
       mentionedUserIds: options.mentionedUserIds || [],
-      postValue: options.postValue || "medium"
+      postValue: options.postValue || "medium",
+      audience: options.audience || "public"
     }),
   deleteShare: (shareId) => axiosInstance.delete(ENDPOINTS.feed.shareDelete(shareId)),
   savePost: (postId) => axiosInstance.post(ENDPOINTS.feed.savePost(postId)),

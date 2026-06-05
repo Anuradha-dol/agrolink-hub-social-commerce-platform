@@ -18,7 +18,10 @@ public class PostResponse {
     private List<String> hashtags;
     private String imageUrl;
     private String mediaType;
+    private List<String> mediaUrls;
+    private List<String> mediaTypes;
     private String category;
+    private String audience;
     private String feeling;
     private String locationName;
     private String pollQuestion;
@@ -26,6 +29,7 @@ public class PostResponse {
     private List<Long> pollVotes;
     private Long pollTotalVotes;
     private Integer viewerPollOptionIndex;
+    private List<PollVoterResponse> pollVoters;
     private Integer xpAwarded;
     private Long authorVerifiedXp;
     private Long reelViewCount;

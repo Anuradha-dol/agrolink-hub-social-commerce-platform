@@ -17,6 +17,14 @@ import { useAuth } from "/src/modules/platform/app/store";
 const CHAT_PRODUCT_NAME = "PulseChat";
 const VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov", ".m4v", ".ogg", ".avi"];
 const HASHTAG_PATTERN = /#[a-zA-Z0-9_]+/g;
+const TREND_PREVIEW_COUNT = 2;
+const HASHTAG_TREND_TONES = [
+  { accent: "#1687ff", soft: "rgba(22, 135, 255, 0.12)", line: "rgba(22, 135, 255, 0.28)" },
+  { accent: "#19c37d", soft: "rgba(25, 195, 125, 0.13)", line: "rgba(25, 195, 125, 0.28)" },
+  { accent: "#f59e0b", soft: "rgba(245, 158, 11, 0.14)", line: "rgba(245, 158, 11, 0.3)" },
+  { accent: "#ef4444", soft: "rgba(239, 68, 68, 0.12)", line: "rgba(239, 68, 68, 0.28)" },
+  { accent: "#8b5cf6", soft: "rgba(139, 92, 246, 0.12)", line: "rgba(139, 92, 246, 0.28)" }
+];
 const STORY_CAPTION_EMOJIS = ["\u{1F60A}", "\u{1F525}", "\u{1F497}", "\u{2728}", "\u{1F44F}", "\u{1F602}"];
 const STORY_REACTIONS = [
   { key: "like", label: "Like", emoji: "\u{1F44D}" },
@@ -218,10 +226,58 @@ function isVideoAsset(url = "") {
   return VIDEO_EXTENSIONS.some((ext) => normalized.endsWith(ext));
 }
 
+function parseFeedListValue(value) {
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item || "").trim()).filter(Boolean);
+  }
+  if (typeof value !== "string" || !value.trim()) {
+    return [];
+  }
+  const trimmed = value.trim();
+  if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      return Array.isArray(parsed) ? parsed.map((item) => String(item || "").trim()).filter(Boolean) : [];
+    } catch {
+      return [];
+    }
+  }
+  if (trimmed.includes("|")) {
+    return trimmed.split("|").map((item) => item.trim()).filter(Boolean);
+  }
+  return [trimmed];
+}
+
+function mediaTypeFromUrl(url = "") {
+  const normalized = String(url).toLowerCase().split("?")[0];
+  if (normalized.endsWith(".gif")) return "GIF";
+  if (isVideoAsset(url)) return "VIDEO";
+  return "IMAGE";
+}
+
+function mediaItemsForFeedItem(item) {
+  const urls = parseFeedListValue(item?.mediaUrls);
+  const legacyUrl = item?.imageUrl ? [item.imageUrl] : [];
+  const mediaUrls = urls.length ? urls : legacyUrl;
+  const mediaTypes = parseFeedListValue(item?.mediaTypes);
+  const fallbackType = String(item?.mediaType || "").toUpperCase();
+  return mediaUrls.map((url, index) => ({
+    url,
+    type: (mediaTypes[index] || (mediaUrls.length === 1 && fallbackType !== "GALLERY" ? fallbackType : "") || mediaTypeFromUrl(url)).toUpperCase()
+  }));
+}
+
 function isVideoItem(item) {
+  const mediaItems = mediaItemsForFeedItem(item);
+  if (mediaItems.length) {
+    return mediaItems.some((media) => media.type === "VIDEO" || isVideoAsset(media.url));
+  }
   const mediaType = String(item?.mediaType || "").toUpperCase();
-  if (mediaType === "VIDEO") return true;
-  return item?.imageUrl ? isVideoAsset(item.imageUrl) : false;
+  return mediaType === "VIDEO";
+}
+
+function isStoryFeedMediaVideo(item) {
+  return String(item?.mediaType || "").toUpperCase() === "VIDEO" || isVideoAsset(item?.imageUrl);
 }
 
 function storyOwnerName(story) {
@@ -240,6 +296,21 @@ function storyOwnerProfileImageUrl(story) {
     story?.userProfileImageUrl
   ];
   return candidates.find((value) => typeof value === "string" && value.trim()) || "";
+}
+
+function storyOwnerHandle(story, fallbackName = "") {
+  const candidates = [
+    story?.ownerUsername,
+    story?.username,
+    story?.ownerHandle,
+    story?.handle,
+    story?.ownerEmail,
+    story?.email
+  ];
+  const raw = candidates.find((value) => typeof value === "string" && value.trim()) || fallbackName;
+  const localPart = String(raw || "user").split("@")[0];
+  const sanitized = localPart.replace(/[^a-zA-Z0-9_]/g, "").toLowerCase() || "user";
+  return `@${sanitized}`;
 }
 
 function feedAuthorProfileImageUrl(item) {
@@ -479,11 +550,12 @@ export default function FeedPage() {
   const [commentsMap, setCommentsMap] = useState({});
   const [reactionsMap, setReactionsMap] = useState({});
   const [reactionUsersMap, setReactionUsersMap] = useState({});
+  const [pollVotersMap, setPollVotersMap] = useState({});
   const [savedPostIds, setSavedPostIds] = useState([]);
   const [savedPosts, setSavedPosts] = useState([]);
   const [suggestedUsers, setSuggestedUsers] = useState([]);
   const [trendPanelOpen, setTrendPanelOpen] = useState(false);
-  const [trendVisibleCount, setTrendVisibleCount] = useState(2);
+  const [trendVisibleCount, setTrendVisibleCount] = useState(TREND_PREVIEW_COUNT);
   const [suggestionsExpanded, setSuggestionsExpanded] = useState(false);
   const [railExploreExpanded, setRailExploreExpanded] = useState(false);
   const [railReelsExpanded, setRailReelsExpanded] = useState(false);
@@ -555,6 +627,14 @@ export default function FeedPage() {
           })
         )
       ];
+      const pollVotersFromFeed = new Map();
+      feedList.forEach((item) => {
+        if (item?.originalPostDeleted) return;
+        const postId = Number(item.type === "SHARE" ? item.originalPostId : item.postId);
+        if (postId > 0 && Array.isArray(item.pollVoters)) {
+          pollVotersFromFeed.set(postId, item.pollVoters);
+        }
+      });
 
       const commentEntries = await Promise.all(
         targetPostIds.map(async (postId) => {
@@ -589,9 +669,33 @@ export default function FeedPage() {
         })
       );
 
+      const pollVoterEntries = await Promise.all(
+        targetPostIds.map(async (postId) => {
+          const fromFeed = pollVotersFromFeed.get(postId);
+          if (Array.isArray(fromFeed) && fromFeed.length) {
+            return [postId, fromFeed];
+          }
+          const pollItem = feedList.find((item) => {
+            if (item?.originalPostDeleted || !item?.pollQuestion) return false;
+            const itemPostId = Number(item.type === "SHARE" ? item.originalPostId : item.postId);
+            return itemPostId === Number(postId);
+          });
+          if (!pollItem) {
+            return [postId, Array.isArray(fromFeed) ? fromFeed : []];
+          }
+          try {
+            const response = await feedService.getPollVoters(postId);
+            return [postId, Array.isArray(response.data) ? response.data : []];
+          } catch {
+            return [postId, Array.isArray(fromFeed) ? fromFeed : []];
+          }
+        })
+      );
+
       setCommentsMap(Object.fromEntries(commentEntries));
       setReactionsMap(Object.fromEntries(reactionEntries));
       setReactionUsersMap(Object.fromEntries(reactionUserEntries));
+      setPollVotersMap(Object.fromEntries(pollVoterEntries));
     } catch (loadError) {
       setError(loadError?.response?.data?.message || "Failed to load feed");
     } finally {
@@ -756,6 +860,15 @@ export default function FeedPage() {
       } else {
         await loadFeed();
       }
+      if (updatedPost?.postId && Array.isArray(updatedPost.pollVoters)) {
+        setPollVotersMap((prev) => ({ ...prev, [Number(updatedPost.postId)]: updatedPost.pollVoters }));
+      } else {
+        const votersResponse = await feedService.getPollVoters(postId);
+        setPollVotersMap((prev) => ({
+          ...prev,
+          [Number(postId)]: Array.isArray(votersResponse.data) ? votersResponse.data : []
+        }));
+      }
     } catch {
       pushToast("Failed to vote on poll", "error");
     }
@@ -899,26 +1012,71 @@ export default function FeedPage() {
     }
   };
 
+  const onReelView = useCallback((postId) => {
+    const normalizedPostId = Number(postId);
+    if (normalizedPostId <= 0 || viewedReelIdsRef.current.has(normalizedPostId)) return;
+    viewedReelIdsRef.current.add(normalizedPostId);
+
+    setFeed((previous) => previous.map((item) => {
+      const matchesPost = item.type === "POST" && Number(item.postId) === normalizedPostId;
+      const matchesShare = item.type === "SHARE" && Number(item.originalPostId) === normalizedPostId;
+      if (!matchesPost && !matchesShare) return item;
+      return {
+        ...item,
+        reelViewCount: Number(item.reelViewCount || 0) + 1
+      };
+    }));
+
+    feedService.markReelView(normalizedPostId)
+      .then((response) => {
+        const backendCount = Number(response?.data?.data ?? response?.data);
+        if (!Number.isFinite(backendCount)) return;
+        setFeed((previous) => previous.map((item) => {
+          const matchesPost = item.type === "POST" && Number(item.postId) === normalizedPostId;
+          const matchesShare = item.type === "SHARE" && Number(item.originalPostId) === normalizedPostId;
+          return matchesPost || matchesShare ? { ...item, reelViewCount: backendCount } : item;
+        }));
+      })
+      .catch(() => {
+        viewedReelIdsRef.current.delete(normalizedPostId);
+        setFeed((previous) => previous.map((item) => {
+          const matchesPost = item.type === "POST" && Number(item.postId) === normalizedPostId;
+          const matchesShare = item.type === "SHARE" && Number(item.originalPostId) === normalizedPostId;
+          if (!matchesPost && !matchesShare) return item;
+          return {
+            ...item,
+            reelViewCount: Math.max(0, Number(item.reelViewCount || 0) - 1)
+          };
+        }));
+      });
+  }, []);
+
   const openSavedItem = useCallback((post) => {
     const postId = Number(post?.postId);
     if (!postId) return;
     setSelectedHashtag("");
     setActiveMode(isVideoItem(post) ? "reels" : "posts");
+    if (isVideoItem(post)) {
+      onReelView(postId);
+    }
     window.setTimeout(() => {
       document.getElementById(`feed-item-${postId}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
     }, 120);
-  }, []);
+  }, [onReelView]);
 
   const openPostFromRail = useCallback((item, mode = "posts") => {
     const postId = Number(item?.sourcePostId || item?.postId || item?.originalPostId || 0);
     if (!postId) return;
     setSelectedHashtag("");
     setActiveMode(mode);
+    if (mode === "reels" || isVideoItem(item)) {
+      onReelView(postId);
+    }
     navigate("/home", { state: { openPostId: postId, mode } });
     window.setTimeout(() => {
       document.getElementById(`feed-item-${postId}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
     }, 140);
-  }, [navigate]);
+  }, [navigate, onReelView]);
 
   const onReport = (postId) => {
     setReportDraft({ postId, reason: "CATEGORY_FAKE", details: "" });
@@ -942,38 +1100,19 @@ export default function FeedPage() {
     }
   };
 
-  const onReelView = useCallback((postId) => {
-    if (Number(postId) <= 0 || viewedReelIdsRef.current.has(postId)) return;
-    viewedReelIdsRef.current.add(postId);
-
-    feedService.markReelView(postId).catch(() => {
-      viewedReelIdsRef.current.delete(postId);
-    });
-
-    setFeed((previous) => previous.map((item) => {
-      const matchesPost = item.type === "POST" && Number(item.postId) === Number(postId);
-      const matchesShare = item.type === "SHARE" && Number(item.originalPostId) === Number(postId);
-      if (!matchesPost && !matchesShare) return item;
-      return {
-        ...item,
-        reelViewCount: Number(item.reelViewCount || 0) + 1
-      };
-    }));
-  }, []);
-
   const feedMediaCandidates = useMemo(
     () => feed
-      .filter((item) => item.imageUrl)
-      .map((item) => ({
+      .flatMap((item) => mediaItemsForFeedItem(item).map((media, mediaIndex) => ({
         sourcePostId: item.type === "SHARE" ? item.originalPostId : item.postId,
         authorName: item.authorName || item.sharedByName || "User",
         content: item.content || "Media post",
-        imageUrl: item.imageUrl,
-        mediaType: item.mediaType,
+        imageUrl: media.url,
+        mediaType: media.type,
+        mediaIndex,
         reelViewCount: item.reelViewCount,
         reactionCount: Object.values(item.reactionCounts || {}).reduce((total, value) => total + Number(value || 0), 0),
         originalPostDeleted: Boolean(item.originalPostDeleted)
-      }))
+      })))
       .filter((item) => Number(item.sourcePostId) > 0 && !item.originalPostDeleted)
       .slice(0, 40),
     [feed]
@@ -990,6 +1129,11 @@ export default function FeedPage() {
   const selectedStorySource = useMemo(
     () => feedMediaCandidates.find((item) => String(item.sourcePostId) === String(storySourcePostId)) || null,
     [feedMediaCandidates, storySourcePostId]
+  );
+
+  const selectedStorySourceIsVideo = useMemo(
+    () => Boolean(selectedStorySource && isStoryFeedMediaVideo(selectedStorySource)),
+    [selectedStorySource]
   );
 
   const storyFilePreviewUrl = useMemo(
@@ -1025,7 +1169,7 @@ export default function FeedPage() {
 
   const storyPreviewIsVideo = storySourceMode === "upload"
     ? Boolean(storyFile?.type?.startsWith("video"))
-    : Boolean(selectedStorySource && isVideoAsset(selectedStorySource.imageUrl));
+    : selectedStorySourceIsVideo;
 
   const reels = useMemo(
     () => hashtagFilteredFeed.filter((item) => item.imageUrl && isVideoItem(item)),
@@ -1105,10 +1249,11 @@ export default function FeedPage() {
       .slice(0, 6);
   }, [feed, suggestedUsers]);
 
-  const visibleTrendingHashtags = useMemo(
-    () => (trendPanelOpen ? trendingHashtags.slice(0, trendVisibleCount) : trendingHashtags.slice(0, 2)),
-    [trendPanelOpen, trendVisibleCount, trendingHashtags]
-  );
+  const visibleTrendingHashtags = useMemo(() => {
+    return trendPanelOpen 
+      ? trendingHashtags.slice(0, Math.max(TREND_PREVIEW_COUNT, trendVisibleCount))
+      : trendingHashtags.slice(0, TREND_PREVIEW_COUNT);
+  }, [trendPanelOpen, trendVisibleCount, trendingHashtags]);
 
   const maxTrendCount = useMemo(
     () => Math.max(1, ...trendingHashtags.map((item) => Number(item.count || 0))),
@@ -1437,6 +1582,7 @@ export default function FeedPage() {
             comments={normalizedMapPostId ? (commentsMap[normalizedMapPostId] || []) : []}
             reactions={normalizedMapPostId ? (reactionsMap[normalizedMapPostId] || {}) : {}}
             reactionUsers={normalizedMapPostId ? (reactionUsersMap[normalizedMapPostId] || []) : []}
+            pollVoters={normalizedMapPostId ? (pollVotersMap[normalizedMapPostId] || item.pollVoters || []) : []}
             saved={normalizedMapPostId ? savedPostIds.includes(normalizedMapPostId) : false}
             currentUserId={userId}
             currentUserName={currentUserStoryName}
@@ -1617,12 +1763,15 @@ export default function FeedPage() {
               <button
                 type="button"
                 className="feed-view-btn"
-                onClick={() => {
-                  setTrendPanelOpen((previous) => {
-                    const next = !previous;
-                    setTrendVisibleCount(next ? trendingHashtags.length : 2);
-                    return next;
-                  });
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (trendPanelOpen) {
+                    setTrendPanelOpen(false);
+                    setTrendVisibleCount(TREND_PREVIEW_COUNT);
+                  } else {
+                    setTrendPanelOpen(true);
+                    setTrendVisibleCount(trendingHashtags.length);
+                  }
                 }}
               >
                 {trendPanelOpen ? "View less" : "View all"}
@@ -1630,30 +1779,38 @@ export default function FeedPage() {
             </header>
             <div className="trend-list">
               {trendingHashtags.length === 0 ? <p className="muted">No hashtags yet.</p> : null}
-              {visibleTrendingHashtags.map(({ tag, count, sharePercent, sparklinePoints }, index) => (
-                <button
-                  key={tag}
-                  type="button"
-                  className={`trend-row ${index === 0 ? "featured" : ""} ${selectedHashtag.toLowerCase() === tag.toLowerCase() ? "active" : ""}`}
-                  onClick={() => selectHashtag(tag)}
-                  title={`${count} use${count === 1 ? "" : "s"} - ${sharePercent}% of hashtag activity`}
-                >
-                  <span className="trend-hash-badge">
-                    <FeedIcon name="hashtag" />
-                  </span>
-                  <span className="trend-copy">
-                    <span className="trend-tag-text">{tag}</span>
-                    <span className="trend-count">{formatTrendCount(count)} uses</span>
-                  </span>
-                  <span className="trend-growth">{sharePercent}%</span>
-                  <svg className="trend-mini-chart" viewBox="0 0 60 22" aria-hidden="true">
-                    <polyline points={sparklinePoints} />
-                  </svg>
-                  <span className="trend-analysis-bar" aria-hidden="true">
-                    <span style={{ width: `${Math.max(12, (Number(count || 0) / maxTrendCount) * 100)}%` }} />
-                  </span>
-                </button>
-              ))}
+              {visibleTrendingHashtags.map(({ tag, count, sharePercent, sparklinePoints }, index) => {
+                const trendTone = HASHTAG_TREND_TONES[index % HASHTAG_TREND_TONES.length];
+                return (
+                  <button
+                    key={tag}
+                    type="button"
+                    className={`trend-row trend-tone-${index + 1} ${index === 0 ? "featured" : ""} ${selectedHashtag.toLowerCase() === tag.toLowerCase() ? "active" : ""}`}
+                    style={{
+                      "--trend-accent": trendTone.accent,
+                      "--trend-soft": trendTone.soft,
+                      "--trend-line": trendTone.line
+                    }}
+                    onClick={() => selectHashtag(tag)}
+                    title={`${count} use${count === 1 ? "" : "s"} - ${sharePercent}% of hashtag activity`}
+                  >
+                    <span className="trend-hash-badge">
+                      <FeedIcon name="hashtag" />
+                    </span>
+                    <span className="trend-copy">
+                      <span className="trend-tag-text">{tag}</span>
+                      <span className="trend-count">{formatTrendCount(count)} uses</span>
+                    </span>
+                    <span className="trend-growth">{sharePercent}%</span>
+                    <svg className="trend-mini-chart" viewBox="0 0 60 22" aria-hidden="true">
+                      <polyline points={sparklinePoints} />
+                    </svg>
+                    <span className="trend-analysis-bar" aria-hidden="true">
+                      <span style={{ width: `${Math.max(12, (Number(count || 0) / maxTrendCount) * 100)}%` }} />
+                    </span>
+                  </button>
+                );
+              })}
             </div>
             {selectedHashtag ? (
               <div className="row-actions rail-clear-filter">
@@ -1705,46 +1862,6 @@ export default function FeedPage() {
             </div>
           </section>
 
-          {/* Explore */}
-          <section className="feed-side-panel rail-card rail-explore-card rail-explore-mixed">
-            <header className="feed-section-head compact">
-              <h4>Explore</h4>
-              <button
-                type="button"
-                className="feed-view-btn"
-                onClick={() => {
-                  setRailExploreExpanded((previous) => !previous);
-                }}
-              >
-                {railExploreExpanded ? "View less" : "View all"}
-              </button>
-            </header>
-            <div className="rail-mixed-stack">
-              {railExploreCandidates.length === 0 ? <p className="muted">No explore items yet.</p> : null}
-              {railExploreCandidates.map((item) => (
-                <button
-                  key={`explore-mixed-${item.sourcePostId}-${item.imageUrl}`}
-                  type="button"
-                  className="rail-mixed-item"
-                  onClick={() => openPostFromRail(item, isVideoItem(item) ? "reels" : "posts")}
-                >
-                  <span className="rail-mixed-thumb">
-                    {isVideoItem(item) ? (
-                      <video src={toMediaUrl(item.imageUrl)} muted playsInline preload="metadata" />
-                    ) : (
-                      <img src={toMediaUrl(item.imageUrl)} alt={item.authorName} />
-                    )}
-                    {isVideoItem(item) ? <FeedIcon name="play" /> : null}
-                  </span>
-                  <span>
-                    <strong>{item.authorName}</strong>
-                    <small>{item.content.slice(0, 52)}</small>
-                  </span>
-                </button>
-              ))}
-            </div>
-          </section>
-
           {/* Explore Reels */}
           <section className="feed-side-panel rail-card rail-explore-card rail-explore-reels">
             <header className="feed-section-head compact">
@@ -1764,7 +1881,7 @@ export default function FeedPage() {
             <div className="rail-explore-grid rail-explore-reel-grid">
                 {railReelCandidates.length > 0 ? railReelCandidates.map((item) => (
                   <button
-                    key={`explore-reel-${item.sourcePostId}-${item.imageUrl}`}
+                    key={`explore-reel-${item.sourcePostId}-${item.mediaIndex}-${item.imageUrl}`}
                     type="button"
                     className="rail-explore-reel-thumb"
                     onClick={() => openPostFromRail(item, "reels")}
@@ -1814,7 +1931,7 @@ export default function FeedPage() {
             <div className="rail-explore-grid">
               {railImageCandidates.map((item) => (
                 <button
-                  key={`explore-img-${item.sourcePostId}`}
+                  key={`explore-img-${item.sourcePostId}-${item.mediaIndex}-${item.imageUrl}`}
                   type="button"
                   className="rail-explore-image-thumb"
                   onClick={() => openPostFromRail(item, "posts")}
@@ -1866,7 +1983,7 @@ export default function FeedPage() {
               </button>
             </header>
 
-            <form className="story-create-form" onSubmit={createStory}>
+            <form id="story-create-form" className="story-create-form" onSubmit={createStory}>
               <div className="story-create-tabs">
                 <button
                   type="button"
@@ -1932,29 +2049,68 @@ export default function FeedPage() {
                       onClick={() => setStoryFeedPickerOpen((open) => !open)}
                       disabled={feedMediaCandidates.length === 0}
                     >
-                      <span>
-                        {selectedStorySource
-                          ? `${selectedStorySource.authorName}: ${selectedStorySource.content.slice(0, 48)}`
-                          : (feedMediaCandidates.length ? "Select feed media" : "No feed media available")}
+                      <span className="story-feed-selected">
+                        {selectedStorySource ? (
+                          <span className={`story-feed-selected-thumb ${selectedStorySourceIsVideo ? "is-video" : ""}`}>
+                            {selectedStorySourceIsVideo ? (
+                              <video src={toMediaUrl(selectedStorySource.imageUrl)} muted playsInline preload="metadata" />
+                            ) : (
+                              <img src={toMediaUrl(selectedStorySource.imageUrl)} alt="" />
+                            )}
+                            {selectedStorySourceIsVideo ? (
+                              <span className="story-feed-media-type"><FeedIcon name="play" /></span>
+                            ) : null}
+                          </span>
+                        ) : (
+                          <span className="story-feed-selected-thumb empty">
+                            <FeedIcon name="posts" />
+                          </span>
+                        )}
+                        <span className="story-feed-selected-copy">
+                          <strong>{selectedStorySource ? selectedStorySource.authorName : (feedMediaCandidates.length ? "Select feed media" : "No feed media available")}</strong>
+                          <small>
+                            {selectedStorySource
+                              ? selectedStorySource.content.slice(0, 58)
+                              : (feedMediaCandidates.length ? "Choose an image or video post" : "Create media posts first")}
+                          </small>
+                        </span>
                       </span>
                       <FeedIcon name="chevronDown" className={storyFeedPickerOpen ? "open" : ""} />
                     </button>
                     {storyFeedPickerOpen ? (
                       <div className="story-feed-select-menu" role="listbox">
-                        {feedMediaCandidates.map((item) => (
-                          <button
-                            key={`story-source-${item.sourcePostId}-${item.imageUrl}`}
-                            type="button"
-                            className={String(storySourcePostId) === String(item.sourcePostId) ? "story-feed-select-option active" : "story-feed-select-option"}
-                            onClick={() => {
-                              setStorySourcePostId(String(item.sourcePostId));
-                              setStoryFeedPickerOpen(false);
-                            }}
-                          >
-                            <span>{item.authorName}</span>
-                            <small>{item.content.slice(0, 58)}</small>
-                          </button>
-                        ))}
+                        {feedMediaCandidates.map((item) => {
+                          const itemIsVideo = isStoryFeedMediaVideo(item);
+                          return (
+                            <button
+                              key={`story-source-${item.sourcePostId}-${item.mediaIndex}-${item.imageUrl}`}
+                              type="button"
+                              className={String(storySourcePostId) === String(item.sourcePostId) ? "story-feed-select-option active" : "story-feed-select-option"}
+                              onClick={() => {
+                                setStorySourcePostId(String(item.sourcePostId));
+                                setStoryFeedPickerOpen(false);
+                              }}
+                            >
+                              <span className={`story-feed-option-thumb ${itemIsVideo ? "is-video" : ""}`}>
+                                {itemIsVideo ? (
+                                  <video src={toMediaUrl(item.imageUrl)} muted playsInline preload="metadata" />
+                                ) : (
+                                  <img src={toMediaUrl(item.imageUrl)} alt="" loading="lazy" />
+                                )}
+                                {itemIsVideo ? (
+                                  <span className="story-feed-media-type"><FeedIcon name="play" /></span>
+                                ) : null}
+                              </span>
+                              <span className="story-feed-option-copy">
+                                <strong>{item.authorName}</strong>
+                                <small>{item.content.slice(0, 58)}</small>
+                              </span>
+                              <span className="story-feed-option-kind">
+                                <FeedIcon name={itemIsVideo ? "reels" : "posts"} />
+                              </span>
+                            </button>
+                          );
+                        })}
                       </div>
                     ) : null}
                   </div>
@@ -2056,18 +2212,18 @@ export default function FeedPage() {
                   </footer>
                 </aside>
               </div>
-
-              <footer className="story-create-footer">
-                <button className="story-create-cancel story-draft-btn" type="button" onClick={closeStoryComposer} disabled={creatingStory}>
-                  <FeedIcon name="close" />
-                  Cancel
-                </button>
-                <button className="story-create-publish story-schedule-btn" type="submit" disabled={creatingStory}>
-                  <FeedIcon name="paperPlane" />
-                  {creatingStory ? "Publishing..." : "Publish Story"}
-                </button>
-              </footer>
             </form>
+
+            <footer className="story-create-footer">
+              <button className="story-create-cancel story-draft-btn" type="button" onClick={closeStoryComposer} disabled={creatingStory}>
+                <FeedIcon name="close" />
+                Cancel
+              </button>
+              <button className="story-create-publish story-schedule-btn" type="submit" form="story-create-form" disabled={creatingStory}>
+                <FeedIcon name="paperPlane" />
+                {creatingStory ? "Publishing..." : "Publish Story"}
+              </button>
+            </footer>
           </section>
         </div>,
         document.querySelector(".shell.shell-home-theme") || document.querySelector(".shell") || document.body
@@ -2078,8 +2234,12 @@ export default function FeedPage() {
           <section className="feed-modal-card story-library-card" onClick={(event) => event.stopPropagation()}>
             <header className="reaction-users-head">
               <div>
+                <span className="story-library-kicker">
+                  <FeedIcon name="stories" />
+                  Publisher Story View
+                </span>
                 <h3>All Stories</h3>
-                <p>Grouped by user and sorted by the latest story from each publisher.</p>
+                <p>One card per user, sorted by the latest story update.</p>
               </div>
               <button type="button" className="share-panel-close" onClick={() => setStoryLibraryOpen(false)} aria-label="Close all stories">
                 <FeedIcon name="close" />
@@ -2090,28 +2250,52 @@ export default function FeedPage() {
               {storyGroups.map((group) => {
                 const preview = group.latestStory || group.stories[0];
                 const ownerAvatarUrl = group.ownerProfileImageUrl || storyOwnerProfileImageUrl(preview);
+                const ownerName = group.ownerName || storyOwnerName(preview);
+                const latestStoryTime = group.latestAt ? humanTime(group.latestAt) : humanTime(preview?.createdAt);
+                const storyCountLabel = `${group.stories.length} ${group.stories.length === 1 ? "story" : "stories"}`;
                 return (
                   <button
                     key={`story-library-${group.key}`}
                     type="button"
-                    className="story-library-item"
+                    className="story-library-item story-library-profile-card"
                     onClick={() => {
                       setStoryLibraryOpen(false);
                       openStoryGroup(group);
                     }}
                   >
+                    <span className="story-library-count">{storyCountLabel}</span>
+                    <span className="story-library-menu" aria-hidden="true">...</span>
                     <span className="story-library-preview">
                       {preview?.mediaType === "VIDEO" ? (
                         <video src={toMediaUrl(preview.mediaUrl)} muted playsInline preload="metadata" />
                       ) : (
-                        <img src={toMediaUrl(preview?.mediaUrl)} alt={group.ownerName} />
+                        <img src={toMediaUrl(preview?.mediaUrl)} alt={ownerName} />
                       )}
                     </span>
                     <span className={`story-library-avatar ${ownerAvatarUrl ? "has-image" : ""}`}>
                       {ownerAvatarUrl ? <img src={toMediaUrl(ownerAvatarUrl)} alt="" /> : storyOwnerInitial(preview)}
                     </span>
-                    <strong>{group.ownerName}</strong>
-                    <small>{group.stories.length} {group.stories.length === 1 ? "story" : "stories"} - latest {humanTime(preview?.createdAt)}</small>
+                    <span className="story-library-copy">
+                      <strong>
+                        {ownerName}
+                        <span className="story-library-verified" aria-hidden="true">
+                          <FeedIcon name="check" />
+                        </span>
+                      </strong>
+                      <small>{storyOwnerHandle(preview, ownerName)}</small>
+                      <span className="story-library-caption">
+                        {preview?.caption ? String(preview.caption) : "Latest story update"}
+                      </span>
+                    </span>
+                    <span className="story-library-footer">
+                      <span>
+                        <FeedIcon name="clock" />
+                        Latest: {latestStoryTime}
+                      </span>
+                      <span className="story-library-open" aria-hidden="true">
+                        <FeedIcon name="chevronRight" />
+                      </span>
+                    </span>
                   </button>
                 );
               })}

@@ -20,4 +20,7 @@ public class ShareRequest {
     @Size(max = 20, message = "Post value is too long")
     private String postValue;
 
+    @Size(max = 30, message = "Audience is too long")
+    private String audience;
+
 }

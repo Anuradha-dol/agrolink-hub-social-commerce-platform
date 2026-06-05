@@ -6,6 +6,7 @@ import com.socialApp.Lishare.modules.platform.user.repository.UserRepo;
 import com.socialApp.Lishare.modules.platform.storage.UploadPathResolver;
 import com.socialApp.Lishare.modules.social.follow.entity.Follow;
 import com.socialApp.Lishare.modules.social.follow.repository.FollowRepository;
+import com.socialApp.Lishare.modules.social.friend.dto.FriendStatus;
 import com.socialApp.Lishare.modules.social.friend.entity.Friend;
 import com.socialApp.Lishare.modules.social.friend.repository.FriendRepository;
 import com.socialApp.Lishare.modules.social.notification.entity.Notification;
@@ -13,6 +14,7 @@ import com.socialApp.Lishare.modules.social.notification.entity.NotificationType
 import com.socialApp.Lishare.modules.social.notification.service.NotificationService;
 import com.socialApp.Lishare.modules.social.comment.repository.CommentRepository;
 import com.socialApp.Lishare.modules.social.mention.service.MentionNotificationService;
+import com.socialApp.Lishare.modules.social.post.dto.PollVoterResponse;
 import com.socialApp.Lishare.modules.social.post.entity.Post;
 import com.socialApp.Lishare.modules.social.post.entity.PostPollVote;
 import com.socialApp.Lishare.modules.social.post.repository.PostPollVoteRepository;
@@ -60,18 +62,34 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public Post createPost(Long userId, String content, MultipartFile imageFile, String category) {
-        return createPost(userId, content, imageFile, category, null, null, null, null);
+        return createPost(userId, content, imageFile, List.of(), category, null, null, null, null, null);
     }
 
     @Override
     @Transactional
     public Post createPost(Long userId, String content, MultipartFile imageFile, String category,
                            String feeling, String locationName, String pollQuestion, String pollOptionsJson) {
+        return createPost(userId, content, imageFile, List.of(), category, feeling, locationName, pollQuestion, pollOptionsJson, null);
+    }
+
+    @Override
+    @Transactional
+    public Post createPost(Long userId, String content, MultipartFile imageFile, List<MultipartFile> imageFiles, String category,
+                           String feeling, String locationName, String pollQuestion, String pollOptionsJson) {
+        return createPost(userId, content, imageFile, imageFiles, category, feeling, locationName, pollQuestion, pollOptionsJson, null);
+    }
+
+    @Override
+    @Transactional
+    public Post createPost(Long userId, String content, MultipartFile imageFile, List<MultipartFile> imageFiles, String category,
+                           String feeling, String locationName, String pollQuestion, String pollOptionsJson, String audience) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        String mediaUrl = saveMedia(imageFile);
-        String mediaType = resolveMediaType(imageFile, mediaUrl);
+        List<MultipartFile> mediaFiles = normalizeMediaFiles(imageFile, imageFiles);
+        List<String> mediaUrls = saveMediaFiles(mediaFiles);
+        String mediaUrl = mediaUrls.isEmpty() ? null : mediaUrls.get(0);
+        String mediaType = resolveAggregateMediaType(mediaFiles, mediaUrls);
         String normalizedCategory = normalizeCategory(category);
         List<String> pollOptions = parsePollOptionsInput(pollOptionsJson);
         String normalizedPollQuestion = normalizeNullable(pollQuestion);
@@ -82,7 +100,9 @@ public class PostServiceImpl implements PostService {
                 .content(content != null ? content.trim() : "")
                 .imageUrl(mediaUrl)
                 .mediaType(mediaType)
+                .mediaUrlsJson(mediaUrls.size() > 1 ? serializeStringList(mediaUrls) : null)
                 .category(normalizedCategory)
+                .audience(normalizeAudience(audience))
                 .feeling(normalizeNullable(feeling))
                 .locationName(normalizeNullable(locationName))
                 .pollQuestion(hasValidPoll ? normalizedPollQuestion : null)
@@ -101,13 +121,27 @@ public class PostServiceImpl implements PostService {
     @Override
     @Transactional
     public Post updatePost(Long userId, Long postId, String content, MultipartFile imageFile, boolean removeMedia) {
-        return updatePost(userId, postId, content, imageFile, removeMedia, null, null, null, null);
+        return updatePost(userId, postId, content, imageFile, List.of(), removeMedia, null, null, null, null, null);
     }
 
     @Override
     @Transactional
     public Post updatePost(Long userId, Long postId, String content, MultipartFile imageFile, boolean removeMedia,
                            String feeling, String locationName, String pollQuestion, String pollOptionsJson) {
+        return updatePost(userId, postId, content, imageFile, List.of(), removeMedia, feeling, locationName, pollQuestion, pollOptionsJson, null);
+    }
+
+    @Override
+    @Transactional
+    public Post updatePost(Long userId, Long postId, String content, MultipartFile imageFile, List<MultipartFile> imageFiles, boolean removeMedia,
+                           String feeling, String locationName, String pollQuestion, String pollOptionsJson) {
+        return updatePost(userId, postId, content, imageFile, imageFiles, removeMedia, feeling, locationName, pollQuestion, pollOptionsJson, null);
+    }
+
+    @Override
+    @Transactional
+    public Post updatePost(Long userId, Long postId, String content, MultipartFile imageFile, List<MultipartFile> imageFiles, boolean removeMedia,
+                           String feeling, String locationName, String pollQuestion, String pollOptionsJson, String audience) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("Post not found"));
 
@@ -122,12 +156,15 @@ public class PostServiceImpl implements PostService {
         if (removeMedia) {
             post.setImageUrl(null);
             post.setMediaType(null);
+            post.setMediaUrlsJson(null);
         }
 
-        if (imageFile != null && !imageFile.isEmpty()) {
-            String mediaUrl = saveMedia(imageFile);
-            post.setImageUrl(mediaUrl);
-            post.setMediaType(resolveMediaType(imageFile, mediaUrl));
+        List<MultipartFile> mediaFiles = normalizeMediaFiles(imageFile, imageFiles);
+        if (!mediaFiles.isEmpty()) {
+            List<String> mediaUrls = saveMediaFiles(mediaFiles);
+            post.setImageUrl(mediaUrls.isEmpty() ? null : mediaUrls.get(0));
+            post.setMediaType(resolveAggregateMediaType(mediaFiles, mediaUrls));
+            post.setMediaUrlsJson(mediaUrls.size() > 1 ? serializeStringList(mediaUrls) : null);
         }
 
         if (feeling != null) {
@@ -135,6 +172,9 @@ public class PostServiceImpl implements PostService {
         }
         if (locationName != null) {
             post.setLocationName(normalizeNullable(locationName));
+        }
+        if (audience != null) {
+            post.setAudience(normalizeAudience(audience));
         }
         applyPollUpdate(post, pollQuestion, pollOptionsJson);
         post.setEditedAt(LocalDateTime.now());
@@ -206,22 +246,9 @@ public class PostServiceImpl implements PostService {
         User currentUser = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        List<Post> aggregated = new ArrayList<>(postRepository.findByUser(currentUser));
-        for (Follow follow : currentUser.getFollowing()) {
-            aggregated.addAll(postRepository.findByUser(follow.getFollowing()));
-        }
-        for (Follow follow : currentUser.getFollowers()) {
-            aggregated.addAll(postRepository.findByUser(follow.getFollower()));
-        }
-
-        Map<Long, Post> unique = new LinkedHashMap<>();
-        for (Post post : aggregated) {
-            if (post.getPostId() == null) continue;
-            if (userBlockRepository.hasBlockBetween(currentUser.getUserId(), post.getUser().getUserId())) continue;
-            unique.put(post.getPostId(), post);
-        }
-
-        List<Post> feedPosts = new ArrayList<>(unique.values());
+        List<Post> feedPosts = new ArrayList<>(postRepository.findAll().stream()
+                .filter(post -> canViewPost(post, currentUser))
+                .toList());
         feedPosts.sort((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()));
         return feedPosts;
     }
@@ -298,6 +325,107 @@ public class PostServiceImpl implements PostService {
                 .orElse(null);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<PollVoterResponse> getPollVoters(Post post) {
+        if (post == null || post.getPostId() == null) {
+            return List.of();
+        }
+        List<String> options = getPollOptions(post);
+        return postPollVoteRepository.findByPostPostIdOrderByCreatedAtDesc(post.getPostId()).stream()
+                .map(vote -> mapPollVoter(vote, options))
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
+    @Override
+    public List<String> getMediaUrls(Post post) {
+        if (post == null) {
+            return List.of();
+        }
+        List<String> mediaUrls = parseStoredStringList(post.getMediaUrlsJson());
+        if (!mediaUrls.isEmpty()) {
+            return mediaUrls;
+        }
+        return normalizeNullable(post.getImageUrl()) == null ? List.of() : List.of(post.getImageUrl());
+    }
+
+    @Override
+    public List<String> getMediaTypes(Post post) {
+        List<String> mediaUrls = getMediaUrls(post);
+        if (mediaUrls.isEmpty()) {
+            return List.of();
+        }
+        String mediaType = post == null ? null : normalizeNullable(post.getMediaType());
+        if (mediaUrls.size() == 1 && mediaType != null && !"GALLERY".equalsIgnoreCase(mediaType)) {
+            return List.of(mediaType.toUpperCase(Locale.ROOT));
+        }
+        return mediaUrls.stream()
+                .map(this::resolveMediaTypeFromUrl)
+                .toList();
+    }
+
+    private List<MultipartFile> normalizeMediaFiles(MultipartFile imageFile, List<MultipartFile> imageFiles) {
+        if (imageFile != null && !imageFile.isEmpty()) {
+            return List.of(imageFile);
+        }
+        return List.of();
+    }
+
+    private boolean canViewPost(Post post, User viewer) {
+        if (post == null || post.getUser() == null) {
+            return false;
+        }
+        User author = post.getUser();
+        if (viewer == null) {
+            return "PUBLIC".equals(normalizeAudience(post.getAudience()));
+        }
+        if (author.getUserId().equals(viewer.getUserId())) {
+            return true;
+        }
+        if (userBlockRepository.hasBlockBetween(viewer.getUserId(), author.getUserId())) {
+            return false;
+        }
+        return canViewAudience(post.getAudience(), viewer, author);
+    }
+
+    private boolean canViewAudience(String audience, User viewer, User author) {
+        String normalized = normalizeAudience(audience);
+        if ("PUBLIC".equals(normalized)) {
+            return true;
+        }
+        boolean friend = isAcceptedFriend(viewer, author);
+        boolean follower = followRepository.existsByFollowerUserIdAndFollowingUserId(viewer.getUserId(), author.getUserId());
+        return switch (normalized) {
+            case "FRIENDS" -> friend;
+            case "FOLLOWERS" -> follower;
+            case "FRIENDS_FOLLOWERS" -> friend || follower;
+            default -> true;
+        };
+    }
+
+    private boolean isAcceptedFriend(User user1, User user2) {
+        if (user1 == null || user2 == null) {
+            return false;
+        }
+        return friendRepository.findFriendship(user1, user2)
+                .map(Friend::getStatus)
+                .filter(FriendStatus.ACCEPTED::equals)
+                .isPresent();
+    }
+
+    private List<String> saveMediaFiles(List<MultipartFile> files) {
+        if (files == null || files.isEmpty()) {
+            return List.of();
+        }
+        return files.stream()
+                .filter(Objects::nonNull)
+                .filter(file -> !file.isEmpty())
+                .map(this::saveMedia)
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
     private String saveMedia(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             return null;
@@ -352,6 +480,29 @@ public class PostServiceImpl implements PostService {
         return null;
     }
 
+    private String resolveAggregateMediaType(List<MultipartFile> mediaFiles, List<String> mediaUrls) {
+        if (mediaUrls == null || mediaUrls.isEmpty()) {
+            return null;
+        }
+        if (mediaUrls.size() > 1) {
+            return "GALLERY";
+        }
+        MultipartFile firstFile = mediaFiles != null && !mediaFiles.isEmpty() ? mediaFiles.get(0) : null;
+        return resolveMediaType(firstFile, mediaUrls.get(0));
+    }
+
+    private String resolveMediaTypeFromUrl(String mediaUrl) {
+        String normalized = String.valueOf(mediaUrl).toLowerCase(Locale.ROOT).split("\\?")[0];
+        if (normalized.endsWith(".gif")) {
+            return "GIF";
+        }
+        if (normalized.endsWith(".mp4") || normalized.endsWith(".webm") || normalized.endsWith(".mov")
+                || normalized.endsWith(".m4v") || normalized.endsWith(".ogg") || normalized.endsWith(".avi")) {
+            return "VIDEO";
+        }
+        return "IMAGE";
+    }
+
     private String normalizeCategory(String category) {
         if (category == null || category.isBlank()) {
             throw new IllegalArgumentException("Post category is required");
@@ -372,6 +523,20 @@ public class PostServiceImpl implements PostService {
             throw new IllegalArgumentException("Unsupported post category");
         }
         return normalized;
+    }
+
+    private String normalizeAudience(String audience) {
+        if (audience == null || audience.isBlank()) {
+            return "PUBLIC";
+        }
+        String normalized = audience.trim().toUpperCase(Locale.ROOT).replace('-', '_');
+        if (normalized.equals("FRIENDS_AND_FOLLOWERS") || normalized.equals("FOLLOWERS_FRIENDS")) {
+            return "FRIENDS_FOLLOWERS";
+        }
+        if (normalized.equals("PUBLIC") || normalized.equals("FRIENDS") || normalized.equals("FOLLOWERS") || normalized.equals("FRIENDS_FOLLOWERS")) {
+            return normalized;
+        }
+        return "PUBLIC";
     }
 
     private void applyPollUpdate(Post post, String pollQuestion, String pollOptionsJson) {
@@ -411,6 +576,33 @@ public class PostServiceImpl implements PostService {
         return normalized.isBlank() ? null : normalized;
     }
 
+    private PollVoterResponse mapPollVoter(PostPollVote vote, List<String> options) {
+        if (vote == null || vote.getUser() == null) {
+            return null;
+        }
+        User user = vote.getUser();
+        Integer optionIndex = vote.getOptionIndex();
+        String optionText = optionIndex != null && optionIndex >= 0 && optionIndex < options.size()
+                ? options.get(optionIndex)
+                : "Unknown option";
+        String displayName = ((user.getFirstname() == null ? "" : user.getFirstname()) + " " + (user.getLastName() == null ? "" : user.getLastName())).trim();
+        if (displayName.isBlank()) {
+            displayName = user.getEmail();
+        }
+        String username = user.getEmail() == null ? "" : user.getEmail().split("@")[0].replaceAll("[^A-Za-z0-9_]", "").toLowerCase(Locale.ROOT);
+        return PollVoterResponse.builder()
+                .voteId(vote.getId())
+                .userId(user.getUserId())
+                .name(displayName)
+                .email(user.getEmail())
+                .username(username)
+                .profileImageUrl(user.getImageUrl())
+                .optionIndex(optionIndex)
+                .optionText(optionText)
+                .votedAt(vote.getCreatedAt())
+                .build();
+    }
+
     private List<String> parsePollOptionsInput(String value) {
         if (value == null || value.isBlank()) {
             return List.of();
@@ -428,13 +620,33 @@ public class PostServiceImpl implements PostService {
     }
 
     private String serializePollOptions(List<String> options) {
-        List<String> encoded = options.stream()
-                .map(option -> Base64.getUrlEncoder().withoutPadding().encodeToString(option.getBytes(StandardCharsets.UTF_8)))
+        return serializeStringList(options);
+    }
+
+    private String serializeStringList(List<String> values) {
+        List<String> encoded = values.stream()
+                .filter(Objects::nonNull)
+                .map(value -> Base64.getUrlEncoder().withoutPadding().encodeToString(value.getBytes(StandardCharsets.UTF_8)))
                 .toList();
         return "b64:" + String.join("|", encoded);
     }
 
+    private List<String> parseStoredStringList(String value) {
+        if (value == null || value.isBlank()) {
+            return List.of();
+        }
+        return decodeStoredStringList(value).stream()
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(item -> !item.isBlank())
+                .toList();
+    }
+
     private List<String> decodeStoredPollOptions(String value) {
+        return decodeStoredStringList(value);
+    }
+
+    private List<String> decodeStoredStringList(String value) {
         String trimmed = value.trim();
         if (trimmed.startsWith("b64:")) {
             return Arrays.stream(trimmed.substring(4).split("\\|"))
@@ -481,7 +693,7 @@ public class PostServiceImpl implements PostService {
                 tokenStarted = false;
                 continue;
             }
-            if (inString || !Character.isWhitespace(character)) {
+            if (inString || !Character.isWhitespace(character) || tokenStarted) {
                 current.append(character);
                 tokenStarted = true;
             }

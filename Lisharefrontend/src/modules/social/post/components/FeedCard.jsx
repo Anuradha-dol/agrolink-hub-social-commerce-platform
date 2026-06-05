@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { toMediaUrl } from "/src/modules/platform/common/utils/mediaUrl";
 
@@ -20,14 +20,104 @@ const POST_VALUES = [
 ];
 const SHARE_AUDIENCES = [
   { key: "public", label: "Public" },
+  { key: "friends_followers", label: "Friends + followers" },
   { key: "followers", label: "Followers" },
   { key: "friends", label: "Friends" }
+];
+const AUDIENCE_OPTIONS = [
+  { key: "public", value: "PUBLIC", label: "Public" },
+  { key: "friends_followers", value: "FRIENDS_FOLLOWERS", label: "Friends + followers" },
+  { key: "friends", value: "FRIENDS", label: "Friends" },
+  { key: "followers", value: "FOLLOWERS", label: "Followers" }
 ];
 const VIDEO_EXTENSIONS = [".mp4", ".webm", ".mov", ".m4v", ".ogg", ".avi"];
 
 function isVideoAsset(url = "") {
   const normalized = String(url).toLowerCase().split("?")[0];
   return VIDEO_EXTENSIONS.some((ext) => normalized.endsWith(ext));
+}
+
+function isGifAsset(url = "") {
+  return String(url).toLowerCase().split("?")[0].endsWith(".gif");
+}
+
+function parseListValue(value) {
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item || "").trim()).filter(Boolean);
+  }
+  if (typeof value !== "string" || !value.trim()) {
+    return [];
+  }
+
+  const trimmed = value.trim();
+  if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      return Array.isArray(parsed) ? parsed.map((item) => String(item || "").trim()).filter(Boolean) : [];
+    } catch {
+      return trimmed.slice(1, -1).split(",").map((item) => item.replace(/^"|"$/g, "").trim()).filter(Boolean);
+    }
+  }
+  if (trimmed.includes("|")) {
+    return trimmed.split("|").map((item) => item.trim()).filter(Boolean);
+  }
+  return [trimmed];
+}
+
+function normalizePollOptions(value) {
+  return parseListValue(value).filter(Boolean);
+}
+
+function normalizePollVotes(value, optionCount) {
+  const votes = Array.isArray(value) ? value : parseListValue(value);
+  return Array.from({ length: optionCount }, (_, index) => Number(votes[index] || 0));
+}
+
+function normalizeViewerPollOption(value) {
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
+  const numeric = Number(value);
+  return Number.isInteger(numeric) && numeric >= 0 ? numeric : null;
+}
+
+function mediaTypeFromUrl(url = "") {
+  if (isGifAsset(url)) return "GIF";
+  if (isVideoAsset(url)) return "VIDEO";
+  return "IMAGE";
+}
+
+function normalizeAudienceKey(value = "PUBLIC") {
+  const normalized = String(value || "PUBLIC").trim().toLowerCase().replace(/-/g, "_");
+  if (normalized === "friends_and_followers" || normalized === "followers_friends") return "friends_followers";
+  return ["public", "friends", "followers", "friends_followers"].includes(normalized) ? normalized : "public";
+}
+
+function audienceLabel(value = "PUBLIC") {
+  const key = normalizeAudienceKey(value);
+  return AUDIENCE_OPTIONS.find((option) => option.key === key)?.label || "Public";
+}
+
+function mediaFileKind(file) {
+  if (!file) return "Media";
+  const type = String(file.type || "").toLowerCase();
+  const name = String(file.name || "").toLowerCase();
+  if (type === "image/gif" || name.endsWith(".gif")) return "GIF";
+  if (type.startsWith("video")) return "Video";
+  return "Photo";
+}
+
+function normalizeMediaItems(item) {
+  const mediaUrls = parseListValue(item?.mediaUrls);
+  const legacyUrl = firstNonEmptyString(item?.imageUrl, item?.originalImageUrl);
+  const urls = mediaUrls.length ? mediaUrls : (legacyUrl ? [legacyUrl] : []);
+  const mediaTypes = parseListValue(item?.mediaTypes);
+  const fallbackType = String(item?.mediaType || item?.originalMediaType || "").toUpperCase();
+
+  return urls.map((url, index) => ({
+    url,
+    type: (mediaTypes[index] || (urls.length === 1 && fallbackType !== "GALLERY" ? fallbackType : "") || mediaTypeFromUrl(url)).toUpperCase()
+  }));
 }
 
 function reactionByKey(key) {
@@ -84,6 +174,15 @@ function SaveIcon() {
   return (
     <svg className="feed-action-icon" viewBox="0 0 24 24" aria-hidden="true">
       <path d="M6.5 4.5h11v15l-5.5-3.2-5.5 3.2v-15z" />
+    </svg>
+  );
+}
+
+function LocationPinIcon({ className = "feed-meta-chip-icon" }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 21s6.4-5.5 6.4-11.2a6.4 6.4 0 0 0-12.8 0C5.6 15.5 12 21 12 21z" />
+      <circle cx="12" cy="9.8" r="2.2" />
     </svg>
   );
 }
@@ -219,6 +318,108 @@ function PostValueIcon({ type }) {
   return (
     <svg className="share-value-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
       {paths[type] || paths.medium}
+    </svg>
+  );
+}
+
+function EditReviewIcon({ type }) {
+  const icons = {
+    copy: (
+      <>
+        <rect x="5" y="4" width="14" height="16" rx="2.4" />
+        <path d="M8.5 8.5h7M8.5 12h7M8.5 15.5h4.2" />
+      </>
+    ),
+    audience: (
+      <>
+        <circle cx="12" cy="12" r="8.2" />
+        <path d="M4.2 12h15.6M12 3.8c2 2 3 4.7 3 8.2s-1 6.2-3 8.2M12 3.8c-2 2-3 4.7-3 8.2s1 6.2 3 8.2" />
+      </>
+    ),
+    media: (
+      <>
+        <rect x="4" y="5" width="16" height="14" rx="2.5" />
+        <circle cx="9" cy="10" r="1.4" />
+        <path d="m7 17 4-4 2.3 2.3 1.9-1.9L20 17" />
+      </>
+    ),
+    poll: (
+      <>
+        <path d="M6 19V11" />
+        <path d="M12 19V5" />
+        <path d="M18 19v-8" />
+        <path d="M4 19.5h16" />
+      </>
+    )
+  };
+
+  return (
+    <svg className="edit-review-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+      {icons[type] || icons.copy}
+    </svg>
+  );
+}
+
+function EditActionIcon({ type }) {
+  const icons = {
+    cancel: (
+      <>
+        <path d="m7 7 10 10" />
+        <path d="m17 7-10 10" />
+      </>
+    ),
+    save: (
+      <>
+        <path d="m5 12 4 4 10-10" />
+        <path d="M4 20h16" />
+      </>
+    )
+  };
+
+  return (
+    <svg className="edit-action-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
+      {icons[type] || icons.save}
+    </svg>
+  );
+}
+
+function PollStatIcon({ type }) {
+  const icons = {
+    voters: (
+      <>
+        <circle cx="8.5" cy="8.2" r="2.8" />
+        <circle cx="15.7" cy="9.4" r="2.3" />
+        <path d="M3.8 18.7c.8-3.1 2.5-4.7 4.7-4.7s3.9 1.6 4.7 4.7" />
+        <path d="M13.4 18.6c.5-2.2 1.7-3.4 3.4-3.4 1.5 0 2.7 1 3.4 3.4" />
+      </>
+    ),
+    participation: (
+      <>
+        <path d="M5.5 18.5V12" />
+        <path d="M10 18.5V8.5" />
+        <path d="M14.5 18.5V5.5" />
+        <path d="M19 18.5v-9" />
+      </>
+    ),
+    result: (
+      <>
+        <path d="M12 4.5a7.5 7.5 0 1 1-7.5 7.5H12V4.5z" />
+        <path d="M12 4.5a7.5 7.5 0 0 1 7.5 7.5H12V4.5z" />
+      </>
+    )
+  };
+
+  return (
+    <svg className="feed-poll-stat-svg" viewBox="0 0 24 24" aria-hidden="true">
+      {icons[type] || icons.result}
+    </svg>
+  );
+}
+
+function PollCheckIcon() {
+  return (
+    <svg className="feed-poll-check-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="m6.5 12.4 3.3 3.3 7.7-8.2" />
     </svg>
   );
 }
@@ -391,6 +592,26 @@ function isOwnedPost(item, currentUserId, currentUserName) {
   return Boolean(ownerName && viewerName && ownerName === viewerName);
 }
 
+function isEntityOnline(entity, currentUserId, ...idCandidates) {
+  if (firstNumericId(currentUserId) && firstNumericId(...idCandidates) === firstNumericId(currentUserId)) {
+    return true;
+  }
+  return Boolean(
+    entity?.online ||
+    entity?.isOnline ||
+    entity?.authorOnline ||
+    entity?.sharedByOnline ||
+    entity?.userOnline ||
+    entity?.presence === "ONLINE" ||
+    entity?.author?.online ||
+    entity?.author?.isOnline ||
+    entity?.sharedBy?.online ||
+    entity?.sharedBy?.isOnline ||
+    entity?.user?.online ||
+    entity?.user?.isOnline
+  );
+}
+
 function mentionFromName(name = "member") {
   const cleaned = String(name)
     .trim()
@@ -427,6 +648,11 @@ function commentMediaUrl(comment) {
 function isCommentVideo(comment) {
   const mediaType = String(comment?.mediaType || "").toUpperCase();
   return mediaType === "VIDEO" || isVideoAsset(commentMediaUrl(comment));
+}
+
+function isCommentGif(comment) {
+  const mediaType = String(comment?.mediaType || "").toUpperCase();
+  return mediaType === "GIF" || isGifAsset(commentMediaUrl(comment));
 }
 
 function commentReactionCounts(comment) {
@@ -494,6 +720,7 @@ export default function FeedCard({
   comments = [],
   reactions = {},
   reactionUsers = [],
+  pollVoters = [],
   saved = false,
   currentUserId,
   currentUserName = "",
@@ -543,6 +770,7 @@ export default function FeedCard({
   const [openReplyId, setOpenReplyId] = useState(null);
   const [replyDrafts, setReplyDrafts] = useState({});
   const [commentMediaFile, setCommentMediaFile] = useState(null);
+  const [commentMediaAccept, setCommentMediaAccept] = useState("image/*,video/*,.gif");
   const [replyMediaDrafts, setReplyMediaDrafts] = useState({});
   const [editingCommentId, setEditingCommentId] = useState(null);
   const [editingCommentText, setEditingCommentText] = useState("");
@@ -557,13 +785,20 @@ export default function FeedCard({
   const [reactionUsersOpen, setReactionUsersOpen] = useState(false);
   const [reactionUserFilter, setReactionUserFilter] = useState("all");
   const [reactionUserSearch, setReactionUserSearch] = useState("");
+  const [pollVotersOpen, setPollVotersOpen] = useState(false);
+  const [pollVoterFilter, setPollVoterFilter] = useState("all");
+  const [pollVoterSearch, setPollVoterSearch] = useState("");
   const [selectedReactionKey, setSelectedReactionKey] = useState("");
   const [editingOpen, setEditingOpen] = useState(false);
+  const normalizedItemPollOptions = normalizePollOptions(item.pollOptions);
   const [editingContent, setEditingContent] = useState(firstNonEmptyString(item.content, item.caption, item.postCaption, item.text));
+  const [editingAudience, setEditingAudience] = useState(AUDIENCE_OPTIONS.find((option) => option.key === normalizeAudienceKey(item.audience || item.shareAudience))?.value || "PUBLIC");
   const [editingFeeling, setEditingFeeling] = useState(item.feeling || "");
   const [editingLocation, setEditingLocation] = useState(item.locationName || "");
+  const itemHasEditablePoll = Boolean(item.pollQuestion || normalizedItemPollOptions.some((option) => String(option || "").trim()));
+  const [editingPollVisible, setEditingPollVisible] = useState(itemHasEditablePoll);
   const [editingPollQuestion, setEditingPollQuestion] = useState(item.pollQuestion || "");
-  const [editingPollOptions, setEditingPollOptions] = useState(Array.isArray(item.pollOptions) && item.pollOptions.length ? item.pollOptions : ["", ""]);
+  const [editingPollOptions, setEditingPollOptions] = useState(normalizedItemPollOptions.length ? normalizedItemPollOptions : ["", ""]);
   const [editingFile, setEditingFile] = useState(null);
   const [removeMedia, setRemoveMedia] = useState(false);
   const [savingEdit, setSavingEdit] = useState(false);
@@ -577,16 +812,25 @@ export default function FeedCard({
   const shareAudienceRef = useRef(null);
   const shareCaptionRef = useRef(null);
   const commentInputRef = useRef(null);
+  const editContentRef = useRef(null);
+  const editFeelingRef = useRef(null);
+  const editLocationRef = useRef(null);
   const commentMediaInputRef = useRef(null);
+  const editMediaInputRef = useRef(null);
   const replyMediaInputRefs = useRef({});
   const isShare = item.type === "SHARE";
   const originalPostDeleted = Boolean(item.originalPostDeleted);
   const targetPostId = isShare ? item.originalPostId : item.postId;
   const validTargetPost = Number(targetPostId) > 0 && !originalPostDeleted;
-  const mediaUrl = !originalPostDeleted && item.imageUrl ? toMediaUrl(item.imageUrl) : "";
-  const normalizedMediaType = String(item.mediaType || "").toUpperCase();
-  const gifAsset = normalizedMediaType === "GIF" || String(item.imageUrl || "").toLowerCase().split("?")[0].endsWith(".gif");
-  const videoAsset = normalizedMediaType === "VIDEO" || isVideoAsset(item.imageUrl || "");
+  const mediaItems = originalPostDeleted ? [] : normalizeMediaItems(item);
+  const feedGalleryPreviewItems = mediaItems.length > 5 ? mediaItems.slice(0, 5) : mediaItems;
+  const feedGalleryHiddenCount = Math.max(0, mediaItems.length - feedGalleryPreviewItems.length);
+  const primaryMediaItem = mediaItems[0] || null;
+  const mediaUrl = primaryMediaItem ? toMediaUrl(primaryMediaItem.url) : "";
+  const normalizedMediaType = String(primaryMediaItem?.type || item.mediaType || "").toUpperCase();
+  const gifAsset = normalizedMediaType === "GIF" || isGifAsset(primaryMediaItem?.url || "");
+  const videoAsset = normalizedMediaType === "VIDEO" || isVideoAsset(primaryMediaItem?.url || "");
+  const hasVideoMedia = mediaItems.some((mediaItem) => mediaItem.type === "VIDEO" || isVideoAsset(mediaItem.url));
   const canEditPost = !isShare && isOwnedPost(item, currentUserId, currentUserName);
   const canDeletePost = canEditPost;
   const canDeleteShare = isShare && Number(item.sharedById) === Number(currentUserId);
@@ -594,10 +838,10 @@ export default function FeedCard({
   const contentFallback = firstNonEmptyString(item.content, item.caption, item.postCaption, item.text);
   const hashtagFallback = Array.isArray(item.hashtags) ? item.hashtags.filter(Boolean).join(" ") : "";
   const displayContent = originalPostDeleted ? "" : String(contentFallback || hashtagFallback || "").trim();
-  const pollOptions = Array.isArray(item.pollOptions) ? item.pollOptions.filter(Boolean) : [];
-  const pollVotes = Array.isArray(item.pollVotes) ? item.pollVotes : [];
+  const pollOptions = normalizePollOptions(item.pollOptions);
+  const pollVotes = normalizePollVotes(item.pollVotes, pollOptions.length);
   const pollTotalVotes = Number(item.pollTotalVotes ?? pollVotes.reduce((total, value) => total + Number(value || 0), 0));
-  const viewerPollOptionIndex = Number.isInteger(item.viewerPollOptionIndex) ? item.viewerPollOptionIndex : null;
+  const viewerPollOptionIndex = normalizeViewerPollOption(item.viewerPollOptionIndex);
   const hasPoll = Boolean(!originalPostDeleted && item.pollQuestion && pollOptions.length >= 2);
   const sharePreviewTitle = displayContent || (gifAsset ? "Shared GIF" : videoAsset ? "Shared reel" : "Shared post");
   const sharePreviewType = gifAsset ? "GIF" : videoAsset ? "Reel" : "Post";
@@ -615,6 +859,35 @@ export default function FeedCard({
     label: authorXpBadge?.label || postCategoryLabel
   };
   const authorVerified = hasVerifiedAuthorBadge(item, isShare);
+  const editingMediaPreviewItem = useMemo(
+    () => (editingFile ? {
+      file: editingFile,
+      kind: mediaFileKind(editingFile),
+      url: URL.createObjectURL(editingFile)
+    } : null),
+    [editingFile]
+  );
+  const editPollOptionCount = editingPollOptions.map((option) => String(option || "").trim()).filter(Boolean).length;
+  const editMediaStatus = editingFile
+    ? "1 selected"
+    : removeMedia
+      ? "Will remove"
+      : mediaItems.length
+        ? `${mediaItems.length} attached`
+        : "Text only";
+  const editCopyReady = Boolean(String(editingContent || "").trim());
+  const editPollReady = !editingPollVisible || (Boolean(editingPollQuestion.trim()) && editPollOptionCount >= 2);
+  const editPollStatus = editingPollVisible
+    ? (editingPollQuestion.trim() ? `${editPollOptionCount}/2 options` : "Add question")
+    : "Optional";
+  const editReadinessItems = [
+    { key: "copy", icon: "copy", label: "Copy", value: editCopyReady ? "Text ready" : "Text required", status: editCopyReady ? "Ready" : "Fix", active: editCopyReady },
+    { key: "audience", icon: "audience", label: "Audience", value: audienceLabel(editingAudience), status: "Set", active: true },
+    { key: "media", icon: "media", label: "Media", value: editMediaStatus, status: editingFile || removeMedia || mediaItems.length ? "Done" : "Optional", active: true },
+    { key: "poll", icon: "poll", label: "Poll", value: editPollStatus, status: editPollReady ? (editingPollVisible ? "Ready" : "Off") : "Fix", active: editPollReady }
+  ];
+  const editReadyCount = editReadinessItems.filter((reviewItem) => reviewItem.active).length;
+  const editReadyPercent = Math.round((editReadyCount / editReadinessItems.length) * 100);
 
   const reactionSummary = useMemo(
     () => Object.entries(reactions || {})
@@ -627,7 +900,14 @@ export default function FeedCard({
 
   const selectedReaction = selectedReactionKey ? reactionByKey(selectedReactionKey) : null;
   const selectedShareAudience = SHARE_AUDIENCES.find((audience) => audience.key === shareAudience) || SHARE_AUDIENCES[0];
+  const currentAudienceLabel = audienceLabel(isShare ? item.shareAudience || item.audience : item.audience);
   const authorName = isShare ? item.sharedByName : item.authorName;
+  const authorHandle = firstNonEmptyString(
+    isShare ? item.sharedByUsername : item.authorUsername,
+    item.username,
+    item.author?.username,
+    currentUserName
+  ).replace(/^@/, "");
   const headTimestamp = item.sharedAt || item.createdAt;
   const visibleComments = comments.slice(0, 2);
   const totalCommentCount = countCommentThread(comments);
@@ -643,6 +923,39 @@ export default function FeedCard({
   const reactionAvatarUsers = realReactionUsers
     .filter((reactionUser) => Number(reactionUser?.userId) > 0 || reactionUser?.name)
     .slice(0, 3);
+  const realPollVoters = Array.isArray(pollVoters) ? pollVoters : [];
+  const pollVoterCount = Math.max(realPollVoters.length, pollTotalVotes);
+  const pollAvatarUsers = realPollVoters
+    .filter((pollVoter) => Number(pollVoter?.userId) > 0 || pollVoter?.name || pollVoter?.profileImageUrl)
+    .slice(0, 5);
+  const pollHiddenVoterCount = Math.max(0, pollVoterCount - pollAvatarUsers.length);
+  const leadingPollOptionIndex = pollVotes.reduce((bestIndex, votes, index) => (
+    Number(votes || 0) > Number(pollVotes[bestIndex] || 0) ? index : bestIndex
+  ), 0);
+  const leadingPollPercent = pollTotalVotes > 0
+    ? Math.round((Number(pollVotes[leadingPollOptionIndex] || 0) / pollTotalVotes) * 100)
+    : 0;
+  const viewerHasPollVote = Number.isInteger(viewerPollOptionIndex) && viewerPollOptionIndex >= 0;
+  const inlinePollVoterOptionIndex = viewerHasPollVote
+    ? viewerPollOptionIndex
+    : (pollTotalVotes > 0 ? leadingPollOptionIndex : null);
+  const inlinePollVoters = Number.isInteger(inlinePollVoterOptionIndex)
+    ? realPollVoters.filter((pollVoter) => Number(pollVoter?.optionIndex) === inlinePollVoterOptionIndex)
+    : [];
+  const inlinePollAvatarUsers = (inlinePollVoters.length ? inlinePollVoters : pollAvatarUsers).slice(0, 5);
+  const inlinePollHiddenVoterCount = Math.max(
+    0,
+    Math.max(
+      inlinePollVoters.length,
+      Number.isInteger(inlinePollVoterOptionIndex) ? Number(pollVotes[inlinePollVoterOptionIndex] || 0) : 0,
+      pollVoterCount
+    ) - inlinePollAvatarUsers.length
+  );
+  const showInlinePollVoterBand = pollVoterCount > 0 && Number.isInteger(inlinePollVoterOptionIndex);
+  const authorUserId = isShare
+    ? firstNumericId(item.sharedById, item.sharedBy?.userId, item.sharedBy?.id)
+    : firstNumericId(item.authorId, item.userId, item.author?.userId, item.author?.id, itemAuthorId(item));
+  const authorOnline = isEntityOnline(item, currentUserId, authorUserId);
   const authorProfileImageUrl = cardAuthorProfileImageUrl(item, isShare);
   const authorAvatarUrl = !avatarFailed && authorProfileImageUrl ? toMediaUrl(authorProfileImageUrl) : "";
   const currentUserAvatarUrl = !currentUserAvatarFailed && currentUserProfileImageUrl ? toMediaUrl(currentUserProfileImageUrl) : "";
@@ -662,6 +975,30 @@ export default function FeedCard({
       return matchesType && matchesSearch;
     });
   }, [realReactionUsers, reactionUserFilter, reactionUserSearch]);
+  const pollVoterFilterOptions = useMemo(
+    () => pollOptions.map((option, index) => {
+      const realCount = realPollVoters.filter((pollVoter) => Number(pollVoter?.optionIndex) === index).length;
+      return {
+        index,
+        option,
+        count: realCount || Number(pollVotes[index] || 0)
+      };
+    }),
+    [pollOptions, pollVotes, realPollVoters]
+  );
+  const filteredPollVoters = useMemo(() => {
+    const query = pollVoterSearch.trim().toLowerCase();
+    const optionIndex = pollVoterFilter === "all"
+      ? null
+      : Number(String(pollVoterFilter).replace("option-", ""));
+    return realPollVoters.filter((pollVoter) => {
+      const matchesOption = optionIndex === null || Number(pollVoter?.optionIndex) === optionIndex;
+      const optionText = firstNonEmptyString(pollVoter?.optionText, pollOptions[Number(pollVoter?.optionIndex)] || "");
+      const searchable = `${pollVoter?.name || ""} ${pollVoter?.username || ""} ${pollVoter?.email || ""} ${optionText}`.toLowerCase();
+      const matchesSearch = !query || searchable.includes(query);
+      return matchesOption && matchesSearch;
+    });
+  }, [pollOptions, pollVoterFilter, pollVoterSearch, realPollVoters]);
   const commentSections = useMemo(() => {
     const baseComments = [...comments];
     const topComments = [...baseComments]
@@ -703,12 +1040,17 @@ export default function FeedCard({
     return [{ key: "all", title: "All comments", emptyText: "No comments yet.", items: latestComments }];
   }, [commentTab, comments]);
 
+  useEffect(() => () => {
+    if (editingMediaPreviewItem?.url) URL.revokeObjectURL(editingMediaPreviewItem.url);
+  }, [editingMediaPreviewItem]);
+
   useEffect(() => {
     setEditingContent(firstNonEmptyString(item.content, item.caption, item.postCaption, item.text));
     setEditingFeeling(item.feeling || "");
     setEditingLocation(item.locationName || "");
+    setEditingPollVisible(itemHasEditablePoll);
     setEditingPollQuestion(item.pollQuestion || "");
-    setEditingPollOptions(Array.isArray(item.pollOptions) && item.pollOptions.length ? item.pollOptions : ["", ""]);
+    setEditingPollOptions(normalizedItemPollOptions.length ? normalizedItemPollOptions : ["", ""]);
     setEditingFile(null);
     setRemoveMedia(false);
     setEditingOpen(false);
@@ -728,7 +1070,7 @@ export default function FeedCard({
     setReactionUserFilter("all");
     setReactionUserSearch("");
     setMediaFailed(false);
-  }, [item.postId, item.content, item.caption, item.postCaption, item.text, item.imageUrl, item.feeling, item.locationName, item.pollQuestion, item.pollOptions]);
+  }, [item.postId, item.content, item.caption, item.postCaption, item.text, item.imageUrl, item.mediaUrls, item.feeling, item.locationName, item.pollQuestion, item.pollOptions, itemHasEditablePoll]);
 
   useEffect(() => {
     setAvatarFailed(false);
@@ -1045,7 +1387,8 @@ export default function FeedCard({
         await onShare(targetPostId, shareCaption, {
           notifyFollowers: shareNotifyFollowers,
           mentionedUserIds,
-          postValue: sharePostValue
+          postValue: sharePostValue,
+          audience: shareAudience
         });
         if (shareAlsoStory && onShareToStory) {
           await onShareToStory(targetPostId, shareCaption, shareNotifyFollowers);
@@ -1122,6 +1465,25 @@ export default function FeedCard({
     });
   };
 
+  const insertEditText = (text) => {
+    const input = editContentRef.current;
+    if (!input) {
+      setEditingContent((prev) => `${prev}${text}`);
+      return;
+    }
+    const currentValue = String(editingContent || "");
+    const start = input.selectionStart ?? currentValue.length;
+    const end = input.selectionEnd ?? currentValue.length;
+    const next = `${currentValue.slice(0, start)}${text}${currentValue.slice(end)}`;
+    setEditingContent(next);
+    lookupMentions("edit-post", next);
+    window.requestAnimationFrame(() => {
+      input.focus();
+      const cursor = start + text.length;
+      input.setSelectionRange(cursor, cursor);
+    });
+  };
+
   const addMentionedUser = (user) => {
     if (!user?.userId) return;
     setMentionedUsers((prev) => {
@@ -1136,6 +1498,11 @@ export default function FeedCard({
     if (chatRecipient && Number(chatRecipient.userId) === Number(userId)) {
       setChatRecipient(null);
     }
+  };
+
+  const clearEditingMediaFile = () => {
+    setEditingFile(null);
+    if (editMediaInputRef.current) editMediaInputRef.current.value = "";
   };
 
   const handleReact = async (reactionKey) => {
@@ -1164,21 +1531,24 @@ export default function FeedCard({
     try {
       const formData = new FormData();
       formData.append("content", editingContent ?? "");
+      formData.append("audience", editingAudience || "PUBLIC");
       formData.append("feeling", editingFeeling || "");
       formData.append("locationName", editingLocation || "");
-      const cleanEditPollOptions = editingPollOptions.map((option) => String(option || "").trim()).filter(Boolean);
-      if (editingPollQuestion.trim() && cleanEditPollOptions.length >= 2) {
-        formData.append("pollQuestion", editingPollQuestion.trim());
-        formData.append("pollOptions", JSON.stringify(cleanEditPollOptions));
-      } else {
+    const cleanEditPollOptions = editingPollOptions.map((option) => String(option || "").trim()).filter(Boolean);
+    if (editingPollVisible && editingPollQuestion.trim() && cleanEditPollOptions.length >= 2) {
+      formData.append("pollQuestion", editingPollQuestion.trim());
+      formData.append("pollOptions", JSON.stringify(cleanEditPollOptions));
+    } else {
         formData.append("pollQuestion", "");
         formData.append("pollOptions", "[]");
       }
-      if (editingFile) formData.append("image", editingFile);
+    if (editingFile) {
+      formData.append("image", editingFile);
+    }
       if (removeMedia) formData.append("removeMedia", "true");
       await onEdit(item.postId, formData);
       setEditingOpen(false);
-      setEditingFile(null);
+      clearEditingMediaFile();
       setRemoveMedia(false);
     } finally {
       setSavingEdit(false);
@@ -1188,38 +1558,179 @@ export default function FeedCard({
   const renderPollDisplay = () => {
     if (!hasPoll) return null;
     return (
-      <section className="feed-poll-card" aria-label="Post poll">
-        <div className="feed-poll-head">
-          <span>Poll</span>
-          <strong>{item.pollQuestion}</strong>
-          <small>{pollTotalVotes} {pollTotalVotes === 1 ? "vote" : "votes"}</small>
-        </div>
-        <div className="feed-poll-options">
+      <section className="feed-poll-card-container premium-feed-poll-card" aria-label="Post poll">
+        <header className="feed-poll-header-new">
+          <div className="feed-poll-tag-wrap">
+            <span className="feed-poll-tag premium">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+              POLL
+            </span>
+          </div>
+          <div className="feed-poll-main-info">
+            <h2 className="feed-poll-question-text">{item.pollQuestion}</h2>
+            <div className="feed-poll-meta-row">
+              <span className="feed-poll-vote-count">{pollTotalVotes} {pollTotalVotes === 1 ? "vote" : "votes"}</span>
+              <span className="feed-poll-dot">-</span>
+              <span className="feed-poll-instruction">{viewerHasPollVote ? "Your vote is saved" : "Choose one option"}</span>
+            </div>
+          </div>
+          <div className="feed-poll-status-wrap">
+            <span className="feed-poll-ended-badge feed-poll-live-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M7 12h3l2-5 2 10 2-5h3"/></svg>
+              {viewerHasPollVote ? "Voted" : onVotePoll ? "Live" : "Results"}
+            </span>
+          </div>
+        </header>
+
+        <div className="feed-poll-options-grid-new">
           {pollOptions.map((option, index) => {
             const votes = Number(pollVotes[index] || 0);
             const percent = pollTotalVotes > 0 ? Math.round((votes / pollTotalVotes) * 100) : 0;
             const selected = viewerPollOptionIndex === index;
+            
+            const isLeading = index === leadingPollOptionIndex && pollTotalVotes > 0;
+            const showVotersRow = isLeading && pollTotalVotes > 0;
+            const isEmphasized = isLeading || selected;
+            const optionVoteLabel = selected
+              ? "Your choice"
+              : isLeading
+                ? "Leading option"
+                : `${votes} ${votes === 1 ? "vote" : "votes"}`;
+
             return (
-              <button
-                key={`poll-${targetPostId}-${index}`}
-                type="button"
-                className={`feed-poll-option ${selected ? "selected" : ""}`.trim()}
-                onClick={() => onVotePoll?.(targetPostId, index)}
-                disabled={!validTargetPost || !onVotePoll}
+              <div 
+                key={`poll-new-${targetPostId}-${index}`} 
+                className={`feed-poll-option-block ${isEmphasized ? "is-selected" : ""} ${selected ? "is-viewer-choice" : ""} ${isLeading ? "is-leading" : ""}`.trim()}
+                role={onVotePoll ? "button" : undefined}
+                tabIndex={onVotePoll ? 0 : -1}
+                aria-label={`Vote for ${option}. ${votes} ${votes === 1 ? "vote" : "votes"}, ${percent} percent.`}
+                onClick={(event) => {
+                  if (event.target?.closest?.("button")) return;
+                  onVotePoll?.(targetPostId, index);
+                }}
+                onKeyDown={(event) => {
+                  if (!onVotePoll || event.target?.closest?.("button")) return;
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    onVotePoll(targetPostId, index);
+                  }
+                }}
+                style={{ cursor: onVotePoll ? "pointer" : "default" }}
               >
-                <span className="feed-poll-fill" style={{ width: `${percent}%` }} />
-                <span className="feed-poll-option-copy">
-                  <strong>{option}</strong>
-                  <small>{percent}%</small>
-                </span>
-                {selected ? <em>Your vote</em> : null}
-              </button>
+                <div className="feed-poll-option-top-row">
+                   <div className={`feed-poll-option-letter ${index % 2 === 0 ? "alt-1" : "alt-2"}`}>
+                     {String.fromCharCode(65 + index)}
+                   </div>
+                   <div className="feed-poll-option-content">
+                      <span className="feed-poll-option-name">{option}</span>
+                      <span className="feed-poll-option-vote-stat">{optionVoteLabel}</span>
+                   </div>
+                   <div className="feed-poll-option-progress-container">
+                     <div 
+                        className={`feed-poll-option-progress-bar ${index % 2 === 0 ? "primary" : "secondary"} ${!isEmphasized && pollTotalVotes > 0 ? "not-filled" : ""}`} 
+                        style={{ width: `${percent}%` }} 
+                     />
+                   </div>
+                   <div className="feed-poll-option-right">
+                     <div className="feed-poll-option-percent-box">
+                       <strong>{percent}%</strong>
+                       <small>{votes} {votes === 1 ? "vote" : "votes"}</small>
+                     </div>
+                     {isEmphasized && (
+                       <div className="feed-poll-option-check-circle">
+                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                       </div>
+                     )}
+                   </div>
+                </div>
+
+                {showVotersRow && (
+                  <div className="feed-poll-voters-row-new">
+                    <div className="feed-poll-voters-label">VOTERS</div>
+                    <div className="feed-poll-voters-avatars">
+                      {pollAvatarUsers.map((voter, i) => (
+                        <div key={i} className="feed-poll-voter-avatar-circle" title={voter.name || voter.username}>
+                          {voter.profileImageUrl ? (
+                            <img src={toMediaUrl(voter.profileImageUrl)} alt="" />
+                          ) : (
+                            <span>{initialFromName(voter.name || voter.username || "U")}</span>
+                          )}
+                          <div className="voter-tooltip-new">{voter.name || voter.username}</div>
+                        </div>
+                      ))}
+                      {pollHiddenVoterCount > 0 && (
+                        <div className="feed-poll-voter-avatar-circle more">
+                          +{pollHiddenVoterCount}
+                        </div>
+                      )}
+                    </div>
+                    <div className="feed-poll-voters-summary">
+                      <strong>{pollTotalVotes} {pollTotalVotes === 1 ? "person" : "people"}</strong>
+                      <span>See who voted and their choice</span>
+                    </div>
+                    <button 
+                      className="feed-poll-view-voters-btn" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setPollVotersOpen(true);
+                      }}
+                    >
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                      View voters
+                    </button>
+                  </div>
+                )}
+              </div>
             );
           })}
         </div>
+
+        <footer className="feed-poll-stats-footer">
+          <div className="feed-poll-stat-item">
+            <div className="feed-poll-stat-icon green"><PollStatIcon type="voters" /></div>
+            <div className="feed-poll-stat-info">
+              <small>Total votes</small>
+              <strong>{pollTotalVotes}</strong>
+            </div>
+          </div>
+          <div className="feed-poll-stat-item">
+            <div className="feed-poll-stat-icon blue"><PollStatIcon type="participation" /></div>
+            <div className="feed-poll-stat-info">
+              <small>Top result</small>
+              <strong>{leadingPollPercent}%</strong>
+              <small className="sub">{pollTotalVotes > 0 ? pollOptions[leadingPollOptionIndex] : "No votes yet"}</small>
+            </div>
+          </div>
+          <div className="feed-poll-stat-item">
+            <div className="feed-poll-stat-icon light-blue"><PollStatIcon type="result" /></div>
+            <div className="feed-poll-stat-info">
+              <small>Choices</small>
+              <strong>{pollOptions.length}</strong>
+              <small className="sub">{viewerHasPollVote ? "You voted" : "Open voting"}</small>
+            </div>
+          </div>
+          <div className="feed-poll-stat-item graph-item">
+             <div className="feed-poll-stat-info">
+               <small>Result overview</small>
+               <div className="feed-poll-mini-graph">
+                  <svg viewBox="0 0 100 30" preserveAspectRatio="none">
+                    <path d="M0,25 Q10,25 20,22 T40,24 T60,20 T80,26 T100,10" fill="none" stroke={`url(#pollGraphGradient-${targetPostId})`} strokeWidth="2" />
+                    <defs>
+                      <linearGradient id={`pollGraphGradient-${targetPostId}`} x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#19c37d" stopOpacity="0.22" />
+                        <stop offset="100%" stopColor="#0f8bd6" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                   <div className="graph-dot" style={{ left: `${Math.max(8, Math.min(96, leadingPollPercent || 8))}%`, top: "10px" }} />
+               </div>
+             </div>
+          </div>
+        </footer>
       </section>
     );
   };
+
 
   const renderCommentAvatar = (comment, compact = false) => {
     const name = commentAuthorName(comment);
@@ -1255,13 +1766,16 @@ export default function FeedCard({
     const media = commentMediaUrl(comment);
     if (!media) return null;
     const src = toMediaUrl(media);
+    const commentVideo = isCommentVideo(comment);
+    const commentGif = isCommentGif(comment);
     return (
-      <div className={`comment-media-card ${isCommentVideo(comment) ? "video" : "image"}`.trim()}>
-        {isCommentVideo(comment) ? (
+      <div className={`comment-media-card ${commentVideo ? "video" : "image"} ${commentGif ? "gif" : ""}`.trim()}>
+        {commentVideo ? (
           <video src={src} controls preload="metadata" />
         ) : (
-          <img src={src} alt="Comment attachment" />
+          <img src={src} alt={commentGif ? "Animated GIF comment attachment" : "Comment attachment"} />
         )}
+        {commentGif ? <span className="comment-gif-badge">GIF</span> : null}
       </div>
     );
   };
@@ -1318,7 +1832,7 @@ export default function FeedCard({
           })}
           {replyMediaFile ? (
             <span className="comment-media-chip">
-              {replyMediaFile.type?.startsWith("video") ? "Video" : "Photo"} attached
+              {mediaFileKind(replyMediaFile)} attached
               <button type="button" onClick={() => updateReplyMediaDraft(commentId, null)} aria-label="Remove reply media">
                 x
               </button>
@@ -1332,7 +1846,7 @@ export default function FeedCard({
               if (node) replyMediaInputRefs.current[commentId] = node;
             }}
             type="file"
-            accept="image/*,video/*"
+            accept="image/*,video/*,.gif"
             onChange={(event) => updateReplyMediaDraft(commentId, event.target.files?.[0] || null)}
           />
           <button
@@ -1343,6 +1857,15 @@ export default function FeedCard({
             disabled={!validTargetPost}
           >
             <ImageIcon />
+          </button>
+          <button
+            type="button"
+            className="feed-tool-button gif-tool-button"
+            onClick={() => replyMediaInputRefs.current[commentId]?.click()}
+            aria-label="Attach reply GIF"
+            disabled={!validTargetPost}
+          >
+            <GifIcon />
           </button>
           <button className="btn btn-primary" type="submit" disabled={!replyDraft.trim() && !replyMediaFile}>
             Reply
@@ -1482,7 +2005,7 @@ export default function FeedCard({
             ) : (
               (authorName || "U").slice(0, 1).toUpperCase()
             )}
-            <span className="feed-avatar-online" aria-hidden="true" />
+            <span className={`feed-avatar-online ${authorOnline ? "online" : "offline"}`} aria-hidden="true" />
           </button>
           <div>
             <button
@@ -1503,6 +2026,7 @@ export default function FeedCard({
               {headTimestamp ? new Date(headTimestamp).toLocaleString() : ""}
               <span className="feed-time-dot" aria-hidden="true" />
               <GlobeIcon />
+              <span className="feed-audience-label">{currentAudienceLabel}</span>
             </p>
           </div>
         </div>
@@ -1537,6 +2061,7 @@ export default function FeedCard({
                 <button
                   type="button"
                   onClick={() => {
+                    setEditingAudience(AUDIENCE_OPTIONS.find((option) => option.key === normalizeAudienceKey(item.audience || item.shareAudience))?.value || "PUBLIC");
                     setEditingOpen(true);
                     setMenuOpen(false);
                   }}
@@ -1592,13 +2117,51 @@ export default function FeedCard({
       {(item.feeling || item.locationName) && !originalPostDeleted ? (
         <div className="feed-post-meta-chips">
           {item.feeling ? <span>Feeling {item.feeling}</span> : null}
-          {item.locationName ? <span>{item.locationName}</span> : null}
+          {item.locationName ? (
+            <span className="feed-location-chip">
+              <LocationPinIcon />
+              {item.locationName}
+            </span>
+          ) : null}
         </div>
       ) : null}
 
       {renderPollDisplay()}
 
-      {mediaUrl ? (
+      {mediaItems.length > 1 ? (
+        <div className={`feed-media-gallery gallery-count-${Math.min(mediaItems.length, 5)} ${mediaItems.length > 5 ? "gallery-count-many" : ""}`.trim()}>
+          <span className="feed-gallery-count-badge">{mediaItems.length} media</span>
+          {feedGalleryPreviewItems.map((mediaItem, index) => {
+            const galleryUrl = toMediaUrl(mediaItem.url);
+            const galleryVideo = mediaItem.type === "VIDEO" || isVideoAsset(mediaItem.url);
+            const galleryGif = mediaItem.type === "GIF" || isGifAsset(mediaItem.url);
+            return (
+              <div className={`feed-gallery-tile ${galleryVideo ? "video" : ""} ${galleryGif ? "gif" : ""}`.trim()} key={`${mediaItem.url}-${index}`}>
+                {galleryVideo ? (
+                  <video
+                    src={galleryUrl}
+                    controls
+                    preload="metadata"
+                    onPlay={() => {
+                      if (validTargetPost && onReelView) onReelView(targetPostId);
+                    }}
+                  />
+                ) : (
+                  <img src={galleryUrl} alt={galleryGif ? "Animated GIF post" : "Post media"} />
+                )}
+                {galleryVideo ? <span className="feed-gallery-badge">Video</span> : null}
+                {galleryGif ? <span className="feed-gallery-badge">GIF</span> : null}
+                {index === feedGalleryPreviewItems.length - 1 && feedGalleryHiddenCount > 0 ? (
+                  <span className="feed-gallery-more">
+                    <strong>+{feedGalleryHiddenCount}</strong>
+                    <small>more</small>
+                  </span>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
+      ) : mediaUrl ? (
         <div className={`feed-media-shell ${gifAsset ? "gif-media-shell" : ""}`.trim()}>
           {mediaFailed ? (
             <div className="feed-media-fallback">
@@ -1624,7 +2187,7 @@ export default function FeedCard({
         </div>
       ) : null}
 
-      {videoAsset ? (
+      {hasVideoMedia ? (
         <p className="feed-view-count">
           {Number(item.reelViewCount || 0)} views
         </p>
@@ -1871,6 +2434,130 @@ export default function FeedCard({
         document.querySelector(".shell.shell-home-theme") || document.querySelector(".shell") || document.body
       ) : null}
 
+      {pollVotersOpen ? createPortal(
+        <div className="reaction-users-overlay poll-voters-overlay" onMouseDown={() => setPollVotersOpen(false)}>
+          <section className="reaction-users-card reaction-users-modal-card poll-voters-modal-card" onMouseDown={(event) => event.stopPropagation()}>
+            <header className="reaction-users-head poll-voters-head">
+              <div>
+                <span className="reaction-users-head-icon poll-voters-head-icon" aria-hidden="true">
+                  {pollAvatarUsers.length ? (
+                    pollAvatarUsers.slice(0, 3).map((pollVoter, index) => (
+                      <span
+                        key={`poll-head-voter-${pollVoter.voteId || pollVoter.userId || index}`}
+                        className={`poll-voters-head-avatar ${pollVoter.profileImageUrl ? "has-image" : ""}`.trim()}
+                      >
+                        {pollVoter.profileImageUrl ? (
+                          <img src={toMediaUrl(pollVoter.profileImageUrl)} alt="" />
+                        ) : (
+                          initialFromName(pollVoter.name || pollVoter.username || pollVoter.email)
+                        )}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="poll-voters-head-avatar">?</span>
+                  )}
+                </span>
+                <h3>Poll vote details</h3>
+                <p>{pollVoterCount} {pollVoterCount === 1 ? "person" : "people"} voted. See each voter and the option they selected.</p>
+              </div>
+              <button type="button" className="share-panel-close" onClick={() => setPollVotersOpen(false)} aria-label="Close poll voters">
+                <ShareCloseIcon />
+              </button>
+            </header>
+            <div className="reaction-users-filter-row poll-voters-filter-row" aria-label="Poll voter options">
+              <button
+                type="button"
+                className={pollVoterFilter === "all" ? "active" : ""}
+                onClick={() => setPollVoterFilter("all")}
+              >
+                All <strong>{pollVoterCount}</strong>
+              </button>
+              {pollVoterFilterOptions.map((pollOption) => (
+                <button
+                  key={`poll-voter-filter-${targetPostId}-${pollOption.index}`}
+                  type="button"
+                  className={pollVoterFilter === `option-${pollOption.index}` ? "active" : ""}
+                  onClick={() => setPollVoterFilter(`option-${pollOption.index}`)}
+                >
+                  <span className="poll-voter-option-letter">{String.fromCharCode(65 + pollOption.index)}</span>
+                  {pollOption.option}
+                  <strong>{pollOption.count}</strong>
+                </button>
+              ))}
+            </div>
+            <label className="reaction-users-search poll-voters-search">
+              <SearchIcon />
+              <input
+                value={pollVoterSearch}
+                onChange={(event) => setPollVoterSearch(event.target.value)}
+                placeholder="Search voters or choices..."
+              />
+            </label>
+            {filteredPollVoters.length ? (
+              <div className="reaction-users-list poll-voters-list">
+                {filteredPollVoters.map((pollVoter, index) => {
+                  const pollVoterId = Number(pollVoter.userId || 0);
+                  const optionIndex = Number(pollVoter.optionIndex);
+                  const optionText = firstNonEmptyString(pollVoter.optionText, pollOptions[optionIndex] || "Unknown option");
+                  const voterHandle = pollVoter.username ? `@${String(pollVoter.username).replace(/^@/, "")}` : pollVoter.email || "AgroLink member";
+                  return (
+                    <article key={`${pollVoter.voteId || pollVoter.userId || pollVoter.name}-${index}`} className="reaction-user-row poll-voter-row">
+                      <button
+                        type="button"
+                        className="reaction-user-profile poll-voter-profile"
+                        onClick={() => {
+                          if (pollVoterId) {
+                            setPollVotersOpen(false);
+                            onAuthorClick?.(pollVoterId);
+                          }
+                        }}
+                        disabled={!pollVoterId}
+                      >
+                        <span className="reaction-user-avatar poll-voter-avatar">
+                          {pollVoter.profileImageUrl ? (
+                            <img src={toMediaUrl(pollVoter.profileImageUrl)} alt="" />
+                          ) : (
+                            initialFromName(pollVoter.name || pollVoter.username || pollVoter.email)
+                          )}
+                          <i>{String.fromCharCode(65 + (Number.isInteger(optionIndex) && optionIndex >= 0 ? optionIndex : 0))}</i>
+                        </span>
+                        <span>
+                          <strong>{pollVoter.name || pollVoter.username || "Unknown user"}</strong>
+                          <small>{voterHandle}</small>
+                          <small>{pollVoter.votedAt ? `Voted ${formatCommentTime(pollVoter.votedAt)}` : "Voted in this poll"}</small>
+                        </span>
+                      </button>
+                      <span className="poll-voter-choice-chip" title={`Selected option ${String.fromCharCode(65 + (Number.isInteger(optionIndex) && optionIndex >= 0 ? optionIndex : 0))}: ${optionText}`}>
+                        <b>Choice {String.fromCharCode(65 + (Number.isInteger(optionIndex) && optionIndex >= 0 ? optionIndex : 0))}</b>
+                        <span>{optionText}</span>
+                      </span>
+                      <button
+                        type="button"
+                        className="poll-voter-profile-btn"
+                        onClick={() => {
+                          if (pollVoterId) {
+                            setPollVotersOpen(false);
+                            onAuthorClick?.(pollVoterId);
+                          }
+                        }}
+                        disabled={!pollVoterId}
+                      >
+                        View profile
+                      </button>
+                    </article>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="reaction-users-empty poll-voters-empty">
+                {realPollVoters.length ? "No voters found for this filter." : "Voter details are not available yet for this poll."}
+              </p>
+            )}
+          </section>
+        </div>,
+        document.querySelector(".shell.shell-home-theme") || document.querySelector(".shell") || document.body
+      ) : null}
+
       {validTargetPost || comments.length > 0 ? (
         <div className="feed-thread-shell">
           <form onSubmit={submitComment} className="inline-form feed-inline-form premium-inline-form comment-publisher-form">
@@ -1880,7 +2567,7 @@ export default function FeedCard({
               ) : (
                 initialFromName(currentUserName || authorName)
               )}
-              <span className="feed-avatar-online" aria-hidden="true" />
+              <span className="feed-avatar-online online" aria-hidden="true" />
             </span>
             <div className="comment-publisher-input-wrap">
               <input
@@ -1898,7 +2585,7 @@ export default function FeedCard({
               })}
               {commentMediaFile ? (
                 <span className="comment-media-chip">
-                  {commentMediaFile.type?.startsWith("video") ? "Video" : "Photo"} attached
+                  {mediaFileKind(commentMediaFile)} attached
                   <button type="button" onClick={() => setCommentMediaFile(null)} aria-label="Remove comment media">
                     x
                   </button>
@@ -1910,7 +2597,7 @@ export default function FeedCard({
                 hidden
                 ref={commentMediaInputRef}
                 type="file"
-                accept="image/*,video/*"
+                accept={commentMediaAccept}
                 onChange={(event) => setCommentMediaFile(event.target.files?.[0] || null)}
               />
               <button
@@ -1924,7 +2611,10 @@ export default function FeedCard({
               <button
                 type="button"
                 className="feed-tool-button"
-                onClick={() => commentMediaInputRef.current?.click()}
+                onClick={() => {
+                  setCommentMediaAccept("image/*,video/*,.gif");
+                  window.setTimeout(() => commentMediaInputRef.current?.click(), 0);
+                }}
                 aria-label="Add photo or video"
                 disabled={!validTargetPost}
               >
@@ -1933,7 +2623,10 @@ export default function FeedCard({
               <button
                 type="button"
                 className="feed-tool-button gif-tool-button"
-                onClick={() => insertCommentText(" GIF ")}
+                onClick={() => {
+                  setCommentMediaAccept("image/gif,.gif");
+                  window.setTimeout(() => commentMediaInputRef.current?.click(), 0);
+                }}
                 aria-label="Add GIF"
                 disabled={!validTargetPost}
               >
@@ -2353,98 +3046,359 @@ export default function FeedCard({
         document.querySelector(".shell.shell-home-theme") || document.querySelector(".shell") || document.body
       ) : null}
 
-      {editingOpen ? (
+      {editingOpen ? createPortal(
         <div className="feed-inline-edit-shell premium-edit-post-shell">
-          <form className="grid-form" onSubmit={handleEditSubmit}>
-            <header className="edit-post-head">
-              <div>
-                <h4>Edit post</h4>
-                <p>Update text, media, feeling, location, and poll details.</p>
+          <form className={`grid-form edit-post-modal-card ${editingPollVisible ? "has-edit-poll" : ""}`.trim()} onSubmit={handleEditSubmit}>
+            <header className="edit-post-modal-head">
+              <div className="edit-post-title-icon premium-icon-bg">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
               </div>
+              <div className="edit-post-title-copy">
+                <h4>Edit post</h4>
+                <p>Update your text, media, feeling, location, and poll details.</p>
+              </div>
+              <button type="button" className="edit-post-close-btn" onClick={() => setEditingOpen(false)} aria-label="Close edit post">
+                <ShareCloseIcon />
+              </button>
             </header>
-            <textarea
-              rows={3}
-              value={editingContent}
-              onChange={(event) => setEditingContent(event.target.value)}
-              placeholder="Edit your post"
-            />
-            <div className="edit-post-meta-grid">
-              <label>
-                Feeling
-                <input
-                  value={editingFeeling}
-                  onChange={(event) => setEditingFeeling(event.target.value)}
-                  placeholder="Happy, Loved, Motivated..."
-                />
-              </label>
-              <label>
-                Location
-                <input
-                  value={editingLocation}
-                  onChange={(event) => setEditingLocation(event.target.value)}
-                  placeholder="City or place"
-                />
-              </label>
-            </div>
-            <div className="edit-post-poll-box">
-              <label>
-                Poll question
-                <input
-                  value={editingPollQuestion}
-                  onChange={(event) => setEditingPollQuestion(event.target.value)}
-                  placeholder="Optional poll question"
-                />
-              </label>
-              {editingPollOptions.map((option, index) => (
-                <div key={`edit-poll-${index}`} className="edit-post-poll-option">
-                  <input
-                    value={option}
-                    onChange={(event) => {
-                      const next = [...editingPollOptions];
-                      next[index] = event.target.value;
-                      setEditingPollOptions(next);
-                    }}
-                    placeholder={`Option ${index + 1}`}
-                  />
-                  {editingPollOptions.length > 2 ? (
-                    <button type="button" onClick={() => setEditingPollOptions((previous) => previous.filter((_, itemIndex) => itemIndex !== index))}>
-                      Remove
+
+            <section className="edit-post-author-panel">
+              <span className={`edit-post-avatar ${authorAvatarUrl ? "has-image" : ""}`.trim()}>
+                {authorAvatarUrl ? (
+                  <img src={authorAvatarUrl} alt="" onError={() => setAvatarFailed(true)} />
+                ) : (
+                  initialFromName(authorName || currentUserName)
+                )}
+                <span className={`edit-post-avatar-presence ${authorOnline ? "online" : "offline"}`} aria-hidden="true" />
+              </span>
+              <div className="edit-post-author-info">
+                <strong>{authorName || "Creator"}</strong>
+                <p>
+                  {authorHandle ? `@${authorHandle} - ` : ""}
+                  Editing this post before updating the feed
+                </p>
+              </div>
+              <div className="edit-post-author-status">
+                <span>{currentAudienceLabel}</span>
+                <span>{postCategoryLabel}</span>
+              </div>
+            </section>
+
+            <div className="edit-post-scroll-area">
+              <div className="edit-post-workspace">
+                <main className="edit-post-main-panel">
+                  <div className="edit-post-panel-heading">
+                    <span>Post details</span>
+                    <strong>Refine the content before publishing the update.</strong>
+                  </div>
+
+                  <div className="edit-post-textarea-container">
+                    <textarea
+                      ref={editContentRef}
+                      className="edit-post-textarea"
+                      rows={5}
+                      value={editingContent}
+                      maxLength={500}
+                      onChange={(event) => {
+                        setEditingContent(event.target.value);
+                        lookupMentions("edit-post", event.target.value);
+                      }}
+                      placeholder="Write a clear update for your audience..."
+                    />
+                    {renderMentionLookup("edit-post", (mentionUser) => {
+                      setEditingContent((previous) => replaceActiveMention(previous, mentionHandle(mentionUser)));
+                      window.requestAnimationFrame(() => editContentRef.current?.focus());
+                    })}
+                    <small className="edit-post-char-count">{String(editingContent || "").length} / 500</small>
+                  </div>
+
+                  <div className="edit-post-tool-row-v2" aria-label="Edit post quick tools">
+                    <button type="button" className="edit-post-tool-btn" onClick={() => insertEditText("#")}>
+                      <span className="tool-icon">#</span>
+                      Hashtags
                     </button>
+                    <button type="button" className="edit-post-tool-btn" onClick={() => insertEditText("@")}>
+                      <AtIcon className="tool-icon" />
+                      Mention
+                    </button>
+                    <button type="button" className="edit-post-tool-btn" onClick={() => editFeelingRef.current?.focus()}>
+                      <SmileIcon className="tool-icon" />
+                      Feeling
+                    </button>
+                    <button type="button" className="edit-post-tool-btn" onClick={() => editLocationRef.current?.focus()}>
+                      <LocationPinIcon className="tool-icon" />
+                      Location
+                    </button>
+                    <button
+                      type="button"
+                      className={`edit-post-tool-btn ${editingPollVisible ? "active" : ""}`}
+                      aria-pressed={editingPollVisible}
+                      onClick={() => {
+                        setEditingPollVisible((previous) => !previous);
+                        setEditingPollOptions((previous) => (Array.isArray(previous) && previous.length >= 2 ? previous : ["", ""]));
+                      }}
+                    >
+                      <PostValueIcon type="medium" className="tool-icon" />
+                      Poll
+                    </button>
+                  </div>
+
+                  <div className="edit-post-meta-grid">
+                    <div className="edit-post-field-v2">
+                      <span className="edit-post-field-label">Feeling</span>
+                      <div className="edit-post-input-shell-v2">
+                        <SmileIcon />
+                        <input
+                          ref={editFeelingRef}
+                          value={editingFeeling}
+                          onChange={(event) => setEditingFeeling(event.target.value)}
+                          placeholder="Happy, Loved, Motivated..."
+                        />
+                        <ChevronDownIcon />
+                      </div>
+                    </div>
+                    <div className="edit-post-field-v2">
+                      <span className="edit-post-field-label">Location</span>
+                      <div className="edit-post-input-shell-v2">
+                        <LocationPinIcon className="edit-post-location-icon" />
+                        <input
+                          ref={editLocationRef}
+                          value={editingLocation}
+                          onChange={(event) => setEditingLocation(event.target.value)}
+                          placeholder="City or place"
+                        />
+                      </div>
+                    </div>
+                    <div className="edit-post-field-v2 edit-post-audience-field-v2">
+                      <span className="edit-post-field-label">Audience</span>
+                      <div className="edit-post-input-shell-v2">
+                        <GlobeIcon />
+                        <select value={editingAudience} onChange={(event) => setEditingAudience(event.target.value)}>
+                          {AUDIENCE_OPTIONS.map((option) => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  {editingPollVisible ? (
+                    <section className="composer-poll-container edit-mode-poll">
+                      <header className="composer-poll-header">
+                        <div className="composer-poll-header-icon-wrap">
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                        </div>
+                        <div className="composer-poll-header-info">
+                          <h3>Poll settings</h3>
+                          <p>Edit the question and choices that appear in the feed.</p>
+                        </div>
+                        <button
+                          type="button"
+                          className="edit-post-remove-poll-btn"
+                          onClick={() => setEditingPollVisible(false)}
+                        >
+                          Remove poll
+                        </button>
+                      </header>
+
+                      <div className="composer-poll-main-card">
+                        <div className="composer-poll-field-group">
+                          <div className="composer-poll-field-label">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{color: '#1687ff'}}><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                            <span>Poll question</span>
+                          </div>
+                          <div className="composer-poll-input-wrap">
+                            <input
+                              type="text"
+                              value={editingPollQuestion}
+                              onChange={(event) => setEditingPollQuestion(event.target.value)}
+                              placeholder="Ask a clear question..."
+                            />
+                          </div>
+                        </div>
+
+                        <div className="composer-poll-options-list">
+                          {editingPollOptions.map((option, index) => (
+                            <div key={`edit-poll-${index}`} className="composer-poll-option-row">
+                              <div className="composer-poll-option-drag">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"/></svg>
+                              </div>
+                              <div className="composer-poll-option-input-wrap">
+                                <input
+                                  value={option}
+                                  onChange={(event) => {
+                                    const next = [...editingPollOptions];
+                                    next[index] = event.target.value;
+                                    setEditingPollOptions(next);
+                                  }}
+                                  placeholder={`Option ${index + 1}`}
+                                />
+                              </div>
+                              {editingPollOptions.length > 2 && !itemHasEditablePoll ? (
+                                <button
+                                  type="button"
+                                  className="composer-poll-option-remove"
+                                  onClick={() => setEditingPollOptions((previous) => previous.filter((_, itemIndex) => itemIndex !== index))}
+                                >
+                                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+                                </button>
+                              ) : null}
+                            </div>
+                          ))}
+                        </div>
+
+                        {!itemHasEditablePoll && editingPollOptions.length < 8 ? (
+                          <button type="button" className="edit-post-add-option-btn" onClick={() => setEditingPollOptions((previous) => [...previous, ""])}>
+                            <span>+ Add another option</span>
+                          </button>
+                        ) : null}
+                      </div>
+                    </section>
                   ) : null}
-                </div>
-              ))}
-              {editingPollOptions.length < 8 ? (
-                <button type="button" className="edit-post-add-option" onClick={() => setEditingPollOptions((previous) => [...previous, ""])}>
-                  Add option
-                </button>
-              ) : null}
+
+                  <section className="edit-post-media-section edit-post-media-manager single-media-manager">
+                    <div className="edit-post-section-head">
+                      <span>Media</span>
+                      <strong>Replace with one polished asset</strong>
+                    </div>
+                    <label className="composer-file-label v2">
+                      <input
+                        ref={editMediaInputRef}
+                        type="file"
+                        accept="image/*,video/*,.gif"
+                        onChange={(event) => {
+                          const nextFile = event.target.files?.[0] || null;
+                          setEditingFile(nextFile);
+                          if (nextFile) setRemoveMedia(false);
+                        }}
+                      />
+                      <div className="edit-post-upload-icon-wrap">
+                        <ImageIcon />
+                      </div>
+                      <div className="edit-post-upload-info">
+                        <strong>{editingFile ? editingFile.name : "Replace media"}</strong>
+                        <p>Choose one image, video, or GIF. The selected file will replace the current post media.</p>
+                      </div>
+                      <div className="edit-post-upload-arrow">
+                        <ChatShareIcon />
+                      </div>
+                    </label>
+
+                    {editingMediaPreviewItem ? (
+                      <div className="edit-post-selected-media-grid single">
+                        <figure>
+                          {String(editingMediaPreviewItem.file.type || "").startsWith("video") ? (
+                            <video src={editingMediaPreviewItem.url} muted playsInline preload="metadata" />
+                          ) : (
+                            <img src={editingMediaPreviewItem.url} alt={editingMediaPreviewItem.file.name || "Selected media"} />
+                          )}
+                          <figcaption>
+                            <span>{editingMediaPreviewItem.kind}</span>
+                            <button
+                              type="button"
+                              onClick={clearEditingMediaFile}
+                              aria-label={`Remove ${editingMediaPreviewItem.file.name}`}
+                            >
+                              Remove
+                            </button>
+                          </figcaption>
+                        </figure>
+                      </div>
+                    ) : null}
+
+                    <label className={`edit-post-remove-media-checkbox ${!mediaItems.length || editingFile ? "disabled" : ""}`.trim()}>
+                      <input
+                        type="checkbox"
+                        checked={removeMedia}
+                        disabled={!mediaItems.length || Boolean(editingFile)}
+                        onChange={(event) => {
+                          setRemoveMedia(event.target.checked);
+                          if (event.target.checked) clearEditingMediaFile();
+                        }}
+                      />
+                      <span>Remove current media</span>
+                    </label>
+                  </section>
+                </main>
+
+                <aside className="edit-post-side-panel" aria-label="Edit post review">
+                  <section className="edit-post-review-card">
+                    <div className="edit-post-section-head">
+                      <span>Review</span>
+                      <strong>Publish checklist</strong>
+                    </div>
+                    <div className="edit-post-review-summary">
+                      <div>
+                        <strong>{editReadyCount}/{editReadinessItems.length}</strong>
+                        <span>ready</span>
+                      </div>
+                      <div className="edit-post-review-meter" aria-hidden="true">
+                        <span style={{ width: `${editReadyPercent}%` }} />
+                      </div>
+                    </div>
+                    <div className="edit-post-review-list">
+                      {editReadinessItems.map((reviewItem) => (
+                        <div key={reviewItem.label} className={`edit-post-review-item ${reviewItem.active ? "active" : ""}`.trim()}>
+                          <span className="edit-post-review-icon">
+                            <EditReviewIcon type={reviewItem.icon} />
+                          </span>
+                          <span className="edit-post-review-copy">
+                            <small>{reviewItem.label}</small>
+                            <strong>{reviewItem.value}</strong>
+                          </span>
+                          <span className="edit-post-review-badge">{reviewItem.status}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+
+                  <section className="edit-post-current-media-card">
+                    <div className="edit-post-section-head">
+                      <span>Media</span>
+                      <strong>Current post assets</strong>
+                    </div>
+                    {mediaItems.length ? (
+                      <div className={`edit-post-current-media-grid count-${Math.min(mediaItems.length, 4)}`}>
+                        {mediaItems.slice(0, 4).map((mediaItem, index) => {
+                          const previewUrl = toMediaUrl(mediaItem.url);
+                          const previewIsVideo = String(mediaItem.type || "").toUpperCase() === "VIDEO" || isVideoAsset(mediaItem.url);
+                          return (
+                            <figure key={`edit-current-media-${mediaItem.url}-${index}`}>
+                              {previewIsVideo ? (
+                                <video src={previewUrl} muted playsInline preload="metadata" />
+                              ) : (
+                                <img src={previewUrl} alt="Current post media" />
+                              )}
+                              <figcaption>{mediaItem.type || "Media"}</figcaption>
+                            </figure>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="edit-post-empty-media">
+                        <ImageIcon />
+                        <span>No media attached</span>
+                      </div>
+                    )}
+                  </section>
+                </aside>
+              </div>
             </div>
-            <label className="composer-file-label">
-              <input
-                type="file"
-                accept="image/*,video/*"
-                onChange={(event) => setEditingFile(event.target.files?.[0] || null)}
-              />
-              <span>{editingFile ? editingFile.name : "Replace media (optional)"}</span>
-            </label>
-            <label className="checkbox-row">
-              <input
-                type="checkbox"
-                checked={removeMedia}
-                onChange={(event) => setRemoveMedia(event.target.checked)}
-              />
-              Remove current media
-            </label>
-            <div className="row-actions">
-              <button type="button" className="btn btn-secondary" onClick={() => setEditingOpen(false)} disabled={savingEdit}>
+            <footer className="edit-post-modal-footer">
+              <button type="button" className="edit-post-cancel-btn" onClick={() => setEditingOpen(false)} disabled={savingEdit}>
+                <EditActionIcon type="cancel" />
                 Cancel
               </button>
-              <button type="submit" className="btn btn-primary" disabled={savingEdit}>
-                {savingEdit ? "Saving..." : "Save Changes"}
+              <button type="submit" className="edit-post-save-btn premium-gradient-btn" disabled={savingEdit}>
+                <EditActionIcon type="save" />
+                {savingEdit ? "Saving..." : "Update Post"}
               </button>
-            </div>
+            </footer>
           </form>
-        </div>
+        </div>,
+        document.querySelector(".shell.shell-home-theme") || document.querySelector(".shell") || document.body
       ) : null}
     </article>
   );

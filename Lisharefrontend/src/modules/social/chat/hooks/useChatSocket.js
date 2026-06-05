@@ -3,7 +3,7 @@ import { Client } from "@stomp/stompjs";
 
 const wsUrl = import.meta.env.VITE_WS_URL || "ws://localhost:4041/ws";
 
-export function useChatSocket(conversationId, onMessage, onTyping) {
+export function useChatSocket(conversationId, onMessage, onTyping, onPresence) {
   const clientRef = useRef(null);
   const [connected, setConnected] = useState(false);
 
@@ -27,29 +27,42 @@ export function useChatSocket(conversationId, onMessage, onTyping) {
 
   useEffect(() => {
     const client = clientRef.current;
-    if (!client || !connected || !conversationId) return;
+    if (!client || !connected) return;
 
-    const messageSub = client.subscribe(`/topic/chat/conversations/${conversationId}`, (message) => {
-      try {
-        onMessage?.(JSON.parse(message.body));
-      } catch {
-        // ignore invalid payload
-      }
-    });
+    const subs = [];
 
-    const typingSub = client.subscribe(`/topic/chat/conversations/${conversationId}/typing`, (message) => {
-      try {
-        onTyping?.(JSON.parse(message.body));
-      } catch {
-        // ignore invalid payload
-      }
-    });
+    if (conversationId) {
+      subs.push(client.subscribe(`/topic/chat/conversations/${conversationId}`, (message) => {
+        try {
+          onMessage?.(JSON.parse(message.body));
+        } catch {
+          // ignore invalid payload
+        }
+      }));
+
+      subs.push(client.subscribe(`/topic/chat/conversations/${conversationId}/typing`, (message) => {
+        try {
+          onTyping?.(JSON.parse(message.body));
+        } catch {
+          // ignore invalid payload
+        }
+      }));
+    }
+
+    if (onPresence) {
+      subs.push(client.subscribe(`/topic/presence`, (message) => {
+        try {
+          onPresence?.(JSON.parse(message.body));
+        } catch {
+          // ignore invalid payload
+        }
+      }));
+    }
 
     return () => {
-      messageSub.unsubscribe();
-      typingSub.unsubscribe();
+      subs.forEach(s => s.unsubscribe());
     };
-  }, [connected, conversationId, onMessage, onTyping]);
+  }, [connected, conversationId, onMessage, onTyping, onPresence]);
 
   const sendRealtimeMessage = (payload) => {
     const client = clientRef.current;

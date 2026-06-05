@@ -1,6 +1,7 @@
 package com.socialApp.Lishare.modules.social.post.controller;
 
 import com.socialApp.Lishare.modules.platform.user.entity.User;
+import com.socialApp.Lishare.modules.social.post.dto.PollVoterResponse;
 import com.socialApp.Lishare.modules.social.post.dto.PostResponse;
 import com.socialApp.Lishare.modules.social.post.entity.Post;
 import com.socialApp.Lishare.modules.social.post.service.PostService;
@@ -33,16 +34,17 @@ public class PostController {
             @RequestParam(value = "feeling", required = false) String feeling,
             @RequestParam(value = "locationName", required = false) String locationName,
             @RequestParam(value = "pollQuestion", required = false) String pollQuestion,
-            @RequestParam(value = "pollOptions", required = false) String pollOptions
+            @RequestParam(value = "pollOptions", required = false) String pollOptions,
+            @RequestParam(value = "audience", required = false) String audience
     ) {
         if (user == null) {
             return ResponseEntity.status(401).body(null);
         }
-        if (content.isBlank() && (image == null || image.isEmpty()) && (pollQuestion == null || pollQuestion.isBlank())) {
+        if (content.isBlank() && noMedia(image) && (pollQuestion == null || pollQuestion.isBlank())) {
             return ResponseEntity.badRequest().body(null);
         }
 
-        Post post = postService.createPost(user.getUserId(), content, image, category, feeling, locationName, pollQuestion, pollOptions);
+        Post post = postService.createPost(user.getUserId(), content, image, List.of(), category, feeling, locationName, pollQuestion, pollOptions, audience);
         return ResponseEntity.ok(toResponse(post, user.getUserId()));
     }
 
@@ -56,12 +58,13 @@ public class PostController {
             @RequestParam(value = "feeling", required = false) String feeling,
             @RequestParam(value = "locationName", required = false) String locationName,
             @RequestParam(value = "pollQuestion", required = false) String pollQuestion,
-            @RequestParam(value = "pollOptions", required = false) String pollOptions
+            @RequestParam(value = "pollOptions", required = false) String pollOptions,
+            @RequestParam(value = "audience", required = false) String audience
     ) {
         if (user == null) {
             return ResponseEntity.status(401).body(null);
         }
-        Post post = postService.updatePost(user.getUserId(), postId, content, image, removeMedia, feeling, locationName, pollQuestion, pollOptions);
+        Post post = postService.updatePost(user.getUserId(), postId, content, image, List.of(), removeMedia, feeling, locationName, pollQuestion, pollOptions, audience);
         return ResponseEntity.ok(toResponse(post, user.getUserId()));
     }
 
@@ -81,6 +84,18 @@ public class PostController {
         }
         Post post = postService.votePoll(user.getUserId(), postId, optionIndex);
         return ResponseEntity.ok(toResponse(post, user.getUserId()));
+    }
+
+    @GetMapping("/{postId}/poll/voters")
+    public ResponseEntity<List<PollVoterResponse>> pollVoters(
+            @AuthenticationPrincipal User user,
+            @PathVariable Long postId
+    ) {
+        if (user == null) {
+            return ResponseEntity.status(401).body(null);
+        }
+        Post post = postService.getPostById(postId);
+        return ResponseEntity.ok(postService.getPollVoters(post));
     }
 
     @DeleteMapping("/delete/{postId}")
@@ -132,7 +147,10 @@ public class PostController {
                 .hashtags(extractHashtags(post.getContent()))
                 .imageUrl(post.getImageUrl())
                 .mediaType(post.getMediaType())
+                .mediaUrls(postService.getMediaUrls(post))
+                .mediaTypes(postService.getMediaTypes(post))
                 .category(resolvePostCategory(post))
+                .audience(post.getAudience())
                 .feeling(post.getFeeling())
                 .locationName(post.getLocationName())
                 .pollQuestion(post.getPollQuestion())
@@ -140,6 +158,7 @@ public class PostController {
                 .pollVotes(pollVotes)
                 .pollTotalVotes(pollTotalVotes)
                 .viewerPollOptionIndex(postService.getViewerPollOptionIndex(post, viewerUserId))
+                .pollVoters(postService.getPollVoters(post))
                 .xpAwarded(resolvePostXp(post))
                 .authorVerifiedXp(calculateVerifiedXp(post.getUser()))
                 .reelViewCount(post.getReelViewCount())
@@ -148,6 +167,10 @@ public class PostController {
                 .createdAt(post.getCreatedAt())
                 .editedAt(post.getEditedAt())
                 .build();
+    }
+
+    private boolean noMedia(MultipartFile image) {
+        return image == null || image.isEmpty();
     }
 
     private long calculateVerifiedXp(User user) {

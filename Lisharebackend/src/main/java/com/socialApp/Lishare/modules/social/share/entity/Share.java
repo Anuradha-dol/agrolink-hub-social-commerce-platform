@@ -58,6 +58,9 @@ public class Share {
     @Column(name = "post_value", length = 20)
     private String postValue;
 
+    @Column(length = 30)
+    private String audience;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
@@ -66,6 +69,9 @@ public class Share {
         this.createdAt = LocalDateTime.now();
         if (!this.originalPostDeleted) {
             this.originalPostDeleted = false;
+        }
+        if (this.audience == null || this.audience.isBlank()) {
+            this.audience = "PUBLIC";
         }
     }
 }

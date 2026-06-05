@@ -5,6 +5,7 @@ import com.socialApp.Lishare.modules.social.post.service.PostService;
 import com.socialApp.Lishare.modules.platform.common.response.ApiResponse;
 import com.socialApp.Lishare.modules.social.comment.dto.CommentRequest;
 import com.socialApp.Lishare.modules.social.comment.dto.CommentResponse;
+import com.socialApp.Lishare.modules.social.post.dto.PollVoterResponse;
 import com.socialApp.Lishare.modules.social.post.dto.PostResponse;
 import com.socialApp.Lishare.modules.social.comment.entity.Comment;
 import com.socialApp.Lishare.modules.social.post.entity.Post;
@@ -44,13 +45,14 @@ public class PostApiController {
             @RequestParam(value = "feeling", required = false) String feeling,
             @RequestParam(value = "locationName", required = false) String locationName,
             @RequestParam(value = "pollQuestion", required = false) String pollQuestion,
-            @RequestParam(value = "pollOptions", required = false) String pollOptions
+            @RequestParam(value = "pollOptions", required = false) String pollOptions,
+            @RequestParam(value = "audience", required = false) String audience
     ) {
-        if (content.isBlank() && (image == null || image.isEmpty()) && (pollQuestion == null || pollQuestion.isBlank())) {
+        if (content.isBlank() && noMedia(image) && (pollQuestion == null || pollQuestion.isBlank())) {
             throw new IllegalArgumentException("Post content or image is required");
         }
 
-        Post post = postService.createPost(user.getUserId(), content, image, category, feeling, locationName, pollQuestion, pollOptions);
+        Post post = postService.createPost(user.getUserId(), content, image, List.of(), category, feeling, locationName, pollQuestion, pollOptions, audience);
         return ResponseEntity.ok(ApiResponse.success("Post created", toPostResponse(post, user.getUserId())));
     }
 
@@ -64,9 +66,10 @@ public class PostApiController {
             @RequestParam(value = "feeling", required = false) String feeling,
             @RequestParam(value = "locationName", required = false) String locationName,
             @RequestParam(value = "pollQuestion", required = false) String pollQuestion,
-            @RequestParam(value = "pollOptions", required = false) String pollOptions
+            @RequestParam(value = "pollOptions", required = false) String pollOptions,
+            @RequestParam(value = "audience", required = false) String audience
     ) {
-        Post post = postService.updatePost(user.getUserId(), postId, content, image, removeMedia, feeling, locationName, pollQuestion, pollOptions);
+        Post post = postService.updatePost(user.getUserId(), postId, content, image, List.of(), removeMedia, feeling, locationName, pollQuestion, pollOptions, audience);
         return ResponseEntity.ok(ApiResponse.success("Post updated", toPostResponse(post, user.getUserId())));
     }
 
@@ -136,6 +139,15 @@ public class PostApiController {
         return ResponseEntity.ok(ApiResponse.success("Poll vote saved", toPostResponse(post, user.getUserId())));
     }
 
+    @GetMapping("/{postId}/poll/voters")
+    public ResponseEntity<ApiResponse<List<PollVoterResponse>>> pollVoters(
+            @AuthenticationPrincipal User user,
+            @PathVariable Long postId
+    ) {
+        Post post = postService.getPostById(postId);
+        return ResponseEntity.ok(ApiResponse.success("Poll voters fetched", postService.getPollVoters(post)));
+    }
+
     @GetMapping("/{postId}/comments")
     public ResponseEntity<ApiResponse<Page<CommentResponse>>> listComments(
             @PathVariable Long postId,
@@ -192,7 +204,10 @@ public class PostApiController {
                 .hashtags(extractHashtags(post.getContent()))
                 .imageUrl(post.getImageUrl())
                 .mediaType(post.getMediaType())
+                .mediaUrls(postService.getMediaUrls(post))
+                .mediaTypes(postService.getMediaTypes(post))
                 .category(resolvePostCategory(post))
+                .audience(post.getAudience())
                 .feeling(post.getFeeling())
                 .locationName(post.getLocationName())
                 .pollQuestion(post.getPollQuestion())
@@ -200,6 +215,7 @@ public class PostApiController {
                 .pollVotes(pollVotes)
                 .pollTotalVotes(pollTotalVotes)
                 .viewerPollOptionIndex(postService.getViewerPollOptionIndex(post, viewerUserId))
+                .pollVoters(postService.getPollVoters(post))
                 .xpAwarded(resolvePostXp(post))
                 .authorVerifiedXp(calculateVerifiedXp(post.getUser()))
                 .reelViewCount(post.getReelViewCount())
@@ -208,6 +224,10 @@ public class PostApiController {
                 .createdAt(post.getCreatedAt())
                 .editedAt(post.getEditedAt())
                 .build();
+    }
+
+    private boolean noMedia(MultipartFile image) {
+        return image == null || image.isEmpty();
     }
 
     private long calculateVerifiedXp(User user) {

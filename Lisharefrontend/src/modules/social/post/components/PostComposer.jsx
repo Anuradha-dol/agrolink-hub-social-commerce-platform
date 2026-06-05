@@ -48,11 +48,70 @@ function ComposerToolIcon({ name }) {
         <circle cx="12" cy="12" r="1.4" />
         <circle cx="19" cy="12" r="1.4" />
       </>
+    ),
+    trash: (
+      <>
+        <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+        <line x1="10" y1="11" x2="10" y2="17" />
+        <line x1="14" y1="11" x2="14" y2="17" />
+      </>
+    ),
+    plus: (
+      <>
+        <line x1="12" y1="5" x2="12" y2="19" />
+        <line x1="5" y1="12" x2="19" y2="12" />
+      </>
+    ),
+    drag: (
+      <>
+        <circle cx="9" cy="5" r="1" />
+        <circle cx="9" cy="12" r="1" />
+        <circle cx="9" cy="19" r="1" />
+        <circle cx="15" cy="5" r="1" />
+        <circle cx="15" cy="12" r="1" />
+        <circle cx="15" cy="19" r="1" />
+      </>
+    ),
+    bell: (
+      <>
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+        <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+      </>
+    ),
+    chat: (
+      <>
+        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+      </>
+    ),
+    chevronRight: (
+      <>
+        <polyline points="9 18 15 12 9 6" />
+      </>
+    ),
+    send: (
+      <>
+        <line x1="22" y1="2" x2="11" y2="13" />
+        <polygon points="22 2 15 22 11 13 2 9 22 2" />
+      </>
+    ),
+    refresh: (
+      <>
+        <polyline points="23 4 23 10 17 10" />
+        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+      </>
+    ),
+    users: (
+      <>
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+      </>
     )
   };
 
   return (
-    <svg className="composer-inline-icon" viewBox="0 0 24 24" aria-hidden="true">
+    <svg className="composer-inline-icon" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       {icons[name] || icons.image}
     </svg>
   );
@@ -70,6 +129,22 @@ const POST_CATEGORIES = [
   { value: "OTHER", label: "Other", xp: 2 }
 ];
 const FEELINGS = ["Happy", "Sad", "Excited", "Angry", "Loved", "Blessed", "Tired", "Motivated"];
+const FEELING_META = {
+  Happy: { emoji: "\u{1F60A}", hint: "Bright mood" },
+  Sad: { emoji: "\u{1F614}", hint: "Need support" },
+  Excited: { emoji: "\u{1F929}", hint: "Big energy" },
+  Angry: { emoji: "\u{1F620}", hint: "Strong feeling" },
+  Loved: { emoji: "\u{1F499}", hint: "Feeling loved" },
+  Blessed: { emoji: "\u{1F64F}", hint: "Grateful day" },
+  Tired: { emoji: "\u{1F634}", hint: "Low energy" },
+  Motivated: { emoji: "\u{1F525}", hint: "Ready to grow" }
+};
+const AUDIENCE_OPTIONS = [
+  { value: "PUBLIC", label: "Public", hint: "Everyone can see it" },
+  { value: "FRIENDS_FOLLOWERS", label: "Friends + followers", hint: "Accepted friends and followers" },
+  { value: "FRIENDS", label: "Friends", hint: "Accepted friends only" },
+  { value: "FOLLOWERS", label: "Followers", hint: "Followers only" }
+];
 
 function displayUserName(user) {
   return `${user?.firstName || user?.firstname || ""} ${user?.lastName || user?.lastname || ""}`.trim()
@@ -104,14 +179,17 @@ function ComposerToolButton({ label, icon, active = false, onClick }) {
 export default function PostComposer({ onSubmit, submitting, onSearchMentionUsers }) {
   const { user } = useAuth();
   const [content, setContent] = useState("");
-  const [imageFile, setImageFile] = useState(null);
+  const [mediaFile, setMediaFile] = useState(null);
   const [category, setCategory] = useState("");
-  const [fileAccept, setFileAccept] = useState("image/*,video/*");
+  const [audience, setAudience] = useState("PUBLIC");
+  const [fileAccept, setFileAccept] = useState("image/*,video/*,.gif");
   const [activeTool, setActiveTool] = useState("");
   const [locationText, setLocationText] = useState("");
   const [feeling, setFeeling] = useState("");
   const [pollQuestion, setPollQuestion] = useState("");
   const [pollOptions, setPollOptions] = useState(["", ""]);
+  const [allowMultipleVotes, setAllowMultipleVotes] = useState(false);
+  const [notifyFollowers, setNotifyFollowers] = useState(true);
   const [mentionResults, setMentionResults] = useState([]);
   const [mentionLoading, setMentionLoading] = useState(false);
   const fileInputRef = useRef(null);
@@ -119,15 +197,15 @@ export default function PostComposer({ onSubmit, submitting, onSearchMentionUser
   const firstName = displayName.split(" ")[0] || "there";
   const avatarUrl = user?.profileImageUrl || user?.imageUrl ? toMediaUrl(user.profileImageUrl || user.imageUrl) : "";
 
-  const fileLabel = useMemo(() => {
-    if (!imageFile) return "";
-    return imageFile.name;
-  }, [imageFile]);
-  const mediaPreviewUrl = useMemo(() => (imageFile ? URL.createObjectURL(imageFile) : ""), [imageFile]);
+  const fileLabel = mediaFile?.name || "";
+  const mediaPreviewItem = useMemo(
+    () => (mediaFile ? { file: mediaFile, url: URL.createObjectURL(mediaFile) } : null),
+    [mediaFile]
+  );
 
   useEffect(() => () => {
-    if (mediaPreviewUrl) URL.revokeObjectURL(mediaPreviewUrl);
-  }, [mediaPreviewUrl]);
+    if (mediaPreviewItem?.url) URL.revokeObjectURL(mediaPreviewItem.url);
+  }, [mediaPreviewItem]);
 
   useEffect(() => {
     const query = activeMentionQuery(content);
@@ -167,6 +245,11 @@ export default function PostComposer({ onSubmit, submitting, onSearchMentionUser
     window.setTimeout(() => fileInputRef.current?.click(), 0);
   };
 
+  const clearMediaFile = () => {
+    setMediaFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   const submit = async (event) => {
     event.preventDefault();
     if (!category) return;
@@ -177,22 +260,30 @@ export default function PostComposer({ onSubmit, submitting, onSearchMentionUser
     const formData = new FormData();
     formData.append("content", content.trim());
     formData.append("category", category);
+    formData.append("audience", audience);
     formData.append("feeling", feeling);
     formData.append("locationName", trimmedLocation);
     if (trimmedPollQuestion && filledPollOptions.length >= 2) {
       formData.append("pollQuestion", trimmedPollQuestion);
       formData.append("pollOptions", JSON.stringify(filledPollOptions));
+      formData.append("allowMultipleVotes", allowMultipleVotes);
+      formData.append("notifyFollowers", notifyFollowers);
     }
-    if (imageFile) formData.append("image", imageFile);
+    if (mediaFile) {
+      formData.append("image", mediaFile);
+    }
     await onSubmit(formData);
     setContent("");
-    setImageFile(null);
+    setMediaFile(null);
     setCategory("");
+    setAudience("PUBLIC");
     setActiveTool("");
     setLocationText("");
     setFeeling("");
     setPollQuestion("");
     setPollOptions(["", ""]);
+    setAllowMultipleVotes(false);
+    setNotifyFollowers(true);
     setMentionResults([]);
     event.target.reset();
   };
@@ -250,8 +341,8 @@ export default function PostComposer({ onSubmit, submitting, onSearchMentionUser
       {/* Toolbar row: tools on left, Post button on right */}
       <div className="composer-actions premium-composer-actions">
         <div className="composer-tool-row">
-          <label className="composer-tool-button composer-file-label" aria-label="Attach image or video" title="Attach image or video" onClick={() => setFileAccept("image/*,video/*")}>
-            <input ref={fileInputRef} type="file" accept={fileAccept} onChange={(e) => setImageFile(e.target.files?.[0] || null)} />
+          <label className="composer-tool-button composer-file-label" aria-label="Attach image, GIF, or video" title="Attach image, GIF, or video" onClick={() => setFileAccept("image/*,video/*,.gif")}>
+            <input ref={fileInputRef} type="file" accept={fileAccept} onChange={(e) => setMediaFile(e.target.files?.[0] || null)} />
             <ComposerToolIcon name="image" />
             <span className="composer-tool-label">Photo</span>
           </label>
@@ -275,6 +366,17 @@ export default function PostComposer({ onSubmit, submitting, onSearchMentionUser
               ))}
             </select>
           </label>
+          <label className="composer-category-field composer-audience-field">
+            <span>Audience</span>
+            <select value={audience} onChange={(event) => setAudience(event.target.value)}>
+              {AUDIENCE_OPTIONS.map((item) => (
+                <option key={item.value} value={item.value}>
+                  {item.label}
+                </option>
+              ))}
+            </select>
+            <small>{AUDIENCE_OPTIONS.find((item) => item.value === audience)?.hint}</small>
+          </label>
         </div>
         <button type="submit" className="btn btn-primary composer-publish-btn" disabled={submitting}>
           {submitting ? "Posting..." : "Post"}
@@ -291,16 +393,23 @@ export default function PostComposer({ onSubmit, submitting, onSearchMentionUser
           ) : null}
           {activeTool === "feeling" ? (
             <div className="composer-token-row composer-feeling-row" aria-label="Feeling choices">
-              {FEELINGS.map((item) => (
-                <button
-                  key={item}
-                  type="button"
-                  className={feeling === item ? "active" : ""}
-                  onClick={() => setFeeling(item)}
-                >
-                  {item}
-                </button>
-              ))}
+              {FEELINGS.map((item) => {
+                const meta = FEELING_META[item] || { emoji: "\u{1F642}", hint: "Today" };
+                return (
+                  <button
+                    key={item}
+                    type="button"
+                    className={feeling === item ? "active" : ""}
+                    onClick={() => setFeeling(item)}
+                  >
+                    <span className="composer-feeling-emoji" aria-hidden="true">{meta.emoji}</span>
+                    <span className="composer-feeling-copy">
+                      <strong>{item}</strong>
+                      <small>{meta.hint}</small>
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           ) : null}
           {activeTool === "gif" ? (
@@ -310,58 +419,211 @@ export default function PostComposer({ onSubmit, submitting, onSearchMentionUser
             </div>
           ) : null}
           {activeTool === "location" ? (
-            <label className="composer-inline-field">
-              Location
-              <input value={locationText} onChange={(event) => setLocationText(event.target.value)} placeholder="Add city, venue, or online link" />
+            <label className="composer-inline-field composer-location-field">
+              <span>Location</span>
+              <span className="composer-location-input-shell">
+                <span className="composer-location-icon" aria-hidden="true">
+                  <ComposerToolIcon name="pin" />
+                </span>
+                <input value={locationText} onChange={(event) => setLocationText(event.target.value)} placeholder="Add city, venue, or online link" />
+              </span>
             </label>
           ) : null}
           {activeTool === "poll" ? (
-            <div className="composer-poll-fields">
-              <label>
-                Poll question
-                <input value={pollQuestion} onChange={(event) => setPollQuestion(event.target.value)} placeholder="Ask a clear question" />
-              </label>
-              {pollOptions.map((option, index) => (
-                <div key={`poll-${index}`} className="composer-poll-option-row">
-                  <label>
-                    Option {index + 1}
-                    <input value={option} onChange={(event) => {
-                      const next = [...pollOptions];
-                      next[index] = event.target.value;
-                      setPollOptions(next);
-                    }} placeholder={`Poll option ${index + 1}`} />
-                  </label>
-                  {pollOptions.length > 2 ? (
-                    <button type="button" onClick={() => setPollOptions((previous) => previous.filter((_, itemIndex) => itemIndex !== index))}>
-                      Remove
-                    </button>
-                  ) : null}
+            <div className="composer-poll-container">
+              <header className="composer-poll-header">
+                <div className="composer-poll-header-icon-wrap">
+                  <ComposerToolIcon name="chat" />
                 </div>
-              ))}
-              {pollOptions.length < 8 ? (
-                <button type="button" className="composer-add-option" onClick={() => setPollOptions((previous) => [...previous, ""])}>
-                  Add option
+                <div className="composer-poll-header-info">
+                  <h3>Create poll</h3>
+                  <p>Ask a question and let people vote</p>
+                </div>
+                <div className="composer-poll-header-badge">
+                  <div className="composer-poll-header-icon-wrap secondary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                  </div>
+                  <div className="composer-poll-header-info">
+                    <strong>Polls are anonymous</strong>
+                    <p>Voters' names are visible only after voting</p>
+                  </div>
+                </div>
+              </header>
+
+              <div className="composer-poll-main-card">
+                <div className="composer-poll-field-group">
+                  <div className="composer-poll-field-label">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{color: '#8b5cf6'}}><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    <span>Poll question</span>
+                  </div>
+                  <div className="composer-poll-input-wrap">
+                    <input
+                      type="text"
+                      value={pollQuestion}
+                      onChange={(event) => setPollQuestion(event.target.value)}
+                      placeholder="Ask a clear question..."
+                      maxLength={200}
+                    />
+                    <span className="composer-poll-char-count">{pollQuestion.length}/200</span>
+                  </div>
+                </div>
+
+                <div className="composer-poll-field-group">
+                  <div className="composer-poll-field-header">
+                    <div className="composer-poll-field-label">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{color: '#8b5cf6'}}><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                      <span>Poll options</span>
+                    </div>
+                    {pollOptions.length < 8 ? (
+                      <button
+                        type="button"
+                        className="composer-poll-add-btn"
+                        onClick={() => setPollOptions((prev) => [...prev, ""])}
+                      >
+                        <ComposerToolIcon name="plus" />
+                        <span>Add option</span>
+                      </button>
+                    ) : null}
+                  </div>
+
+                  <div className="composer-poll-options-list">
+                    {pollOptions.map((option, index) => (
+                      <div key={`poll-opt-${index}`} className="composer-poll-option-row">
+                        <div className="composer-poll-option-drag">
+                          <ComposerToolIcon name="drag" />
+                        </div>
+                        <div className="composer-poll-option-input-wrap">
+                          <input
+                            type="text"
+                            value={option}
+                            onChange={(event) => {
+                              const next = [...pollOptions];
+                              next[index] = event.target.value;
+                              setPollOptions(next);
+                            }}
+                            placeholder={`Enter option ${index + 1}...`}
+                          />
+                        </div>
+                        {pollOptions.length > 2 ? (
+                          <button
+                            type="button"
+                            className="composer-poll-option-remove"
+                            onClick={() => setPollOptions((prev) => prev.filter((_, i) => i !== index))}
+                          >
+                            <ComposerToolIcon name="trash" />
+                          </button>
+                        ) : (
+                          <div className="composer-poll-option-spacer" />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="composer-poll-settings">
+                <div className="composer-poll-setting-item">
+                  <div className="composer-poll-setting-icon-wrap">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                  </div>
+                  <div className="composer-poll-setting-info">
+                    <strong>Allow multiple votes</strong>
+                    <p>People can select more than one option</p>
+                  </div>
+                  <div className="composer-poll-setting-action">
+                    <label className="composer-poll-switch">
+                      <input
+                        type="checkbox"
+                        checked={allowMultipleVotes}
+                        onChange={(e) => setAllowMultipleVotes(e.target.checked)}
+                      />
+                      <span className="composer-poll-slider" />
+                    </label>
+                  </div>
+                </div>
+
+                <div className="composer-poll-setting-divider" />
+
+                <div className="composer-poll-setting-item">
+                  <div className="composer-poll-setting-icon-wrap secondary">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+                  </div>
+                  <div className="composer-poll-setting-info">
+                    <strong>Notify friends & followers</strong>
+                    <p>Share this poll with your connections</p>
+                  </div>
+                  <div className="composer-poll-setting-action">
+                    <label className="composer-poll-switch">
+                      <input
+                        type="checkbox"
+                        checked={notifyFollowers}
+                        onChange={(e) => setNotifyFollowers(e.target.checked)}
+                      />
+                      <span className="composer-poll-slider" />
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <div className="composer-poll-footer-actions">
+                <button
+                  type="submit"
+                  className="composer-poll-submit-btn premium-gradient-btn"
+                  disabled={submitting || !pollQuestion.trim() || pollOptions.filter(o => o.trim()).length < 2}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{transform: 'rotate(-45deg)', marginTop: '-2px'}}><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                  <span>{submitting ? "Creating..." : "Create poll"}</span>
                 </button>
-              ) : null}
+                <button
+                  type="button"
+                  className="composer-poll-reset-btn"
+                  onClick={() => {
+                    setPollQuestion("");
+                    setPollOptions(["", ""]);
+                    setAllowMultipleVotes(false);
+                    setNotifyFollowers(true);
+                    setActiveTool("");
+                  }}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                  <span>Reset</span>
+                </button>
+              </div>
             </div>
           ) : null}
         </div>
       ) : null}
       {(feeling || locationText.trim() || pollQuestion.trim()) ? (
         <div className="composer-preview-chips">
-          {feeling ? <span>Feeling {feeling}</span> : null}
-          {locationText.trim() ? <span>{locationText.trim()}</span> : null}
+          {feeling ? <span>{FEELING_META[feeling]?.emoji || "\u{1F642}"} Feeling {feeling}</span> : null}
+          {locationText.trim() ? (
+            <span className="composer-location-chip">
+              <ComposerToolIcon name="pin" />
+              {locationText.trim()}
+            </span>
+          ) : null}
           {pollQuestion.trim() ? <span>Poll ready</span> : null}
         </div>
       ) : null}
-      {mediaPreviewUrl ? (
-        <div className={`composer-media-preview ${imageFile?.type === "image/gif" ? "gif" : ""}`.trim()}>
-          {imageFile?.type?.startsWith("video") ? (
-            <video src={mediaPreviewUrl} controls muted />
-          ) : (
-            <img src={mediaPreviewUrl} alt={imageFile?.type === "image/gif" ? "Animated GIF preview" : "Post media preview"} />
-          )}
-          <button type="button" onClick={() => setImageFile(null)}>Remove media</button>
+      {mediaPreviewItem ? (
+        <div className={`composer-media-preview ${mediaPreviewItem.file?.type === "image/gif" ? "gif" : ""}`.trim()}>
+          <div className="composer-media-preview-grid single">
+            <figure>
+              {mediaPreviewItem.file?.type?.startsWith("video") ? (
+                <video src={mediaPreviewItem.url} controls muted />
+              ) : (
+                <img src={mediaPreviewItem.url} alt={mediaPreviewItem.file?.type === "image/gif" ? "Animated GIF preview" : "Post media preview"} />
+              )}
+              <button
+                type="button"
+                onClick={clearMediaFile}
+                aria-label={`Remove ${mediaPreviewItem.file.name}`}
+              >
+                Remove
+              </button>
+            </figure>
+          </div>
+          <button type="button" onClick={clearMediaFile}>Remove media</button>
         </div>
       ) : null}
     </form>

@@ -47,8 +47,14 @@ public class Post {
     @Column(length = 20)
     private String mediaType;
 
+    @Column(name = "media_urls_json", columnDefinition = "TEXT")
+    private String mediaUrlsJson;
+
     @Column(length = 40)
     private String category;
+
+    @Column(length = 30)
+    private String audience;
 
     @Column(length = 80)
     private String feeling;
@@ -94,6 +100,9 @@ public class Post {
         }
         if (this.category == null || this.category.isBlank()) {
             this.category = "GENERAL";
+        }
+        if (this.audience == null || this.audience.isBlank()) {
+            this.audience = "PUBLIC";
         }
         if (this.xpAwarded == null || this.xpAwarded < 1) {
             this.xpAwarded = PostXpPolicy.xpForCategory(this.category);
