@@ -415,7 +415,10 @@ export default function ChatPage() {
                         <small>{formatTime(message.createdAt)} {mine ? " - Sent" : ""}</small>
                         <div className="message-reaction-toolbar">
                           {QUICK_REACTIONS.map((label) => (
-                            <button key={label} type="button" onClick={() => reactToMessage(message.id, label)}>{REACTION_EMOJI[label]}</button>
+                            <button key={label} type="button" onClick={() => reactToMessage(message.id, label)} title={label} aria-label={`${label} reaction`}>
+                              <span aria-hidden="true">{REACTION_EMOJI[label]}</span>
+                              <small>{label}</small>
+                            </button>
                           ))}
                         </div>
                         {(reactionsByMessage[message.id] || []).length ? (

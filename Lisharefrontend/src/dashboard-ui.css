@@ -52104,3 +52104,897 @@ button.comment-author-avatar {
     width: fit-content !important;
   }
 }
+
+/* Final Admin Workflow and workspace UI polish. Keep this block last to avoid older overrides winning. */
+:root {
+  --lishare-ink-final: #07182f;
+  --lishare-muted-final: #5f7088;
+  --lishare-line-final: rgba(202, 218, 235, 0.78);
+  --lishare-glass-final: rgba(255, 255, 255, 0.88);
+  --lishare-shadow-final: 0 28px 80px rgba(18, 38, 65, 0.14);
+  --lishare-soft-shadow-final: 0 16px 38px rgba(18, 38, 65, 0.09);
+}
+
+.shell .support-center-page,
+.shell .admin-workspace-dashboard,
+.shell .calendar-dashboard,
+.shell .analytics-reference-page {
+  position: relative !important;
+  isolation: isolate !important;
+  overflow: hidden !important;
+  color: var(--lishare-ink-final) !important;
+  background: #eef5f2 !important;
+}
+
+.shell .support-center-page::before,
+.shell .admin-workspace-dashboard::before,
+.shell .calendar-dashboard::before,
+.shell .analytics-reference-page::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: -2 !important;
+  opacity: 1 !important;
+  pointer-events: none !important;
+}
+
+.shell .support-center-page::after,
+.shell .admin-workspace-dashboard::after,
+.shell .calendar-dashboard::after,
+.shell .analytics-reference-page::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: -1 !important;
+  pointer-events: none !important;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(255, 255, 255, 0.82), transparent 34%),
+    radial-gradient(circle at 88% 8%, rgba(255, 255, 255, 0.5), transparent 28%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(255, 255, 255, 0.54)) !important;
+}
+
+.shell .support-center-page::before {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.7), rgba(241, 248, 245, 0.58)),
+    url("./assets/workspace/support-center-office-4k.jpg") center / cover no-repeat !important;
+}
+
+.shell .admin-workspace-dashboard::before {
+  background:
+    linear-gradient(135deg, rgba(245, 251, 255, 0.74), rgba(255, 246, 253, 0.55)),
+    url("./assets/workspace/admin-workspace-blueprint-4k.jpg") center / cover no-repeat !important;
+}
+
+.shell .calendar-dashboard::before {
+  background:
+    linear-gradient(135deg, rgba(247, 255, 250, 0.78), rgba(255, 255, 255, 0.48)),
+    url("./assets/workspace/calendar-greenhouse-4k.jpg") center / cover no-repeat !important;
+}
+
+.shell .analytics-reference-page::before {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.7), rgba(244, 250, 248, 0.56)),
+    url("./assets/workspace/insights-workspace-4k.jpg") center / cover no-repeat !important;
+}
+
+.shell .support-center-page .dash-card,
+.shell .support-center-page .card,
+.shell .admin-workspace-dashboard .dash-card,
+.shell .calendar-dashboard .dash-card,
+.shell .analytics-reference-page .dash-card,
+.shell .social-commerce-page .dash-card,
+.shell .social-commerce-page .commerce-panel,
+.shell .social-commerce-page .commerce-product-card,
+.shell .social-commerce-page .commerce-cart-item,
+.shell .social-commerce-page .commerce-order-card {
+  border: 1px solid var(--lishare-line-final) !important;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(255, 255, 255, 0.96), transparent 42%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(247, 251, 249, 0.86)) !important;
+  box-shadow: var(--lishare-soft-shadow-final) !important;
+  backdrop-filter: blur(18px) saturate(1.1) !important;
+}
+
+.shell .support-center-page .support-reference-hero,
+.shell .calendar-dashboard .overview-hero,
+.shell .admin-workspace-dashboard .overview-hero,
+.shell .analytics-reference-page .analytics-hero-card,
+.shell .social-commerce-page .commerce-hero {
+  border: 1px solid rgba(255, 255, 255, 0.68) !important;
+  border-radius: 34px !important;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.72)),
+    radial-gradient(circle at 8% 14%, rgba(25, 185, 132, 0.16), transparent 34%) !important;
+  box-shadow: var(--lishare-shadow-final) !important;
+}
+
+.shell .admin-workspace-dashboard .overview-hero {
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.74)),
+    url("./assets/workspace/admin-workspace-blueprint-4k.jpg") right center / 52% cover no-repeat !important;
+}
+
+.shell .calendar-dashboard .overview-hero {
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.97), rgba(255, 255, 255, 0.7)),
+    url("./assets/workspace/calendar-greenhouse-4k.jpg") right center / 54% cover no-repeat !important;
+}
+
+.shell .support-center-page .support-reference-hero {
+  min-height: 330px !important;
+  align-items: center !important;
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.82) 48%, rgba(255, 255, 255, 0.32)),
+    url("./assets/workspace/support-center-office-4k.jpg") right center / 58% cover no-repeat !important;
+}
+
+.shell .analytics-reference-page .analytics-hero-card {
+  background:
+    linear-gradient(90deg, rgba(255, 255, 255, 0.97), rgba(255, 255, 255, 0.74)),
+    url("./assets/workspace/insights-workspace-4k.jpg") right center / 52% cover no-repeat !important;
+}
+
+.shell .support-center-page :is(h2, h3),
+.shell .admin-workspace-dashboard :is(h2, h3),
+.shell .calendar-dashboard :is(h2, h3),
+.shell .analytics-reference-page :is(h2, h3),
+.shell .social-commerce-page :is(h2, h3) {
+  color: var(--lishare-ink-final) !important;
+}
+
+.shell .support-center-page :is(p, small, span),
+.shell .admin-workspace-dashboard :is(p, small),
+.shell .calendar-dashboard :is(p, small),
+.shell .analytics-reference-page :is(p, small),
+.shell .social-commerce-page :is(p, small) {
+  text-shadow: none !important;
+}
+
+.shell :is(.support-form-fields, .calendar-event-form, .commerce-product-form, .modal-grid, .admin-delete-modal-body) label {
+  position: relative !important;
+  color: #172b46 !important;
+  font-weight: 930 !important;
+}
+
+.shell :is(.support-form-fields, .calendar-event-form, .commerce-product-form, .modal-grid) label::before,
+.modal-backdrop :is(.modal-grid, .commerce-product-form) label::before {
+  content: "" !important;
+  width: 18px !important;
+  height: 18px !important;
+  display: inline-block !important;
+  margin-right: 7px !important;
+  vertical-align: -4px !important;
+  border-radius: 7px !important;
+  background:
+    linear-gradient(135deg, #19b984, #2f73e8) !important;
+  box-shadow: 0 8px 16px rgba(31, 115, 232, 0.18) !important;
+}
+
+.shell :is(.support-form-fields, .calendar-event-form, .commerce-product-form, .modal-grid) :is(input, select, textarea),
+.modal-backdrop :is(.modal-grid, .commerce-product-form) :is(input, select, textarea) {
+  border: 1px solid rgba(198, 216, 232, 0.92) !important;
+  border-radius: 18px !important;
+  color: #102238 !important;
+  background:
+    linear-gradient(180deg, #ffffff, #f8fbff) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 10px 22px rgba(20, 40, 86, 0.05) !important;
+}
+
+.shell :is(.support-form-fields, .calendar-event-form, .commerce-product-form, .modal-grid) :is(input, select, textarea):focus,
+.modal-backdrop :is(.modal-grid, .commerce-product-form) :is(input, select, textarea):focus {
+  border-color: rgba(25, 185, 132, 0.58) !important;
+  box-shadow: 0 0 0 4px rgba(25, 185, 132, 0.14), 0 12px 26px rgba(20, 40, 86, 0.08) !important;
+}
+
+.shell .social-commerce-page .commerce-product-card {
+  position: relative !important;
+  overflow: hidden !important;
+  border-radius: 28px !important;
+}
+
+.shell .social-commerce-page .commerce-cart-item,
+.shell .social-commerce-page .commerce-order-card {
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.shell .social-commerce-page .commerce-product-card::before,
+.shell .social-commerce-page .commerce-cart-item::before,
+.shell .social-commerce-page .commerce-order-card::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 0 auto 0 !important;
+  height: 5px !important;
+  background: linear-gradient(90deg, #19b984, #2f73e8, #f59e0b) !important;
+  pointer-events: none !important;
+}
+
+.shell .social-commerce-page .commerce-product-media,
+.shell .social-commerce-page .commerce-cart-media,
+.shell .social-commerce-page .commerce-order-media,
+.shell .social-commerce-page .product-detail-media,
+.shell .social-commerce-page .commerce-detail-media {
+  border: 1px solid rgba(25, 185, 132, 0.18) !important;
+  border-radius: 24px !important;
+  background:
+    linear-gradient(135deg, rgba(232, 252, 244, 0.9), rgba(239, 246, 255, 0.86)) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82), 0 14px 28px rgba(20, 70, 50, 0.08) !important;
+}
+
+.shell .social-commerce-page .commerce-product-media img,
+.shell .social-commerce-page .commerce-cart-media img,
+.shell .social-commerce-page .commerce-order-media img {
+  transform: scale(1.01) !important;
+  transition: transform 220ms ease !important;
+}
+
+.shell .social-commerce-page .commerce-product-card:hover .commerce-product-media img,
+.shell .social-commerce-page .commerce-cart-item:hover .commerce-cart-media img,
+.shell .social-commerce-page .commerce-order-card:hover .commerce-order-media img {
+  transform: scale(1.06) !important;
+}
+
+.shell .social-commerce-page .commerce-product-meta span,
+.shell .social-commerce-page .commerce-total-row,
+.shell .social-commerce-page .commerce-status-pipeline > div,
+.shell .admin-workspace-dashboard .panel-row,
+.shell .support-center-page .support-ticket-card {
+  border: 1px solid rgba(202, 218, 235, 0.74) !important;
+  background: rgba(255, 255, 255, 0.82) !important;
+  box-shadow: 0 10px 24px rgba(18, 38, 65, 0.06) !important;
+}
+
+.shell .social-commerce-page .commerce-product-actions,
+.shell .social-commerce-page .commerce-cart-actions,
+.shell .social-commerce-page .commerce-order-actions,
+.shell .table-action-row {
+  align-items: stretch !important;
+}
+
+.shell .social-commerce-page :is(.commerce-product-actions, .commerce-cart-actions, .commerce-order-actions, .table-action-row) :is(.ui-btn, .gradient-btn) {
+  min-height: 42px !important;
+  justify-content: center !important;
+  border-radius: 15px !important;
+}
+
+.shell .friends-dashboard .friends-person-row {
+  grid-template-columns: minmax(0, 1fr) minmax(440px, 0.92fr) !important;
+  align-items: stretch !important;
+}
+
+.shell .friends-dashboard .friends-person-actions {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(136px, 1fr)) !important;
+  gap: 10px !important;
+  align-content: center !important;
+  align-items: stretch !important;
+}
+
+.shell .friends-dashboard .friends-person-actions :is(.ui-btn, .gradient-btn),
+.shell .friends-dashboard .account-row-card > :is(.ui-btn, .gradient-btn) {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 44px !important;
+  display: inline-flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  white-space: nowrap !important;
+  line-height: 1 !important;
+}
+
+.shell .friends-dashboard .account-row-card {
+  grid-template-columns: 54px minmax(0, 1fr) 110px repeat(3, minmax(112px, 0.18fr)) !important;
+  align-items: center !important;
+}
+
+.shell .notifications-dashboard .notifications-pagination {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  gap: 14px !important;
+  padding-top: 18px !important;
+}
+
+.shell .notifications-dashboard .notifications-pagination span {
+  min-width: 94px !important;
+  min-height: 40px !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  border: 1px solid rgba(202, 218, 235, 0.85) !important;
+  border-radius: 999px !important;
+  color: #213b5a !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  font-weight: 920 !important;
+}
+
+.shell .notifications-dashboard .notifications-pagination .ui-btn {
+  width: auto !important;
+  min-width: 112px !important;
+  min-height: 42px !important;
+  border-radius: 999px !important;
+}
+
+.shell .chat-dashboard {
+  background:
+    linear-gradient(135deg, rgba(241, 250, 247, 0.92), rgba(244, 249, 255, 0.86)),
+    url("./assets/workspace/insights-workspace-4k.jpg") center / cover no-repeat !important;
+}
+
+.shell .chat-dashboard .chat-dashboard-grid {
+  grid-template-columns: minmax(280px, 0.78fr) minmax(520px, 1.46fr) minmax(280px, 0.76fr) !important;
+}
+
+.shell .chat-dashboard .messages-panel,
+.shell .chat-dashboard .chat-thread-card,
+.shell .chat-dashboard .chat-profile-panel {
+  border-color: rgba(202, 218, 235, 0.82) !important;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(25, 185, 132, 0.1), transparent 36%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(247, 251, 250, 0.9)) !important;
+  box-shadow: var(--lishare-soft-shadow-final) !important;
+}
+
+.shell .chat-dashboard .message-input-bar {
+  grid-template-columns: repeat(4, 42px) minmax(190px, 1fr) 42px minmax(112px, auto) !important;
+  align-items: center !important;
+  margin: 14px 18px 18px !important;
+  padding: 12px !important;
+  border-radius: 24px !important;
+}
+
+.shell .chat-dashboard .message-input-bar > button,
+.shell .chat-dashboard .message-input-bar > label {
+  width: 42px !important;
+  height: 42px !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  padding: 0 !important;
+}
+
+.shell .chat-dashboard .message-input-bar .gradient-btn {
+  min-width: 112px !important;
+  width: auto !important;
+}
+
+.shell .chat-dashboard .message-reaction-toolbar {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+  margin-top: 8px !important;
+}
+
+.shell .chat-dashboard .message-reaction-toolbar button {
+  width: auto !important;
+  min-width: 48px !important;
+  min-height: 30px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  padding: 4px 8px !important;
+  border: 1px solid rgba(202, 218, 235, 0.76) !important;
+  border-radius: 999px !important;
+  color: #223a57 !important;
+  background: rgba(255, 255, 255, 0.88) !important;
+  box-shadow: none !important;
+}
+
+.shell .chat-dashboard .message-reaction-toolbar button small {
+  display: inline !important;
+  margin: 0 !important;
+  color: inherit !important;
+  font-size: 0.66rem !important;
+  font-weight: 850 !important;
+}
+
+.shell .chat-dashboard .message-bubble-row.mine .message-reaction-toolbar button {
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.26) !important;
+  background: rgba(255, 255, 255, 0.16) !important;
+}
+
+.shell .calendar-dashboard .calendar-week-board {
+  display: grid !important;
+  grid-template-columns: repeat(7, minmax(120px, 1fr)) !important;
+  gap: 12px !important;
+}
+
+.shell .calendar-dashboard .calendar-week-day,
+.shell .calendar-dashboard .calendar-day-board {
+  border: 1px solid rgba(202, 218, 235, 0.82) !important;
+  border-radius: 24px !important;
+  background: rgba(255, 255, 255, 0.84) !important;
+  box-shadow: 0 12px 28px rgba(18, 38, 65, 0.07) !important;
+}
+
+.shell .calendar-dashboard .calendar-week-day {
+  min-height: 260px !important;
+  padding: 12px !important;
+}
+
+.shell .calendar-dashboard .calendar-week-day header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  margin-bottom: 10px !important;
+  color: #1b3858 !important;
+}
+
+.shell .calendar-dashboard .calendar-week-day header strong {
+  width: 36px !important;
+  height: 36px !important;
+  display: grid !important;
+  place-items: center !important;
+  border-radius: 14px !important;
+  background: #eef8f3 !important;
+}
+
+.shell .calendar-dashboard .calendar-week-day.today header strong {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #19b984, #2f73e8) !important;
+}
+
+.shell .calendar-dashboard .calendar-empty-slot {
+  display: grid !important;
+  place-items: center !important;
+  min-height: 96px !important;
+  border: 1px dashed rgba(202, 218, 235, 0.82) !important;
+  border-radius: 18px !important;
+  color: #71809a !important;
+  background: rgba(248, 251, 255, 0.7) !important;
+}
+
+.shell .calendar-dashboard .calendar-day-board {
+  display: grid !important;
+  grid-template-columns: minmax(220px, 0.42fr) minmax(0, 1fr) !important;
+  gap: 16px !important;
+  padding: 16px !important;
+}
+
+.shell .calendar-dashboard .calendar-day-focus {
+  min-height: 300px !important;
+  display: grid !important;
+  place-items: center !important;
+  align-content: center !important;
+  gap: 8px !important;
+  border-radius: 22px !important;
+  color: #ffffff !important;
+  background:
+    linear-gradient(135deg, rgba(25, 185, 132, 0.92), rgba(47, 115, 232, 0.9)),
+    url("./assets/workspace/calendar-greenhouse-4k.jpg") center / cover no-repeat !important;
+  box-shadow: 0 18px 42px rgba(23, 80, 62, 0.22) !important;
+}
+
+.shell .calendar-dashboard .calendar-day-focus strong {
+  color: #ffffff !important;
+  font-size: clamp(4rem, 9vw, 7rem) !important;
+  line-height: 0.9 !important;
+}
+
+.shell .calendar-dashboard .calendar-day-focus p,
+.shell .calendar-dashboard .calendar-day-focus span {
+  color: rgba(255, 255, 255, 0.9) !important;
+  font-weight: 900 !important;
+}
+
+.shell .calendar-dashboard .calendar-day-agenda {
+  display: grid !important;
+  align-content: start !important;
+  gap: 12px !important;
+}
+
+.shell .calendar-dashboard .calendar-agenda-event {
+  width: 100% !important;
+  min-height: 86px !important;
+  display: grid !important;
+  grid-template-columns: 90px minmax(0, 1fr) !important;
+  gap: 6px 14px !important;
+  align-items: center !important;
+  justify-items: start !important;
+  padding: 14px !important;
+  border: 1px solid rgba(202, 218, 235, 0.82) !important;
+  border-radius: 20px !important;
+  color: #142844 !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  text-align: left !important;
+}
+
+.shell .calendar-dashboard .calendar-agenda-event span {
+  grid-row: span 2 !important;
+  color: #0f8d65 !important;
+  font-weight: 950 !important;
+}
+
+.shell .calendar-dashboard .calendar-agenda-event strong {
+  color: #10243d !important;
+  font-size: 1rem !important;
+}
+
+.shell .calendar-dashboard .calendar-agenda-event small {
+  color: #66758b !important;
+}
+
+@media (max-width: 1180px) {
+  .shell .friends-dashboard .friends-person-row,
+  .shell .friends-dashboard .account-row-card,
+  .shell .chat-dashboard .chat-dashboard-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .shell .calendar-dashboard .calendar-week-board {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .shell .support-center-page .support-reference-hero,
+  .shell .calendar-dashboard .overview-hero,
+  .shell .admin-workspace-dashboard .overview-hero,
+  .shell .analytics-reference-page .analytics-hero-card {
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0.8)) !important;
+  }
+
+  .shell .friends-dashboard .friends-person-actions,
+  .shell .calendar-dashboard .calendar-week-board,
+  .shell .calendar-dashboard .calendar-day-board {
+    grid-template-columns: 1fr !important;
+  }
+
+  .shell .chat-dashboard .message-input-bar {
+    grid-template-columns: repeat(4, 42px) !important;
+  }
+
+  .shell .chat-dashboard .message-input-bar > input,
+  .shell .chat-dashboard .message-input-bar .gradient-btn {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+  }
+}
+
+/* Override correction pass: AppShell still carries shell-home-theme on every route.
+   These selectors intentionally exclude Home/Profile while matching that specificity. */
+.shell.shell-home-theme :is(
+  .business-dashboard,
+  .marketplace-dashboard,
+  .cart-dashboard,
+  .orders-dashboard,
+  .admin-workspace-dashboard,
+  .calendar-dashboard,
+  .analytics-reference-page,
+  .support-center-page,
+  .chat-dashboard,
+  .notifications-dashboard,
+  .friends-dashboard
+) {
+  --page-card-final: rgba(255, 255, 255, 0.93);
+  --page-line-final: rgba(194, 214, 232, 0.86);
+  --page-ink-final: #07182f;
+  --page-muted-final: #5f7088;
+  color: var(--page-ink-final) !important;
+}
+
+.shell.shell-home-theme :is(
+  .business-dashboard,
+  .marketplace-dashboard,
+  .cart-dashboard,
+  .orders-dashboard,
+  .admin-workspace-dashboard,
+  .calendar-dashboard,
+  .analytics-reference-page,
+  .support-center-page,
+  .chat-dashboard,
+  .notifications-dashboard
+) :is(.dash-card, .card, .commerce-panel, .business-control-card, .business-chart-card, .business-table-card, .calendar-form-card, .calendar-month-card, .analytics-metric-card, .support-form-card) {
+  border: 1px solid var(--page-line-final) !important;
+  border-radius: 28px !important;
+  color: var(--page-ink-final) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(247, 252, 250, 0.9)) !important;
+  box-shadow:
+    0 22px 58px rgba(16, 34, 58, 0.11),
+    inset 0 1px 0 rgba(255, 255, 255, 0.86) !important;
+  backdrop-filter: blur(18px) saturate(1.08) !important;
+}
+
+.shell.shell-home-theme :is(.business-dashboard, .marketplace-dashboard, .cart-dashboard, .orders-dashboard) .commerce-panel,
+.shell.shell-home-theme .business-dashboard :is(.business-control-card, .business-chart-card, .business-table-card, .business-profile-card) {
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.shell.shell-home-theme :is(.business-dashboard, .marketplace-dashboard, .cart-dashboard, .orders-dashboard) .commerce-panel::before,
+.shell.shell-home-theme .business-dashboard :is(.business-control-card, .business-chart-card, .business-table-card, .business-profile-card)::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 0 auto 0 !important;
+  height: 5px !important;
+  background: linear-gradient(90deg, #16a36d, #2563eb, #f59e0b) !important;
+  pointer-events: none !important;
+}
+
+.shell.shell-home-theme .business-dashboard .business-kpi-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(160px, 1fr)) !important;
+  gap: 16px !important;
+}
+
+.shell.shell-home-theme .business-dashboard .business-kpi-grid .stat-card,
+.shell.shell-home-theme .business-dashboard .business-chart-grid .business-metric-chart,
+.shell.shell-home-theme .analytics-reference-page .analytics-metric-card {
+  min-height: 128px !important;
+  display: grid !important;
+  grid-template-columns: 58px minmax(0, 1fr) !important;
+  align-items: center !important;
+  gap: 14px !important;
+  padding: 18px !important;
+  border-radius: 26px !important;
+  background:
+    radial-gradient(circle at 88% 18%, rgba(37, 99, 235, 0.12), transparent 34%),
+    linear-gradient(180deg, #ffffff, #f7fbff) !important;
+}
+
+.shell.shell-home-theme .business-dashboard .business-kpi-grid .stat-card::after,
+.shell.shell-home-theme .analytics-reference-page .analytics-metric-card::after {
+  content: "" !important;
+  position: absolute !important;
+  right: -34px !important;
+  bottom: -42px !important;
+  width: 130px !important;
+  height: 130px !important;
+  border-radius: 999px !important;
+  background: radial-gradient(circle, rgba(22, 163, 109, 0.16), transparent 66%) !important;
+}
+
+.shell.shell-home-theme .business-dashboard .business-kpi-grid .stat-icon,
+.shell.shell-home-theme .analytics-reference-page .analytics-metric-card .stat-icon {
+  width: 58px !important;
+  height: 58px !important;
+  border-radius: 20px !important;
+  box-shadow: 0 16px 30px rgba(37, 99, 235, 0.18) !important;
+}
+
+.shell.shell-home-theme .business-dashboard .business-chart-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 16px !important;
+}
+
+.shell.shell-home-theme .business-dashboard .business-metric-chart {
+  min-height: 190px !important;
+  border: 1px solid rgba(194, 214, 232, 0.78) !important;
+  border-radius: 24px !important;
+  padding: 18px !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 252, 250, 0.88)) !important;
+  box-shadow: 0 14px 34px rgba(16, 34, 58, 0.08) !important;
+}
+
+.shell.shell-home-theme :is(.business-products-table, .business-orders-table, .admin-users-table-v2, .admin-reports-table-v2) {
+  border-collapse: separate !important;
+  border-spacing: 0 10px !important;
+  min-width: 1120px !important;
+}
+
+.shell.shell-home-theme :is(.business-products-table, .business-orders-table, .admin-users-table-v2, .admin-reports-table-v2) thead th {
+  border: 0 !important;
+  color: #49637e !important;
+  background: transparent !important;
+  font-size: 0.74rem !important;
+  letter-spacing: 0.04em !important;
+  text-transform: uppercase !important;
+}
+
+.shell.shell-home-theme :is(.business-products-table, .business-orders-table, .admin-users-table-v2, .admin-reports-table-v2) tbody td {
+  border-top: 1px solid rgba(194, 214, 232, 0.76) !important;
+  border-bottom: 1px solid rgba(194, 214, 232, 0.76) !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  box-shadow: 0 12px 28px rgba(16, 34, 58, 0.06) !important;
+}
+
+.shell.shell-home-theme :is(.business-products-table, .business-orders-table, .admin-users-table-v2, .admin-reports-table-v2) tbody td:first-child {
+  border-left: 1px solid rgba(194, 214, 232, 0.76) !important;
+  border-radius: 20px 0 0 20px !important;
+}
+
+.shell.shell-home-theme :is(.business-products-table, .business-orders-table, .admin-users-table-v2, .admin-reports-table-v2) tbody td:last-child {
+  border-right: 1px solid rgba(194, 214, 232, 0.76) !important;
+  border-radius: 0 20px 20px 0 !important;
+}
+
+.shell.shell-home-theme .business-dashboard .table-product {
+  grid-template-columns: 78px minmax(0, 1fr) !important;
+  gap: 14px !important;
+}
+
+.shell.shell-home-theme .business-dashboard .table-product .placeholder,
+.shell.shell-home-theme .business-dashboard .table-product img,
+.shell.shell-home-theme .business-dashboard .table-product .ui-icon {
+  width: 72px !important;
+  height: 58px !important;
+  border-radius: 18px !important;
+  object-fit: cover !important;
+}
+
+.shell.shell-home-theme .business-dashboard .table-product strong {
+  color: #08213a !important;
+  font-size: 0.96rem !important;
+  font-weight: 950 !important;
+}
+
+.shell.shell-home-theme .business-dashboard .table-product span:not(.placeholder) {
+  color: #65758b !important;
+  font-weight: 760 !important;
+}
+
+.shell.shell-home-theme :is(.business-dashboard, .marketplace-dashboard, .cart-dashboard, .orders-dashboard) .commerce-rail-actions {
+  display: grid !important;
+  gap: 12px !important;
+}
+
+.shell.shell-home-theme :is(.business-dashboard, .marketplace-dashboard, .cart-dashboard, .orders-dashboard) .commerce-rail-actions :is(.ui-btn, .gradient-btn),
+.shell.shell-home-theme .business-dashboard .business-action-row > button {
+  min-height: 54px !important;
+  justify-content: flex-start !important;
+  gap: 12px !important;
+  padding: 0 16px !important;
+  border: 1px solid rgba(194, 214, 232, 0.78) !important;
+  border-radius: 18px !important;
+  color: #10243d !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 252, 250, 0.9)) !important;
+  box-shadow: 0 12px 26px rgba(16, 34, 58, 0.07) !important;
+}
+
+.shell.shell-home-theme :is(.business-dashboard, .marketplace-dashboard, .cart-dashboard, .orders-dashboard) .commerce-rail-actions .gradient-btn {
+  color: #ffffff !important;
+  border-color: transparent !important;
+  background: linear-gradient(135deg, #16a36d, #2563eb) !important;
+}
+
+.shell.shell-home-theme .marketplace-dashboard .commerce-side-proof span,
+.shell.shell-home-theme .marketplace-dashboard .commerce-business-list button,
+.shell.shell-home-theme .business-dashboard .panel-row,
+.shell.shell-home-theme .cart-dashboard .panel-row,
+.shell.shell-home-theme .orders-dashboard .panel-row {
+  min-height: 48px !important;
+  border: 1px solid rgba(194, 214, 232, 0.76) !important;
+  border-radius: 18px !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  box-shadow: 0 10px 24px rgba(16, 34, 58, 0.06) !important;
+}
+
+.shell.shell-home-theme :is(.marketplace-dashboard, .cart-dashboard, .orders-dashboard) .commerce-product-card,
+.shell.shell-home-theme :is(.cart-dashboard, .orders-dashboard) :is(.commerce-cart-item, .commerce-order-card) {
+  border-radius: 30px !important;
+  background:
+    radial-gradient(circle at 88% 0%, rgba(245, 158, 11, 0.13), transparent 32%),
+    linear-gradient(180deg, #ffffff, #f7fbfa) !important;
+  box-shadow: 0 24px 58px rgba(16, 34, 58, 0.12) !important;
+}
+
+.shell.shell-home-theme .marketplace-dashboard .commerce-product-actions {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+.shell.shell-home-theme .marketplace-dashboard .commerce-product-actions :is(.ui-btn, .gradient-btn),
+.shell.shell-home-theme :is(.cart-dashboard, .orders-dashboard) :is(.commerce-cart-actions, .commerce-order-actions) :is(.ui-btn, .gradient-btn) {
+  min-height: 44px !important;
+  border-radius: 16px !important;
+  justify-content: center !important;
+}
+
+.shell.shell-home-theme .admin-workspace-dashboard .admin-workspace-layout {
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 360px) !important;
+  gap: 22px !important;
+}
+
+.shell.shell-home-theme .admin-workspace-dashboard .admin-role-card-v2 {
+  min-height: 154px !important;
+  align-content: space-between !important;
+  border-radius: 26px !important;
+  background:
+    radial-gradient(circle at 86% 12%, rgba(37, 99, 235, 0.12), transparent 34%),
+    linear-gradient(180deg, #ffffff, #f8fbff) !important;
+  box-shadow: 0 16px 36px rgba(16, 34, 58, 0.08) !important;
+}
+
+.shell.shell-home-theme .admin-workspace-dashboard .admin-role-card-v2 span {
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 18px !important;
+}
+
+.shell.shell-home-theme .admin-workspace-dashboard .admin-search-field {
+  min-width: min(420px, 100%) !important;
+  border-radius: 18px !important;
+}
+
+.shell.shell-home-theme .admin-workspace-dashboard .admin-users-table-v2 textarea,
+.shell.shell-home-theme .admin-workspace-dashboard .admin-users-table-v2 select {
+  min-height: 42px !important;
+  border-radius: 14px !important;
+}
+
+.shell.shell-home-theme .chat-dashboard .message-reaction-toolbar {
+  position: static !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 6px !important;
+  width: 100% !important;
+  margin-top: 9px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.shell.shell-home-theme .chat-dashboard .message-bubble:hover .message-reaction-toolbar {
+  display: flex !important;
+}
+
+.shell.shell-home-theme .chat-dashboard .message-reaction-toolbar button {
+  width: auto !important;
+  min-width: 56px !important;
+  height: 30px !important;
+  min-height: 30px !important;
+  display: inline-flex !important;
+  flex: 0 0 auto !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  padding: 0 9px !important;
+  border: 1px solid rgba(194, 214, 232, 0.82) !important;
+  border-radius: 999px !important;
+  color: #243b57 !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  font-size: 0.72rem !important;
+  font-weight: 850 !important;
+}
+
+.shell.shell-home-theme .chat-dashboard .message-reaction-toolbar button small {
+  display: inline !important;
+  margin: 0 !important;
+  color: inherit !important;
+  font-size: 0.66rem !important;
+  line-height: 1 !important;
+}
+
+.shell.shell-home-theme .chat-dashboard .message-bubble-row.mine .message-reaction-toolbar button {
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.24) !important;
+  background: rgba(255, 255, 255, 0.16) !important;
+}
+
+.shell.shell-home-theme .chat-dashboard .message-bubble {
+  overflow: visible !important;
+}
+
+@media (max-width: 1180px) {
+  .shell.shell-home-theme .business-dashboard .business-kpi-grid,
+  .shell.shell-home-theme .business-dashboard .business-chart-grid,
+  .shell.shell-home-theme .admin-workspace-dashboard .admin-workspace-layout {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .shell.shell-home-theme .business-dashboard .business-kpi-grid .stat-card,
+  .shell.shell-home-theme .analytics-reference-page .analytics-metric-card {
+    grid-template-columns: 1fr !important;
+  }
+
+  .shell.shell-home-theme .chat-dashboard .message-reaction-toolbar button {
+    min-width: 44px !important;
+  }
+
+  .shell.shell-home-theme .chat-dashboard .message-reaction-toolbar button small {
+    display: none !important;
+  }
+}

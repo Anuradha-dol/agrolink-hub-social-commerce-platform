@@ -123,6 +123,33 @@ export default function CalendarPage() {
     return cells;
   }, [monthDate, sortedEvents]);
 
+  const focusedDate = useMemo(() => {
+    const today = new Date();
+    if (today.getFullYear() === monthDate.getFullYear() && today.getMonth() === monthDate.getMonth()) {
+      return today;
+    }
+    return new Date(monthDate.getFullYear(), monthDate.getMonth(), 1);
+  }, [monthDate]);
+
+  const focusedDayEvents = useMemo(
+    () => sortedEvents.filter((event) => dateKey(event.startsAt) === dateKey(focusedDate)),
+    [focusedDate, sortedEvents]
+  );
+
+  const weekCells = useMemo(() => {
+    const start = new Date(focusedDate);
+    start.setDate(focusedDate.getDate() - focusedDate.getDay());
+    return Array.from({ length: 7 }, (_, index) => {
+      const date = new Date(start);
+      date.setDate(start.getDate() + index);
+      const key = dateKey(date);
+      return {
+        date,
+        events: sortedEvents.filter((event) => dateKey(event.startsAt) === key)
+      };
+    });
+  }, [focusedDate, sortedEvents]);
+
   const submitEvent = async (event) => {
     event.preventDefault();
     if (!form.title.trim()) {
@@ -228,6 +255,7 @@ export default function CalendarPage() {
               <Button icon="close" onClick={() => setMonthDate(new Date(monthDate.getFullYear(), monthDate.getMonth() - 1, 1))}>Prev</Button>
               <h2>{monthDate.toLocaleDateString(undefined, { month: "long", year: "numeric" })}</h2>
               <Button icon="plus" onClick={() => setMonthDate(new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 1))}>Next</Button>
+              <Button icon="calendar" onClick={() => setMonthDate(new Date())}>Today</Button>
             </div>
             <Tabs
               active={view}
@@ -239,21 +267,63 @@ export default function CalendarPage() {
               ]}
             />
           </div>
-          <div className="calendar-grid">
-            {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => <strong key={day}>{day}</strong>)}
-            {monthCells.map((cell) => (
-              <div key={cell.date.toISOString()} className={`calendar-cell ${cell.inMonth ? "" : "muted-cell"} ${dateKey(cell.date) === dateKey(new Date()) ? "today" : ""}`}>
-                <span>{cell.date.getDate()}</span>
-                {cell.events.slice(0, 3).map((event) => (
-                  <button key={event.id} type="button" className={`event-chip event-${typeTone(event.type)}`} onClick={() => setDeleteTarget(event)}>
-                    {event.title}
-                    <small>{new Date(event.startsAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</small>
+          {view === "month" ? (
+            <div className="calendar-grid">
+              {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => <strong key={day}>{day}</strong>)}
+              {monthCells.map((cell) => (
+                <div key={cell.date.toISOString()} className={`calendar-cell ${cell.inMonth ? "" : "muted-cell"} ${dateKey(cell.date) === dateKey(new Date()) ? "today" : ""}`}>
+                  <span>{cell.date.getDate()}</span>
+                  {cell.events.slice(0, 3).map((event) => (
+                    <button key={event.id} type="button" className={`event-chip event-${typeTone(event.type)}`} onClick={() => setDeleteTarget(event)}>
+                      {event.title}
+                      <small>{new Date(event.startsAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</small>
+                    </button>
+                  ))}
+                  {cell.events.length > 3 ? <em>+ {cell.events.length - 3} more</em> : null}
+                </div>
+              ))}
+            </div>
+          ) : null}
+          {view === "week" ? (
+            <div className="calendar-week-board">
+              {weekCells.map((cell) => (
+                <article key={cell.date.toISOString()} className={`calendar-week-day ${dateKey(cell.date) === dateKey(new Date()) ? "today" : ""}`}>
+                  <header>
+                    <span>{cell.date.toLocaleDateString(undefined, { weekday: "short" })}</span>
+                    <strong>{cell.date.getDate()}</strong>
+                  </header>
+                  <div>
+                    {cell.events.map((event) => (
+                      <button key={event.id} type="button" className={`event-chip event-${typeTone(event.type)}`} onClick={() => setDeleteTarget(event)}>
+                        {event.title}
+                        <small>{new Date(event.startsAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</small>
+                      </button>
+                    ))}
+                    {!cell.events.length ? <small className="calendar-empty-slot">No events</small> : null}
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : null}
+          {view === "day" ? (
+            <div className="calendar-day-board">
+              <section className="calendar-day-focus">
+                <span>{focusedDate.toLocaleDateString(undefined, { weekday: "long" })}</span>
+                <strong>{focusedDate.getDate()}</strong>
+                <p>{focusedDate.toLocaleDateString(undefined, { month: "long", year: "numeric" })}</p>
+              </section>
+              <section className="calendar-day-agenda">
+                {focusedDayEvents.map((event) => (
+                  <button key={event.id} type="button" className={`calendar-agenda-event event-${typeTone(event.type)}`} onClick={() => setDeleteTarget(event)}>
+                    <span>{new Date(event.startsAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</span>
+                    <strong>{event.title}</strong>
+                    <small>{displayType(event.type)}{event.location ? ` - ${event.location}` : ""}</small>
                   </button>
                 ))}
-                {cell.events.length > 3 ? <em>+ {cell.events.length - 3} more</em> : null}
-              </div>
-            ))}
-          </div>
+                {!focusedDayEvents.length ? <EmptyPanel icon="calendar" title="No events for this day" subtitle="Use Add Event to schedule a meeting, birthday, task, or reminder." /> : null}
+              </section>
+            </div>
+          ) : null}
           <div className="calendar-legend">
             {eventTypes.slice(0, 5).map((type) => <span key={type.label}><i className={`legend-${type.tone}`} />{type.label}</span>)}
           </div>

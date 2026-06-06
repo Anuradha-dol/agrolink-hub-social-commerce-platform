@@ -21,6 +21,34 @@ import {
   Tabs
 } from "/src/modules/platform/common/ui/DashboardUI";
 
+const NOTIFICATION_PAGE_SIZE = 20;
+
+function normalizeNotificationPage(response, requestedPage) {
+  const payload = response?.data?.data ?? response?.data ?? {};
+  const content = Array.isArray(payload)
+    ? payload
+    : Array.isArray(payload.content)
+      ? payload.content
+      : Array.isArray(payload.items)
+        ? payload.items
+        : [];
+  const currentPage = Number.isFinite(Number(payload.number))
+    ? Number(payload.number)
+    : Number.isFinite(Number(payload.page))
+      ? Number(payload.page)
+      : requestedPage;
+  const totalPages = Number.isFinite(Number(payload.totalPages)) ? Number(payload.totalPages) : null;
+  const explicitLast = typeof payload.last === "boolean" ? payload.last : null;
+  const explicitFirst = typeof payload.first === "boolean" ? payload.first : null;
+
+  return {
+    content,
+    page: Math.max(0, currentPage),
+    hasNext: totalPages !== null ? currentPage + 1 < totalPages : explicitLast !== null ? !explicitLast : content.length >= NOTIFICATION_PAGE_SIZE,
+    hasPrev: explicitFirst !== null ? !explicitFirst : currentPage > 0
+  };
+}
+
 function notificationRoute(item) {
   const referenceId = Number(item?.referenceId || 0);
   const referenceType = String(item?.referenceType || item?.type || "").toUpperCase();
@@ -72,14 +100,14 @@ export default function NotificationsPage() {
     if (showLoading) setLoading(true);
     setError("");
     try {
-      const response = await notificationService.getNotifications({ page: targetPage, size: 20 });
-      const payload = response?.data?.data ?? response?.data ?? {};
-      const newPage = Number(payload.number || 0);
-      setItems(Array.isArray(payload.content) ? payload.content : []);
-      setPage(newPage);
-      pageRef.current = newPage;
-      setHasNext(!payload.last);
-      setHasPrev(newPage > 0);
+      const requestedPage = Math.max(0, Number(targetPage) || 0);
+      const response = await notificationService.getNotifications({ page: requestedPage, size: NOTIFICATION_PAGE_SIZE });
+      const normalized = normalizeNotificationPage(response, requestedPage);
+      setItems(normalized.content);
+      setPage(normalized.page);
+      pageRef.current = normalized.page;
+      setHasNext(normalized.hasNext);
+      setHasPrev(normalized.hasPrev);
     } catch {
       setError("Failed to load notifications");
     } finally {
