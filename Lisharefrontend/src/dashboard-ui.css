@@ -65413,3 +65413,259 @@ body:has(.auth-login-ref),
     background-position: center top !important;
   }
 }
+
+/* Same-family auth/cart polish: sign-in follows sign-up, smaller notifications, matched commerce colors. */
+html:has(.auth-login-ref),
+body:has(.auth-login-ref),
+#root:has(.auth-login-ref) {
+  background: #07140d !important;
+}
+
+.auth-login-ref {
+  min-height: 100svh !important;
+  place-items: start center !important;
+  align-content: start !important;
+  padding: 94px 28px 28px !important;
+  background-color: #07140d !important;
+  background-image:
+    linear-gradient(90deg, rgba(3, 10, 7, 0.64) 0%, rgba(4, 18, 12, 0.36) 44%, rgba(5, 22, 14, 0.16) 100%),
+    url("./assets/backgrounds/signup-step1-hero-4k.jpg") !important;
+  background-position: center !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+  background-attachment: fixed !important;
+}
+
+.auth-login-ref .auth-login-card {
+  width: min(620px, calc(100vw - 52px)) !important;
+  max-width: 620px !important;
+  margin: 0 auto !important;
+  padding: 24px 32px 22px !important;
+  border: 1px solid rgba(232, 255, 219, 0.26) !important;
+  border-radius: 18px !important;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.91), rgba(239, 249, 235, 0.86)) !important;
+  box-shadow: 0 30px 86px rgba(0, 0, 0, 0.34) !important;
+  backdrop-filter: blur(18px) saturate(122%) !important;
+}
+
+.auth-login-ref .auth-login-card::before {
+  background: linear-gradient(90deg, #2f6df6, #16b8a4, #f2c15b) !important;
+}
+
+.auth-login-ref .auth-card-logo {
+  gap: 6px !important;
+  margin-bottom: 12px !important;
+  padding-bottom: 12px !important;
+}
+
+.auth-login-ref .auth-step-title h2 {
+  font-size: 1.36rem !important;
+  line-height: 1.12 !important;
+}
+
+.auth-login-ref .auth-step-title p {
+  margin-top: 2px !important;
+  font-size: 0.82rem !important;
+}
+
+.auth-login-ref .auth-login-form {
+  gap: 10px !important;
+}
+
+.auth-login-ref .auth-field-ref {
+  gap: 5px !important;
+}
+
+.auth-login-ref .auth-field-ref > span {
+  font-size: 0.76rem !important;
+}
+
+.auth-login-ref .auth-field-ref input {
+  min-height: 38px !important;
+  padding: 0 12px !important;
+  border-radius: 10px !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+}
+
+.auth-login-ref .auth-login-row,
+.auth-login-ref .auth-check-row,
+.auth-login-ref .auth-bottom-link {
+  font-size: 0.82rem !important;
+}
+
+.auth-login-ref .auth-gradient-btn,
+.auth-login-ref .auth-google-btn {
+  min-height: 42px !important;
+  border-radius: 12px !important;
+}
+
+.auth-login-ref .auth-gradient-btn,
+.shell .cart-dashboard .gradient-btn,
+.shell .cart-dashboard .checkout-panel .gradient-btn,
+.shell .cart-dashboard .commerce-cart-main .dash-section-action .gradient-btn {
+  color: #06170d !important;
+  border: 1px solid rgba(235, 255, 179, 0.44) !important;
+  background:
+    linear-gradient(135deg, #effc74 0%, #5ee06f 46%, #16b8a4 100%) !important;
+  box-shadow:
+    0 20px 44px rgba(48, 210, 113, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+}
+
+.auth-login-ref .auth-top-link {
+  min-height: 46px !important;
+  padding: 0 20px !important;
+  border: 1px solid rgba(232, 255, 219, 0.28) !important;
+  color: #07170d !important;
+  background: rgba(255, 255, 255, 0.94) !important;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.22) !important;
+}
+
+.notif-panel-floating,
+.shell .notif-panel-floating,
+.shell.shell-home-theme .notif-panel-floating {
+  top: 78px !important;
+  right: 18px !important;
+  width: min(330px, calc(100vw - 22px)) !important;
+  max-height: min(430px, calc(100vh - 96px)) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22) !important;
+}
+
+.notif-panel-floating .notif-panel-header {
+  min-height: 52px !important;
+  padding: 10px 12px !important;
+}
+
+.notif-panel-floating .notif-panel-header h4 {
+  font-size: 0.92rem !important;
+}
+
+.notif-panel-floating .notif-live-state {
+  font-size: 0.66rem !important;
+}
+
+.notif-panel-floating .notif-list {
+  gap: 8px !important;
+  padding: 10px !important;
+}
+
+.notif-panel-floating .notif-item {
+  border-radius: 10px !important;
+}
+
+.notif-panel-floating .notif-content-button {
+  grid-template-columns: 34px minmax(0, 1fr) !important;
+  gap: 6px 9px !important;
+  padding: 9px !important;
+}
+
+.notif-panel-floating .notif-avatar {
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 10px !important;
+}
+
+.notif-panel-floating .notif-type-pill {
+  min-height: 20px !important;
+  padding: 0 7px !important;
+  font-size: 0.62rem !important;
+}
+
+.notif-panel-floating .notif-content-button p {
+  font-size: 0.78rem !important;
+}
+
+.notif-panel-floating .notif-content-button small {
+  font-size: 0.66rem !important;
+}
+
+.notif-panel-floating .notif-panel-icon-btn,
+.notif-panel-floating .notif-mark-btn {
+  width: 30px !important;
+  min-width: 30px !important;
+  height: 30px !important;
+  min-height: 30px !important;
+  border-radius: 8px !important;
+}
+
+.notif-panel-floating .notif-mark-btn {
+  margin: 9px 9px 0 0 !important;
+}
+
+.shell .cart-dashboard {
+  --cart-blue: #2f6df6;
+  --cart-teal: #16b8a4;
+  --cart-amber: #f2c15b;
+  --cart-rose: #e64d65;
+}
+
+.shell .cart-dashboard .commerce-cart-hero,
+.shell .cart-dashboard .commerce-cart-main > .commerce-panel,
+.shell .cart-dashboard .commerce-cart-summary > .commerce-panel {
+  background:
+    linear-gradient(135deg, rgba(238, 252, 116, 0.12), rgba(94, 224, 111, 0.08) 48%, rgba(22, 184, 164, 0.1)),
+    rgba(255, 255, 255, 0.92) !important;
+  border-color: rgba(197, 221, 203, 0.9) !important;
+}
+
+.shell .cart-dashboard .commerce-cart-item {
+  background:
+    linear-gradient(135deg, rgba(238, 252, 116, 0.12), rgba(255, 255, 255, 0.88) 46%, rgba(22, 184, 164, 0.08)),
+    #ffffff !important;
+  border-color: rgba(197, 221, 203, 0.84) !important;
+}
+
+.shell .cart-dashboard .commerce-cart-item::before,
+.shell .cart-dashboard .checkout-panel::before,
+.shell .cart-dashboard .commerce-cart-summary > .commerce-panel:not(.checkout-panel)::before,
+.shell .cart-dashboard .commerce-cart-main > .commerce-panel::before {
+  background: linear-gradient(90deg, #5ee06f, #16b8a4, #f2c15b) !important;
+}
+
+.shell .cart-dashboard .commerce-cart-hero-panel .stat-icon,
+.shell .cart-dashboard .panel-row > .ui-icon {
+  color: #06170d !important;
+  background: linear-gradient(135deg, #effc74, #5ee06f 54%, #16b8a4) !important;
+  box-shadow: 0 14px 30px rgba(48, 210, 113, 0.2) !important;
+}
+
+.shell .cart-dashboard .commerce-cart-copy > strong,
+.shell .cart-dashboard .checkout-panel .commerce-total-row.grand strong {
+  color: #0f8f72 !important;
+}
+
+.shell .cart-dashboard .commerce-cart-actions .ui-btn-secondary {
+  color: #123326 !important;
+  border-color: rgba(94, 224, 111, 0.28) !important;
+  background: linear-gradient(135deg, #ffffff, #f2fff0) !important;
+}
+
+.shell .cart-dashboard :is(.ui-btn-danger, button.ui-btn-danger),
+.shell .cart-dashboard .checkout-panel .ui-btn-danger,
+.shell .cart-dashboard .commerce-cart-actions .ui-btn-danger {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #e64d65, #d93655) !important;
+  box-shadow: 0 16px 34px rgba(217, 54, 85, 0.18) !important;
+}
+
+@media (max-width: 760px) {
+  .auth-login-ref {
+    padding: 94px 14px 28px !important;
+    background-attachment: scroll !important;
+  }
+
+  .auth-login-ref .auth-login-card {
+    width: min(100%, 520px) !important;
+    padding: 24px 18px 20px !important;
+  }
+
+  .notif-panel-floating,
+  .shell .notif-panel-floating,
+  .shell.shell-home-theme .notif-panel-floating {
+    top: 72px !important;
+    right: 10px !important;
+    width: min(320px, calc(100vw - 20px)) !important;
+    max-height: calc(100vh - 92px) !important;
+  }
+}
