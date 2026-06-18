@@ -102,6 +102,17 @@ function averageRating(reviews) {
   return reviews.reduce((sum, review) => sum + Number(review.rating || 0), 0) / reviews.length;
 }
 
+function reviewDisplayName(review) {
+  return review.username || review.userName || review.customerName || review.user?.username || review.user?.name || "Customer";
+}
+
+function reviewAvatarSrc(review) {
+  const value = review.profileImageUrl || review.userProfileImageUrl || review.avatarUrl || review.user?.profileImageUrl || review.actorProfileImageUrl || "";
+  if (!value) return "";
+  if (/^(data:image\/|blob:)/i.test(value)) return value;
+  return toMediaUrl(value);
+}
+
 function productMatches(product, query) {
   const search = query.trim().toLowerCase();
   if (!search) return true;
@@ -706,7 +717,13 @@ function BusinessProfile({ business, products, reviews, reviewForm, setReviewFor
           <div className="commerce-review-list">
             {reviews.map((review) => (
               <article key={review.id}>
-                <div><strong>{review.username || "Customer"}</strong><span>{review.createdAt ? new Date(review.createdAt).toLocaleDateString() : "Recent"}</span></div>
+                <div className="commerce-review-author">
+                  <Avatar name={reviewDisplayName(review)} src={reviewAvatarSrc(review)} size="sm" />
+                  <span>
+                    <strong>{reviewDisplayName(review)}</strong>
+                    <small>{review.createdAt ? new Date(review.createdAt).toLocaleDateString() : "Recent"}</small>
+                  </span>
+                </div>
                 <p>{review.comment}</p>
                 <StatusBadge status={`${review.rating || 5} stars`} tone="orange" />
               </article>

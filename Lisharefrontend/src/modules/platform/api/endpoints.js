@@ -130,6 +130,9 @@ export const ENDPOINTS = {
     respond: (id) => `/support/${id}/respond`,
     delete: (id) => `/support/${id}`
   },
+  assistant: {
+    ask: "/api/chat"
+  },
   chat: {
     conversations: "/api/chat/conversations",
     directConversation: (otherUserId) => `/api/chat/conversations/direct/${otherUserId}`,

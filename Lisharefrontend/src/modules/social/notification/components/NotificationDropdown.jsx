@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { notificationService } from "../services/notificationService";
 import { useRealtimeNotifications } from "../hooks/useRealtimeNotifications";
@@ -165,6 +166,44 @@ export default function NotificationDropdown() {
   };
 
   const unreadBadge = useMemo(() => (unreadCount > 99 ? "99+" : unreadCount), [unreadCount]);
+  const panel = open ? (
+    <div className="notif-panel notif-panel-floating">
+      <div className="notif-panel-header">
+        <div>
+          <h4>Notifications</h4>
+          <small className={connected ? "notif-live-state connected" : "notif-live-state"}>{connected ? "Live" : "Syncing"}</small>
+        </div>
+        <div className="notif-panel-actions">
+          <button type="button" className="notif-panel-icon-btn" onClick={markAllRead} aria-label="Mark all notifications read" title="Read all">
+            <CheckIcon />
+          </button>
+          <button type="button" className="notif-panel-icon-btn danger" onClick={clearAll} aria-label="Clear notifications" title="Clear">
+            <TrashIcon />
+          </button>
+        </div>
+      </div>
+      <ul className="notif-list">
+        {items.length === 0 ? <li className="notif-empty-row">No notifications</li> : null}
+        {items.map((item) => (
+          <li key={item.id} className={item.read ? "notif-item" : "notif-item unread"}>
+            <button type="button" className="notif-content-button" onClick={() => openNotification(item)}>
+              <span className={`notif-avatar ${item.actorProfileImageUrl ? "has-image" : ""}`}>
+                {item.actorProfileImageUrl ? <img src={toMediaUrl(item.actorProfileImageUrl)} alt="" /> : (item.actorName || "N").slice(0, 1)}
+              </span>
+              <span className="notif-type-pill">{String(item.type || "SYSTEM").replace("_", " ")}</span>
+              <p>{item.message}</p>
+              <small>{item.createdAt ? new Date(item.createdAt).toLocaleString() : ""}</small>
+            </button>
+            {!item.read ? (
+              <button type="button" className="notif-mark-btn" onClick={() => markRead(item.id)} aria-label="Mark notification read" title="Mark read">
+                <CheckIcon />
+              </button>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+    </div>
+  ) : null;
 
   return (
     <div className="notif-dropdown">
@@ -173,44 +212,7 @@ export default function NotificationDropdown() {
         {unreadCount > 0 ? <span className="notif-badge">{unreadBadge}</span> : null}
       </button>
 
-      {open ? (
-        <div className="notif-panel">
-          <div className="notif-panel-header">
-            <div>
-              <h4>Notifications</h4>
-              <small className={connected ? "notif-live-state connected" : "notif-live-state"}>{connected ? "Live" : "Syncing"}</small>
-            </div>
-            <div className="notif-panel-actions">
-              <button type="button" className="notif-panel-icon-btn" onClick={markAllRead} aria-label="Mark all notifications read" title="Read all">
-                <CheckIcon />
-              </button>
-              <button type="button" className="notif-panel-icon-btn danger" onClick={clearAll} aria-label="Clear notifications" title="Clear">
-                <TrashIcon />
-              </button>
-            </div>
-          </div>
-          <ul className="notif-list">
-            {items.length === 0 ? <li className="notif-empty-row">No notifications</li> : null}
-            {items.map((item) => (
-              <li key={item.id} className={item.read ? "notif-item" : "notif-item unread"}>
-                <button type="button" className="notif-content-button" onClick={() => openNotification(item)}>
-                  <span className={`notif-avatar ${item.actorProfileImageUrl ? "has-image" : ""}`}>
-                    {item.actorProfileImageUrl ? <img src={toMediaUrl(item.actorProfileImageUrl)} alt="" /> : (item.actorName || "N").slice(0, 1)}
-                  </span>
-                  <span className="notif-type-pill">{String(item.type || "SYSTEM").replace("_", " ")}</span>
-                  <p>{item.message}</p>
-                  <small>{item.createdAt ? new Date(item.createdAt).toLocaleString() : ""}</small>
-                </button>
-                {!item.read ? (
-                  <button type="button" className="notif-mark-btn" onClick={() => markRead(item.id)} aria-label="Mark notification read" title="Mark read">
-                    <CheckIcon />
-                  </button>
-                ) : null}
-              </li>
-            ))}
-          </ul>
-        </div>
-      ) : null}
+      {panel && typeof document !== "undefined" ? createPortal(panel, document.body) : null}
     </div>
   );
 }

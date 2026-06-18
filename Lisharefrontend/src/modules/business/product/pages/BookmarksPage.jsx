@@ -88,6 +88,8 @@ export default function CartPage() {
   const serviceFee = subtotal > 0 ? Math.max(1.5, subtotal * 0.025) : 0;
   const total = subtotal + serviceFee;
   const quantity = cart.reduce((sum, item) => sum + Number(item.quantity || 0), 0);
+  const businessCount = new Set(cart.map((item) => item.businessPageId || item.businessName).filter(Boolean)).size;
+  const deliveryCount = new Set(cart.map((item) => item.deliveryMethod || "Pickup")).size;
 
   const updateQuantity = async (item, quantityValue) => {
     const nextQuantity = Number(quantityValue);
@@ -167,19 +169,24 @@ export default function CartPage() {
   return (
     <PageGrid className="cart-dashboard commerce-pro-page social-pro-page social-commerce-page">
       <section className="commerce-hero commerce-cart-hero">
-        <div>
-          <span className="commerce-kicker">Persistent Cart</span>
-          <h2>Your selected products are saved in the backend.</h2>
-          <p>Refresh the page and your cart remains synced. Update quantities, remove products, or place orders directly from this section.</p>
-          <form className="commerce-hero-search" onSubmit={(event) => event.preventDefault()}>
+        <div className="commerce-cart-hero-copy">
+          <span className="commerce-kicker">Smart Cart</span>
+          <h2>Review your cart and place orders.</h2>
+          <p>Products, sellers, delivery methods, and totals stay grouped so checkout is quick and clear.</p>
+          <div className="commerce-cart-quick-stats" aria-label="Cart metrics">
+            <span><Icon name="bag" />{cart.length} Products</span>
+            <span><Icon name="truck" />{deliveryCount} Delivery</span>
+            <span><Icon name="order" />{money(serviceFee)} Service</span>
+          </div>
+          <form className="commerce-hero-search commerce-cart-search" onSubmit={(event) => event.preventDefault()}>
             <Icon name="search" />
             <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search cart products, sellers or delivery methods..." />
             <Button icon="bag" variant="gradient" onClick={() => navigate("/marketplace")}>Shop More</Button>
           </form>
         </div>
-        <div className="commerce-hero-panel">
+        <div className="commerce-hero-panel commerce-cart-hero-panel">
           <StatCard icon="bag" label="Items" value={quantity} trend="Selected quantity" tone="green" />
-          <StatCard icon="business" label="Businesses" value={new Set(cart.map((item) => item.businessPageId)).size} trend="Seller count" tone="blue" />
+          <StatCard icon="business" label="Businesses" value={businessCount} trend="Seller count" tone="blue" />
           <StatCard icon="order" label="Total" value={money(total)} trend="Before checkout" tone="orange" />
         </div>
       </section>
