@@ -556,7 +556,7 @@ export default function SignupPage() {
             <div className="signup-visual-store-card"><i /><span /></div>
           </div>
           <strong>More than a platform. <span>It's a movement.</span></strong>
-          <p>Built for creators, sellers, farmers, and everyday people with big ideas.</p>
+          <p>Built for creators, sellers, businesses, and everyday people with big ideas.</p>
         </aside>
       ) : null}
 

@@ -41,6 +41,18 @@ public class DatabaseSchemaPatch implements ApplicationRunner {
                 "ALTER TABLE shares ADD COLUMN IF NOT EXISTS original_post_deleted BOOLEAN NOT NULL DEFAULT FALSE",
                 "ALTER TABLE shares ADD COLUMN IF NOT EXISTS post_value VARCHAR(20) DEFAULT 'medium'",
 
+                // chatbot knowledge base
+                """
+                CREATE TABLE IF NOT EXISTS concepts (
+                    id BIGSERIAL PRIMARY KEY,
+                    topic VARCHAR(255),
+                    keywords TEXT,
+                    description TEXT
+                )
+                """,
+                "ALTER TABLE concepts ADD COLUMN IF NOT EXISTS keywords TEXT",
+                "ALTER TABLE concepts ADD COLUMN IF NOT EXISTS description TEXT",
+
                 // stories
                 """
                 CREATE TABLE IF NOT EXISTS stories (

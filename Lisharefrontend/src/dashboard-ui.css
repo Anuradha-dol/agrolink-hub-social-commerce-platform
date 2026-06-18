@@ -65414,11 +65414,11 @@ body:has(.auth-login-ref),
   }
 }
 
-/* Same-family auth/cart polish: sign-in follows sign-up, smaller notifications, matched commerce colors. */
+/* Same-family auth/cart polish: sign-in follows sign-up theme, smaller notifications, matched commerce colors. */
 html:has(.auth-login-ref),
 body:has(.auth-login-ref),
 #root:has(.auth-login-ref) {
-  background: #07140d !important;
+  background: #06110b !important;
 }
 
 .auth-login-ref {
@@ -65426,10 +65426,11 @@ body:has(.auth-login-ref),
   place-items: start center !important;
   align-content: start !important;
   padding: 94px 28px 28px !important;
-  background-color: #07140d !important;
+  background-color: #06110b !important;
   background-image:
-    linear-gradient(90deg, rgba(3, 10, 7, 0.64) 0%, rgba(4, 18, 12, 0.36) 44%, rgba(5, 22, 14, 0.16) 100%),
-    url("./assets/backgrounds/signup-step1-hero-4k.jpg") !important;
+    linear-gradient(90deg, rgba(5, 13, 9, 0.72) 0%, rgba(10, 28, 20, 0.42) 48%, rgba(8, 18, 13, 0.62) 100%),
+    linear-gradient(180deg, rgba(5, 13, 9, 0.18), rgba(5, 13, 9, 0.76)),
+    url("./assets/backgrounds/signup-auth-collage-bg-4k.jpg") !important;
   background-position: center !important;
   background-size: cover !important;
   background-repeat: no-repeat !important;
@@ -65449,7 +65450,7 @@ body:has(.auth-login-ref),
 }
 
 .auth-login-ref .auth-login-card::before {
-  background: linear-gradient(90deg, #2f6df6, #16b8a4, #f2c15b) !important;
+  background: linear-gradient(90deg, #5ee06f, #16b8a4, #f2c15b) !important;
 }
 
 .auth-login-ref .auth-card-logo {
@@ -65506,10 +65507,47 @@ body:has(.auth-login-ref),
   color: #06170d !important;
   border: 1px solid rgba(235, 255, 179, 0.44) !important;
   background:
-    linear-gradient(135deg, #effc74 0%, #5ee06f 46%, #16b8a4 100%) !important;
+    linear-gradient(135deg, #effc74 0%, #5ee06f 52%, #16b8a4 100%) !important;
   box-shadow:
     0 20px 44px rgba(48, 210, 113, 0.24),
     inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+}
+
+.auth-login-ref > .auth-brand-ref {
+  top: 24px !important;
+  left: 34px !important;
+  min-height: 78px !important;
+  padding: 10px 22px 10px 10px !important;
+  border: 1px solid rgba(222, 247, 218, 0.16) !important;
+  border-radius: 12px !important;
+  background: rgba(24, 53, 36, 0.88) !important;
+  box-shadow: 0 18px 46px rgba(0, 0, 0, 0.28) !important;
+  backdrop-filter: blur(14px) saturate(120%) !important;
+}
+
+.auth-login-ref > .auth-brand-ref img {
+  width: 58px !important;
+  height: 58px !important;
+  min-width: 58px !important;
+  min-height: 58px !important;
+  border-radius: 18px !important;
+  background: #ffffff !important;
+}
+
+.auth-login-ref > .auth-brand-ref strong {
+  color: #dff7d0 !important;
+  font-size: clamp(1.22rem, 1.45vw, 1.58rem) !important;
+}
+
+.auth-login-ref > .auth-brand-ref strong em {
+  color: #17c78b !important;
+}
+
+.auth-login-ref > .auth-brand-ref small {
+  margin-top: 3px !important;
+  color: rgba(248, 255, 231, 0.92) !important;
+  font-size: 0.93rem !important;
+  font-weight: 760 !important;
 }
 
 .auth-login-ref .auth-top-link {
@@ -65594,24 +65632,29 @@ body:has(.auth-login-ref),
 }
 
 .shell .cart-dashboard {
-  --cart-blue: #2f6df6;
+  --cart-blue: #12a968;
   --cart-teal: #16b8a4;
   --cart-amber: #f2c15b;
   --cart-rose: #e64d65;
+  --cart-ink: #12251b;
+  background:
+    radial-gradient(circle at 8% 0%, rgba(94, 224, 111, 0.14), transparent 30%),
+    radial-gradient(circle at 88% 10%, rgba(22, 184, 164, 0.11), transparent 30%),
+    linear-gradient(180deg, #f7fbf8 0%, #eef8f1 48%, #fbfdfb 100%) !important;
 }
 
 .shell .cart-dashboard .commerce-cart-hero,
 .shell .cart-dashboard .commerce-cart-main > .commerce-panel,
 .shell .cart-dashboard .commerce-cart-summary > .commerce-panel {
   background:
-    linear-gradient(135deg, rgba(238, 252, 116, 0.12), rgba(94, 224, 111, 0.08) 48%, rgba(22, 184, 164, 0.1)),
-    rgba(255, 255, 255, 0.92) !important;
-  border-color: rgba(197, 221, 203, 0.9) !important;
+    linear-gradient(135deg, rgba(238, 252, 116, 0.1), rgba(94, 224, 111, 0.075) 48%, rgba(22, 184, 164, 0.075)),
+    rgba(255, 255, 255, 0.94) !important;
+  border-color: rgba(196, 222, 204, 0.92) !important;
 }
 
 .shell .cart-dashboard .commerce-cart-item {
   background:
-    linear-gradient(135deg, rgba(238, 252, 116, 0.12), rgba(255, 255, 255, 0.88) 46%, rgba(22, 184, 164, 0.08)),
+    linear-gradient(135deg, rgba(238, 252, 116, 0.08), rgba(255, 255, 255, 0.9) 46%, rgba(22, 184, 164, 0.055)),
     #ffffff !important;
   border-color: rgba(197, 221, 203, 0.84) !important;
 }
@@ -65630,8 +65673,60 @@ body:has(.auth-login-ref),
   box-shadow: 0 14px 30px rgba(48, 210, 113, 0.2) !important;
 }
 
+.shell .cart-dashboard :is(.checkout-panel .gradient-btn, .commerce-cart-main .dash-section-action .gradient-btn, .commerce-cart-actions .gradient-btn) {
+  color: #06170d !important;
+  background: linear-gradient(135deg, #effc74 0%, #5ee06f 52%, #16b8a4 100%) !important;
+  box-shadow: 0 18px 38px rgba(48, 210, 113, 0.23) !important;
+}
+
+.shell .cart-dashboard :is(.checkout-panel .gradient-btn, .commerce-cart-main .dash-section-action .gradient-btn, .commerce-cart-actions .gradient-btn) .ui-icon,
+.shell .cart-dashboard :is(.checkout-panel .gradient-btn, .commerce-cart-main .dash-section-action .gradient-btn, .commerce-cart-actions .gradient-btn) .ui-icon * {
+  color: #06170d !important;
+  stroke: currentColor !important;
+}
+
+.shell .cart-dashboard :is(.checkout-panel, .commerce-cart-summary > .commerce-panel, .commerce-cart-main > .commerce-panel)::before {
+  background: linear-gradient(90deg, #5ee06f 0%, #16b8a4 64%, #f2c15b 100%) !important;
+}
+
+.shell .cart-dashboard :is(.commerce-total-row.grand, .panel-row.accent, .delivery-method-card) {
+  border-color: rgba(94, 224, 111, 0.28) !important;
+  background: linear-gradient(135deg, rgba(238, 252, 116, 0.12), rgba(94, 224, 111, 0.08), rgba(22, 184, 164, 0.08)) !important;
+}
+
 .shell .cart-dashboard .commerce-cart-copy > strong,
 .shell .cart-dashboard .checkout-panel .commerce-total-row.grand strong {
+  color: #0f8f72 !important;
+}
+
+.shell .cart-dashboard .status-badge.status-blue,
+.shell .cart-dashboard .status-badge.status-verified,
+.shell .cart-dashboard .status-badge.status-in-transit,
+.shell .cart-dashboard .status-badge.status-shipped {
+  color: #0f7e67 !important;
+  background: #e9fbf4 !important;
+}
+
+.shell .cart-dashboard .status-badge.status-green,
+.shell .cart-dashboard .status-badge.status-delivered,
+.shell .cart-dashboard .status-badge.status-online {
+  color: #0b7a4f !important;
+  background: #ecfdf3 !important;
+}
+
+.shell .cart-dashboard .status-badge.status-orange,
+.shell .cart-dashboard .status-badge.status-processing,
+.shell .cart-dashboard .status-badge.status-pending {
+  color: #8a5b0b !important;
+  background: #fff8d7 !important;
+}
+
+.shell .cart-dashboard .commerce-cart-quantity {
+  border-color: rgba(94, 224, 111, 0.28) !important;
+  background: #ffffff !important;
+}
+
+.shell .cart-dashboard .commerce-cart-quantity button {
   color: #0f8f72 !important;
 }
 
@@ -65649,10 +65744,42 @@ body:has(.auth-login-ref),
   box-shadow: 0 16px 34px rgba(217, 54, 85, 0.18) !important;
 }
 
+.shell .cart-dashboard :is(.ui-btn-danger, button.ui-btn-danger) .ui-icon,
+.shell .cart-dashboard :is(.ui-btn-danger, button.ui-btn-danger) .ui-icon *,
+.shell .cart-dashboard .checkout-panel .ui-btn-danger .ui-icon,
+.shell .cart-dashboard .checkout-panel .ui-btn-danger .ui-icon *,
+.shell .cart-dashboard .commerce-cart-actions .ui-btn-danger .ui-icon,
+.shell .cart-dashboard .commerce-cart-actions .ui-btn-danger .ui-icon * {
+  color: #ffffff !important;
+  stroke: currentColor !important;
+}
+
 @media (max-width: 760px) {
   .auth-login-ref {
     padding: 94px 14px 28px !important;
     background-attachment: scroll !important;
+  }
+
+  .auth-login-ref > .auth-brand-ref {
+    left: 14px !important;
+    max-width: calc(100vw - 122px) !important;
+    min-height: 62px !important;
+    padding: 7px 12px 7px 7px !important;
+  }
+
+  .auth-login-ref > .auth-brand-ref img {
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+    min-height: 48px !important;
+  }
+
+  .auth-login-ref > .auth-brand-ref strong {
+    font-size: 1rem !important;
+  }
+
+  .auth-login-ref > .auth-brand-ref small {
+    font-size: 0.72rem !important;
   }
 
   .auth-login-ref .auth-login-card {

@@ -1,0 +1,819 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AgroLink Hub Project Report</title>
+  <style>
+    @page {
+      size: A4;
+      margin: 16mm 14mm;
+    }
+
+    :root {
+      color-scheme: light;
+      --ink: #132219;
+      --muted: #5c6b62;
+      --line: #d9e8dd;
+      --green: #17a86b;
+      --deep: #123623;
+      --teal: #16b8a4;
+      --lime: #effc74;
+      --amber: #f2c15b;
+      --paper: #fbfdf8;
+      --panel: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--paper);
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 12px;
+      line-height: 1.48;
+    }
+
+    .page {
+      min-height: 265mm;
+      page-break-after: always;
+      padding: 0;
+    }
+
+    .page:last-child {
+      page-break-after: auto;
+    }
+
+    .cover {
+      min-height: 265mm;
+      display: grid;
+      align-content: center;
+      gap: 18px;
+      color: #ffffff;
+      border-radius: 14px;
+      padding: 34px;
+      background:
+        linear-gradient(135deg, rgba(8, 34, 22, 0.94), rgba(13, 82, 57, 0.88)),
+        radial-gradient(circle at 80% 10%, rgba(239, 252, 116, 0.26), transparent 32%);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .brand img {
+      width: 72px;
+      height: 72px;
+      object-fit: contain;
+      border-radius: 18px;
+      background: #ffffff;
+      padding: 8px;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      color: var(--ink);
+      line-height: 1.12;
+    }
+
+    .cover h1 {
+      color: #ffffff;
+      font-size: 42px;
+      letter-spacing: 0;
+    }
+
+    .cover p,
+    .cover h2,
+    .cover h3 {
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    h2 {
+      font-size: 25px;
+      margin-bottom: 10px;
+    }
+
+    h3 {
+      font-size: 15px;
+      margin: 16px 0 6px;
+    }
+
+    p {
+      margin: 0 0 9px;
+      color: var(--muted);
+    }
+
+    ul {
+      margin: 8px 0 12px 18px;
+      padding: 0;
+      color: var(--muted);
+    }
+
+    li {
+      margin: 4px 0;
+    }
+
+    .kicker {
+      display: inline-flex;
+      width: max-content;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      color: #0f6d4d;
+      background: #edfbef;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-size: 10px;
+    }
+
+    .cover .kicker {
+      color: #0d2418;
+      background: linear-gradient(135deg, var(--lime), #5ee06f, var(--teal));
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      margin: 14px 0;
+    }
+
+    .grid.three {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 12px;
+      background: var(--panel);
+      box-shadow: 0 8px 22px rgba(19, 34, 25, 0.05);
+    }
+
+    .card strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--ink);
+    }
+
+    .stat {
+      border-left: 4px solid var(--green);
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .table th,
+    .table td {
+      padding: 8px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+      text-align: left;
+    }
+
+    .table th {
+      color: #123623;
+      background: #eef9f0;
+      font-size: 11px;
+    }
+
+    code {
+      padding: 1px 4px;
+      border-radius: 4px;
+      color: #0f5137;
+      background: #effaf2;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 11px;
+    }
+
+    .note {
+      border: 1px solid #cfe8d5;
+      border-left: 4px solid var(--teal);
+      border-radius: 10px;
+      padding: 12px;
+      background: #f5fff8;
+    }
+
+    .toc {
+      columns: 2;
+      column-gap: 28px;
+      margin-top: 18px;
+    }
+
+    .toc li {
+      break-inside: avoid;
+      margin-bottom: 8px;
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    .footer {
+      margin-top: 18px;
+      padding-top: 10px;
+      border-top: 1px solid var(--line);
+      color: #789083;
+      font-size: 10px;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--line);
+      color: #789083;
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+  </style>
+</head>
+<body>
+  <section class="page cover">
+    <div class="brand">
+      <img src="../Lisharefrontend/src/assets/branding/agrolink-hub-logo.svg" alt="AgroLink Hub logo" />
+      <div>
+        <h2>AgroLink Hub</h2>
+        <p>Connect. Share. Sell. Grow Together.</p>
+      </div>
+    </div>
+    <span class="kicker">Final Project Report</span>
+    <h1>A-to-Z System Documentation</h1>
+    <p>
+      This report documents the AgroLink Hub social media and business web application built with Spring Boot,
+      PostgreSQL, React, Vite, and modular domain-based frontend/backend architecture.
+    </p>
+    <div class="grid three">
+      <div class="card stat"><strong>Frontend</strong><span>React 18, Vite, Axios, React Router, STOMP client.</span></div>
+      <div class="card stat"><strong>Backend</strong><span>Spring Boot 4, Spring Security, JPA, WebSocket, Mail, OAuth2.</span></div>
+      <div class="card stat"><strong>Database</strong><span>PostgreSQL with schema patching and JPA-managed entities.</span></div>
+    </div>
+    <p>Prepared on June 19, 2026.</p>
+  </section>
+
+  <section class="page">
+    <div class="page-header"><span>AgroLink Hub</span><span>Page 2</span></div>
+    <span class="kicker">Contents</span>
+    <h2>Report Overview</h2>
+    <p>
+      The goal of this document is to give a new outside user, reviewer, lecturer, developer, or project owner a full
+      understanding of what the project is, how it is structured, which technologies are used, and how the main
+      features work from login through social, marketplace, support, and admin workflows.
+    </p>
+    <ol class="toc">
+      <li>Project summary and product purpose</li>
+      <li>Technology stack and dependencies</li>
+      <li>High-level architecture</li>
+      <li>Repository and folder structure</li>
+      <li>Frontend application modules</li>
+      <li>Backend application modules</li>
+      <li>Database model and persistence</li>
+      <li>Authentication, roles, and route security</li>
+      <li>Social media feature set</li>
+      <li>Business and marketplace feature set</li>
+      <li>Chat, notifications, support, and assistant</li>
+      <li>Build, testing, deployment, and final notes</li>
+    </ol>
+    <div class="note">
+      <strong>Current design update included:</strong>
+      The latest UI pass aligns the sign-in page with the sign-up visual theme without forcing the same background
+      image, reduces the notification dropdown size, and corrects cart colors to the AgroLink green, yellow, and teal
+      palette.
+    </div>
+    <div class="footer">AgroLink Hub project documentation</div>
+  </section>
+
+  <section class="page">
+    <div class="page-header"><span>Project Purpose</span><span>Page 3</span></div>
+    <span class="kicker">Product</span>
+    <h2>What AgroLink Hub Is</h2>
+    <p>
+      AgroLink Hub is a combined social networking and marketplace application. It is designed for everyday users,
+      creators, businesses, and farmers who need one platform to share posts, build relationships, sell products,
+      manage orders, communicate with buyers, and receive platform support.
+    </p>
+    <div class="grid">
+      <div class="card">
+        <strong>Social networking</strong>
+        Users can create posts, react, comment, reply, share, save posts, view stories, follow users, manage friends,
+        and receive notifications.
+      </div>
+      <div class="card">
+        <strong>Marketplace and commerce</strong>
+        Business and farmer sellers can publish products. Buyers can browse marketplace products, add them to cart,
+        checkout, and track orders.
+      </div>
+      <div class="card">
+        <strong>Account workspace</strong>
+        Users get profile pages, settings, calendar planning, support tickets, account verification, password reset,
+        and onboarding.
+      </div>
+      <div class="card">
+        <strong>Admin management</strong>
+        Admin users can review users, moderate reports, manage support workflows, and monitor platform activity.
+      </div>
+    </div>
+    <h3>Target users</h3>
+    <ul>
+      <li>Regular users who want a community feed and marketplace shopping.</li>
+      <li>Business sellers who want product listings, orders, and analytics.</li>
+      <li>Farmer sellers who want to sell produce or livestock-related products.</li>
+      <li>Creators who want social reach and marketplace discovery.</li>
+      <li>Admins who need moderation, support, and user-management tools.</li>
+    </ul>
+    <h3>Core value</h3>
+    <p>
+      The project joins community engagement and commerce in one workspace. A user can discover people, message them,
+      buy products, review businesses, follow order status, and ask for support without leaving the platform.
+    </p>
+    <div class="footer">AgroLink Hub product scope</div>
+  </section>
+
+  <section class="page">
+    <div class="page-header"><span>Technology Stack</span><span>Page 4</span></div>
+    <span class="kicker">Stack</span>
+    <h2>Frameworks, Libraries, and Runtime Tools</h2>
+    <table class="table">
+      <thead>
+        <tr><th>Layer</th><th>Technology</th><th>Purpose</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Frontend</td><td>React 18</td><td>Builds the user interface with component-based pages and shared dashboard UI components.</td></tr>
+        <tr><td>Frontend</td><td>Vite 6</td><td>Provides local dev server, asset bundling, and production build output.</td></tr>
+        <tr><td>Routing</td><td>React Router DOM 6</td><td>Handles public routes, protected routes, nested app shell routes, and role-based routes.</td></tr>
+        <tr><td>HTTP</td><td>Axios</td><td>Central API client with credential support and refresh handling.</td></tr>
+        <tr><td>Realtime</td><td>@stomp/stompjs</td><td>Frontend WebSocket/STOMP support for chat and realtime features.</td></tr>
+        <tr><td>Backend</td><td>Spring Boot 4.0.2</td><td>Main Java backend framework for REST APIs, security, data access, mail, and WebSocket.</td></tr>
+        <tr><td>Security</td><td>Spring Security, OAuth2 Client, JJWT</td><td>Login, JWT cookies/headers, Google OAuth2, role protection, and authenticated APIs.</td></tr>
+        <tr><td>Persistence</td><td>Spring Data JPA, PostgreSQL</td><td>Entity mapping, repositories, and relational storage.</td></tr>
+        <tr><td>Validation</td><td>Spring Validation</td><td>Validates incoming backend request payloads.</td></tr>
+        <tr><td>Similarity</td><td>Apache Commons Text</td><td>Used by the chatbot knowledge service for fuzzy matching.</td></tr>
+      </tbody>
+    </table>
+    <h3>Runtime configuration</h3>
+    <p>
+      The backend reads settings from <code>application.yaml</code> and optional <code>.env</code> properties. Important
+      environment values include database connection, mail credentials, JWT secret, cookie behavior, OAuth2 redirect
+      URLs, CORS origins, server port, and file upload path.
+    </p>
+    <h3>Build commands</h3>
+    <ul>
+      <li>Frontend build: <code>npm run build</code> inside <code>Lisharefrontend</code>.</li>
+      <li>Backend build: Maven wrapper or local Maven command inside <code>Lisharebackend</code>.</li>
+      <li>Local frontend dev server: Vite on <code>http://localhost:5173</code>.</li>
+      <li>Backend API server: Spring Boot on <code>http://localhost:8081</code> by default.</li>
+    </ul>
+    <div class="footer">AgroLink Hub technology stack</div>
+  </section>
+
+  <section class="page">
+    <div class="page-header"><span>Architecture</span><span>Page 5</span></div>
+    <span class="kicker">Architecture</span>
+    <h2>High-Level System Design</h2>
+    <p>
+      The codebase is split into a React frontend and Spring Boot backend. Both sides follow a similar domain layout:
+      <code>platform</code>, <code>social</code>, and <code>business</code>. This makes it easier to understand which
+      parts serve accounts, social features, and commerce workflows.
+    </p>
+    <div class="grid">
+      <div class="card">
+        <strong>Client application</strong>
+        React renders public auth pages, landing page, protected app shell pages, dashboard navigation, marketplace,
+        cart, orders, chat, feed, profile, support, calendar, analytics, and admin screens.
+      </div>
+      <div class="card">
+        <strong>API gateway style backend</strong>
+        Spring controllers expose REST endpoints. Services contain business rules. Repositories persist data through
+        JPA. Security filters protect authenticated APIs.
+      </div>
+      <div class="card">
+        <strong>Realtime messaging</strong>
+        WebSocket STOMP is configured at <code>/ws</code> with <code>/topic</code>, <code>/queue</code>, and
+        <code>/user</code> destinations.
+      </div>
+      <div class="card">
+        <strong>Media delivery</strong>
+        Uploaded files are served from <code>/uploads/**</code> through a configured Spring MVC resource handler.
+      </div>
+    </div>
+    <h3>Request flow</h3>
+    <ul>
+      <li>The browser sends requests through Axios to the backend base URL.</li>
+      <li>Cookies are included because the Axios instance uses <code>withCredentials: true</code>.</li>
+      <li>Spring Security reads JWT from the Authorization header or cookies.</li>
+      <li>Controllers delegate to services, services call repositories, and repositories access PostgreSQL.</li>
+      <li>Responses return DTOs or standard response objects consumed by React pages.</li>
+    </ul>
+    <h3>Frontend route flow</h3>
+    <p>
+      Public pages include landing, login, signup, verify OTP, forgot password, and OAuth callback. Authenticated pages
+      are nested under <code>ProtectedRoute</code> and rendered inside <code>AppShell</code>. Seller and admin pages
+      are further protected by <code>RoleRoute</code>.
+    </p>
+    <div class="footer">AgroLink Hub architecture overview</div>
+  </section>
+
+  <section class="page">
+    <div class="page-header"><span>Folders</span><span>Page 6</span></div>
+    <span class="kicker">Structure</span>
+    <h2>Repository and Folder Structure</h2>
+    <table class="table">
+      <thead>
+        <tr><th>Path</th><th>Meaning</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>Lisharefrontend</code></td><td>React/Vite application, assets, modules, shared UI, CSS, services, and route definitions.</td></tr>
+        <tr><td><code>Lisharebackend</code></td><td>Spring Boot API application with controllers, services, repositories, entities, security, configuration, and schema SQL.</td></tr>
+        <tr><td><code>uploads</code></td><td>Local project-level storage used for uploaded media during development.</td></tr>
+        <tr><td><code>docs</code></td><td>Project documentation folder created for this report and generated PDF.</td></tr>
+      </tbody>
+    </table>
+    <h3>Frontend module layout</h3>
+    <ul>
+      <li><code>modules/platform</code>: auth, app store/routes, common UI, layouts, user profile/settings, support, calendar.</li>
+      <li><code>modules/social</code>: posts/feed, comments, stories, friends, chat, notifications, chatbot assistant services.</li>
+      <li><code>modules/business</code>: marketplace, products, cart, orders, business pages, reviews, support, analytics, admin.</li>
+      <li><code>assets</code>: branding logos, backgrounds, commerce images, and UI visual assets.</li>
+      <li><code>dashboard-ui.css</code>: the main visual system stylesheet for dashboard, auth, commerce, social, and responsive behavior.</li>
+    </ul>
+    <h3>Backend module layout</h3>
+    <ul>
+      <li><code>modules/platform</code>: auth, users, calendar, security, storage, config, common enums/utilities.</li>
+      <li><code>modules/social</code>: posts, comments, reactions, shares, stories, friends, follow, chat, notifications, chatbot.</li>
+      <li><code>modules/business</code>: business pages, products, cart, orders, reviews, support, admin services.</li>
+      <li><code>src/main/resources</code>: application YAML and SQL schema patches.</li>
+    </ul>
+    <div class="note">
+      The mirrored frontend/backend domain structure is one of the strongest maintainability decisions in the project.
+      It lets developers trace a feature from React page to API endpoint to service and entity.
+    </div>
+    <div class="footer">AgroLink Hub folder structure</div>
+  </section>
+
+  <section class="page">
+    <div class="page-header"><span>Frontend</span><span>Page 7</span></div>
+    <span class="kicker">Frontend</span>
+    <h2>Frontend Pages and UI Behavior</h2>
+    <p>
+      The frontend is a single-page application. It uses public routes for authentication and a protected app shell for
+      logged-in workflows. The app shell supplies navigation, user context, page metadata, notifications, and consistent
+      layout patterns.
+    </p>
+    <table class="table">
+      <thead>
+        <tr><th>Area</th><th>Pages</th><th>Purpose</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Auth</td><td>Landing, login, signup, verify OTP, forgot password, OAuth callback, onboarding</td><td>Account creation, verification, session start, recovery, and first-time setup.</td></tr>
+        <tr><td>Social</td><td>Home feed, profile, friends, chat, notifications</td><td>Community feed, user identity, relationships, realtime messaging, and alerts.</td></tr>
+        <tr><td>Commerce</td><td>Marketplace, cart, orders, business page, analytics</td><td>Product browsing, shopping, order tracking, seller publishing, and insights.</td></tr>
+        <tr><td>Platform</td><td>Calendar, support, settings</td><td>Planning, help desk, account media, email/password changes, and user preferences.</td></tr>
+        <tr><td>Admin</td><td>Admin dashboard and admin subroutes</td><td>User management, role workflows, support tickets, and moderation.</td></tr>
+      </tbody>
+    </table>
+    <h3>Design system notes</h3>
+    <ul>
+      <li>Shared UI components live in <code>DashboardUI.jsx</code>: buttons, cards, modals, status badges, avatars, stat cards, tabs, and icons.</li>
+      <li>The primary visual palette now follows AgroLink green, yellow, teal, dark green brand surfaces, and restrained red only for destructive actions.</li>
+      <li>The login page uses the same auth design language as sign-up, but with a separate auth-collage background image.</li>
+      <li>The cart page uses matching commerce colors and removes the earlier purple/blue checkout mismatch.</li>
+      <li>The notification dropdown is compacted so it does not cover too much of the page.</li>
+    </ul>
+    <h3>API usage</h3>
+    <p>
+      All endpoint constants are centralized in <code>modules/platform/api/endpoints.js</code>. Services import these
+      constants and the shared Axios instance, which keeps frontend API paths consistent across features.
+    </p>
+    <div class="footer">AgroLink Hub frontend summary</div>
+  </section>
+
+  <section class="page">
+    <div class="page-header"><span>Backend</span><span>Page 8</span></div>
+    <span class="kicker">Backend</span>
+    <h2>Backend Modules and API Responsibilities</h2>
+    <p>
+      The backend is a Spring Boot application with controllers, services, repositories, entities, security filters,
+      WebSocket configuration, mail support, and schema patching.
+    </p>
+    <table class="table">
+      <thead>
+        <tr><th>Module</th><th>Main responsibilities</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>platform/auth</code></td><td>Register, login, refresh, logout, OTP verification, forgot password, Google OAuth2.</td></tr>
+        <tr><td><code>platform/user</code></td><td>User profile, account updates, profile media, cover media, blocking users, public profile data.</td></tr>
+        <tr><td><code>platform/security</code></td><td>Security filter chain, JWT authentication filter, authentication provider, route permissions.</td></tr>
+        <tr><td><code>social/post</code></td><td>Posts, feed, saved posts, reports, poll voting, media fields, moderation support.</td></tr>
+        <tr><td><code>social/comment</code></td><td>Comments, replies, comment media, updates, deletion, comment reactions.</td></tr>
+        <tr><td><code>social/story</code></td><td>Temporary story media, views, reactions, replies, sharing, expiry behavior.</td></tr>
+        <tr><td><code>social/chat</code></td><td>Conversations, messages, attachments, reactions, seen state, presence, WebSocket messaging.</td></tr>
+        <tr><td><code>business/product</code></td><td>Marketplace product creation, updates, public browsing, product availability and stock.</td></tr>
+        <tr><td><code>business/cart</code></td><td>Cart item persistence, quantity update, removal, clearing, checkout into orders.</td></tr>
+        <tr><td><code>business/order</code></td><td>Buyer orders, seller received orders, cancellation, and status updates.</td></tr>
+        <tr><td><code>business/admin</code></td><td>Admin user management, moderation status, stats, reports.</td></tr>
+      </tbody>
+    </table>
+    <h3>Controller inventory</h3>
+    <p>
+      The backend contains controllers for admin reports/users, auth, forgot password, calendar, users, user blocks,
+      chat, chatbot, comments, follow, friends, notifications, posts, post safety, reactions, shares, stories,
+      products, business pages, cart, orders, reviews, and support.
+    </p>
+    <h3>Service layer</h3>
+    <p>
+      Services contain workflow logic such as account registration, cart checkout, order creation, business page
+      validation, product management, review handling, support replies, post and story behavior, chat conversations,
+      and notification creation.
+    </p>
+    <div class="footer">AgroLink Hub backend summary</div>
+  </section>
+
+  <section class="page">
+    <div class="page-header"><span>Database</span><span>Page 9</span></div>
+    <span class="kicker">Persistence</span>
+    <h2>Database Model and Schema Behavior</h2>
+    <p>
+      The database is PostgreSQL. Spring Data JPA maps Java entities to tables, and <code>schema.sql</code> plus
+      <code>DatabaseSchemaPatch</code> keep existing local databases compatible as features are added.
+    </p>
+    <h3>Main entity families</h3>
+    <div class="grid">
+      <div class="card">
+        <strong>Users and auth</strong>
+        User, forgot-password records, roles, OTP fields, profile media, account metadata, and blocks.
+      </div>
+      <div class="card">
+        <strong>Social graph</strong>
+        Follow, friend requests, notifications, saved posts, post reports, stories, story views, and story reactions.
+      </div>
+      <div class="card">
+        <strong>Content</strong>
+        Posts, poll votes, comments, comment reactions, reactions, shares, story media, and media URL fields.
+      </div>
+      <div class="card">
+        <strong>Commerce</strong>
+        Business pages, products, cart items, orders, reviews, support questions, and order statuses.
+      </div>
+      <div class="card">
+        <strong>Chat</strong>
+        Conversations, members, messages, message status, attachments, and message reactions.
+      </div>
+      <div class="card">
+        <strong>Assistant</strong>
+        Concepts table with topic, keywords, and description for knowledge-base answers.
+      </div>
+    </div>
+    <h3>Schema patch examples</h3>
+    <ul>
+      <li>Post media fields, poll fields, audience, edited time, feeling, and location metadata.</li>
+      <li>Comment media fields and comment reaction tables.</li>
+      <li>Story tables, story reactions, story views, and reshare metadata.</li>
+      <li>Product delivery method, cart items, order delivery fields, reviews, and support structures.</li>
+      <li>Chatbot concepts table with searchable keywords and answer descriptions.</li>
+    </ul>
+    <h3>Storage behavior</h3>
+    <p>
+      The backend exposes uploaded files through <code>/uploads/**</code>. Multipart upload limits are configured to
+      support larger media files, with defaults of 100 MB per file and 120 MB per request.
+    </p>
+    <div class="footer">AgroLink Hub database and persistence</div>
+  </section>
+
+  <section class="page">
+    <div class="page-header"><span>Security</span><span>Page 10</span></div>
+    <span class="kicker">Roles</span>
+    <h2>Authentication, Authorization, and RLS-Style Checks</h2>
+    <p>
+      The project does not use database-native PostgreSQL row-level security policies. Instead, access control is
+      implemented at application level through Spring Security, controller/service checks, frontend protected routes,
+      and role-specific navigation. For this project, "RLS check" should be understood as role-level security and
+      resource-level access enforcement in the application layer.
+    </p>
+    <h3>Authentication methods</h3>
+    <ul>
+      <li>Email/password login through backend auth endpoints.</li>
+      <li>Google OAuth2 login with configured success and failure redirects.</li>
+      <li>JWT access and refresh tokens read from Authorization headers or cookies.</li>
+      <li>OTP verification after signup and password reset flows.</li>
+      <li>Session refresh endpoint used by the React auth store to keep users logged in.</li>
+    </ul>
+    <h3>Backend security controls</h3>
+    <ul>
+      <li>Spring Security permits public auth, forgot-password, OAuth2, WebSocket, reviews, uploads, public products, public business pages, and assistant chat.</li>
+      <li>Admin APIs under <code>/api/admin/**</code> require the admin role.</li>
+      <li>All other API requests require authentication.</li>
+      <li>CORS allows configured local frontend origins and credentials.</li>
+      <li>JWTAuthFilter normalizes OAuth2 session users into application user details when possible.</li>
+    </ul>
+    <h3>Frontend role controls</h3>
+    <ul>
+      <li><code>ProtectedRoute</code> blocks logged-out users from app shell pages.</li>
+      <li><code>RoleRoute</code> blocks non-seller users from seller tools and non-admin users from admin tools.</li>
+      <li>Navigation filters items based on roles such as <code>ROLE_USER</code>, <code>ROLE_CREATOR</code>, <code>ROLE_BUSINESS</code>, <code>ROLE_FARMER</code>, and <code>ROLE_ADMIN</code>.</li>
+    </ul>
+    <div class="note">
+      Security recommendation: if this project is deployed publicly, add explicit integration tests for each role and
+      each sensitive endpoint to prove that users cannot access another user's data.
+    </div>
+    <div class="footer">AgroLink Hub security review</div>
+  </section>
+
+  <section class="page">
+    <div class="page-header"><span>Social Features</span><span>Page 11</span></div>
+    <span class="kicker">Social</span>
+    <h2>Social Media Feature Set</h2>
+    <p>
+      The social side is designed to keep the marketplace active through community content. Users can post updates,
+      react, comment, follow people, chat, and receive notifications.
+    </p>
+    <div class="grid">
+      <div class="card">
+        <strong>Feed and posts</strong>
+        Supports feed loading, creating posts, media URLs, audience metadata, poll questions/options, saved posts,
+        sharing, reports, and moderation support.
+      </div>
+      <div class="card">
+        <strong>Comments and reactions</strong>
+        Users can comment, reply, update comments, delete comments, react to posts, and react to comments.
+      </div>
+      <div class="card">
+        <strong>Stories</strong>
+        Users can create temporary media stories, view story feeds, react, reply, share, track views, and delete stories.
+      </div>
+      <div class="card">
+        <strong>Friends and following</strong>
+        The app supports search, follow/unfollow, follower/following counts, friend requests, accepts, rejects, cancels,
+        and unfriending.
+      </div>
+      <div class="card">
+        <strong>Profile</strong>
+        Profile pages show identity, media, posts, saved items, and account actions. Settings support profile and cover
+        image management.
+      </div>
+      <div class="card">
+        <strong>Notifications</strong>
+        Notification APIs provide list, unread count, mark-read, read-all, and clear-all behavior. The dropdown is now
+        compact to avoid covering too much of the page.
+      </div>
+    </div>
+    <h3>Realtime and chat</h3>
+    <p>
+      The chat module contains conversation APIs, direct and group conversation support, message APIs, seen state,
+      members, attachments, reactions, and WebSocket delivery.
+    </p>
+    <h3>User experience</h3>
+    <p>
+      The frontend exposes social features through the Home Feed, Profile, Friends, Messages, Notifications, and
+      shared shell navigation. The visual style is dashboard-like: dense, practical, and focused on repeated use.
+    </p>
+    <div class="footer">AgroLink Hub social features</div>
+  </section>
+
+  <section class="page">
+    <div class="page-header"><span>Business Features</span><span>Page 12</span></div>
+    <span class="kicker">Commerce</span>
+    <h2>Business, Marketplace, Cart, and Orders</h2>
+    <p>
+      The business side lets sellers publish products and buyers purchase them. It connects business pages, products,
+      cart persistence, checkout, order tracking, reviews, and analytics into one workflow.
+    </p>
+    <table class="table">
+      <thead>
+        <tr><th>Feature</th><th>What it does</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Business pages</td><td>Business and farmer accounts can manage seller pages and public seller profiles.</td></tr>
+        <tr><td>Products</td><td>Sellers publish products with category, stock, availability, images, and delivery method.</td></tr>
+        <tr><td>Marketplace</td><td>Buyers browse products, search/filter, inspect details, add to cart, and navigate to sellers.</td></tr>
+        <tr><td>Cart</td><td>Buyers update quantities, view totals, remove items, clear cart, and proceed to checkout.</td></tr>
+        <tr><td>Orders</td><td>Checkout creates persisted backend orders. Buyers track orders and sellers update status.</td></tr>
+        <tr><td>Reviews</td><td>Users can leave public website or business-related reviews that support trust and discovery.</td></tr>
+        <tr><td>Analytics</td><td>Business and platform insights help sellers and admins understand product and order activity.</td></tr>
+      </tbody>
+    </table>
+    <h3>Cart UI update</h3>
+    <p>
+      The cart page has been adjusted to match the site palette. The checkout button now uses the AgroLink yellow,
+      green, and teal gradient instead of the earlier blue/purple/pink gradient. Cart badges, quantity controls,
+      panel borders, icons, and summary accents are also scoped to the same theme.
+    </p>
+    <h3>Order flow</h3>
+    <ul>
+      <li>User adds products from marketplace to cart.</li>
+      <li>Cart loads persisted backend cart rows.</li>
+      <li>User reviews quantities and delivery methods.</li>
+      <li>Checkout creates order records and clears the cart.</li>
+      <li>Orders page displays buyer order history or seller received orders depending on role.</li>
+    </ul>
+    <div class="footer">AgroLink Hub commerce features</div>
+  </section>
+
+  <section class="page">
+    <div class="page-header"><span>Support and Assistant</span><span>Page 13</span></div>
+    <span class="kicker">Platform Tools</span>
+    <h2>Support, Calendar, Admin, and Chatbot Assistant</h2>
+    <div class="grid">
+      <div class="card">
+        <strong>Support Center</strong>
+        Users can create support questions and view admin responses. Admin support routes allow management and replies.
+      </div>
+      <div class="card">
+        <strong>Calendar</strong>
+        The calendar module supports events, reminders, farm tasks, business planning, birthdays, meetings, and
+        visibility options.
+      </div>
+      <div class="card">
+        <strong>Admin Command Center</strong>
+        Admin routes cover user groups, business users, farmers, creators, admins, moderation reports, and support
+        ticket workflows.
+      </div>
+      <div class="card">
+        <strong>Chatbot assistant</strong>
+        The assistant uses a knowledge base table named <code>concepts</code>. Seed data covers signup, login,
+        marketplace, selling, posts, stories, orders, cart, reviews, support, calendar, chat, notifications, roles, and security.
+      </div>
+    </div>
+    <h3>Chatbot knowledge service</h3>
+    <p>
+      The backend chatbot service normalizes user messages, removes common stop words, compares query tokens against
+      concept topics, keywords, and descriptions, and uses fuzzy scoring from Apache Commons Text. It returns a matching
+      answer when the score is strong enough and a guided fallback when it cannot find a close match.
+    </p>
+    <h3>Landing assistant UI</h3>
+    <p>
+      The landing assistant panel has been enlarged and given more message space so messages no longer feel cramped.
+      Prompt buttons and input layout are responsive for desktop and mobile.
+    </p>
+    <h3>Support and assistant value</h3>
+    <p>
+      These tools make the project easier to understand and use. Users can ask questions, open support tickets, and
+      receive structured answers without depending only on manual navigation.
+    </p>
+    <div class="footer">AgroLink Hub platform support features</div>
+  </section>
+
+  <section class="page">
+    <div class="page-header"><span>Testing and Deployment</span><span>Page 14</span></div>
+    <span class="kicker">Operations</span>
+    <h2>Build, Testing, Deployment, and Final Notes</h2>
+    <h3>Verification performed during final pass</h3>
+    <ul>
+      <li>Frontend production build was run with <code>npm run build</code>.</li>
+      <li>CSS whitespace check was run with <code>git diff --check</code> for the edited stylesheet.</li>
+      <li>Login page screenshot was captured locally to confirm the auth theme update.</li>
+      <li>Cart CSS was reviewed against the live component selectors and the provided screenshot mismatch.</li>
+      <li>Backend changes should be compiled with Maven before final commit if chatbot changes are included.</li>
+    </ul>
+    <h3>Known build warning</h3>
+    <p>
+      Vite reports that some chunks are larger than 500 kB after minification. This is a performance warning, not a
+      build failure. A future optimization can use dynamic imports and manual Rollup chunks to split admin, marketplace,
+      feed, chat, and profile areas.
+    </p>
+    <h3>Deployment checklist</h3>
+    <ul>
+      <li>Set production PostgreSQL <code>DB_URL</code>, <code>DB_USERNAME</code>, and <code>DB_PASSWORD</code>.</li>
+      <li>Set a strong <code>JWT_SECRET</code>; do not deploy with an empty secret.</li>
+      <li>Configure mail credentials for OTP and password reset emails.</li>
+      <li>Configure Google OAuth2 client ID, secret, and redirect URI.</li>
+      <li>Set <code>COOKIE_SECURE=true</code> and appropriate cookie domain/same-site settings for HTTPS production.</li>
+      <li>Restrict CORS origins to trusted production frontend domains.</li>
+      <li>Use persistent upload storage for media files.</li>
+      <li>Run backend and frontend builds before release.</li>
+    </ul>
+    <h3>Recommended next improvements</h3>
+    <ul>
+      <li>Add automated API tests for every protected role and admin endpoint.</li>
+      <li>Add frontend route smoke tests for auth, cart, marketplace, feed, support, and admin pages.</li>
+      <li>Split the large frontend bundle by route-level dynamic imports.</li>
+      <li>Document production deployment with exact environment variables for the chosen hosting provider.</li>
+    </ul>
+    <div class="note">
+      Final summary: AgroLink Hub is a full-stack social commerce system with authentication, role-based workspaces,
+      social media, marketplace, cart, orders, chat, notifications, support, calendar, analytics, admin moderation, and
+      a knowledge-base assistant.
+    </div>
+    <div class="footer">End of AgroLink Hub project report</div>
+  </section>
+</body>
+</html>
