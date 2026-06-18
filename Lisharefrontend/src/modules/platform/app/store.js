@@ -5,7 +5,7 @@ import { ENDPOINTS } from "/src/modules/platform/api/endpoints";
 
 const AuthContext = createContext(null);
 const AUTH_SESSION_KEY = "lishare-auth-session";
-const PUBLIC_AUTH_PATHS = new Set(["/", "/login", "/signup", "/verify", "/forgot-password"]);
+const PUBLIC_AUTH_PATHS = new Set(["/", "/login", "/signup", "/verify", "/forgot-password", "/oauth2/callback"]);
 
 function hasKnownSession() {
   try {
@@ -66,11 +66,26 @@ export function AuthProvider({ children }) {
     setLoading(true);
     try {
       const { data } = await axiosInstance.get(ENDPOINTS.user.me);
-      setNormalizedUser(data);
+      const nextUser = normalizeUser(data);
+      setUser(nextUser);
       rememberSession(true);
-    } catch {
+      return nextUser;
+    } catch (profileError) {
+      try {
+        const { data } = await axiosInstance.post(ENDPOINTS.auth.refresh);
+        const nextUser = normalizeUser(data);
+        if (nextUser) {
+          setUser(nextUser);
+          rememberSession(true);
+          return nextUser;
+        }
+      } catch {
+        // Fall through to clearing the local session below.
+      }
+
       setNormalizedUser(null);
       rememberSession(false);
+      return null;
     } finally {
       setLoading(false);
     }

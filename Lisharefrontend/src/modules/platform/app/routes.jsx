@@ -7,6 +7,7 @@ import LoginPage from "/src/modules/platform/auth/pages/LoginPage";
 import SignupPage from "/src/modules/platform/auth/pages/SignupPage";
 import VerifyOtpPage from "/src/modules/platform/auth/pages/VerifyOtpPage";
 import ForgotPasswordPage from "/src/modules/platform/auth/pages/ForgotPasswordPage";
+import OAuth2CallbackPage from "/src/modules/platform/auth/pages/OAuth2CallbackPage";
 import OnboardingPage from "/src/modules/platform/auth/pages/OnboardingPage";
 import FeedPage from "/src/modules/social/post/pages/FeedPage";
 import ProfilePage from "/src/modules/platform/user/pages/ProfilePage";
@@ -31,6 +32,7 @@ export default function AppRoutes() {
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/verify" element={<VerifyOtpPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/oauth2/callback" element={<OAuth2CallbackPage />} />
 
       <Route element={<ProtectedRoute />}>
         <Route path="/onboarding" element={<OnboardingPage />} />

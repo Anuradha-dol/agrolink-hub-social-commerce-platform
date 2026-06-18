@@ -55,14 +55,17 @@ export default function ShellSidebar({ collapsed = false, onToggleCollapsed }) {
 
       <div className="shell-nav-scroll">
         <nav className="shell-nav" aria-label="Primary">
-          {navigationSections.map((section) => (
-            <div className="shell-nav-section" key={section.title}>
-              <p className="shell-nav-title">{section.title}</p>
-              {section.items.map((item) => (
-                <ShellNavLink key={item.to} to={item.to} label={item.label} icon={item.icon} />
-              ))}
-            </div>
-          ))}
+          {navigationSections.map((section) => {
+            const sectionKey = section.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+            return (
+              <div className="shell-nav-section" data-nav-section={sectionKey} key={section.title}>
+                <p className="shell-nav-title">{section.title}</p>
+                {section.items.map((item) => (
+                  <ShellNavLink key={item.to} to={item.to} label={item.label} icon={item.icon} />
+                ))}
+              </div>
+            );
+          })}
         </nav>
 
         <section className="shell-side-user-card">

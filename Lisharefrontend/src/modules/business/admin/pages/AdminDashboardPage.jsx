@@ -65,6 +65,7 @@ export default function AdminDashboardPage() {
   const [userSearch, setUserSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleteReason, setDeleteReason] = useState("");
+  const [actionTarget, setActionTarget] = useState(null);
   const [activeReport, setActiveReport] = useState(null);
   const [busy, setBusy] = useState("");
 
@@ -329,11 +330,15 @@ export default function AdminDashboardPage() {
                           placeholder="Warning or instruction for this user..."
                         />
                       </td>
-                      <td>
-                        <div className="table-action-row">
-                          <Button icon="check" variant="gradient" onClick={() => saveModeration(entry.userId)} disabled={busy === `moderation-${entry.userId}`}>Save</Button>
-                          <Button icon="trash" variant="danger" onClick={() => openDeleteUser(entry)}>Delete</Button>
-                        </div>
+                      <td className="admin-actions-cell">
+                        <button
+                          type="button"
+                          className="admin-row-action-trigger"
+                          onClick={() => setActionTarget(entry)}
+                          aria-label={`Open actions for ${userName(entry)}`}
+                        >
+                          <Icon name="more" />
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -437,6 +442,54 @@ export default function AdminDashboardPage() {
           </Card>
         </aside>
       </div>
+
+      <Modal
+        open={Boolean(actionTarget)}
+        title="User Actions"
+        subtitle={actionTarget ? userName(actionTarget) : ""}
+        onClose={busy ? undefined : () => setActionTarget(null)}
+        className="admin-actions-modal"
+      >
+        {actionTarget ? (
+          <div className="admin-actions-popover">
+            <div className="admin-action-user">
+              <span>{userName(actionTarget).slice(0, 1).toUpperCase()}</span>
+              <div>
+                <strong>{userName(actionTarget)}</strong>
+                <small>{actionTarget.email}</small>
+              </div>
+            </div>
+            <div className="admin-action-summary">
+              <span>Status</span>
+              <strong>{moderationDrafts[actionTarget.userId]?.status || actionTarget.moderationStatus || "ACTIVE"}</strong>
+            </div>
+            <div className="admin-action-menu">
+              <Button
+                icon="check"
+                variant="gradient"
+                onClick={async () => {
+                  await saveModeration(actionTarget.userId);
+                  setActionTarget(null);
+                }}
+                disabled={busy === `moderation-${actionTarget.userId}`}
+              >
+                {busy === `moderation-${actionTarget.userId}` ? "Saving..." : "Save moderation"}
+              </Button>
+              <Button
+                icon="trash"
+                variant="danger"
+                onClick={() => {
+                  const target = actionTarget;
+                  setActionTarget(null);
+                  openDeleteUser(target);
+                }}
+              >
+                Delete user
+              </Button>
+            </div>
+          </div>
+        ) : null}
+      </Modal>
 
       <Modal
         open={Boolean(deleteTarget)}

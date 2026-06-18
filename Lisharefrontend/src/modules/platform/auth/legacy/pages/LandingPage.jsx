@@ -9,7 +9,6 @@ import {
   Card,
   CardContent,
   Box,
-  TextField,
   IconButton,
   Drawer,
   Fab,
@@ -29,10 +28,12 @@ import { motion, useAnimation, useInView } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import MenuIcon from "@mui/icons-material/Menu";
 import ChatIcon from "@mui/icons-material/Chat";
-import SendIcon from "@mui/icons-material/Send";
 import PeopleIcon from "@mui/icons-material/People";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import ShareIcon from "@mui/icons-material/Share";
+import TrendingUpIcon from "@mui/icons-material/TrendingUp";
+import AgricultureIcon from "@mui/icons-material/Agriculture";
+import BusinessCenterIcon from "@mui/icons-material/BusinessCenter";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import TwitterIcon from "@mui/icons-material/Twitter";
 import LinkedInIcon from "@mui/icons-material/LinkedIn";
@@ -53,7 +54,7 @@ const GlassCard = styled(Card)(({ theme }) => ({
   height: "100%",
   "&:hover": {
     transform: "translateY(-10px)",
-    boxShadow: "0 30px 60px rgba(233,30,99,0.15)",
+    boxShadow: "0 30px 60px rgba(76,175,80,0.15)",
   },
 }));
 
@@ -61,7 +62,7 @@ const HeroSection = styled(Box)(({ theme }) => ({
   minHeight: "90vh",
   display: "flex",
   alignItems: "center",
-  background: `linear-gradient(145deg, ${alpha("#faf7f2", 0.9)} 0%, ${alpha("#f5e6e9", 0.9)} 100%), url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')`, // Mountain lake
+  background: `linear-gradient(145deg, ${alpha("#f1f8e9", 0.85)} 0%, ${alpha("#e8f5e9", 0.9)} 100%), url('https://images.unsplash.com/photo-1625246333195-78d9c38ad449?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')`, // Farmer using tablet in field
   backgroundSize: "cover",
   backgroundPosition: "center",
   padding: theme.spacing(4),
@@ -74,7 +75,8 @@ const HeroSection = styled(Box)(({ theme }) => ({
     left: 0,
     right: 0,
     bottom: 0,
-    background: "radial-gradient(circle at 20% 50%, rgba(233,30,99,0.1) 0%, transparent 50%)",
+    background:
+      "radial-gradient(circle at 70% 40%, rgba(76,175,80,0.15) 0%, transparent 50%)",
   },
 }));
 
@@ -88,7 +90,7 @@ const StyledButton = styled(Button)(({ theme }) => ({
   transition: "all 0.2s ease",
   "&:hover": {
     transform: "translateY(-2px)",
-    boxShadow: "0 10px 25px rgba(233,30,99,0.3)",
+    boxShadow: "0 10px 25px rgba(76,175,80,0.3)",
   },
 }));
 
@@ -99,11 +101,11 @@ const FeatureIconWrapper = styled(Box)(({ theme }) => ({
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
-  background: "linear-gradient(135deg, #e91e63 0%, #f48fb1 100%)",
+  background: "linear-gradient(135deg, #2e7d32 0%, #66bb6a 100%)",
   color: "#fff",
   marginBottom: theme.spacing(2),
   fontSize: "2.5rem",
-  boxShadow: "0 15px 30px rgba(233,30,99,0.2)",
+  boxShadow: "0 15px 30px rgba(76,175,80,0.25)",
 }));
 
 const StatBox = styled(Box)(({ theme }) => ({
@@ -126,7 +128,7 @@ const ReviewCard = styled(Card)(({ theme }) => ({
   border: "1px solid rgba(255,255,255,0.3)",
   "&:hover": {
     transform: "translateY(-6px)",
-    boxShadow: "0 16px 48px rgba(33,150,243,0.15)",
+    boxShadow: "0 16px 48px rgba(46,125,50,0.2)",
   },
 }));
 
@@ -151,9 +153,8 @@ export default function LandingPage() {
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
-  const [contactForm, setContactForm] = useState({ name: "", email: "", message: "" });
 
-  // ========== REVIEWS ==========
+  // ========== REVIEWS (fetch logic unchanged, but fallbacks updated) ==========
   const [reviews, setReviews] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -161,7 +162,8 @@ export default function LandingPage() {
   useEffect(() => {
     const fetchReviews = async () => {
       try {
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:4041";
+        const apiBaseUrl =
+          import.meta.env.VITE_API_BASE_URL || "http://localhost:4041";
         const res = await fetch(`${apiBaseUrl}/reviews`);
         const data = await res.json();
         setReviews(data);
@@ -175,15 +177,52 @@ export default function LandingPage() {
   }, []);
 
   const fallbackTestimonials = [
-    { username: "Alex Johnson", rating: 5, comment: "AgroLink Hub has completely changed how I connect with friends. The feed is so engaging!", createdAt: new Date().toISOString() },
-    { username: "Maria Garcia", rating: 5, comment: "I love sharing photos and seeing what my friends are up to. It's like Instagram but better!", createdAt: new Date().toISOString() },
-    { username: "James Smith", rating: 4, comment: "Great community features. The chat and reactions are spot on.", createdAt: new Date().toISOString() },
-    { username: "Emily Davis", rating: 5, comment: "Finally a platform that values real connections. Highly recommended!", createdAt: new Date().toISOString() },
-    { username: "Michael Brown", rating: 5, comment: "The privacy controls are excellent. I feel safe sharing here.", createdAt: new Date().toISOString() },
-    { username: "Sophia Wilson", rating: 4, comment: "Love the design and the ability to follow friends and influencers.", createdAt: new Date().toISOString() },
+    {
+      username: "Rajesh Patel",
+      rating: 5,
+      comment:
+        "AgroBiz Connect helped me double my organic produce sales in just three months! The community and marketplace are top-notch.",
+      createdAt: new Date().toISOString(),
+    },
+    {
+      username: "Maria Silva",
+      rating: 5,
+      comment:
+        "I love sharing my farm updates and getting instant feedback. It’s like LinkedIn for farmers but so much more personal.",
+      createdAt: new Date().toISOString(),
+    },
+    {
+      username: "James Omondi",
+      rating: 4,
+      comment:
+        "Finally a platform where I can connect with suppliers, buyers, and other agripreneurs. The business tools save me hours every week.",
+      createdAt: new Date().toISOString(),
+    },
+    {
+      username: "Emily Nguyen",
+      rating: 5,
+      comment:
+        "The posting and commenting features are sleek, and I’ve built a loyal customer base directly through the app.",
+      createdAt: new Date().toISOString(),
+    },
+    {
+      username: "Carlos Gutierrez",
+      rating: 5,
+      comment:
+        "A game‑changer for small agribusinesses. Easy to showcase products, network, and stay updated with market trends.",
+      createdAt: new Date().toISOString(),
+    },
+    {
+      username: "Aisha Kabir",
+      rating: 4,
+      comment:
+        "Great UI, smooth performance, and the support team is incredible. I recommend it to every farmer I meet.",
+      createdAt: new Date().toISOString(),
+    },
   ];
 
-  const displayReviews = reviews.length > 0 ? reviews : fallbackTestimonials;
+  const displayReviews =
+    reviews.length > 0 ? reviews : fallbackTestimonials;
 
   // ========== SCROLL ANIMATIONS ==========
   const featuresRef = useRef(null);
@@ -191,7 +230,10 @@ export default function LandingPage() {
   const testimonialsRef = useRef(null);
   const isFeaturesInView = useInView(featuresRef, { once: true, amount: 0.3 });
   const isStatsInView = useInView(statsRef, { once: true, amount: 0.3 });
-  const isTestimonialsInView = useInView(testimonialsRef, { once: true, amount: 0.3 });
+  const isTestimonialsInView = useInView(testimonialsRef, {
+    once: true,
+    amount: 0.3,
+  });
 
   const featuresControls = useAnimation();
   const statsControls = useAnimation();
@@ -204,24 +246,18 @@ export default function LandingPage() {
   }, [isFeaturesInView, isStatsInView, isTestimonialsInView]);
 
   const toggleDrawer = (open) => (event) => {
-    if (event.type === "keydown" && (event.key === "Tab" || event.key === "Shift")) return;
+    if (
+      event.type === "keydown" &&
+      (event.key === "Tab" || event.key === "Shift")
+    )
+      return;
     setDrawerOpen(open);
-  };
-
-  const handleContactChange = (e) => {
-    setContactForm({ ...contactForm, [e.target.name]: e.target.value });
-  };
-
-  const handleContactSubmit = (e) => {
-    e.preventDefault();
-    console.warn("Thank you for contacting us! We'll get back to you soon.");
-    setContactForm({ name: "", email: "", message: "" });
   };
 
   const handleLogin = () => navigate("/login");
 
   return (
-    <Box sx={{ bgcolor: "#faf7f2", minHeight: "100vh", overflowX: "hidden" }}>
+    <Box sx={{ bgcolor: "#f9fbe7", minHeight: "100vh", overflowX: "hidden" }}>
       {/* ========== NAVBAR ========== */}
       <AppBar
         position="sticky"
@@ -239,17 +275,48 @@ export default function LandingPage() {
       >
         <Toolbar>
           <Box sx={{ display: "flex", alignItems: "center", flexGrow: 1 }}>
-            <FavoriteIcon sx={{ mr: 1, color: "#e91e63" }} />
-            <Typography variant="h6" sx={{ fontWeight: 700, color: "#2196f3", letterSpacing: "-0.5px" }}>
-              AgroLink Hub
+            <AgricultureIcon sx={{ mr: 1, color: "#2e7d32" }} />
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 700,
+                color: "#1b5e20",
+                letterSpacing: "-0.5px",
+              }}
+            >
+              AgroBiz Connect
             </Typography>
           </Box>
           {!isMobile && (
             <Box sx={{ display: "flex", gap: 3, alignItems: "center" }}>
-              <Button color="inherit" href="#features" sx={{ color: "#333", fontWeight: 500 }}>Features</Button>
-              <Button color="inherit" href="#testimonials" sx={{ color: "#333", fontWeight: 500 }}>Testimonials</Button>
-              <Button color="inherit" href="#contact" sx={{ color: "#333", fontWeight: 500 }}>Contact</Button>
-              <Button color="inherit" onClick={() => setPrivacyOpen(true)} sx={{ color: "#333", fontWeight: 500 }}>Privacy</Button>
+              <Button
+                color="inherit"
+                href="#features"
+                sx={{ color: "#333", fontWeight: 500 }}
+              >
+                Features
+              </Button>
+              <Button
+                color="inherit"
+                href="#testimonials"
+                sx={{ color: "#333", fontWeight: 500 }}
+              >
+                Testimonials
+              </Button>
+              <Button
+                color="inherit"
+                href="#contact"
+                sx={{ color: "#333", fontWeight: 500 }}
+              >
+                Contact
+              </Button>
+              <Button
+                color="inherit"
+                onClick={() => setPrivacyOpen(true)}
+                sx={{ color: "#333", fontWeight: 500 }}
+              >
+                Privacy
+              </Button>
               <Button
                 variant="outlined"
                 startIcon={<LoginIcon />}
@@ -257,11 +324,14 @@ export default function LandingPage() {
                 sx={{
                   ml: 2,
                   borderRadius: "50px",
-                  borderColor: "#e91e63",
-                  color: "#e91e63",
+                  borderColor: "#2e7d32",
+                  color: "#2e7d32",
                   fontWeight: 600,
                   px: 3,
-                  "&:hover": { borderColor: "#c2185b", background: alpha("#e91e63", 0.04) },
+                  "&:hover": {
+                    borderColor: "#1b5e20",
+                    background: alpha("#2e7d32", 0.04),
+                  },
                 }}
               >
                 Login
@@ -288,18 +358,23 @@ export default function LandingPage() {
                     fontWeight: 800,
                     fontSize: { xs: "3rem", md: "4rem" },
                     lineHeight: 1.1,
-                    color: "#333",
+                    color: "#1b5e20",
                     mb: 2,
                   }}
                 >
-                  Connect, Share,
+                  Connect & Grow
                   <br />
-                  <Box component="span" sx={{ color: "#e91e63" }}>
-                    Grow Together
+                  <Box component="span" sx={{ color: "#2e7d32" }}>
+                    Your Agri‑Business
                   </Box>
                 </Typography>
-                <Typography variant="h6" paragraph sx={{ color: "#666", fontWeight: 400, maxWidth: 500 }}>
-                  AgroLink Hub is your agriculture social space - share moments, discover markets, and connect with a vibrant community.
+                <Typography
+                  variant="h6"
+                  paragraph
+                  sx={{ color: "#444", fontWeight: 400, maxWidth: 500 }}
+                >
+                  Post updates, engage with partners, and find new markets – all
+                  in one beautiful social network built for agripreneurs.
                 </Typography>
                 <StyledButton
                   variant="contained"
@@ -308,11 +383,11 @@ export default function LandingPage() {
                   onClick={() => navigate("/signup")}
                   sx={{
                     mt: 2,
-                    bgcolor: "#e91e63",
-                    "&:hover": { bgcolor: "#c2185b" },
+                    bgcolor: "#2e7d32",
+                    "&:hover": { bgcolor: "#1b5e20" },
                   }}
                 >
-                  Join Now
+                  Start Growing Today
                 </StyledButton>
               </motion.div>
             </Grid>
@@ -324,8 +399,8 @@ export default function LandingPage() {
               >
                 <Box
                   component="img"
-                  src="https://images.unsplash.com/photo-1529156069898-49953e39b3ac?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" // Friends laughing outdoors
-                  alt="Friends enjoying life outdoors"
+                  src="https://images.unsplash.com/photo-1605000797499-95a51c5269ae?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
+                  alt="Farmer shaking hands with business partner"
                   sx={{
                     width: "100%",
                     maxWidth: 600,
@@ -333,7 +408,7 @@ export default function LandingPage() {
                     boxShadow: "0 30px 60px rgba(0,0,0,0.2)",
                     display: "block",
                     margin: "0 auto",
-                    border: "4px solid rgba(233,30,99,0.3)",
+                    border: "4px solid rgba(46,125,50,0.3)",
                   }}
                 />
               </motion.div>
@@ -342,22 +417,29 @@ export default function LandingPage() {
         </Container>
       </HeroSection>
 
-      {/* ========== STATS ========== */}
+      {/* ========== STATS (business growth numbers) ========== */}
       <Container ref={statsRef} sx={{ py: 10 }}>
-        <motion.div variants={staggerContainer} initial="hidden" animate={statsControls}>
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          animate={statsControls}
+        >
           <Grid container spacing={4} justifyContent="center">
             {[
-              { value: "1M+", label: "Active Users" },
-              { value: "50M+", label: "Posts Shared" },
-              { value: "98%", label: "User Satisfaction" },
+              { value: "500K+", label: "Active Businesses" },
+              { value: "2M+", label: "Monthly Transactions" },
+              { value: "97%", label: "Satisfaction Rate" },
             ].map((stat, idx) => (
               <Grid item xs={12} sm={4} key={idx}>
                 <motion.div variants={fadeInUp}>
                   <StatBox>
-                    <Typography variant="h2" sx={{ fontWeight: 800, color: "#e91e63", mb: 1 }}>
+                    <Typography
+                      variant="h2"
+                      sx={{ fontWeight: 800, color: "#2e7d32", mb: 1 }}
+                    >
                       {stat.value}
                     </Typography>
-                    <Typography variant="h6" sx={{ color: "#666" }}>
+                    <Typography variant="h6" sx={{ color: "#555" }}>
                       {stat.label}
                     </Typography>
                   </StatBox>
@@ -370,32 +452,76 @@ export default function LandingPage() {
 
       {/* ========== FEATURES ========== */}
       <Container id="features" ref={featuresRef} sx={{ py: 8 }}>
-        <motion.div variants={staggerContainer} initial="hidden" animate={featuresControls}>
+        <motion.div
+          variants={staggerContainer}
+          initial="hidden"
+          animate={featuresControls}
+        >
           <Typography
             variant="h2"
             align="center"
-            sx={{ fontWeight: 700, color: "#333", mb: 2, letterSpacing: "-1px" }}
+            sx={{
+              fontWeight: 700,
+              color: "#1b5e20",
+              mb: 2,
+              letterSpacing: "-1px",
+            }}
           >
-            Why AgroLink Hub?
+            Built for Agri‑Business Success
           </Typography>
-          <Typography variant="h6" align="center" sx={{ color: "#666", mb: 8, fontWeight: 400 }}>
-            Discover the tools that make socializing fun and meaningful
+          <Typography
+            variant="h6"
+            align="center"
+            sx={{ color: "#555", mb: 8, fontWeight: 400 }}
+          >
+            Everything you need to network, post, and grow
           </Typography>
           <Grid container spacing={4}>
             {[
-              { icon: <ShareIcon />, title: "Share Moments", desc: "Post photos, updates, and stories to share with friends and family." },
-              { icon: <PeopleIcon />, title: "Connect with Friends", desc: "Follow friends, see what they're up to, and build your network." },
-              { icon: <FavoriteIcon />, title: "Express Yourself", desc: "React with emojis, comment, and engage in conversations." },
+              {
+                icon: <ShareIcon />,
+                title: "Business Posts & Stories",
+                desc: "Share updates, products, and success stories with a professional audience.",
+              },
+              {
+                icon: <PeopleIcon />,
+                title: "Social Networking",
+                desc: "Connect with buyers, suppliers, and fellow entrepreneurs.",
+              },
+              {
+                icon: <FavoriteIcon />,
+                title: "Likes & Comments",
+                desc: "Get instant feedback, build trust, and engage your community.",
+              },
+              {
+                icon: <TrendingUpIcon />,
+                title: "Market Insights",
+                desc: "Real‑time trends, demand analysis, and price alerts to boost your sales.",
+              },
+              {
+                icon: <BusinessCenterIcon />,
+                title: "Digital Storefront",
+                desc: "Showcase your produce with an integrated mini‑storefront.",
+              },
+              {
+                icon: <AgricultureIcon />,
+                title: "Smart Crop Advice",
+                desc: "AI‑powered tips to improve yield and sustainability.",
+              },
             ].map((feature, idx) => (
               <Grid item xs={12} sm={6} md={4} key={idx}>
                 <motion.div variants={fadeInUp}>
                   <GlassCard>
                     <CardContent sx={{ textAlign: "center", p: 4 }}>
                       <FeatureIconWrapper>{feature.icon}</FeatureIconWrapper>
-                      <Typography variant="h5" gutterBottom sx={{ fontWeight: 600, color: "#333" }}>
+                      <Typography
+                        variant="h5"
+                        gutterBottom
+                        sx={{ fontWeight: 600, color: "#1b5e20" }}
+                      >
                         {feature.title}
                       </Typography>
-                      <Typography variant="body2" sx={{ color: "#666" }}>
+                      <Typography variant="body2" sx={{ color: "#555" }}>
                         {feature.desc}
                       </Typography>
                     </CardContent>
@@ -408,24 +534,45 @@ export default function LandingPage() {
       </Container>
 
       {/* ========== TESTIMONIALS ========== */}
-      <Box id="testimonials" ref={testimonialsRef} sx={{ py: 10, bgcolor: "#f5e6e9" }}>
+      <Box
+        id="testimonials"
+        ref={testimonialsRef}
+        sx={{ py: 10, bgcolor: "#e8f5e9" }}
+      >
         <Container>
-          <motion.div variants={staggerContainer} initial="hidden" animate={testimonialsControls}>
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            animate={testimonialsControls}
+          >
             <Typography
               variant="h2"
               align="center"
-              sx={{ fontWeight: 700, color: "#333", mb: 2, letterSpacing: "-1px" }}
+              sx={{
+                fontWeight: 700,
+                color: "#1b5e20",
+                mb: 2,
+                letterSpacing: "-1px",
+              }}
             >
-              User Reviews
+              Loved by Agripreneurs
             </Typography>
-            <Typography variant="h6" align="center" sx={{ color: "#666", mb: 8, fontWeight: 400 }}>
-              Real feedback from our community
+            <Typography
+              variant="h6"
+              align="center"
+              sx={{ color: "#555", mb: 8, fontWeight: 400 }}
+            >
+              Real feedback from our growing community
             </Typography>
 
             {loading ? (
-              <Typography align="center" sx={{ color: "#666" }}>Loading reviews...</Typography>
+              <Typography align="center" sx={{ color: "#555" }}>
+                Loading reviews...
+              </Typography>
             ) : error ? (
-              <Typography align="center" color="error">{error}</Typography>
+              <Typography align="center" color="error">
+                {error}
+              </Typography>
             ) : (
               <Grid container spacing={4}>
                 {displayReviews.slice(0, 6).map((review, index) => (
@@ -433,21 +580,38 @@ export default function LandingPage() {
                     <Zoom in timeout={500 + index * 100}>
                       <ReviewCard>
                         <CardContent sx={{ p: 4 }}>
-                          <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                            <Avatar sx={{ bgcolor: "#2196f3", mr: 2 }}>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              mb: 2,
+                            }}
+                          >
+                            <Avatar
+                              sx={{ bgcolor: "#2e7d32", mr: 2, color: "#fff" }}
+                            >
                               {review.username?.charAt(0)}
                             </Avatar>
                             <Box>
-                              <Typography variant="subtitle1" fontWeight={600} sx={{ color: "#333" }}>
+                              <Typography
+                                variant="subtitle1"
+                                fontWeight={600}
+                                sx={{ color: "#1b5e20" }}
+                              >
                                 {review.username}
                               </Typography>
-                              <Rating value={review.rating} readOnly size="small" sx={{ color: "#e91e63" }} />
+                              <Rating
+                                value={review.rating}
+                                readOnly
+                                size="small"
+                                sx={{ color: "#2e7d32" }}
+                              />
                             </Box>
                           </Box>
-                          <Typography variant="body2" sx={{ mb: 2, color: "#666" }}>
+                          <Typography variant="body2" sx={{ mb: 2, color: "#444" }}>
                             "{review.comment}"
                           </Typography>
-                          <Typography variant="caption" sx={{ color: "#999" }}>
+                          <Typography variant="caption" sx={{ color: "#777" }}>
                             {new Date(review.createdAt).toLocaleDateString()}
                           </Typography>
                         </CardContent>
@@ -462,39 +626,107 @@ export default function LandingPage() {
       </Box>
 
       {/* ========== FOOTER ========== */}
-      <Box component="footer" sx={{ bgcolor: "#333", color: "#fff", py: 6 }}>
+      <Box
+        component="footer"
+        sx={{ bgcolor: "#1b5e20", color: "#fff", py: 6 }}
+      >
         <Container>
-          <Grid container spacing={4} justifyContent="space-between" alignItems="center">
+          <Grid
+            container
+            spacing={4}
+            justifyContent="space-between"
+            alignItems="center"
+          >
             <Grid item xs={12} md={4}>
               <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                <FavoriteIcon sx={{ mr: 1, color: "#e91e63" }} />
-                <Typography variant="h6" sx={{ fontWeight: 700, color: "#2196f3" }}>
-                  AgroLink Hub
+                <AgricultureIcon sx={{ mr: 1, color: "#66bb6a" }} />
+                <Typography
+                  variant="h6"
+                  sx={{ fontWeight: 700, color: "#c8e6c9" }}
+                >
+                  AgroBiz Connect
                 </Typography>
               </Box>
-              <Typography variant="body2" sx={{ color: "#aaa" }}>
+              <Typography variant="body2" sx={{ color: "#a5d6a7" }}>
                 © {new Date().getFullYear()} All rights reserved.
               </Typography>
             </Grid>
             <Grid item xs={12} md={4}>
               <Box sx={{ display: "flex", gap: 2, justifyContent: "center" }}>
-                <IconButton color="inherit" href="#" sx={{ color: "#e91e63" }}><FacebookIcon /></IconButton>
-                <IconButton color="inherit" href="#" sx={{ color: "#e91e63" }}><TwitterIcon /></IconButton>
-                <IconButton color="inherit" href="#" sx={{ color: "#e91e63" }}><LinkedInIcon /></IconButton>
-                <IconButton color="inherit" href="#" sx={{ color: "#e91e63" }}><InstagramIcon /></IconButton>
+                <IconButton
+                  color="inherit"
+                  href="#"
+                  sx={{ color: "#66bb6a" }}
+                >
+                  <FacebookIcon />
+                </IconButton>
+                <IconButton
+                  color="inherit"
+                  href="#"
+                  sx={{ color: "#66bb6a" }}
+                >
+                  <TwitterIcon />
+                </IconButton>
+                <IconButton
+                  color="inherit"
+                  href="#"
+                  sx={{ color: "#66bb6a" }}
+                >
+                  <LinkedInIcon />
+                </IconButton>
+                <IconButton
+                  color="inherit"
+                  href="#"
+                  sx={{ color: "#66bb6a" }}
+                >
+                  <InstagramIcon />
+                </IconButton>
               </Box>
             </Grid>
-            <Grid item xs={12} md={4} sx={{ textAlign: { xs: "center", md: "right" } }}>
-              <Button color="inherit" onClick={() => setPrivacyOpen(true)} sx={{ mr: 2, color: "#e91e63" }}>Privacy Policy</Button>
-              <Button color="inherit" href="#contact" sx={{ color: "#e91e63" }}>Contact</Button>
+            <Grid
+              item
+              xs={12}
+              md={4}
+              sx={{ textAlign: { xs: "center", md: "right" } }}
+            >
+              <Button
+                color="inherit"
+                onClick={() => setPrivacyOpen(true)}
+                sx={{ mr: 2, color: "#66bb6a" }}
+              >
+                Privacy Policy
+              </Button>
+              <Button color="inherit" href="#contact" sx={{ color: "#66bb6a" }}>
+                Contact
+              </Button>
             </Grid>
           </Grid>
         </Container>
       </Box>
 
       {/* Floating Chat Button */}
-      <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 260, damping: 20, delay: 1 }}>
-        <Fab color="primary" aria-label="chat" onClick={toggleDrawer(true)} sx={{ position: "fixed", bottom: 24, right: 24, bgcolor: "#e91e63", "&:hover": { bgcolor: "#c2185b" } }}>
+      <motion.div
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{
+          type: "spring",
+          stiffness: 260,
+          damping: 20,
+          delay: 1,
+        }}
+      >
+        <Fab
+          color="primary"
+          aria-label="chat"
+          onClick={toggleDrawer(true)}
+          sx={{
+            position: "fixed",
+            bottom: 24,
+            right: 24,
+            bgcolor: "#2e7d32",
+            "&:hover": { bgcolor: "#1b5e20" },
+          }}
+        >
           <ChatIcon />
         </Fab>
       </motion.div>
@@ -507,15 +739,29 @@ export default function LandingPage() {
       </Drawer>
 
       {/* Privacy Policy Dialog */}
-      <Dialog open={privacyOpen} onClose={() => setPrivacyOpen(false)} PaperProps={{ sx: { bgcolor: "#fff", color: "#333", borderRadius: 4 } }}>
-        <DialogTitle sx={{ color: "#e91e63" }}>Privacy Policy</DialogTitle>
+      <Dialog
+        open={privacyOpen}
+        onClose={() => setPrivacyOpen(false)}
+        PaperProps={{
+          sx: {
+            bgcolor: "#fff",
+            color: "#333",
+            borderRadius: 4,
+          },
+        }}
+      >
+        <DialogTitle sx={{ color: "#2e7d32" }}>Privacy Policy</DialogTitle>
         <DialogContent>
-          <DialogContentText sx={{ color: "#666" }}>
-            At AgroLink Hub, we value your privacy. This policy outlines how we collect, use, and protect your information. We do not share your personal data with third parties without your consent. For more details, please contact us.
+          <DialogContentText sx={{ color: "#555" }}>
+            At AgroBiz Connect, we value your business privacy. We never share
+            your personal or farm data without consent. Your network and
+            transactions are protected with enterprise‑grade encryption.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setPrivacyOpen(false)} sx={{ color: "#2196f3" }}>Close</Button>
+          <Button onClick={() => setPrivacyOpen(false)} sx={{ color: "#2e7d32" }}>
+            Close
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>

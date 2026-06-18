@@ -134,10 +134,12 @@ export default function SupportCenterPage() {
         </div>
         <div className="hero-stats">
           <article>
+            <span className="support-stat-icon"><Icon name="chat" /></span>
             <strong>{tickets.length}</strong>
             <span>My Reports</span>
           </article>
           <article>
+            <span className="support-stat-icon"><Icon name="star" /></span>
             <strong>{reviews.length}</strong>
             <span>Public Reviews</span>
           </article>

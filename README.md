@@ -1,156 +1,328 @@
-# Bondly - Spring Boot React Social Media App
+# AgroLink Hub
 
-Bondly is a full-stack social media web application built with **Spring Boot** and **React**.  
-It is designed as a modern social platform with secure authentication, email verification, real-time communication, user profiles, posts, notifications, and chat features.
+AgroLink Hub is a full-stack social commerce web application for farmers, small business sellers, creators, buyers, and platform admins. It combines a modern social feed with marketplace workflows so local agricultural communities can share content, build trust, sell products, manage orders, and get support from one workspace.
 
-## Repository Name
+![AgroLink Hub landing background](Lisharefrontend/src/assets/backgrounds/commerce-farmfresh-market.png)
 
-springboot-react-bondly-social-media-app
+## What This Project Does
 
-## Repository Description
+AgroLink Hub is not only a social media clone. The application is organized around real community and business workflows:
 
-A full-stack social media web application built with Spring Boot and React, featuring JWT HTTP-only cookie authentication, SMTP email OTP verification, real-time WebSocket chat, notifications, posts, profiles, and scalable social media features.
+- Farmers and businesses can create business pages, publish products, manage inventory, and handle received orders.
+- Buyers and regular users can browse the marketplace, add products to a persistent cart, place orders, review businesses, and follow sellers.
+- Community users can post updates, upload media, react, comment, share, view stories/reels, save posts, and chat in real time.
+- Admins can review accounts, moderate reports, manage roles, inspect support tickets, and keep the platform safe.
+- Everyone can use profile pages, notifications, calendar reminders, support tickets, and account settings.
 
----
+## Key Features
 
-## Project Overview
+### Social Workspace
 
-Bondly is a professional social media platform inspired by modern applications like Facebook, Instagram, and Discord.
+- Public authenticated feed with posts, images, videos, reactions, comments, shares, saves, and reports.
+- Story and reel style content to keep users active in the platform.
+- User profiles with cover images, profile photos, bio, XP/activity information, saved content, and network information.
+- Follow and friend workflows, including discovery, requests, followers, and following.
+- Real-time notifications for social and account activity.
 
-The project uses a **Spring Boot backend** for APIs, security, database handling, authentication, WebSocket communication, and business logic.  
-The **React frontend** provides a responsive and user-friendly interface for posts, profiles, messages, and notifications.
+### Real-Time Messaging
 
----
+- Direct and group conversations.
+- WebSocket based chat updates.
+- Online/offline presence indicators.
+- Typing status.
+- Message reactions.
+- Image/video/file attachments.
+- Shared media and pinned link sections in the chat UI.
 
-## Main Features
+### Marketplace And Orders
 
-### Authentication and Security
+- Product listing, filtering, search, categories, delivery methods, and sorting.
+- Business profiles with products, owner details, ratings, and reviews.
+- Persistent backend cart for buyer accounts.
+- Direct order flow and cart checkout flow.
+- Seller order management for business and farmer accounts.
+- Order status pipeline: pending, accepted, processing, on the way, completed, and cancelled.
 
-- User registration
-- Email OTP verification using SMTP
-- Login with email and password
-- JWT authentication
-- HTTP-only cookie based token storage
-- Refresh token support
-- Secure logout
-- Protected backend APIs
-- Role-based access control
-- Forgot password with OTP verification
-- BCrypt password encryption
+### Business Studio
 
-### User Profile Management
+- Business/farmer-only business page management.
+- Product create/update/delete workflows.
+- Seller analytics and order insights.
+- Business profile presentation for buyers.
+- Review and rating visibility.
 
-- View user profile
-- Update first name and last name
-- Update profile photo
-- Update cover photo
-- Update bio and user details
-- Change password securely
-- Delete account safely
-- Account privacy support
+### Platform Tools
 
-### Social Media Features
-
-- Create posts
-- View home feed
-- Like posts
-- Comment on posts
-- Share posts
-- Upload images and videos
-- Save/bookmark posts
-- User activity display
-- Profile-based post listing
-
-### Real-Time Chat
-
-- One-to-one private chat
-- Group chat support
-- WebSocket based real-time messaging
-- Online/offline status
-- Typing indicator
-- Message delivered/seen status
-- Media upload in chat
-- Secure sender and receiver message access
-
-### Real-Time Notifications
-
-- WebSocket notification updates
-- New like notifications
-- New comment notifications
-- New follower notifications
-- Friend request notifications
-- Message notifications
-- Unread notification count
-- Mark notifications as read
-
----
+- Auth with signup, login, OTP verification, forgot password, refresh token flow, and secure logout.
+- Role-based routing for users, creators, business sellers, farmer sellers, and admins.
+- Calendar events, meetings, birthdays, tasks, reminders, day/week/month views.
+- Support center for tickets, admin replies, website reviews, and moderation messages.
+- Admin command center for account status, user roles, reports, support tickets, and moderation views.
 
 ## Tech Stack
 
 ### Backend
 
-- Java
-- Spring Boot
+- Java 25
+- Spring Boot 4.0.2
 - Spring Security
-- Spring Data JPA
-- Hibernate
-- JWT
-- HTTP-only Cookies
-- WebSocket
-- SMTP Email Service
-- MySQL or PostgreSQL
-- Maven
+- Spring Data JPA / Hibernate
+- PostgreSQL
+- WebSocket/STOMP messaging
+- JWT with cookie based access, refresh, and verify tokens
+- Spring Mail for OTP and account emails
+- Maven wrapper
 - Lombok
 
 ### Frontend
 
-- React
-- Vite
+- React 18
+- Vite 6
 - React Router
 - Axios
-- Tailwind CSS or CSS Modules
-- React Toastify
-- WebSocket client
-- Responsive UI components
+- STOMP WebSocket client
+- Custom modular CSS design system
+- Local 4k visual assets for landing, commerce, calendar, admin, profile, support, and auth screens
 
----
-
-## Suggested Project Structure
+## Repository Layout
 
 ```text
 springboot-react-bondly-social-media-app/
-│
-├── backend/
-│   ├── src/main/java/
-│   │   └── com/bondly/
-│   │       ├── config/
-│   │       ├── controller/
-│   │       ├── dto/
-│   │       ├── entity/
-│   │       ├── exception/
-│   │       ├── mapper/
-│   │       ├── repository/
-│   │       ├── security/
-│   │       ├── service/
-│   │       ├── serviceImpl/
-│   │       └── util/
-│   │
-│   └── pom.xml
-│
-├── frontend/
-│   ├── src/
-│   │   ├── api/
-│   │   ├── assets/
-│   │   ├── components/
-│   │   ├── context/
-│   │   ├── hooks/
-│   │   ├── layouts/
-│   │   ├── pages/
-│   │   ├── routes/
-│   │   ├── services/
-│   │   ├── styles/
-│   │   └── utils/
-│   │
-│   └── package.json
-│
-└── README.md
+  Lisharebackend/
+    src/main/java/com/socialApp/Lishare/
+      modules/
+        business/      # admin, cart, orders, pages, products, reviews, support
+        platform/      # auth, calendar, common security/user code
+        social/        # posts, stories, chat, comments, follows, friends, notifications
+    src/main/resources/
+      application.yaml
+      schema.sql
+    .env.example
+    pom.xml
+
+  Lisharefrontend/
+    src/
+      assets/          # branding, 4k backgrounds, workspace images
+      modules/
+        business/      # marketplace, cart, orders, analytics, admin, business pages
+        platform/      # routes, auth, shell, support, profile, calendar, shared UI
+        social/        # feed, chat, friends, notifications
+      dashboard-ui.css
+      site-polish.css  # final UI polish layer for no-overlap professional layout
+    .env.example
+    package.json
+```
+
+## Main Routes
+
+| Route | Purpose |
+| --- | --- |
+| `/` | Public landing page with visitor assistant and platform reviews |
+| `/login`, `/signup`, `/verify`, `/forgot-password` | Auth and account recovery |
+| `/home` | Social feed, posts, stories, reels, reactions, comments |
+| `/profile`, `/profile/:userId` | User profiles and profile content |
+| `/friends` | Friend/follow discovery and requests |
+| `/chat` | Real-time conversations |
+| `/marketplace` | Product discovery and business profiles |
+| `/cart` | Buyer cart and checkout |
+| `/orders` | Buyer and seller order workflows |
+| `/business` | Business/farmer seller studio |
+| `/analytics` | Seller/admin analytics |
+| `/calendar` | Events, tasks, meetings, birthdays, reminders |
+| `/support` | User support tickets and website reviews |
+| `/admin` | Admin command center |
+
+## Roles
+
+| Role | Main Access |
+| --- | --- |
+| `ROLE_USER` | Social feed, marketplace buying, cart, orders, support, chat |
+| `ROLE_CREATOR` | Social content, creator account experience, cart, support, chat |
+| `ROLE_BUSINESS` | Business page, product listing, seller orders, analytics |
+| `ROLE_FARMER` | Farmer seller tools, product listing, seller orders, analytics |
+| `ROLE_ADMIN` | Admin command center, users, moderation, support tickets |
+
+Public signup does not create admin accounts. Admin accounts should be created through a controlled database/admin process.
+
+## Environment Configuration
+
+Secrets must stay outside git. The committed backend config reads from environment variables:
+
+```yaml
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/bodlyy_db}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:}
+  mail:
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+jwt:
+  secret: ${JWT_SECRET:}
+```
+
+Use `Lisharebackend/.env.example` and `Lisharefrontend/.env.example` as references. Spring Boot does not automatically load `.env` files by itself; set variables in your terminal, IDE run configuration, Docker environment, or a private local profile.
+
+Required backend variables:
+
+```text
+DB_URL=jdbc:postgresql://localhost:5432/bodlyy_db
+DB_USERNAME=postgres
+DB_PASSWORD=your_database_password
+MAIL_USERNAME=your_email@example.com
+MAIL_PASSWORD=your_mail_app_password
+JWT_SECRET=your_32_byte_or_longer_base64_secret
+SERVER_PORT=4041
+FILE_UPLOAD_DIR=uploads
+APP_CORS_ALLOWED_ORIGINS=http://localhost:[*],http://127.0.0.1:[*]
+```
+
+Frontend variables:
+
+```text
+VITE_API_BASE_URL=http://localhost:4041
+VITE_WS_URL=ws://localhost:4041/ws
+```
+
+Security note: if a real password, app password, token, or JWT secret was ever committed before this cleanup, rotate it. Removing it from the current file prevents future exposure, but old git history can still contain the previous value.
+
+## Running Locally
+
+### 1. Start PostgreSQL
+
+Create a database that matches your `DB_URL`, for example:
+
+```sql
+CREATE DATABASE bodlyy_db;
+```
+
+### 2. Start Backend
+
+PowerShell example:
+
+```powershell
+cd Lisharebackend
+$env:DB_URL="jdbc:postgresql://localhost:5432/bodlyy_db"
+$env:DB_USERNAME="postgres"
+$env:DB_PASSWORD="your_database_password"
+$env:MAIL_USERNAME="your_email@example.com"
+$env:MAIL_PASSWORD="your_mail_app_password"
+$env:JWT_SECRET="replace_with_secure_base64_secret"
+.\mvnw spring-boot:run
+```
+
+Backend default URL:
+
+```text
+http://localhost:4041
+```
+
+### 3. Start Frontend
+
+```powershell
+cd Lisharefrontend
+npm install
+Copy-Item .env.example .env
+npm run dev
+```
+
+Frontend default URL:
+
+```text
+http://localhost:5173
+```
+
+If Vite chooses another port, use the URL printed by the terminal.
+
+## Build And Verification
+
+Frontend production build:
+
+```powershell
+cd Lisharefrontend
+npm run build
+```
+
+Backend tests/build:
+
+```powershell
+cd Lisharebackend
+.\mvnw test
+.\mvnw clean package
+```
+
+Some backend tests may require PostgreSQL and environment variables, depending on the test profile.
+
+## UI And Design System
+
+The frontend uses shared UI components from:
+
+```text
+Lisharefrontend/src/modules/platform/common/ui/DashboardUI.jsx
+```
+
+The global design layers are:
+
+```text
+Lisharefrontend/src/index.css
+Lisharefrontend/src/dashboard-ui.css
+Lisharefrontend/src/site-polish.css
+```
+
+`site-polish.css` is the final professional polish layer. It fixes the broad frontend issues that matter most for this project:
+
+- Consistent AgroLink branding and logo rendering.
+- Stronger farmer/business visual identity using local 4k image assets.
+- Reduced pure-white card overload.
+- Stable button/form sizing so controls do not jump or overlap.
+- Calendar toolbar/grid no-overlap rules.
+- Chat thread/input layout fixes.
+- Marketplace, cart, order, business, admin, analytics, and support page polish.
+- Responsive mobile behavior for shell navigation, profile, commerce, calendar, and chat.
+
+Important visual assets:
+
+```text
+Lisharefrontend/src/assets/branding/agrolink-hub-logo.svg
+Lisharefrontend/src/assets/backgrounds/commerce-farmfresh-market.png
+Lisharefrontend/src/assets/backgrounds/commerce-greenfield-mist.png
+Lisharefrontend/src/assets/backgrounds/commerce-golden-farm-road.png
+Lisharefrontend/src/assets/workspace/calendar-greenhouse-4k.jpg
+Lisharefrontend/src/assets/workspace/admin-workspace-blueprint-4k.jpg
+Lisharefrontend/src/assets/workspace/insights-workspace-4k.jpg
+Lisharefrontend/src/assets/workspace/support-center-office-4k.jpg
+```
+
+## Data And Upload Hygiene
+
+Runtime uploads are application data, not source code. They are ignored by git:
+
+```text
+uploads/
+**/uploads/
+```
+
+Local files under upload folders can remain on your machine for development, but they should not be committed. IDE files, logs, build folders, local env files, and private Spring profiles are also ignored.
+
+## Production Notes
+
+Before deploying:
+
+- Set `COOKIE_SECURE=true` behind HTTPS.
+- Set an explicit `COOKIE_DOMAIN` only when needed.
+- Restrict `APP_CORS_ALLOWED_ORIGINS` to real frontend domains.
+- Use a strong Base64 JWT secret.
+- Use managed PostgreSQL credentials from the deployment secret store.
+- Use a dedicated SMTP account or email provider secret.
+- Store uploaded files in persistent storage, not inside the git repository.
+- Run `npm run build` for the frontend and `mvn clean package` for the backend.
+
+## Current Product Direction
+
+AgroLink Hub is designed for a Sri Lankan/local agriculture and small business context:
+
+- Farmers can promote harvests, updates, education posts, and products.
+- Small sellers can build trust through social content, reviews, and order fulfillment.
+- Buyers can discover real business pages instead of only isolated product cards.
+- Social features keep users active while commerce features create practical value.
+- Admin and support workflows keep the platform safer as the community grows.

@@ -4,5 +4,24 @@ Lisharefrontend/.edge-ui-check/
 Lisharefrontend/*.log
 Lisharefrontend/home-ui-check.png
 
+.env
+.env.*
+!.env.example
+*.log
+.run/
+**/.run/
+.DS_Store
+Thumbs.db
+out/
 uploads/
+**/uploads/
+**/target/
+**/build/
+**/application-local.properties
+**/application-local.yml
+**/application-local.yaml
+**/application-secret.properties
+**/application-secret.yml
+**/application-secret.yaml
+.idea/
 .idea/inspectionProfiles/

@@ -1,5 +1,7 @@
 package com.socialApp.Lishare.modules.platform.security;
 
+import com.socialApp.Lishare.modules.platform.auth.oauth.OAuth2LoginFailureHandler;
+import com.socialApp.Lishare.modules.platform.auth.oauth.OAuth2LoginSuccessHandler;
 import lombok.RequiredArgsConstructor;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,6 +30,8 @@ public class SecurityConfig {
 
     private final JWTAuthFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
+    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
+    private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
 
     @Value("${app.cors.allowed-origins:http://localhost:[*],http://127.0.0.1:[*]}")
     private String allowedOrigins;
@@ -72,6 +76,8 @@ public class SecurityConfig {
                                 "/api/auth/refresh",
                                 "/api/auth/logout",
                                 "/forgotpass/**",
+                                "/oauth2/**",
+                                "/login/oauth2/**",
                                 "/ws",
                                 "/ws/**",
                                 "/error"
@@ -84,7 +90,11 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                )
+                .oauth2Login(oauth2 -> oauth2
+                        .successHandler(oAuth2LoginSuccessHandler)
+                        .failureHandler(oAuth2LoginFailureHandler)
                 )
                 .authenticationProvider(authenticationProvider)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

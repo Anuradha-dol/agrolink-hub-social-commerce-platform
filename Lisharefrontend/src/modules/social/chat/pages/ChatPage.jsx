@@ -89,6 +89,7 @@ export default function ChatPage() {
   const [conversationQuery, setConversationQuery] = useState("");
   const [filter, setFilter] = useState("all");
   const [newMessageOpen, setNewMessageOpen] = useState(false);
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
   const activeConversation = useMemo(
     () => conversations.find((item) => item.conversationId === activeConversationId) || null,
@@ -112,6 +113,10 @@ export default function ChatPage() {
     const members = activeConversation?.members || [];
     return members.find((member) => Number(member.userId) !== Number(user?.userId)) || members[0] || null;
   }, [activeConversation, user?.userId]);
+
+  useEffect(() => {
+    setDetailsOpen(false);
+  }, [activeConversationId]);
 
   const loadConversations = useCallback(async () => {
     setLoading(true);
@@ -298,7 +303,7 @@ export default function ChatPage() {
 
   return (
     <PageGrid className="chat-dashboard">
-      <div className="chat-dashboard-grid">
+      <div className={`chat-dashboard-grid ${detailsOpen ? "details-open" : ""}`}>
         <Card className="messages-panel">
           <SectionHeader
             title="Messages"
@@ -393,7 +398,7 @@ export default function ChatPage() {
                   <p><span className={`chat-presence-label ${selectedUserOnline ? "online" : "offline"}`}>{selectedUserOnline ? "Online" : "Offline"}</span> - {activeConversation.type === "GROUP" ? "Group chat" : "Direct message"}</p>
                 </div>
                 <div className="thread-actions">
-                  <button type="button" aria-label="Info" onClick={() => pushToast("Conversation details are shown in the right panel.", "success")}><Icon name="more" /></button>
+                  <button type="button" aria-label="Conversation details" className={detailsOpen ? "active" : ""} onClick={() => setDetailsOpen((open) => !open)}><Icon name="more" /></button>
                 </div>
               </header>
 
@@ -455,7 +460,7 @@ export default function ChatPage() {
                   placeholder="Type a message..."
                 />
                 <button type="button" aria-label="More" onClick={() => pushToast("Use image or attachment buttons to add media.", "success")}><Icon name="plus" /></button>
-                <Button variant="gradient" icon="send" type="submit">Send</Button>
+                <Button variant="gradient" icon="send" className="message-send-btn" type="submit" aria-label="Send message">Send</Button>
               </form>
             </>
           ) : (
@@ -463,7 +468,7 @@ export default function ChatPage() {
           )}
         </Card>
 
-        <Card className="chat-profile-panel">
+        <Card className={`chat-profile-panel ${detailsOpen ? "open" : ""}`}>
           {activeConversation ? (
             <>
               <div className="chat-profile-head">

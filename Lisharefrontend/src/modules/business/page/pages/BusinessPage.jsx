@@ -541,7 +541,7 @@ export default function BusinessPage() {
         )}
         className="ui-modal-wide"
       >
-        <form id="business-product-form" className="modal-grid two" onSubmit={saveProduct}>
+        <form id="business-product-form" className="modal-grid two commerce-product-form" onSubmit={saveProduct}>
           <label>Business page
             <select value={productForm.businessPageId} onChange={(event) => setProductForm((prev) => ({ ...prev, businessPageId: event.target.value }))}>
               <option value="">Select business page</option>
