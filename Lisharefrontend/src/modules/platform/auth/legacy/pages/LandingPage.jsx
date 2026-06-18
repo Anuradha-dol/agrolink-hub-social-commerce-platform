@@ -163,7 +163,7 @@ export default function LandingPage() {
     const fetchReviews = async () => {
       try {
         const apiBaseUrl =
-          import.meta.env.VITE_API_BASE_URL || "http://localhost:4041";
+          import.meta.env.VITE_API_BASE_URL || "http://localhost:8081";
         const res = await fetch(`${apiBaseUrl}/reviews`);
         const data = await res.json();
         setReviews(data);

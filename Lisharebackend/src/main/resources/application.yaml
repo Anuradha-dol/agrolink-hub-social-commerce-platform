@@ -8,7 +8,7 @@ spring:
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/bodlyy_db}
     username: ${DB_USERNAME:postgres}
-    password: Anu@20021214
+    password: ${DB_PASSWORD:}
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -48,14 +48,14 @@ spring:
             scope:
               - email
               - profile
-            redirect-uri: ${GOOGLE_OAUTH_REDIRECT_URI:http://localhost:4041/login/oauth2/code/google}
+            redirect-uri: ${GOOGLE_OAUTH_REDIRECT_URI:http://localhost:8081/login/oauth2/code/google}
 
 
 file:
   upload-dir: ${FILE_UPLOAD_DIR:uploads}
 
 server:
-  port: ${SERVER_PORT:4041}
+  port: ${SERVER_PORT:8081}
 
 jwt:
   secret: ${JWT_SECRET:}

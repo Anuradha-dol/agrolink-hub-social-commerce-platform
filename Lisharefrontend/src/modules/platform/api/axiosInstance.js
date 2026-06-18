@@ -1,7 +1,7 @@
 import axios from "axios";
 import { ENDPOINTS } from "./endpoints";
 
-const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:4041";
+const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8081";
 
 const axiosInstance = axios.create({
   baseURL,

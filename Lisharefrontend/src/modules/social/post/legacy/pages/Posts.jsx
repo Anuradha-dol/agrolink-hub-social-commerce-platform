@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from "react";
 import api from "/src/legacy/api";
 
-const API_BASE = "http://localhost:4041";
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8081";
 
 export default function Posts() {
   const [content, setContent] = useState("");

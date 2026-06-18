@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Client } from "@stomp/stompjs";
 
-const wsUrl = import.meta.env.VITE_WS_URL || "ws://localhost:4041/ws";
+const wsUrl = import.meta.env.VITE_WS_URL || "ws://localhost:8081/ws";
 
 export function useRealtimeNotifications(userId, onNotification) {
   const clientRef = useRef(null);

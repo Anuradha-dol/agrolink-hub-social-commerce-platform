@@ -53,7 +53,7 @@ import { alpha } from "@mui/material/styles";
 import api from "/src/legacy/api";
 import { followUser, unfollowUser, searchUsers, getFollowing } from "/src/legacy/followApi";
 
-const backendBaseUrl = "http://localhost:4041";
+const backendBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8081";
 
 // Reaction icon mapping
 const reactionIcons = {

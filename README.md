@@ -108,7 +108,7 @@ springboot-react-bondly-social-media-app/
         platform/      # routes, auth, shell, support, profile, calendar, shared UI
         social/        # feed, chat, friends, notifications
       dashboard-ui.css
-      site-polish.css  # final UI polish layer for no-overlap professional layout
+      feed-card-reference.css
     .env.example
     package.json
 ```
@@ -161,7 +161,7 @@ jwt:
   secret: ${JWT_SECRET:}
 ```
 
-Use `Lisharebackend/.env.example` and `Lisharefrontend/.env.example` as references. Spring Boot does not automatically load `.env` files by itself; set variables in your terminal, IDE run configuration, Docker environment, or a private local profile.
+Use `Lisharebackend/.env.example` and `Lisharefrontend/.env.example` as references. The backend imports `Lisharebackend/.env` automatically for local development through `application.yaml`, while deployment environments should provide the same values through their secret/config system.
 
 Required backend variables:
 
@@ -172,7 +172,7 @@ DB_PASSWORD=your_database_password
 MAIL_USERNAME=your_email@example.com
 MAIL_PASSWORD=your_mail_app_password
 JWT_SECRET=your_32_byte_or_longer_base64_secret
-SERVER_PORT=4041
+SERVER_PORT=8081
 FILE_UPLOAD_DIR=uploads
 APP_CORS_ALLOWED_ORIGINS=http://localhost:[*],http://127.0.0.1:[*]
 ```
@@ -180,8 +180,8 @@ APP_CORS_ALLOWED_ORIGINS=http://localhost:[*],http://127.0.0.1:[*]
 Frontend variables:
 
 ```text
-VITE_API_BASE_URL=http://localhost:4041
-VITE_WS_URL=ws://localhost:4041/ws
+VITE_API_BASE_URL=http://localhost:8081
+VITE_WS_URL=ws://localhost:8081/ws
 ```
 
 Security note: if a real password, app password, token, or JWT secret was ever committed before this cleanup, rotate it. Removing it from the current file prevents future exposure, but old git history can still contain the previous value.
@@ -214,7 +214,7 @@ $env:JWT_SECRET="replace_with_secure_base64_secret"
 Backend default URL:
 
 ```text
-http://localhost:4041
+http://localhost:8081
 ```
 
 ### 3. Start Frontend
@@ -266,10 +266,10 @@ The global design layers are:
 ```text
 Lisharefrontend/src/index.css
 Lisharefrontend/src/dashboard-ui.css
-Lisharefrontend/src/site-polish.css
+Lisharefrontend/src/feed-card-reference.css
 ```
 
-`site-polish.css` is the final professional polish layer. It fixes the broad frontend issues that matter most for this project:
+`dashboard-ui.css` is the main professional polish layer. Together with `index.css` and `feed-card-reference.css`, it fixes the broad frontend issues that matter most for this project:
 
 - Consistent AgroLink branding and logo rendering.
 - Stronger farmer/business visual identity using local 4k image assets.

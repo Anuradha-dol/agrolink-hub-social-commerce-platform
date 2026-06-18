@@ -1,7 +1,7 @@
 import axiosInstance from "/src/modules/platform/api/axiosInstance";
 import { ENDPOINTS } from "/src/modules/platform/api/endpoints";
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://localhost:4041").replace(/\/+$/, "");
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://localhost:8081").replace(/\/+$/, "");
 
 export const authService = {
   register: (payload) => axiosInstance.post(ENDPOINTS.auth.register, payload),
