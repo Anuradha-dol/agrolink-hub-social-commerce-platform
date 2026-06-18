@@ -1,8 +1,10 @@
 Lisharefrontend/node_modules/
 Lisharefrontend/dist/
 Lisharefrontend/.edge-ui-check/
+Lisharefrontend/.edge-signup-check/
 Lisharefrontend/*.log
 Lisharefrontend/home-ui-check.png
+Lisharefrontend/story-form-check.png
 
 .env
 .env.*
