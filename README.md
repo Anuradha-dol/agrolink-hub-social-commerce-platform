@@ -4,7 +4,9 @@ AgroLink Hub is a full-stack social commerce platform for local communities, far
 
 The core idea is simple: a seller should not need one platform for audience, another for chat, another for product listing, and another for orders. AgroLink Hub keeps those workflows together. A farmer can post harvest updates, answer customer questions, list fresh products, receive orders, and build a trusted business profile. A small shop can do the same with handmade products, food items, supplies, or local services. Buyers can discover real sellers, compare products, place orders, and communicate directly.
 
-![AgroLink Hub marketplace preview](Lisharefrontend/src/assets/backgrounds/agrolink-landing-hero-marketplace-4k.jpg)
+![AgroLink Hub landing page preview](docs/agrolink-hub-landing-page.png)
+
+[Project Report](docs/agrolink-hub-project-report.pdf)
 
 ## Why It Matters
 
@@ -96,7 +98,7 @@ AgroLink Hub connects both sides:
 ## Repository Layout
 
 ```text
-springboot-react-bondly-social-media-app/
+agrolink-hub/
   Lisharebackend/
     src/main/java/com/socialApp/Lishare/
       modules/
