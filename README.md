@@ -111,7 +111,7 @@ springboot-react-bondly-social-media-app/
 
   Lisharefrontend/
     src/
-      assets/          # branding, landing images, generated feature visuals, workspace backgrounds
+      assets/          # branding, landing images, feature visuals, workspace backgrounds
       modules/
         business/      # marketplace, cart, orders, analytics, business pages, admin
         platform/      # app routes, auth, profile, settings, support, calendar, shared UI
@@ -120,10 +120,6 @@ springboot-react-bondly-social-media-app/
       feed-card-reference.css
     .env.example
     package.json
-
-  docs/
-    agrolink-hub-project-report.html
-    agrolink-hub-project-report.pdf
 ```
 
 ## Main Routes
@@ -264,15 +260,6 @@ Lisharefrontend/src/feed-card-reference.css
 ```
 
 The current UI direction is practical and work-focused: strong AgroLink green/teal/yellow branding, fewer plain white cards, stable cart and order layouts, compact notifications, responsive marketplace cards, refined auth pages, and dedicated landing visuals for the Social, Commerce, and Workspace feature cards.
-
-## Documentation
-
-Full project report:
-
-- [HTML report](docs/agrolink-hub-project-report.html)
-- [PDF report](docs/agrolink-hub-project-report.pdf)
-
-The report covers product purpose, target users, system architecture, technology stack, frontend/backend modules, database behavior, authentication, social features, business workflows, support tools, testing notes, deployment checklist, and final handover notes.
 
 ## Data and Upload Hygiene
 
