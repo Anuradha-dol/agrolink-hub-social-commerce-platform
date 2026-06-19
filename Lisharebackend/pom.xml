@@ -11,8 +11,8 @@
 	<groupId>com.socialApp</groupId>
 	<artifactId>Lishare</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>Lishare</name>
-	<description>like comment share App</description>
+	<name>AgroLink Hub</name>
+	<description>Full-stack social commerce platform for communities, farmers, small businesses, and buyers.</description>
 	<url/>
 	<licenses>
 		<license/>

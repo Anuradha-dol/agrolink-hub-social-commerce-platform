@@ -69,6 +69,26 @@ function formatTime(value) {
   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
+function messageStatus(message) {
+  return String(message?.status || (message?.seen ? "SEEN" : message?.delivered ? "DELIVERED" : "SENT")).toUpperCase();
+}
+
+function messageStatusLabel(status) {
+  if (status === "SEEN") return "Read";
+  if (status === "DELIVERED") return "Delivered";
+  return "Sent";
+}
+
+function summarizeReactions(reactions = []) {
+  const counts = new Map();
+  reactions.forEach((reaction) => {
+    const emoji = reaction?.emoji;
+    if (!emoji) return;
+    counts.set(emoji, (counts.get(emoji) || 0) + 1);
+  });
+  return Array.from(counts, ([emoji, count]) => ({ emoji, count }));
+}
+
 export default function ChatPage() {
   const { user } = useAuth();
   const location = useLocation();
@@ -89,6 +109,9 @@ export default function ChatPage() {
   const [conversationQuery, setConversationQuery] = useState("");
   const [filter, setFilter] = useState("all");
   const [newMessageOpen, setNewMessageOpen] = useState(false);
+  const [composeMode, setComposeMode] = useState("direct");
+  const [groupTitle, setGroupTitle] = useState("");
+  const [groupMemberIds, setGroupMemberIds] = useState([]);
   const [detailsOpen, setDetailsOpen] = useState(false);
 
   const activeConversation = useMemo(
@@ -97,6 +120,12 @@ export default function ChatPage() {
   );
 
   const unreadCount = useMemo(() => conversations.reduce((total, item) => total + Number(item.unreadCount || 0), 0), [conversations]);
+  const groupCount = useMemo(() => conversations.filter((item) => item.type === "GROUP").length, [conversations]);
+  const onlineContactCount = useMemo(() => contacts.filter(isOnlineUser).length, [contacts]);
+  const selectedGroupMembers = useMemo(
+    () => contacts.filter((contact) => groupMemberIds.includes(Number(contact.userId))),
+    [contacts, groupMemberIds]
+  );
 
   const filteredConversations = useMemo(() => {
     const query = conversationQuery.trim().toLowerCase();
@@ -118,8 +147,8 @@ export default function ChatPage() {
     setDetailsOpen(false);
   }, [activeConversationId]);
 
-  const loadConversations = useCallback(async () => {
-    setLoading(true);
+  const loadConversations = useCallback(async ({ showLoading = false } = {}) => {
+    if (showLoading) setLoading(true);
     try {
       const response = await chatService.getConversations();
       const data = response?.data?.data || [];
@@ -128,7 +157,7 @@ export default function ChatPage() {
     } catch {
       pushToast("Failed to load conversations", "error");
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   }, [pushToast]);
 
@@ -152,7 +181,10 @@ export default function ChatPage() {
     try {
       const response = await chatService.getMessages(conversationId, { page: 0, size: 80 });
       const data = response?.data?.data?.content || [];
-      setMessages(data);
+      await chatService.markSeen(conversationId).catch(() => {});
+      setMessages(data.map((message) => (
+        Number(message.senderId) !== Number(user?.userId) ? { ...message, status: "SEEN" } : message
+      )));
       const reactionEntries = await Promise.all(
         data.map(async (message) => {
           try {
@@ -164,14 +196,13 @@ export default function ChatPage() {
         })
       );
       setReactionsByMessage(Object.fromEntries(reactionEntries));
-      await chatService.markSeen(conversationId);
     } catch {
       pushToast("Failed to load messages", "error");
     }
-  }, [pushToast]);
+  }, [pushToast, user?.userId]);
 
   useEffect(() => {
-    loadConversations();
+    loadConversations({ showLoading: true });
     loadContacts();
   }, [loadContacts, loadConversations]);
 
@@ -210,10 +241,13 @@ export default function ChatPage() {
   const onIncomingMessage = useCallback((incoming) => {
     if (!incoming) return;
     if (incoming.conversationId === activeConversationId) {
-      setMessages((prev) => (prev.some((message) => message.id === incoming.id) ? prev : [...prev, incoming]));
+      const shouldMarkSeen = Number(incoming.senderId) !== Number(user?.userId);
+      if (shouldMarkSeen) chatService.markSeen(incoming.conversationId).catch(() => {});
+      const nextMessage = shouldMarkSeen ? { ...incoming, status: "SEEN" } : incoming;
+      setMessages((prev) => (prev.some((message) => message.id === incoming.id) ? prev : [...prev, nextMessage]));
     }
     loadConversations();
-  }, [activeConversationId, loadConversations]);
+  }, [activeConversationId, loadConversations, user?.userId]);
 
   const onTyping = useCallback((payload) => {
     if (!payload || Number(payload.userId) === Number(user?.userId)) return;
@@ -258,9 +292,49 @@ export default function ChatPage() {
     }
   };
 
+  const toggleGroupMember = (memberId) => {
+    const id = Number(memberId);
+    if (!id) return;
+    setGroupMemberIds((current) => (
+      current.includes(id) ? current.filter((item) => item !== id) : [...current, id]
+    ));
+  };
+
+  const createGroupChat = async (event) => {
+    event.preventDefault();
+    const cleanTitle = groupTitle.trim();
+    if (!cleanTitle) {
+      pushToast("Add a group name first", "error");
+      return;
+    }
+    if (groupMemberIds.length < 2) {
+      pushToast("Select at least two members for a group", "error");
+      return;
+    }
+
+    try {
+      const response = await chatService.createGroupConversation({
+        title: cleanTitle,
+        memberIds: groupMemberIds
+      });
+      const conversation = response?.data?.data;
+      await loadConversations();
+      if (conversation?.conversationId) setActiveConversationId(conversation.conversationId);
+      setNewMessageOpen(false);
+      setComposeMode("direct");
+      setGroupTitle("");
+      setGroupMemberIds([]);
+      setFilter("groups");
+      pushToast("Group chat created", "success");
+    } catch {
+      pushToast("Failed to create group chat", "error");
+    }
+  };
+
   const sendMessage = async (event) => {
     event.preventDefault();
     if ((!messageText.trim() && !attachmentFile) || !activeConversationId) return;
+    const pageScrollY = typeof window !== "undefined" ? window.scrollY : 0;
     try {
       let attachment = null;
       if (attachmentFile) {
@@ -279,6 +353,11 @@ export default function ChatPage() {
       setTypingUser(null);
       sendTyping(false);
       await loadConversations();
+      if (typeof window !== "undefined") {
+        window.requestAnimationFrame(() => {
+          window.scrollTo({ top: pageScrollY, left: 0, behavior: "auto" });
+        });
+      }
     } catch {
       pushToast("Failed to send message", "error");
     }
@@ -303,6 +382,18 @@ export default function ChatPage() {
 
   return (
     <PageGrid className="chat-dashboard">
+      <section className="chat-command-hero">
+        <div>
+          <span>Messages</span>
+          <h1>Realtime chats</h1>
+          <p>Direct messages, groups, online presence, media, and read status in one clean inbox.</p>
+        </div>
+        <div className="chat-hero-stats" aria-label="Message summary">
+          <article><strong>{conversations.length}</strong><span>Chats</span></article>
+          <article><strong>{groupCount}</strong><span>Groups</span></article>
+          <article><strong>{onlineContactCount}</strong><span>Online</span></article>
+        </div>
+      </section>
       <div className={`chat-dashboard-grid ${detailsOpen ? "details-open" : ""}`}>
         <Card className="messages-panel">
           <SectionHeader
@@ -322,31 +413,72 @@ export default function ChatPage() {
               { value: "groups", label: "Groups" }
             ]}
           />
-          <Button variant="gradient" icon="edit" onClick={() => setNewMessageOpen((open) => !open)}>New Message</Button>
+          <div className="chat-create-actions">
+            <Button variant="gradient" icon="edit" onClick={() => { setComposeMode("direct"); setNewMessageOpen(true); }}>New Message</Button>
+            <Button icon="users" onClick={() => { setComposeMode("group"); setNewMessageOpen(true); }}>Create Group</Button>
+          </div>
 
           {newMessageOpen ? (
-            <form className="new-message-box" onSubmit={searchAccounts}>
-              <label>
-                <Icon name="search" />
-                <input value={accountQuery} onChange={(event) => setAccountQuery(event.target.value)} placeholder="Search account by name or email" />
-              </label>
-              <Button variant="gradient" type="submit">Search</Button>
-              <div className="account-result-list">
-                {(accountResults.length ? accountResults : contacts.slice(0, 6)).map((contact) => (
-                  <button key={contact.userId} type="button" onClick={() => openDirectConversationById(contact.userId)}>
-                    <Avatar name={fullName(contact)} src={contact.profileImageUrl ? toMediaUrl(contact.profileImageUrl) : null} size="sm" online={isOnlineUser(contact)} />
-                    <span>
-                      {fullName(contact)}
-                      <small>
-                        <span className={`chat-presence-label ${isOnlineUser(contact) ? "online" : "offline"}`}>{isOnlineUser(contact) ? "Online" : "Offline"}</span>
-                        {contact.email || `ID ${contact.userId}`}
-                      </small>
-                    </span>
-                    <Icon name="send" />
-                  </button>
-                ))}
+            <div className="new-message-box">
+              <div className="compose-mode-tabs" role="tablist" aria-label="Message type">
+                <button type="button" className={composeMode === "direct" ? "active" : ""} onClick={() => setComposeMode("direct")}>Direct</button>
+                <button type="button" className={composeMode === "group" ? "active" : ""} onClick={() => setComposeMode("group")}>Group</button>
               </div>
-            </form>
+
+              {composeMode === "direct" ? (
+                <form className="direct-compose-form" onSubmit={searchAccounts}>
+                  <label>
+                    <Icon name="search" />
+                    <input value={accountQuery} onChange={(event) => setAccountQuery(event.target.value)} placeholder="Search account by name or email" />
+                  </label>
+                  <Button variant="gradient" type="submit">Search</Button>
+                  <div className="account-result-list">
+                    {(accountResults.length ? accountResults : contacts.slice(0, 6)).map((contact) => (
+                      <button key={contact.userId} type="button" onClick={() => openDirectConversationById(contact.userId)}>
+                        <Avatar name={fullName(contact)} src={contact.profileImageUrl ? toMediaUrl(contact.profileImageUrl) : null} size="sm" online={isOnlineUser(contact)} />
+                        <span>
+                          {fullName(contact)}
+                          <small>
+                            <span className={`chat-presence-label ${isOnlineUser(contact) ? "online" : "offline"}`}>{isOnlineUser(contact) ? "Online" : "Offline"}</span>
+                            {contact.email || `ID ${contact.userId}`}
+                          </small>
+                        </span>
+                        <Icon name="send" />
+                      </button>
+                    ))}
+                  </div>
+                </form>
+              ) : (
+                <form className="group-compose-form" onSubmit={createGroupChat}>
+                  <label>
+                    <Icon name="users" />
+                    <input value={groupTitle} onChange={(event) => setGroupTitle(event.target.value)} placeholder="Group name" />
+                  </label>
+                  <div className="group-compose-summary">
+                    <strong>{selectedGroupMembers.length} selected</strong>
+                    <span>Select at least 2 people. You will be added automatically.</span>
+                  </div>
+                  <div className="group-member-list">
+                    {contacts.length ? contacts.map((contact) => {
+                      const selected = groupMemberIds.includes(Number(contact.userId));
+                      return (
+                        <button key={`group-${contact.userId}`} type="button" className={selected ? "selected" : ""} onClick={() => toggleGroupMember(contact.userId)}>
+                          <Avatar name={contact.name} src={contact.profileImageUrl ? toMediaUrl(contact.profileImageUrl) : null} size="sm" online={isOnlineUser(contact)} />
+                          <span>
+                            {contact.name}
+                            <small>{contact.email || (isOnlineUser(contact) ? "Online" : "Offline")}</small>
+                          </span>
+                          <Icon name={selected ? "check" : "plus"} />
+                        </button>
+                      );
+                    }) : (
+                      <p className="group-compose-empty">No contacts loaded yet. Follow or add friends first.</p>
+                    )}
+                  </div>
+                  <Button variant="gradient" icon="users" type="submit" disabled={groupMemberIds.length < 2 || !groupTitle.trim()}>Create Group</Button>
+                </form>
+              )}
+            </div>
           ) : null}
 
           <div className="people-strip">
@@ -362,7 +494,7 @@ export default function ChatPage() {
           </div>
 
           <ul className="conversation-list-v2">
-            {filteredConversations.map((conversation) => {
+            {filteredConversations.length ? filteredConversations.map((conversation) => {
               const conversationOnline = isOnlineConversation(conversation, user?.userId);
               return (
                 <li key={conversation.conversationId}>
@@ -384,7 +516,16 @@ export default function ChatPage() {
                   </button>
                 </li>
               );
-            })}
+            }) : (
+              <li className="chat-empty-conversation-state">
+                <Icon name={filter === "groups" ? "users" : "chat"} />
+                <strong>{filter === "groups" ? "No group chats yet" : "No conversations found"}</strong>
+                <span>{filter === "groups" ? "Create a group with at least two people." : "Start a direct message or adjust search."}</span>
+                <button type="button" onClick={() => { setComposeMode(filter === "groups" ? "group" : "direct"); setNewMessageOpen(true); }}>
+                  {filter === "groups" ? "Create Group" : "Start Chat"}
+                </button>
+              </li>
+            )}
           </ul>
         </Card>
 
@@ -395,7 +536,11 @@ export default function ChatPage() {
                 <Avatar name={activeConversation.title || "Chat"} src={selectedUser?.profileImageUrl ? toMediaUrl(selectedUser.profileImageUrl) : null} size="lg" online={selectedUserOnline} />
                 <div>
                   <h2>{activeConversation.title || selectedUser?.fullName || `Conversation #${activeConversation.conversationId}`}</h2>
-                  <p><span className={`chat-presence-label ${selectedUserOnline ? "online" : "offline"}`}>{selectedUserOnline ? "Online" : "Offline"}</span> - {activeConversation.type === "GROUP" ? "Group chat" : "Direct message"}</p>
+                  <p className="thread-presence-line">
+                    <span className={`thread-online-dot ${selectedUserOnline ? "online" : "offline"}`} />
+                    <span>{selectedUserOnline ? "Online now" : "Last seen recently"}</span>
+                    <span>{activeConversation.type === "GROUP" ? "Group chat" : "Direct message"}</span>
+                  </p>
                 </div>
                 <div className="thread-actions">
                   <button type="button" aria-label="Conversation details" className={detailsOpen ? "active" : ""} onClick={() => setDetailsOpen((open) => !open)}><Icon name="more" /></button>
@@ -409,26 +554,48 @@ export default function ChatPage() {
                   const mine = Number(message.senderId) === Number(user?.userId);
                   const attachmentType = String(message.attachmentType || "").toLowerCase();
                   const attachmentUrl = message.attachmentUrl ? toMediaUrl(message.attachmentUrl) : "";
+                  const status = messageStatus(message);
+                  const messageReactions = reactionsByMessage[message.id] || [];
+                  const viewerName = fullName(user);
+                  const myReactionEmoji = messageReactions.find((reaction) => (
+                    Number(reaction.userId) === Number(user?.userId) || reaction.userName === viewerName
+                  ))?.emoji || "";
+                  const reactionSummary = summarizeReactions(messageReactions);
                   return (
-                    <article key={message.id} className={`message-bubble-row ${mine ? "mine" : ""}`}>
+                    <article key={message.id} className={`message-bubble-row ${mine ? "mine" : ""} ${reactionSummary.length ? "has-reactions" : ""}`}>
                       {!mine ? <Avatar name={message.senderName} size="sm" /> : null}
                       <div className="message-bubble">
                         {message.content ? <p>{message.content}</p> : null}
                         {attachmentUrl ? (
                           attachmentType.startsWith("video") ? <video src={attachmentUrl} controls /> : <img src={attachmentUrl} alt="Message attachment" />
                         ) : null}
-                        <small>{formatTime(message.createdAt)} {mine ? " - Sent" : ""}</small>
+                        <small className="message-meta">
+                          <span>{formatTime(message.createdAt)}</span>
+                          <span className={`message-status-ticks ${status.toLowerCase()}`} title={messageStatusLabel(status)} aria-label={messageStatusLabel(status)}>
+                            <Icon name="check" />
+                            {status !== "SENT" ? <Icon name="check" /> : null}
+                          </span>
+                        </small>
                         <div className="message-reaction-toolbar">
-                          {QUICK_REACTIONS.map((label) => (
-                            <button key={label} type="button" onClick={() => reactToMessage(message.id, label)} title={label} aria-label={`${label} reaction`}>
-                              <span aria-hidden="true">{REACTION_EMOJI[label]}</span>
-                              <small>{label}</small>
-                            </button>
-                          ))}
+                          {QUICK_REACTIONS.map((label) => {
+                            const emoji = REACTION_EMOJI[label];
+                            const active = myReactionEmoji === emoji;
+                            return (
+                              <button key={label} className={active ? "active" : ""} type="button" onClick={() => reactToMessage(message.id, label)} title={label} aria-label={`${label} reaction`} aria-pressed={active}>
+                                <span aria-hidden="true">{emoji}</span>
+                                <small>{label}</small>
+                              </button>
+                            );
+                          })}
                         </div>
-                        {(reactionsByMessage[message.id] || []).length ? (
+                        {reactionSummary.length ? (
                           <div className="message-reaction-stack">
-                            {(reactionsByMessage[message.id] || []).map((reaction) => <span key={reaction.id}>{reaction.emoji}</span>)}
+                            {reactionSummary.slice(0, 3).map(({ emoji, count }) => (
+                              <span key={emoji}>
+                                <b>{emoji}</b>
+                                {count > 1 ? <small>{count}</small> : null}
+                              </span>
+                            ))}
                           </div>
                         ) : null}
                       </div>
@@ -437,8 +604,10 @@ export default function ChatPage() {
                 })}
               </div>
 
-              {typingUser ? <p className="typing-indicator">{typingUser} is typing...</p> : null}
-              {attachmentFile ? <p className="attachment-note">Attached: {attachmentFile.name}</p> : null}
+              <div className="thread-status-slot">
+                {typingUser ? <p className="typing-indicator">{typingUser} is typing...</p> : null}
+                {attachmentFile ? <p className="attachment-note">Attached: {attachmentFile.name}</p> : null}
+              </div>
 
               <form className="message-input-bar" onSubmit={sendMessage}>
                 <button type="button" aria-label="Emoji" onClick={() => setMessageText((prev) => `${prev}${prev ? " " : ""}\uD83D\uDE0A`)}><Icon name="smile" /></button>
@@ -471,6 +640,12 @@ export default function ChatPage() {
         <Card className={`chat-profile-panel ${detailsOpen ? "open" : ""}`}>
           {activeConversation ? (
             <>
+              <div className="chat-profile-toolbar">
+                <button type="button" className="chat-profile-back" onClick={() => setDetailsOpen(false)}>
+                  <Icon name="back" />
+                  <span>Back</span>
+                </button>
+              </div>
               <div className="chat-profile-head">
                 <Avatar name={activeConversation.title || "User"} src={selectedUser?.profileImageUrl ? toMediaUrl(selectedUser.profileImageUrl) : null} size="xl" online={selectedUserOnline} />
                 <h2>{selectedUser?.fullName || activeConversation.title || "Conversation"}</h2>
@@ -492,10 +667,10 @@ export default function ChatPage() {
                   </div>
                 ))}
               </div>
-              <SectionHeader title="Pinned Links" action={<button type="button" onClick={() => pushToast("Pinned links list is visible below", "success")}>See all</button>} />
+              <SectionHeader title="Related Areas" />
               <ul className="panel-list">
-                <li className="panel-row"><div><strong>Shared product board</strong><span>agrolinkhub.local/marketplace</span></div><Icon name="share" /></li>
-                <li className="panel-row"><div><strong>Travel reel</strong><span>community reel link</span></div><Icon name="video" /></li>
+                <li className="panel-row"><div><strong>Marketplace</strong><span>Open seller products from shared messages.</span></div><Icon name="share" /></li>
+                <li className="panel-row"><div><strong>Community feed</strong><span>Continue social updates and reels.</span></div><Icon name="video" /></li>
               </ul>
               <SectionHeader title="Mutual Friends" />
               <div className="avatar-row">

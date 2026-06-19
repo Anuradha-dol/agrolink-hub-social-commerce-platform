@@ -62,6 +62,15 @@ function notificationRoute(item) {
   return null;
 }
 
+function formatNotificationTime(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  const datePart = date.toLocaleDateString([], { month: "short", day: "numeric" });
+  const timePart = date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  return `${datePart} ${timePart}`;
+}
+
 export default function NotificationDropdown() {
   const { user } = useAuth();
   const { pushToast } = useToast();
@@ -207,7 +216,7 @@ export default function NotificationDropdown() {
               </span>
               <span className="notif-type-pill">{String(item.type || "SYSTEM").replace("_", " ")}</span>
               <p>{item.message}</p>
-              <small>{item.createdAt ? new Date(item.createdAt).toLocaleString() : ""}</small>
+              <small className="notif-time">{formatNotificationTime(item.createdAt)}</small>
             </button>
             <span className="notif-row-actions">
               {!item.read ? (

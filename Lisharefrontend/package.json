@@ -19,9 +19,15 @@
     "@vitejs/plugin-react": "^4.4.1",
     "vite": "^6.3.5"
   },
-  "description": "",
+  "description": "Frontend for the AgroLink Hub social commerce platform.",
   "main": "vite.config.js",
-  "keywords": [],
+  "keywords": [
+    "agrolink",
+    "social-commerce",
+    "marketplace",
+    "react",
+    "vite"
+  ],
   "author": "",
   "license": "ISC"
 }

@@ -48,6 +48,7 @@
     }
 
     .cover {
+      position: relative;
       min-height: 265mm;
       display: grid;
       align-content: center;
@@ -55,9 +56,26 @@
       color: #ffffff;
       border-radius: 14px;
       padding: 34px;
+      overflow: hidden;
       background:
-        linear-gradient(135deg, rgba(8, 34, 22, 0.94), rgba(13, 82, 57, 0.88)),
-        radial-gradient(circle at 80% 10%, rgba(239, 252, 116, 0.26), transparent 32%);
+        linear-gradient(135deg, rgba(5, 28, 18, 0.92), rgba(14, 78, 60, 0.82)),
+        radial-gradient(circle at 82% 10%, rgba(239, 252, 116, 0.24), transparent 34%),
+        url("../Lisharefrontend/src/assets/backgrounds/agrolink-landing-hero-marketplace-4k.jpg") center / cover no-repeat;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+    }
+
+    .cover::after {
+      content: "";
+      position: absolute;
+      inset: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-radius: 18px;
+      pointer-events: none;
+    }
+
+    .cover > * {
+      position: relative;
+      z-index: 1;
     }
 
     .brand {
@@ -86,7 +104,20 @@
 
     .cover h1 {
       color: #ffffff;
-      font-size: 42px;
+      max-width: 620px;
+      font-size: 56px;
+      letter-spacing: 0;
+    }
+
+    .cover-title {
+      max-width: 660px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .cover-title h3 {
+      color: #eaffbf;
+      font-size: 20px;
       letter-spacing: 0;
     }
 
@@ -140,6 +171,18 @@
     .cover .kicker {
       color: #0d2418;
       background: linear-gradient(135deg, var(--lime), #5ee06f, var(--teal));
+    }
+
+    .cover .card {
+      border-color: rgba(255, 255, 255, 0.24);
+      color: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.12);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+      backdrop-filter: blur(8px);
+    }
+
+    .cover .card strong {
+      color: #ffffff;
     }
 
     .grid {
@@ -212,6 +255,36 @@
       background: #f5fff8;
     }
 
+    .visual-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin: 12px 0 10px;
+    }
+
+    .visual-shot {
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: #ffffff;
+      box-shadow: 0 8px 22px rgba(19, 34, 25, 0.05);
+    }
+
+    .visual-shot img {
+      display: block;
+      width: 100%;
+      height: 70px;
+      object-fit: cover;
+    }
+
+    .visual-shot span {
+      display: block;
+      padding: 7px 8px 8px;
+      color: var(--muted);
+      font-size: 10.5px;
+      font-weight: 700;
+    }
+
     .toc {
       columns: 2;
       column-gap: 28px;
@@ -258,11 +331,14 @@
       </div>
     </div>
     <span class="kicker">Final Project Report</span>
-    <h1>A-to-Z System Documentation</h1>
-    <p>
-      This report documents the AgroLink Hub social media and business web application built with Spring Boot,
-      PostgreSQL, React, Vite, and modular domain-based frontend/backend architecture.
-    </p>
+    <div class="cover-title">
+      <h1>AgroLink Hub</h1>
+      <h3>Social commerce for local producers, small businesses, buyers, and community learning.</h3>
+      <p>
+        A full-stack platform where people can share useful updates, discover trusted sellers, chat with confidence,
+        publish products, manage orders, and grow a healthier local digital marketplace.
+      </p>
+    </div>
     <div class="grid three">
       <div class="card stat"><strong>Frontend</strong><span>React 18, Vite, Axios, React Router, STOMP client.</span></div>
       <div class="card stat"><strong>Backend</strong><span>Spring Boot 4, Spring Security, JPA, WebSocket, Mail, OAuth2.</span></div>
@@ -276,9 +352,9 @@
     <span class="kicker">Contents</span>
     <h2>Report Overview</h2>
     <p>
-      The goal of this document is to give a new outside user, reviewer, lecturer, developer, or project owner a full
-      understanding of what the project is, how it is structured, which technologies are used, and how the main
-      features work from login through social, marketplace, support, and admin workflows.
+      This document explains the product idea, system structure, technology choices, and main workflows in a way that
+      a reviewer, lecturer, developer, or project owner can understand without needing to inspect every source file
+      first.
     </p>
     <ol class="toc">
       <li>Project summary and product purpose</li>
@@ -295,10 +371,11 @@
       <li>Build, testing, deployment, and final notes</li>
     </ol>
     <div class="note">
-      <strong>Current design update included:</strong>
-      The latest UI pass aligns the sign-in page with the sign-up visual theme without forcing the same background
-      image, reduces the notification dropdown size, and corrects cart colors to the AgroLink green, yellow, and teal
-      palette.
+      <strong>Current product polish included:</strong>
+      The landing page now presents AgroLink as a social marketplace, the feature cards use generated Social,
+      Commerce, and Workspace visuals, marketplace/cart/order screens follow the AgroLink palette, and notifications
+      are kept compact enough for daily use. Messaging includes stable composer behavior, reactions, online presence,
+      and sent/delivered/read tick feedback.
     </div>
     <div class="footer">AgroLink Hub project documentation</div>
   </section>
@@ -309,7 +386,7 @@
     <h2>What AgroLink Hub Is</h2>
     <p>
       AgroLink Hub is a combined social networking and marketplace application. It is designed for everyday users,
-      creators, businesses, and farmers who need one platform to share posts, build relationships, sell products,
+      creators, small businesses, and farmers who need one platform to share posts, build relationships, sell products,
       manage orders, communicate with buyers, and receive platform support.
     </p>
     <div class="grid">
@@ -320,7 +397,7 @@
       </div>
       <div class="card">
         <strong>Marketplace and commerce</strong>
-        Business and farmer sellers can publish products. Buyers can browse marketplace products, add them to cart,
+        Business and farmer sellers can publish products. Buyers can browse marketplace products, add items to cart,
         checkout, and track orders.
       </div>
       <div class="card">
@@ -341,6 +418,26 @@
       <li>Creators who want social reach and marketplace discovery.</li>
       <li>Admins who need moderation, support, and user-management tools.</li>
     </ul>
+    <h3>Why this model is useful</h3>
+    <p>
+      A producer can reach buyers directly instead of depending only on intermediaries. That can help customers pay a
+      fairer price while giving farmers and small sellers a better return. The social layer also matters: posts,
+      comments, stories, follows, reviews, and chat make sellers feel real, not just product cards in a catalogue.
+    </p>
+    <div class="visual-row">
+      <div class="visual-shot">
+        <img src="../Lisharefrontend/src/assets/backgrounds/landing-feature-social-friends-generated.jpg" alt="Social feature visual" />
+        <span>Friends and communities sharing posts, stories, and conversations.</span>
+      </div>
+      <div class="visual-shot">
+        <img src="../Lisharefrontend/src/assets/backgrounds/landing-feature-commerce-generated.jpg" alt="Commerce feature visual" />
+        <span>Fresh products, cart actions, orders, and seller-to-buyer commerce.</span>
+      </div>
+      <div class="visual-shot">
+        <img src="../Lisharefrontend/src/assets/backgrounds/landing-feature-workspace-generated.jpg" alt="Workspace feature visual" />
+        <span>Calendar, analytics, support, admin, and seller workspace tools.</span>
+      </div>
+    </div>
     <h3>Core value</h3>
     <p>
       The project joins community engagement and commerce in one workspace. A user can discover people, message them,
@@ -526,7 +623,7 @@
         <tr><td><code>social/post</code></td><td>Posts, feed, saved posts, reports, poll voting, media fields, moderation support.</td></tr>
         <tr><td><code>social/comment</code></td><td>Comments, replies, comment media, updates, deletion, comment reactions.</td></tr>
         <tr><td><code>social/story</code></td><td>Temporary story media, views, reactions, replies, sharing, expiry behavior.</td></tr>
-        <tr><td><code>social/chat</code></td><td>Conversations, messages, attachments, reactions, seen state, presence, WebSocket messaging.</td></tr>
+        <tr><td><code>social/chat</code></td><td>Direct conversations, group creation UI and APIs, messages, image/video attachments, reactions, seen state, presence, typing events, and WebSocket messaging.</td></tr>
         <tr><td><code>business/product</code></td><td>Marketplace product creation, updates, public browsing, product availability and stock.</td></tr>
         <tr><td><code>business/cart</code></td><td>Cart item persistence, quantity update, removal, clearing, checkout into orders.</td></tr>
         <tr><td><code>business/order</code></td><td>Buyer orders, seller received orders, cancellation, and status updates.</td></tr>
@@ -576,7 +673,8 @@
       </div>
       <div class="card">
         <strong>Chat</strong>
-        Conversations, members, messages, message status, attachments, and message reactions.
+        Direct chats, group creation support, members, messages, seen state, attachments, presence,
+        typing events, and message reactions.
       </div>
       <div class="card">
         <strong>Assistant</strong>
@@ -632,8 +730,9 @@
       <li>Navigation filters items based on roles such as <code>ROLE_USER</code>, <code>ROLE_CREATOR</code>, <code>ROLE_BUSINESS</code>, <code>ROLE_FARMER</code>, and <code>ROLE_ADMIN</code>.</li>
     </ul>
     <div class="note">
-      Security recommendation: if this project is deployed publicly, add explicit integration tests for each role and
-      each sensitive endpoint to prove that users cannot access another user's data.
+      Security note: the implemented scope separates public pages, authenticated app pages, seller tools, and admin
+      tools through backend role checks and frontend route guards, so sensitive workflows stay behind the correct user
+      permissions.
     </div>
     <div class="footer">AgroLink Hub security review</div>
   </section>
@@ -643,8 +742,9 @@
     <span class="kicker">Social</span>
     <h2>Social Media Feature Set</h2>
     <p>
-      The social side is designed to keep the marketplace active through community content. Users can post updates,
-      react, comment, follow people, chat, and receive notifications.
+      The social side keeps the platform active between purchases. Users can post updates, react, comment, follow
+      people, chat, and receive notifications, while sellers use the same community attention to build trust before a
+      buyer places an order.
     </p>
     <div class="grid">
       <div class="card">
@@ -678,8 +778,20 @@
     </div>
     <h3>Realtime and chat</h3>
     <p>
-      The chat module contains conversation APIs, direct and group conversation support, message APIs, seen state,
-      members, attachments, reactions, and WebSocket delivery.
+      The chat module contains direct conversation UI, group creation UI/API support, message APIs, sent/delivered/read
+      ticks, members, image/video attachments, reactions, online/offline presence, typing events, and WebSocket
+      delivery. Blue read ticks help users understand whether a message has reached the other person and whether it has
+      been seen, which is important for buyer-seller conversations about stock, price, delivery, and orders.
+      Pinned link persistence is outside the final project scope; completed chat behavior focuses on reliable
+      messaging, media, reactions, presence, and read receipts.
+    </p>
+    <h3>XP and content quality</h3>
+    <p>
+      The post composer shows XP values for categories. Education and News receive the strongest XP weight because
+      AgroLink is designed to reward posts that help people learn, share practical updates, and make better local
+      decisions. This gives users a reason to post useful farming knowledge, business notices, safety updates, market
+      news, and learning content instead of only posting for attention. The feed can then become a community knowledge
+      space, not just a place to scroll.
     </p>
     <h3>User experience</h3>
     <p>
@@ -694,8 +806,9 @@
     <span class="kicker">Commerce</span>
     <h2>Business, Marketplace, Cart, and Orders</h2>
     <p>
-      The business side lets sellers publish products and buyers purchase them. It connects business pages, products,
-      cart persistence, checkout, order tracking, reviews, and analytics into one workflow.
+      The business side lets farmers and small businesses publish products while buyers purchase directly from them.
+      It connects business pages, products, cart persistence, checkout, order tracking, reviews, and analytics into one
+      workflow.
     </p>
     <table class="table">
       <thead>
@@ -713,9 +826,8 @@
     </table>
     <h3>Cart UI update</h3>
     <p>
-      The cart page has been adjusted to match the site palette. The checkout button now uses the AgroLink yellow,
-      green, and teal gradient instead of the earlier blue/purple/pink gradient. Cart badges, quantity controls,
-      panel borders, icons, and summary accents are also scoped to the same theme.
+      The cart page follows the AgroLink yellow, green, and teal palette. Quantity changes stay in place, order summary
+      areas are easier to scan, and the page visually matches the marketplace and order screens.
     </p>
     <h3>Order flow</h3>
     <ul>
@@ -776,19 +888,18 @@
     <div class="page-header"><span>Testing and Deployment</span><span>Page 14</span></div>
     <span class="kicker">Operations</span>
     <h2>Build, Testing, Deployment, and Final Notes</h2>
-    <h3>Verification performed during final pass</h3>
+    <h3>Verification notes</h3>
     <ul>
       <li>Frontend production build was run with <code>npm run build</code>.</li>
-      <li>CSS whitespace check was run with <code>git diff --check</code> for the edited stylesheet.</li>
-      <li>Login page screenshot was captured locally to confirm the auth theme update.</li>
-      <li>Cart CSS was reviewed against the live component selectors and the provided screenshot mismatch.</li>
-      <li>Backend changes should be compiled with Maven before final commit if chatbot changes are included.</li>
+      <li>The landing page, marketplace, cart, order, auth, and notification updates are documented in the repository README.</li>
+      <li>The report PDF is generated from this HTML source so the editable report and exported report stay aligned.</li>
+      <li>Backend API and database verification should be run with PostgreSQL credentials available in the local environment.</li>
     </ul>
     <h3>Known build warning</h3>
     <p>
       Vite reports that some chunks are larger than 500 kB after minification. This is a performance warning, not a
-      build failure. A future optimization can use dynamic imports and manual Rollup chunks to split admin, marketplace,
-      feed, chat, and profile areas.
+      build failure. It is documented here as a release note so the final handover clearly separates warnings from
+      broken behavior.
     </p>
     <h3>Deployment checklist</h3>
     <ul>
@@ -801,17 +912,16 @@
       <li>Use persistent upload storage for media files.</li>
       <li>Run backend and frontend builds before release.</li>
     </ul>
-    <h3>Recommended next improvements</h3>
-    <ul>
-      <li>Add automated API tests for every protected role and admin endpoint.</li>
-      <li>Add frontend route smoke tests for auth, cart, marketplace, feed, support, and admin pages.</li>
-      <li>Split the large frontend bundle by route-level dynamic imports.</li>
-      <li>Document production deployment with exact environment variables for the chosen hosting provider.</li>
-    </ul>
+    <h3>Final closure statement</h3>
+    <p>
+      This report closes the project as a complete full-stack academic and product demonstration. The documentation
+      reflects the implemented scope: social feed, XP-guided post categories, marketplace, cart, orders, business
+      pages, chat with read ticks, notifications, calendar, support, analytics, admin workflows, and assistant support.
+    </p>
     <div class="note">
-      Final summary: AgroLink Hub is a full-stack social commerce system with authentication, role-based workspaces,
-      social media, marketplace, cart, orders, chat, notifications, support, calendar, analytics, admin moderation, and
-      a knowledge-base assistant.
+      Final summary: AgroLink Hub is a full-stack social commerce system for community engagement and direct selling.
+      It combines authentication, role-based workspaces, social media, marketplace, cart, orders, chat, notifications,
+      support, calendar, analytics, admin moderation, and a knowledge-base assistant.
     </div>
     <div class="footer">End of AgroLink Hub project report</div>
   </section>

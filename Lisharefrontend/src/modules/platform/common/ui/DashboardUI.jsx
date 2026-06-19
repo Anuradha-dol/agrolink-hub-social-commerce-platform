@@ -46,6 +46,7 @@ export function Icon({ name = "spark", className = "" }) {
     bookmark: <path d="M7 4h10a1 1 0 0 1 1 1v16l-6-4-6 4V5a1 1 0 0 1 1-1z" />,
     analytics: <path d="M4 20V9M9.3 20V4M14.7 20v-7M20 20v-4" />,
     search: <path d="M21 21l-4.4-4.4M18 11a7 7 0 1 1-14 0 7 7 0 0 1 14 0z" />,
+    back: <path d="M19 12H5M11 6l-6 6 6 6" />,
     mail: (
       <>
         <rect x="4" y="6" width="16" height="12" rx="2" />
