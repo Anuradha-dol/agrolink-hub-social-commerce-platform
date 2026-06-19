@@ -10,6 +10,7 @@ Lisharefrontend/story-form-check.png
 .env.*
 !.env.example
 *.log
+*.iml
 .run/
 **/.run/
 .DS_Store
