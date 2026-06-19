@@ -39,7 +39,7 @@ public class SecurityConfig {
     private List<String> resolveAllowedOrigins() {
         return Arrays.stream(allowedOrigins.split(","))
                 .map(String::trim)
-                .filter(s -> !s.isBlank())
+                .filter(s -> !s.isBlank() && !"*".equals(s))
                 .collect(Collectors.toList());
     }
 

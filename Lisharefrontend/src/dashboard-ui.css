@@ -3307,7 +3307,6 @@ textarea {
   }
 }
 
-/* Final visual QA polish from reference screenshots */
 .shell .shell-brand::before,
 .shell .shell-brand::after {
   content: none !important;
@@ -4116,7 +4115,6 @@ textarea {
   }
 }
 
-/* Final blue shell system: applies across social and business pages */
 .shell.shell-app-blue {
   --blue-bg: #071426;
   --blue-panel: rgba(16, 32, 63, 0.86);
@@ -4712,7 +4710,6 @@ textarea {
   outline-offset: 2px !important;
 }
 
-/* Final feed polish: chart rail, post cards, and blue-mode surface cleanup. */
 .shell.shell-home-theme .rail-trending-card {
   padding: 14px !important;
   overflow: hidden !important;
@@ -5238,7 +5235,6 @@ textarea {
   color: #b8c8e8 !important;
 }
 
-/* Post footer reference layout: action row, engagement strip, and rich comment composer. */
 .shell.shell-home-theme .premium-reaction-bar {
   grid-template-columns: repeat(4, minmax(0, 1fr)) minmax(142px, 1.22fr) !important;
   align-items: stretch !important;
@@ -5609,7 +5605,6 @@ textarea {
   white-space: nowrap !important;
 }
 
-/* Reference top feed layout: stories, tabs, and compact composer. */
 .shell.shell-home-theme .premium-feed-banner {
   display: none !important;
 }
@@ -6089,7 +6084,6 @@ textarea {
   }
 }
 
-/* Final specificity pass for top-feed reference mode. */
 .shell.shell-home-theme .feed-mode-switch .feed-mode-pill {
   position: relative !important;
   min-height: 54px !important;
@@ -6162,7 +6156,6 @@ textarea {
   background: rgba(255, 255, 255, 0.06) !important;
 }
 
-/* Reference Trending Hashtags card. */
 .shell.shell-home-theme:not(.shell-app-blue) .rail-trending-card {
   padding: 16px 14px 14px !important;
   border: 1px solid #edf1f8 !important;
@@ -6396,7 +6389,6 @@ textarea {
   color: #75d9ff !important;
   background: rgba(117, 217, 255, 0.12) !important;
 }
-/* Profile reference UI */
 .shell.shell-theme-light .profile-dashboard {
   gap: 12px;
 }
@@ -7022,7 +7014,6 @@ textarea {
     margin: 10px 0 0;
   }
 }
-/* Profile network modal, analytics reference UI, and button sizing */
 .shell .ui-btn,
 .shell .gradient-btn,
 .shell .dash-search button,
@@ -7798,7 +7789,6 @@ textarea {
   }
 }
 
-/* UI correction pass after screenshot review */
 .shell.shell-theme-light .profile-cover-upload-btn {
   width: auto !important;
   height: 46px !important;
@@ -7941,7 +7931,6 @@ textarea {
   }
 }
 
-/* Final analytics reference proportion fix */
 .analytics-reference-page {
   width: 100%;
 }
@@ -8238,7 +8227,6 @@ textarea {
   }
 }
 
-/* Exact analytics reference layout */
 .shell .shell-content:has(.analytics-reference-page) {
   width: 100% !important;
   max-width: none !important;
@@ -8667,7 +8655,6 @@ textarea {
   }
 }
 
-/* Story viewer reference light UI */
 .story-viewer-overlay,
 .shell .story-viewer-overlay,
 .shell.shell-home-theme .story-viewer-overlay {
@@ -9462,7 +9449,6 @@ textarea {
   }
 }
 
-/* Final notification UI and story-feed toggle fix */
 .notif-dropdown,
 .shell .notif-dropdown,
 .shell.shell-home-theme .notif-dropdown {
@@ -9997,7 +9983,6 @@ textarea {
   padding: 0 !important;
 }
 
-/* Final sidebar identity and section polish. */
 .shell.shell-home-theme .shell-brand-wrap::before,
 .shell.shell-home-theme .shell-brand::before,
 .shell.shell-home-theme .shell-brand::after {
@@ -10182,7 +10167,6 @@ textarea {
   background: transparent !important;
 }
 
-/* AgroLink Hub final sidebar identity layer. */
 .shell.shell-home-theme .shell-sidebar {
   background:
     radial-gradient(circle at 12% 7%, rgba(31, 207, 118, 0.22), transparent 34%),
@@ -10438,7 +10422,6 @@ textarea {
   height: 42px !important;
 }
 
-/* Final polish for requested sidebar header, modal contrast, chat readability, and route motion. */
 .shell.shell-home-theme .shell-brand-wrap {
   grid-template-columns: 74px 12px minmax(0, 1fr) 58px !important;
   min-height: 110px !important;
@@ -10729,7 +10712,6 @@ textarea {
   }
 }
 
-/* Final AgroLink Hub polish overrides */
 .shell.shell-home-theme .shell-sidebar {
   transition: width 260ms cubic-bezier(.2, .9, .2, 1), box-shadow 220ms ease !important;
 }
@@ -11942,7 +11924,6 @@ body.route-is-changing .shell-content::before {
   }
 }
 
-/* Final reference-design layer: logo, auth backgrounds, admin routes, XP guide, reactions. */
 .auth-brand-ref img,
 .shell.shell-home-theme .shell-brand-logo img,
 .landing-brand img {
@@ -12255,7 +12236,6 @@ body.route-is-changing .shell-content::before {
   }
 }
 
-/* AgroLink reference UI pass: auth, profile options, admin workflow, composer XP, story/reaction modals. */
 :root {
   --agro-navy: #07162f;
   --agro-ink: #0f1833;
@@ -13290,7 +13270,6 @@ body.route-is-changing .shell-content::before {
   }
 }
 
-/* Forgot password reference UI: signup-sized recovery form over the previous Step 3 4K background. */
 .auth-forgot-ref {
   height: 100dvh !important;
   min-height: 0 !important;
@@ -13760,7 +13739,6 @@ body.route-is-changing .shell-content::before {
   }
 }
 
-/* Support, marketplace, and settings reference-design completion layer. */
 :root {
   --agro-farm-reference-image: url("./assets/backgrounds/agrolink-farm-support-hero.png");
 }
@@ -15168,7 +15146,6 @@ body.route-is-changing .shell-content::before {
   }
 }
 
-/* Signup step 1: direct match for the provided screenshot reference. */
 :root {
   --agro-auth-step1-left: url("./assets/backgrounds/signup-step1-left.png");
   --agro-auth-step1-right: url("./assets/backgrounds/signup-step1-right.png");
@@ -15494,7 +15471,6 @@ body.route-is-changing .shell-content::before {
   }
 }
 
-/* Signup steps 2 and 3: centered card layouts matching the PDF references. */
 .auth-signup-step-2,
 .auth-signup-step-3 {
   place-items: center;
@@ -15788,7 +15764,6 @@ body.route-is-changing .shell-content::before {
   }
 }
 
-/* Signup step 2: profile setup reference layout. */
 .auth-signup-step-2 {
   padding: 62px clamp(18px, 3vw, 46px) 36px;
   background:
@@ -16855,7 +16830,6 @@ body.route-is-changing .shell-content::before {
   }
 }
 
-/* Screenshot-size desktop reference. Keeps the PDF UI scale at ~1040x590 captures. */
 @media (min-width: 900px) and (max-width: 1200px) and (max-height: 720px) {
   html,
   body,
@@ -17135,7 +17109,6 @@ body.route-is-changing .shell-content::before {
   display: none !important;
 }
 
-/* Final unified signup wizard: all three steps share one page/card system. */
 .auth-signup-ref {
   place-items: start center !important;
   padding: 82px clamp(14px, 2.4vw, 34px) 18px !important;
@@ -17442,7 +17415,6 @@ body.route-is-changing .shell-content::before {
   }
 }
 
-/* Final background split: same form UI, different step backgrounds. */
 .auth-signup-step-1 {
   background:
     linear-gradient(90deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.64), rgba(255, 255, 255, 0.26)),
@@ -17567,7 +17539,6 @@ body.route-is-changing .shell-content::before {
   }
 }
 
-/* Signup step 2 visual reference: centered illustration panel matching the clean mockup. */
 .auth-signup-step-2.auth-signup-ref {
   overflow: hidden !important;
 }
@@ -18920,7 +18891,6 @@ body.route-is-changing .shell-content::before {
   }
 }
 
-/* Final lock: identical upper-left brand on sign up, sign in, forgot password, and OTP. */
 .auth-login-ref > .auth-brand-ref,
 .auth-signup-ref > .auth-brand-ref,
 .auth-forgot-ref > .auth-brand-ref,
@@ -19036,7 +19006,6 @@ body.route-is-changing .shell-content::before {
   }
 }
 
-/* Forgot password form: compact reference size with lighter text weight. */
 .auth-forgot-ref .auth-forgot-card {
   width: min(430px, calc(100vw - 28px)) !important;
   max-width: 430px !important;
@@ -19188,7 +19157,6 @@ body.route-is-changing .shell-content::before {
   }
 }
 
-/* Verify OTP: reference-style card over dedicated faded 4K creator background. */
 .auth-verify-ref {
   min-height: 100svh !important;
   place-items: center !important;
@@ -19477,7 +19445,6 @@ body.route-is-changing .shell-content::before {
   box-shadow: 0 13px 26px rgba(37, 99, 235, 0.18) !important;
 }
 
-/* Verify OTP final match: forgot-password blue icon/button and compact form. */
 .auth-verify-ref .auth-verify-card {
   width: min(430px, calc(100vw - 28px)) !important;
   max-width: 430px !important;
@@ -20200,7 +20167,6 @@ body.route-is-changing .shell.shell-app-blue .shell-content::before {
   mix-blend-mode: normal !important;
 }
 
-/* Reference sidebar redesign: stable glass sidebar and compact rail. */
 :root {
   --agro-ref-green: #12c873;
   --agro-ref-blue: #1169f5;
@@ -20875,7 +20841,6 @@ body.route-is-changing .shell.shell-app-blue .shell-content::before {
   min-width: 0 !important;
 }
 
-/* Role-based sidebar: green-blue reference gradient with XP profile card. */
 :root {
   --role-sidebar-green: #18b67d;
   --role-sidebar-teal: #16a5a7;
@@ -21717,7 +21682,6 @@ body.route-is-changing .shell.shell-app-blue .shell-content::before {
   }
 }
 
-/* Sidebar brand/profile polish: top is brand-only, bottom follows the compact XP card reference. */
 .shell.shell-home-theme .shell-brand-wrap {
   grid-template-columns: 60px minmax(0, 1fr) 38px !important;
   min-height: 98px !important;
@@ -21979,7 +21943,6 @@ body.route-is-changing .shell.shell-app-blue .shell-content::before {
   width: auto !important;
 }
 
-/* Final sidebar header and XP polish: clear brand spacing, floating close button, readable level label. */
 .shell.shell-home-theme .shell-brand-wrap {
   position: relative !important;
   display: grid !important;
@@ -22210,7 +22173,6 @@ body.route-is-changing .shell.shell-app-blue .shell-content::before {
   }
 }
 
-/* Organic home feed reference: plant wordmark, story cards, and publish composer. */
 :root {
   --agro-feed-green: #16b96f;
   --agro-feed-mint: #32d7b0;
@@ -22852,7 +22814,6 @@ body.route-is-changing .shell.shell-app-blue .shell-content::before {
   }
 }
 
-/* Final fit pass for the plant header and compact composer toolbar. */
 .shell.shell-home-theme .plant-sprout-top {
   top: -12px !important;
   transform: rotate(7deg) scale(0.86) !important;
@@ -22988,7 +22949,6 @@ body.route-is-changing .shell.shell-app-blue .shell-content::before {
   display: inline-block !important;
 }
 
-/* Story display reference: large portrait cards with top media, gradient arc, and avatar overlap. */
 .shell.shell-home-theme:not(.shell-app-blue) .feed-stories-card {
   min-height: 256px !important;
   padding: 22px 20px 24px !important;
@@ -23452,7 +23412,6 @@ body.route-is-changing .shell.shell-app-blue .shell-content::before {
   font-weight: 950 !important;
 }
 
-/* Feed right rail final pass: use the site/story palette everywhere, including Reels. */
 .shell.shell-home-theme .feed-right-rail,
 .premium-feed-page .feed-right-rail {
   --rail-site-lime: #b9f84d;
@@ -23829,7 +23788,6 @@ body.route-is-changing .shell.shell-app-blue .shell-content::before {
   gap: 7px !important;
 }
 
-/* Final correction: soft reference colors, real feed avatars, and no duplicate category chip. */
 .shell.shell-home-theme .feed-avatar-badge.has-image,
 .premium-feed-page .feed-avatar-badge.has-image {
   padding: 0 !important;
@@ -23995,7 +23953,6 @@ body.route-is-changing .shell.shell-app-blue .shell-content::before {
   background: var(--rail-ref-gradient) !important;
 }
 
-/* Final feed scroll behavior: center and right columns scroll only under their own cursor. */
 .shell.shell-home-theme .shell-content:has(.premium-feed-page) {
   min-height: 0 !important;
   overflow: hidden !important;
@@ -24117,7 +24074,6 @@ body.route-is-changing .shell.shell-app-blue .shell-content::before {
   }
 }
 
-/* Final All Stories profile-grid pass: match story-card style with old rose + blue only. */
 .shell.shell-home-theme .story-library-overlay {
   background:
     radial-gradient(circle at 12% 10%, rgba(184, 109, 124, 0.16), transparent 30%),
@@ -24470,7 +24426,6 @@ body.route-is-changing .shell.shell-app-blue .shell-content::before {
   }
 }
 
-/* Final story watch view: match the current home green/blue palette while keeping existing features. */
 .story-viewer-overlay,
 .shell .story-viewer-overlay,
 .shell.shell-home-theme .story-viewer-overlay {
@@ -24986,7 +24941,6 @@ body.route-is-changing .shell.shell-app-blue .shell-content::before {
   }
 }
 
-/* Final comment system UI: compact preview plus grouped full thread. */
 .shell.shell-home-theme .comment-publisher-form,
 .shell.shell-home-theme .inline-form.feed-inline-form.comment-publisher-form {
   grid-template-columns: 48px minmax(0, 1fr) auto minmax(96px, 112px) !important;
@@ -25530,7 +25484,6 @@ button.comment-author-avatar {
   }
 }
 
-/* Final refinements: nested replies, full comment reactions, solid comments panel, reaction user viewer. */
 .shell.shell-home-theme .comments-modal-overlay,
 .shell.shell-home-theme .reaction-users-overlay {
   background: rgba(255, 255, 255, 0.18) !important;
@@ -25711,7 +25664,6 @@ button.comment-author-avatar {
   }
 }
 
-/* Final solid quality pass: remove washed-out/faded post and comment surfaces. */
 .shell.shell-home-theme .premium-feed-card,
 .shell.shell-home-theme .feed-card,
 .shell.shell-home-theme .card.feed-card,
@@ -25798,7 +25750,6 @@ button.comment-author-avatar {
   opacity: 1 !important;
 }
 
-/* Final composer/action polish: profile image avatars, compact controls, solid theme buttons. */
 .shell.shell-home-theme .comment-publisher-form,
 .shell.shell-home-theme .inline-form.feed-inline-form.comment-publisher-form {
   grid-template-columns: 42px minmax(0, 1fr) auto 88px !important;
@@ -26622,7 +26573,6 @@ button.comment-author-avatar {
   }
 }
 
-/* Final story/explore/GIF/caption polish. */
 .shell.shell-home-theme .story-library-card {
   color: var(--social-ink) !important;
   background:
@@ -27243,7 +27193,6 @@ button.comment-author-avatar {
   box-shadow: 0 0 0 2px #ffffff, 0 0 10px rgba(49, 95, 189, 0.55) !important;
 }
 
-/* Final requested palette: soft sidebar green + blue, no heavy rose/purple on feed controls. */
 .shell.shell-home-theme {
   --social-rose: #19b984;
   --social-rose-deep: #0d7559;
@@ -27832,7 +27781,6 @@ button.comment-author-avatar {
   }
 }
 
-/* Final button theme: orange -> pink -> purple reference gradient. */
 .shell.shell-home-theme {
   --bondly-button-orange: #ff8a3d;
   --bondly-button-pink: #ff37aa;
@@ -28333,7 +28281,6 @@ button.comment-author-avatar {
   -webkit-backdrop-filter: none !important;
 }
 
-/* Reference-style edit post modal. Scoped to edit post only. */
 .shell.shell-home-theme .premium-edit-post-shell {
   position: fixed !important;
   inset: 0 !important;
@@ -28954,7 +28901,6 @@ button.comment-author-avatar {
   }
 }
 
-/* Logged-in visual cleanup: keep the reference edit layout fully visible. */
 .shell.shell-home-theme .premium-edit-post-shell .edit-post-modal-card.old-v,
 .shell.shell-home-theme .premium-edit-post-shell .grid-form.edit-post-modal-card.old-v {
   width: min(820px, calc(100vw - 36px)) !important;
@@ -29088,7 +29034,6 @@ button.comment-author-avatar {
   transform: none !important;
 }
 
-/* Final theme pass: edit buttons and polls use the main AgroLink blue/mint website theme. */
 .shell.shell-home-theme .premium-edit-post-shell {
   background: rgba(8, 18, 34, 0.48) !important;
 }
@@ -29379,7 +29324,6 @@ button.comment-author-avatar {
   max-height: min(940px, calc(100vh - 24px)) !important;
 }
 
-/* Audience, comment GIF, and mention polish: old rose + blue + white only. */
 .shell.shell-home-theme .composer-category-stack {
   min-width: min(430px, 100%) !important;
   max-width: 460px !important;
@@ -29685,7 +29629,6 @@ button.comment-author-avatar {
   }
 }
 
-/* True final All Stories override: older story-library rules above must not reintroduce teal/green or narrow cards. */
 .shell.shell-home-theme .story-library-overlay .story-library-card {
   width: min(720px, calc(100vw - 28px)) !important;
   max-height: min(820px, calc(100vh - 36px)) !important;
@@ -29743,7 +29686,6 @@ button.comment-author-avatar {
   }
 }
 
-/* Final poll UI pass: uncommon 4K-style rose + blue design, no green/teal. */
 .shell.shell-home-theme .feed-poll-card.premium-feed-poll-card,
 .shell.shell-home-theme .feed-card .feed-poll-card.premium-feed-poll-card {
   --poll-rose: #b86d7c;
@@ -30255,7 +30197,6 @@ button.comment-author-avatar {
   background: linear-gradient(135deg, #fff2f5, #eef5ff) !important;
 }
 
-/* Relaxed final UI pass: remove harsh filled rose-blue buttons and soften poll cards. */
 .shell.shell-home-theme .premium-composer-actions .composer-publish-btn,
 .shell.shell-home-theme .composer-publish-btn,
 .shell.shell-home-theme .feed-comment-submit,
@@ -30720,7 +30661,6 @@ button.comment-author-avatar {
   }
 }
 
-/* Final color correction: poll voters and mentions must match old rose + blue, not mint/teal. */
 .shell.shell-home-theme .composer-mention-menu,
 .shell.shell-home-theme .comment-mention-menu {
   border: 1px solid rgba(49, 95, 189, 0.18) !important;
@@ -30887,7 +30827,6 @@ button.comment-author-avatar {
   background: linear-gradient(135deg, #b86d7c 0%, #315fbd 100%) !important;
 }
 
-/* Final theme correction: remove rose/purple from story and poll voter surfaces. */
 .shell.shell-home-theme .feed-poll-card.premium-feed-poll-card,
 .shell.shell-home-theme .feed-card .feed-poll-card.premium-feed-poll-card {
   color: #10213c !important;
@@ -32357,7 +32296,6 @@ button.comment-author-avatar {
   }
 }
 
-/* Final override: finished poll voter row and smaller post action buttons. */
 .shell.shell-home-theme .feed-poll-card.premium-feed-poll-card .advanced-poll-voter-preview.feed-poll-voter-preview {
   grid-template-columns: max-content auto 1px minmax(0, 1fr) max-content !important;
   min-height: 88px !important;
@@ -32435,7 +32373,6 @@ button.comment-author-avatar {
   }
 }
 
-/* Final cleanup: no poll emojis, blue/rose poll stats, and location pin panel. */
 .shell.shell-home-theme .feed-poll-card.premium-feed-poll-card {
   --poll-clean-blue: #2f7de1;
   --poll-clean-violet: #6d5dfc;
@@ -32608,7 +32545,6 @@ button.comment-author-avatar {
   }
 }
 
-/* Final poll color correction: remove remaining teal/green accents from poll display. */
 .shell.shell-home-theme .feed-poll-card.premium-feed-poll-card {
   background:
     radial-gradient(circle at 10% 0%, rgba(214, 93, 127, 0.12), transparent 30%),
@@ -32718,7 +32654,6 @@ button.comment-author-avatar {
   background: linear-gradient(180deg, #315fbd, #6d5dfc) !important;
 }
 
-/* Final compact poll alignment pass: remove header dead space and awkward voter placement. */
 .shell.shell-home-theme .feed-card .feed-poll-card.feed-poll-card.premium-feed-poll-card,
 .shell.shell-home-theme .card.feed-card .feed-poll-card.feed-poll-card.premium-feed-poll-card,
 .shell.shell-home-theme .premium-feed-card .feed-poll-card.feed-poll-card.premium-feed-poll-card {
@@ -32897,7 +32832,6 @@ button.comment-author-avatar {
   }
 }
 
-/* Final poll mismatch cleanup: no side stripe or empty check bubble. */
 .shell.shell-home-theme .feed-card .feed-poll-card.feed-poll-card.premium-feed-poll-card .advanced-poll-option.feed-poll-option.selected::before,
 .shell.shell-home-theme .feed-card .feed-poll-card.feed-poll-card.premium-feed-poll-card .advanced-poll-option.feed-poll-option.selected::after,
 .shell.shell-home-theme .feed-card .feed-poll-card.feed-poll-card.premium-feed-poll-card .advanced-poll-option.feed-poll-option.leading::before,
@@ -32922,7 +32856,6 @@ button.comment-author-avatar {
   box-shadow: none !important;
 }
 
-/* Poll option final cleanup: selected row must not grow taller than other rows. */
 .shell.shell-home-theme .feed-card .feed-poll-card.feed-poll-card.premium-feed-poll-card .advanced-poll-option.feed-poll-option,
 .shell.shell-home-theme .card.feed-card .feed-poll-card.feed-poll-card.premium-feed-poll-card .advanced-poll-option.feed-poll-option,
 .shell.shell-home-theme .premium-feed-card .feed-poll-card.feed-poll-card.premium-feed-poll-card .advanced-poll-option.feed-poll-option,
@@ -32942,7 +32875,6 @@ button.comment-author-avatar {
   display: none !important;
 }
 
-/* Reference poll correction from logged-in comparison: inline voters, no teal/green. */
 .shell.shell-home-theme .feed-poll-card.premium-feed-poll-card {
   --premium-poll-teal: #6d5dfc;
   --premium-poll-blue: #315fbd;
@@ -34426,7 +34358,6 @@ button.comment-author-avatar {
   box-shadow: 0 0 8px rgba(139, 92, 246, 0.5);
 }
 
-/* Final edit post polish: advanced form using the active post button color theme. */
 .shell.shell-home-theme .premium-edit-post-shell {
   --edit-action-start: #32e59f;
   --edit-action-mid: #1687ff;
@@ -36202,7 +36133,6 @@ button.comment-author-avatar {
   }
 }
 
-/* Final finished edit-post editor pass: cohesive professional modal. */
 .shell.shell-home-theme .premium-edit-post-shell {
   background:
     radial-gradient(circle at 18% 12%, rgba(25, 195, 125, 0.22), transparent 26%),
@@ -36605,7 +36535,6 @@ button.comment-author-avatar {
   }
 }
 
-/* Final feed poll display pass: compact professional card with real-state visual language. */
 .shell.shell-home-theme .feed-poll-card-container.premium-feed-poll-card,
 .feed-poll-card-container.premium-feed-poll-card {
   margin: 14px 22px 8px !important;
@@ -37267,7 +37196,6 @@ button.comment-author-avatar {
     padding-left: 0 !important;
   }
 }
-/* Final edit-post fit correction: remove cramped checklist/input clipping. */
 .shell.shell-home-theme .premium-edit-post-shell .edit-post-modal-card,
 .shell.shell-home-theme .premium-edit-post-shell .grid-form.edit-post-modal-card {
   width: min(920px, calc(100vw - 24px)) !important;
@@ -37485,7 +37413,6 @@ button.comment-author-avatar {
     justify-self: start !important;
   }
 }
-/* Final edit-post location icon fix: keep the pin inside the Location input. */
 .shell.shell-home-theme .edit-post-input-shell-v2 .edit-post-location-icon {
   position: static !important;
   inset: auto !important;
@@ -37502,7 +37429,6 @@ button.comment-author-avatar {
 .shell.shell-home-theme .edit-post-input-shell-v2 .edit-post-location-icon + input {
   grid-column: 2 !important;
 }
-/* Final multi-media publishing pass: 10+ uploads, polished feed gallery, and hashtag graph colors. */
 .shell.shell-home-theme .composer-media-preview.multi,
 .composer-media-preview.multi {
   padding: 12px !important;
@@ -37771,7 +37697,6 @@ button.comment-author-avatar {
     grid-row: auto !important;
   }
 }
-/* Final correction: edit media manager full-width, clickable remove buttons, hard hashtag tones. */
 .shell.shell-home-theme .edit-post-media-manager,
 .edit-post-media-manager {
   grid-column: 1 / -1 !important;
@@ -37892,7 +37817,6 @@ button.comment-author-avatar {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
 }
-/* Final single-media edit form and presence indicators. */
 .ui-avatar > .avatar-presence {
   position: absolute !important;
   right: 1px !important;
@@ -38943,7 +38867,6 @@ button.comment-author-avatar {
 
 
 
-/* Story caption/preview polish with website button color. */
 .shell.shell-home-theme .story-create-card {
   --story-site-green: #25c58f;
   --story-site-teal: #22aeb9;
@@ -39110,7 +39033,6 @@ button.comment-author-avatar {
   background: var(--story-site-gradient) !important;
 }
 
-/* Story caption quick-tools final color polish. */
 .shell.shell-home-theme .story-create-caption-tools {
   position: relative !important;
   display: flex !important;
@@ -39216,7 +39138,6 @@ button.comment-author-avatar {
   stroke-width: 2.7 !important;
 }
 
-/* Story footer action placement polish. */
 .shell.shell-home-theme .story-create-footer {
   justify-content: flex-start !important;
   gap: 14px !important;
@@ -39256,7 +39177,6 @@ button.comment-author-avatar {
   }
 }
 
-/* Story composer close button interaction polish only. */
 .shell.shell-home-theme .story-create-close {
   cursor: pointer !important;
   transform: rotate(0deg) scale(1) !important;
@@ -39814,7 +39734,6 @@ button.comment-author-avatar {
   background: rgba(255, 194, 71, 0.2) !important;
 }
 
-/* Poll long text polish only: keep short text compact, wrap long questions/options cleanly. */
 .shell.shell-home-theme .feed-poll-card-container.premium-feed-poll-card,
 .feed-poll-card-container.premium-feed-poll-card {
   overflow: hidden !important;
@@ -40006,7 +39925,6 @@ button.comment-author-avatar {
     inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
 }
 
-/* Final composer dropdown icon alignment: keep selected icons and option icons inside their own slots. */
 .shell.shell-home-theme:not(.shell-app-blue) .composer-premium {
   overflow: visible !important;
 }
@@ -40791,7 +40709,6 @@ button.comment-author-avatar {
   }
 }
 
-/* Profile page screenshot reference override. */
 .shell.shell-theme-light .profile-dashboard {
   --profile-blue: #2458ff;
   --profile-purple: #7c3cff;
@@ -42478,7 +42395,6 @@ button.comment-author-avatar {
   background: var(--agro-sidebar-gradient) !important;
 }
 
-/* User reference pass: keep the Home sidebar palette globally, regardless of route. */
 .shell.shell-home-theme.shell-sidebar-profile-theme .shell-sidebar,
 .shell.shell-home-theme.shell-sidebar-neutral-theme .shell-sidebar,
 .shell.shell-home-theme.shell-sidebar-green-theme .shell-sidebar {
@@ -42783,7 +42699,6 @@ button.comment-author-avatar {
   line-height: 1.55;
 }
 
-/* Reference implementation pass: scoped page consistency for Business, Admin, Notifications, and Support. */
 .business-dashboard,
 .admin-workspace-dashboard,
 .notifications-dashboard,
@@ -43401,7 +43316,6 @@ button.comment-author-avatar {
   }
 }
 
-/* AgroLink reference completion pass: route-scoped premium UI. Do not target Home/feed. */
 :root {
   --agro-ref-green: #0f9f5f;
   --agro-ref-green-dark: #047243;
@@ -44276,7 +44190,6 @@ button.comment-author-avatar {
   gap: 10px;
 }
 
-/* Final non-home dashboard repair pass: visibility, overflow, and responsive balance. */
 .modal-backdrop {
   z-index: 2200 !important;
   background: rgba(8, 18, 35, 0.56) !important;
@@ -44819,7 +44732,6 @@ button.comment-author-avatar {
   }
 }
 
-/* Compact profile header matching the provided reference screenshot. */
 .shell.shell-theme-light .profile-dashboard .profile-cover-card {
   position: relative !important;
   min-height: 164px !important;
@@ -45374,7 +45286,6 @@ button.comment-author-avatar {
   }
 }
 
-/* Friends & Network page reference UI. Scoped to page content only. */
 .shell .friends-dashboard {
   --friends-blue: #2458ff;
   --friends-blue-deep: #1646d9;
@@ -46857,7 +46768,6 @@ button.comment-author-avatar {
   }
 }
 
-/* Profile, Friends, Chat, and Notifications final interaction polish. */
 .shell .profile-dashboard .profile-action-row .profile-action-button {
   width: 156px !important;
   min-width: 156px !important;
@@ -49673,7 +49583,6 @@ button.comment-author-avatar {
   }
 }
 
-/* Marketplace reference-image redesign overrides */
 .shell .marketplace-dashboard.commerce-pro-page {
   --market-glass: rgba(255, 255, 255, 0.82);
   --market-glass-strong: rgba(255, 255, 255, 0.92);
@@ -50337,7 +50246,6 @@ button.comment-author-avatar {
   }
 }
 
-/* Final commerce hardening overrides. Keep last so generated route theme blocks cannot hide images or seller graphs. */
 .shell .marketplace-dashboard.commerce-pro-page,
 .shell .cart-dashboard.commerce-pro-page,
 .shell .orders-dashboard.commerce-pro-page {
@@ -50372,7 +50280,6 @@ button.comment-author-avatar {
   object-fit: cover;
 }
 
-/* Marketplace business modal final override: portal-safe product cards and review form. */
 .ui-modal.commerce-business-modal {
   width: min(1080px, calc(100vw - 32px)) !important;
 }
@@ -50491,7 +50398,6 @@ button.comment-author-avatar {
   }
 }
 
-/* Cart detail modal final override: wide, no horizontal scroll, readable summary. */
 .ui-modal.commerce-cart-detail-modal {
   width: min(1080px, calc(100vw - 32px)) !important;
   max-height: calc(100vh - 44px) !important;
@@ -51489,7 +51395,6 @@ button.comment-author-avatar {
   }
 }
 
-/* Final UI issue pass: marketplace visibility, professional modals, locked admin roles, and settings avatar polish. */
 .shell .social-pro-page,
 .modal-backdrop .ui-modal {
   font-family: "Manrope", "Segoe UI", sans-serif !important;
@@ -52105,7 +52010,6 @@ button.comment-author-avatar {
   }
 }
 
-/* Final Admin Workflow and workspace UI polish. Keep this block last to avoid older overrides winning. */
 :root {
   --lishare-ink-final: #07182f;
   --lishare-muted-final: #5f7088;
@@ -52999,7 +52903,6 @@ button.comment-author-avatar {
   }
 }
 
-/* Final overlap guard: keep workspace pages below the sticky header and prevent narrow-grid text collisions. */
 .shell {
   --shell-safe-sticky-top: 112px;
 }
@@ -53379,7 +53282,6 @@ button.comment-author-avatar {
   }
 }
 
-/* Messenger-style chat polish: conversation first, details on demand. */
 .shell .chat-dashboard {
   --chat-inbox-width: clamp(292px, 24vw, 340px);
 }
@@ -53608,7 +53510,6 @@ button.comment-author-avatar {
   }
 }
 
-/* Final notification dropdown lock: fixed compact rows, no size drift. */
 body .notif-panel.notif-panel-floating .notif-item {
   height: 62px !important;
   min-height: 62px !important;
@@ -53693,7 +53594,6 @@ body .notif-panel.notif-panel-floating .notif-row-actions .notif-remove-btn {
   padding: 0 !important;
 }
 
-/* Final chat stability pass: soft bubbles, no message-send shake, status ticks visible. */
 body .shell.shell-home-theme .chat-dashboard .chat-thread-card {
   grid-template-rows: auto minmax(0, 1fr) 28px auto !important;
 }
@@ -53811,7 +53711,6 @@ body .notif-panel.notif-panel-floating .notif-row-actions .notif-remove-btn {
   overflow: visible !important;
 }
 
-/* Final usability lock: fixed composer, reachable reactions, visible notification actions. */
 body .shell.shell-home-theme .chat-dashboard .chat-thread-card {
   height: 100% !important;
   min-height: 0 !important;
@@ -54181,7 +54080,6 @@ html body .shell.shell-home-theme .chat-dashboard.chat-dashboard .chat-thread-ca
   }
 }
 
-/* Final chat and notification stability pass. */
 body .shell.shell-home-theme .chat-dashboard .chat-thread-card {
   grid-template-rows: auto minmax(0, 1fr) 28px auto !important;
 }
@@ -54299,7 +54197,6 @@ body .notif-panel.notif-panel-floating .notif-row-actions .notif-remove-btn {
   overflow: visible !important;
 }
 
-/* Final notification dropdown size lock: same compact row height with no cropping. */
 body .notif-panel.notif-panel-floating,
 body .shell .notif-panel.notif-panel-floating,
 body .shell.shell-home-theme .notif-panel.notif-panel-floating {
@@ -54702,7 +54599,6 @@ body .notif-panel.notif-panel-floating .notif-empty-row {
   }
 }
 
-/* Final overlap polish pass: keep shared dashboard surfaces inside their bounds. */
 .shell,
 .shell * {
   box-sizing: border-box;
@@ -54990,7 +54886,6 @@ body .notif-panel.notif-panel-floating .notif-empty-row {
   }
 }
 
-/* Commerce storefront polish: denser product cards, premium cart rows, and cleaner seller forms. */
 .shell .social-commerce-page .commerce-market-layout {
   grid-template-columns: minmax(260px, 312px) minmax(0, 1fr) !important;
   align-items: start !important;
@@ -55409,7 +55304,6 @@ body .notif-panel.notif-panel-floating .notif-empty-row {
   }
 }
 
-/* Marketplace and Orders final art pass: remove heavy white slabs and keep lower sections smooth. */
 html {
   scroll-behavior: smooth;
 }
@@ -55841,7 +55735,6 @@ html {
   }
 }
 
-/* Final user-request cleanup: no page background images, no green chat accents, no product detail chip overlap. */
 .shell .marketplace-dashboard.social-commerce-page,
 .shell .orders-dashboard.social-commerce-page,
 .shell .cart-dashboard.social-commerce-page,
@@ -58807,7 +58700,6 @@ html {
   }
 }
 
-/* Screenshot correction pass: analytics overflow, marketplace washout, calendar blank space, admin icons. */
 .shell .analytics-dashboard .analytics-overview-grid {
   grid-template-columns: 1fr !important;
   gap: 18px !important;
@@ -59070,7 +58962,6 @@ html {
   }
 }
 
-/* Friends-inspired final theme pass: remove harsh red labels and fix cramped charts. */
 .shell {
   --site-friends-blue: #2f73e8;
   --site-friends-cyan: #13a7b6;
@@ -60713,7 +60604,6 @@ html {
   }
 }
 
-/* No-green polish pass: neutral orb theme, fixed stats, fixed business charts. */
 .shell :is(
   .orders-dashboard,
   .analytics-dashboard,
@@ -61270,7 +61160,6 @@ html {
   box-shadow: 0 10px 22px rgba(36, 88, 255, 0.1) !important;
 }
 
-/* Support page final polish: visible stat icons and deliberate hero image placement. */
 .shell .support-center-page.support-dashboard {
   background:
     radial-gradient(circle at 8% 0%, rgba(36, 88, 255, 0.1), transparent 30%),
@@ -61411,7 +61300,6 @@ html {
   }
 }
 
-/* OAuth sign-in polish: consistent Google login and callback states. */
 .auth-login-ref .auth-oauth-divider {
   width: 100% !important;
   display: grid !important;
@@ -62217,7 +62105,6 @@ html {
   }
 }
 
-/* Landing and auth polish: reference-inspired hero, clear people area, smooth auth navigation. */
 .landing-page-public.landing-v2 {
   color: #f6fff4;
   background: #07150d;
@@ -62683,7 +62570,6 @@ html {
   }
 }
 
-/* Final responsive polish after screenshot review. */
 .landing-hero-copy-v2 h1 .landing-headline-line {
   display: block;
   color: #ffffff;
@@ -62729,7 +62615,6 @@ html {
 
 }
 
-/* Landing viewport correction after screenshot review. */
 .landing-page-public.landing-v2 {
   background: #f5f8f2;
 }
@@ -63108,7 +62993,6 @@ html {
   }
 }
 
-/* Professional landing/auth final pass: reduce pale surfaces, expose assistant, and harden auth brand contrast. */
 .landing-page-public.landing-v2 {
   background:
     radial-gradient(circle at 20% 28%, rgba(43, 194, 126, 0.2), transparent 28%),
@@ -63457,7 +63341,6 @@ html {
   }
 }
 
-/* Signup step 1 contrast correction: old reference layer was too pale. */
 .auth-signup-step-1 {
   background-color: #07140d !important;
   background-image:
@@ -63509,7 +63392,6 @@ html {
   filter: saturate(1.05) contrast(1.08) brightness(0.58) !important;
 }
 
-/* Final cleanup after review: disciplined landing layout, compact assistant, and login-style signup. */
 .landing-page-public.landing-v2 {
   background: #06140e !important;
   animation: none !important;
@@ -63791,7 +63673,6 @@ html {
   }
 }
 
-/* Screenshot polish: cleaner public lower sections, compact assistant, and sign-in style signup. */
 .landing-page-public.landing-v2 {
   background: linear-gradient(180deg, #06140e 0%, #071813 48%, #050d0a 100%) !important;
 }
@@ -64237,7 +64118,6 @@ html {
   }
 }
 
-/* Cart final polish: fixes hero overlap, card contrast, and icon visibility. */
 .shell .cart-dashboard.social-commerce-page {
   --cart-ink: #0d1b32;
   --cart-muted: #637189;
@@ -64924,7 +64804,6 @@ html {
   }
 }
 
-/* Final UI repair pass: cart layout, notifications, auth, assistant, and review cards. */
 .shell-header-reference,
 .shell .shell-header-reference,
 .shell .shell-header-actions {
@@ -65993,7 +65872,6 @@ html {
   }
 }
 
-/* Final overlap repair: portal notifications, safer cart cards, and image-backed sign-in. */
 .notif-panel-floating,
 .shell .notif-panel-floating,
 .shell.shell-home-theme .notif-panel-floating {
@@ -66243,7 +66121,6 @@ body:has(.auth-login-ref),
   }
 }
 
-/* Same-family auth/cart polish: sign-in follows sign-up theme, smaller notifications, matched commerce colors. */
 html:has(.auth-login-ref),
 body:has(.auth-login-ref),
 #root:has(.auth-login-ref) {
@@ -67510,7 +67387,6 @@ body:has(.auth-login-ref),
   }
 }
 
-/* Final visual polish: notifications, cart details, and product modal whitespace. */
 .notif-panel-floating,
 .shell .notif-panel-floating,
 .shell.shell-home-theme .notif-panel-floating {
@@ -68696,7 +68572,6 @@ body:has(.auth-login-ref),
   }
 }
 
-/* Final correction pass: filled product detail media, dense business products, per-row notification actions. */
 .modal-backdrop .ui-modal.commerce-product-detail-modal,
 .ui-modal.commerce-product-detail-modal {
   width: min(1040px, calc(100vw - 28px)) !important;
@@ -69265,7 +69140,6 @@ body .notif-panel.notif-panel-floating .notif-empty-row {
   }
 }
 
-/* Site-wide edge background and landing scroll motion polish. */
 html,
 body,
 #root {
@@ -70305,7 +70179,6 @@ body:has(.auth-login-ref),
   }
 }
 
-/* Final chat layout guard: keep profile details, thread, and composer from stacking over each other. */
 .shell .chat-dashboard {
   --chat-final-inbox: clamp(300px, 24vw, 360px);
   --chat-final-details: clamp(300px, 22vw, 350px);
@@ -70922,7 +70795,6 @@ body:has(.auth-login-ref),
   }
 }
 
-/* Final message reaction polish: compact floating picker and attached chips. */
 body .shell.shell-home-theme .chat-dashboard .message-bubble,
 body .shell.shell-home-theme .chat-dashboard .message-bubble-row.mine .message-bubble,
 body .shell.shell-home-theme .chat-dashboard .message-bubble-row:not(.mine) .message-bubble {
@@ -71058,7 +70930,6 @@ body .shell.shell-home-theme .chat-dashboard .message-reaction-stack span small 
   line-height: 1 !important;
 }
 
-/* Final notification dropdown lock: fixed compact rows, no size drift. */
 body .notif-panel.notif-panel-floating .notif-item {
   height: 62px !important;
   min-height: 62px !important;
@@ -71143,7 +71014,6 @@ body .notif-panel.notif-panel-floating .notif-row-actions .notif-remove-btn {
   padding: 0 !important;
 }
 
-/* Final chat stability pass: soft bubbles, no message-send shake, status ticks visible. */
 body .shell.shell-home-theme .chat-dashboard .chat-thread-card {
   grid-template-rows: auto minmax(0, 1fr) 28px auto !important;
 }

@@ -1,6 +1,6 @@
 package com.socialApp.Lishare.modules.social.comment.service;
 
-import com.socialApp.Lishare.modules.platform.storage.UploadPathResolver;
+import com.socialApp.Lishare.modules.platform.storage.UploadStorageService;
 import com.socialApp.Lishare.modules.social.comment.service.CommentService;
 import com.socialApp.Lishare.modules.social.comment.entity.Comment;
 import com.socialApp.Lishare.modules.social.comment.entity.CommentReaction;
@@ -19,16 +19,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -40,7 +36,7 @@ public class CommentServiceImpl implements CommentService {
     private final UserRepo userRepository;
     private final NotificationService notificationService;
     private final MentionNotificationService mentionNotificationService;
-    private final UploadPathResolver uploadPathResolver;
+    private final UploadStorageService uploadStorageService;
 
     @Override
     public Comment addComment(Long userId, Long postId, String content) {
@@ -284,27 +280,7 @@ public class CommentServiceImpl implements CommentService {
             return null;
         }
 
-        try {
-            String originalFilename = file.getOriginalFilename();
-            String extension = "";
-            if (originalFilename != null) {
-                int dotIndex = originalFilename.lastIndexOf(".");
-                if (dotIndex >= 0) {
-                    extension = originalFilename.substring(dotIndex);
-                }
-            }
-            String filename = UUID.randomUUID() + extension;
-            Path folder = uploadPathResolver.ensurePrimaryUploadPath();
-            Path destinationPath = folder.resolve(filename).normalize();
-            if (!destinationPath.startsWith(folder)) {
-                throw new IllegalArgumentException("Invalid media path");
-            }
-            File destination = destinationPath.toFile();
-            file.transferTo(destination);
-            return "/uploads/" + filename;
-        } catch (IOException exception) {
-            throw new RuntimeException("Failed to save comment media", exception);
-        }
+        return uploadStorageService.saveCommentMedia(file, "", null);
     }
 
     private String resolveMediaType(MultipartFile mediaFile, String mediaUrl) {

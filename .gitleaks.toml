@@ -1,0 +1,29 @@
+title = "AgroLink Hub secret scanning"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "google-oauth-client-secret"
+description = "Google OAuth client secret"
+regex = '''GOCSPX-[A-Za-z0-9_-]+'''
+keywords = ["GOCSPX"]
+
+[[rules]]
+id = "spring-env-secret"
+description = "Sensitive Spring environment value"
+regex = '''(?i)(DB_PASSWORD|MAIL_PASSWORD|JWT_SECRET|GOOGLE_OAUTH_CLIENT_SECRET)\s*=\s*[^#\s][^\r\n]*'''
+keywords = ["DB_PASSWORD", "MAIL_PASSWORD", "JWT_SECRET", "GOOGLE_OAUTH_CLIENT_SECRET"]
+
+[[rules.allowlists]]
+description = "Template placeholders are allowed"
+paths = [
+  '''Lisharebackend/\.env\.example''',
+  '''README\.md''',
+  '''SECURITY\.md'''
+]
+regexes = [
+  '''change_me''',
+  '''your_.*''',
+  '''replace_with_.*'''
+]

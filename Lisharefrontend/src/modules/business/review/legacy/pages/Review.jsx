@@ -61,11 +61,9 @@ export default function Review() {
       if (editingId) {
         const res = await api.put(`/reviews/${editingId}`, { comment, rating, status }, { withCredentials: true });
         setReviews((prev) => prev.map((r) => (r.id === editingId ? res.data : r)));
-        console.warn("Updated ✅");
       } else {
         const res = await api.post("/reviews", { comment, rating, status }, { withCredentials: true });
         setReviews((prev) => [res.data, ...prev]);
-        console.warn("Added ✅");
       }
       resetForm();
     } catch (err) {
@@ -77,7 +75,6 @@ export default function Review() {
     try {
       await api.delete(`/reviews/${id}`, { withCredentials: true });
       setReviews((prev) => prev.filter((r) => r.id !== id));
-      console.warn("Deleted ✅");
     } catch {
       setError("Failed to delete");
     }

@@ -4277,7 +4277,6 @@ button:disabled {
   }
 }
 
-/* Reference-close feed dashboard overrides */
 .shell.shell-home-theme .shell-main {
   background:
     radial-gradient(circle at 4% 0%, rgba(255, 138, 42, 0.14), transparent 24%),
@@ -4588,7 +4587,6 @@ button:disabled {
   }
 }
 
-/* Final strict reference-match styling for /home */
 .shell.shell-home-theme {
   grid-template-columns: 292px minmax(0, 1fr);
   background:
@@ -4915,7 +4913,6 @@ button:disabled {
   }
 }
 
-/* Reference screenshot match pass for /home */
 .shell.shell-home-theme {
   --home-bg: #050713;
   --home-bg-soft: #080b18;
@@ -5538,7 +5535,6 @@ button:disabled {
   }
 }
 
-/* Compact scale pass for the reference dashboard */
 .shell.shell-home-theme {
   grid-template-columns: 282px minmax(0, 1fr);
 }
@@ -5797,7 +5793,6 @@ button:disabled {
   }
 }
 
-/* Pixel-direction pass: map the two provided references to ember/aurora modes. */
 .shell.shell-home-theme {
   grid-template-columns: 304px minmax(0, 1fr);
   column-gap: 18px;
@@ -6111,7 +6106,6 @@ button:disabled {
   height: 34px;
 }
 
-/* Reference-style premium post card for the home feed and posts section. */
 .shell.shell-home-theme .premium-feed-card {
   position: relative;
   isolation: isolate;
@@ -6833,7 +6827,6 @@ button:disabled {
   }
 }
 
-/* Visual cleanup after screenshot review: compact, cleaner post section. */
 .shell.shell-home-theme {
   grid-template-columns: 286px minmax(0, 1fr);
   column-gap: 16px;
@@ -7702,7 +7695,6 @@ button:disabled {
   }
 }
 
-/* Final share popup pass: no inline space, compact controls, real user targeting. */
 .shell.shell-home-theme .share-panel-backdrop {
   position: fixed;
   inset: 0;
@@ -8224,7 +8216,6 @@ button:disabled {
   }
 }
 
-/* Final share dialog reset: normal centered popup, light backdrop, friendly single-flow form. */
 .shell.shell-home-theme .share-panel-backdrop {
   position: fixed;
   inset: 0;
@@ -8560,7 +8551,6 @@ button:disabled {
   }
 }
 
-/* Screenshot-matched share dialog. */
 .shell.shell-home-theme .share-panel-backdrop {
   position: fixed;
   inset: 0;
@@ -9224,7 +9214,6 @@ button:disabled {
   }
 }
 
-/* Right rail matched to the provided compact reference UI. */
 .shell.shell-home-theme .feed-layout-grid {
   grid-template-columns: minmax(0, 870px) minmax(260px, 288px);
   gap: 16px;
@@ -9583,7 +9572,6 @@ button:disabled {
   }
 }
 
-/* Home Feed reference skin: neon space dashboard from the supplied screenshot. */
 .shell.shell-home-theme {
   grid-template-columns: 292px minmax(0, 1fr);
   background: #03040d;
@@ -10684,7 +10672,6 @@ button:disabled {
   }
 }
 
-/* Reduced decoration pass: cleaner version of the supplied neon reference. */
 .shell.shell-home-theme .shell-main::before,
 .shell.shell-home-theme .shell-sidebar::before,
 .shell.shell-home-theme .shell-sidebar::after,
@@ -10861,7 +10848,6 @@ button:disabled {
   box-sizing: border-box;
 }
 
-/* ── Reference Redesign: Shell Icon Action Buttons ── */
 .shell-icon-action-btn {
   width: 48px;
   height: 48px;
@@ -10904,7 +10890,6 @@ button:disabled {
   height: 20px;
 }
 
-/* ── Reference Redesign: Banner Chat Bubble Emoji ── */
 .shell.shell-home-theme .premium-feed-banner {
   position: relative;
   display: flex;
@@ -10955,7 +10940,6 @@ button:disabled {
   box-shadow: none;
 }
 
-/* ── Reference Redesign: Story LIVE badge ── */
 .story-live-badge {
   position: absolute;
   top: 6px;
@@ -10976,7 +10960,6 @@ button:disabled {
   position: relative;
 }
 
-/* ── Reference Redesign: Right Rail - Trending Hashtags ── */
 .shell.shell-home-theme .rail-trending-card {
   order: -3;
   border-color: rgba(112, 92, 216, 0.42);
@@ -11003,7 +10986,6 @@ button:disabled {
   font-weight: 700;
 }
 
-/* Trend row - reference style with dot + tag + posts count + wave */
 .shell.shell-home-theme .trend-row {
   display: flex;
   align-items: center;
@@ -11072,7 +11054,6 @@ button:disabled {
   color: rgba(200, 190, 255, 0.55);
 }
 
-/* ── Reference Redesign: Suggested People ── */
 .shell.shell-home-theme .rail-suggestions-card {
   border-color: rgba(112, 92, 216, 0.42);
   background: rgba(7, 8, 30, 0.84);
@@ -11147,7 +11128,6 @@ button:disabled {
   white-space: nowrap;
 }
 
-/* Follow button - reference style: bordered pill */
 .suggestion-follow-btn {
   border: 1px solid rgba(145, 97, 255, 0.7);
   border-radius: 8px;
@@ -11172,7 +11152,6 @@ button:disabled {
   cursor: not-allowed;
 }
 
-/* ── Reference Redesign: Explore Reels & Explore Images ── */
 .shell.shell-home-theme .rail-explore-card {
   border-color: rgba(112, 92, 216, 0.42);
   background: rgba(7, 8, 30, 0.84);
@@ -11284,7 +11263,6 @@ button:disabled {
   color: rgba(200, 190, 255, 0.5);
 }
 
-/* ── Reference Redesign: feed-right-rail layout ── */
 .shell.shell-home-theme .feed-right-rail {
   border-left: 0;
   padding-left: 0;
@@ -11293,7 +11271,6 @@ button:disabled {
   gap: 14px;
 }
 
-/* ── Reference Redesign: feed-view-btn global style ── */
 .shell.shell-home-theme .feed-view-btn {
   border: 0;
   padding: 0;
@@ -11316,7 +11293,6 @@ button:disabled {
   align-items: center;
 }
 
-/* Notification button - icon only in reference */
 .shell.shell-home-theme .notif-button {
   width: 40px;
   min-height: 40px;
@@ -11367,7 +11343,6 @@ button:disabled {
   background: rgba(255, 255, 255, 0.07);
 }
 
-/* Ensure feed-reference-grid retains 2-col layout */
 .shell.shell-home-theme .feed-reference-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 340px;
@@ -11383,9 +11358,6 @@ button:disabled {
   margin-bottom: 14px;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   3D CHAT BUBBLE BANNER ILLUSTRATION  (matches reference exactly)
-═══════════════════════════════════════════════════════════════ */
 .shell.shell-home-theme .premium-feed-banner {
   position: relative;
   overflow: hidden;
@@ -11609,9 +11581,6 @@ button:disabled {
   box-shadow: 0 0 8px rgba(255, 200, 100, 0.7);
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   FEED CARDS — Dark premium style matching reference
-═══════════════════════════════════════════════════════════════ */
 .shell.shell-home-theme .card.feed-card-wrap,
 .shell.shell-home-theme .feed-item-card {
   border: 1px solid rgba(112, 92, 216, 0.32);
@@ -11648,9 +11617,6 @@ button:disabled {
   background: rgba(5, 6, 22, 0.7);
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   HEADER — Match reference exactly
-═══════════════════════════════════════════════════════════════ */
 .shell.shell-home-theme .shell-header {
   display: flex;
   justify-content: space-between;
@@ -11674,9 +11640,6 @@ button:disabled {
   align-items: center;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   SIDEBAR ACTIVE DOT — orange dot next to Feed in reference
-═══════════════════════════════════════════════════════════════ */
 .shell.shell-home-theme .shell-nav-link.active::after {
   content: "";
   position: absolute;
@@ -11694,9 +11657,6 @@ button:disabled {
   position: relative;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   STORIES SECTION — polished reference style
-═══════════════════════════════════════════════════════════════ */
 .shell.shell-home-theme .feed-stories-card .feed-section-head {
   margin-bottom: 0;
   display: flex;
@@ -11722,9 +11682,6 @@ button:disabled {
   border-radius: 10px;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   POST/REELS TOGGLE — reference style
-═══════════════════════════════════════════════════════════════ */
 .shell.shell-home-theme .feed-mode-switch {
   width: auto;
   max-width: 360px;
@@ -11737,9 +11694,6 @@ button:disabled {
   font-size: 0.96rem;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   COMPOSER — post composer full reference match
-═══════════════════════════════════════════════════════════════ */
 .shell.shell-home-theme .composer-top h3 {
   font-size: 1.15rem;
 }
@@ -11786,19 +11740,14 @@ button:disabled {
   grid-column: 1 / -1;
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   RIGHT RAIL — Trending Hashtags reference format with colored waves
-═══════════════════════════════════════════════════════════════ */
 .shell.shell-home-theme .trend-list {
   display: grid;
   gap: 10px;
 }
 
 .shell.shell-home-theme .trend-row.featured {
-  display: none; /* reference doesn't show featured pill in this layout */
-}
+  display: none; }
 
-/* ══ Per-row wave color overrides matching reference sparklines ══ */
 .shell.shell-home-theme .trend-row:nth-child(1) .trend-wave-icon { color: #ff48b8; }
 .shell.shell-home-theme .trend-row:nth-child(2) .trend-wave-icon { color: #53d4d8; }
 .shell.shell-home-theme .trend-row:nth-child(3) .trend-wave-icon { color: #a78bfa; }
@@ -11830,7 +11779,6 @@ button:disabled {
   box-shadow: none;
 }
 
-/* Header actions gap tightened to match reference */
 .shell.shell-home-theme .shell-header-actions {
   gap: 8px;
 }
@@ -11842,10 +11790,6 @@ button:disabled {
   border-radius: 50%;
   font-size: 1rem;
 }
-
-/* ═══════════════════════════════════════════════════════════════
-   REFERENCE IMAGE MATCH — Final overrides pass
-═══════════════════════════════════════════════════════════════ */
 
 /* HEADER: username color */
 .shell.shell-home-theme .shell-header .shell-user-name {
@@ -12064,7 +12008,6 @@ button:disabled {
   -webkit-text-fill-color: transparent;
 }
 
-/* Professional feed redesign: final source of truth for /home. */
 .shell.shell-home-theme {
   grid-template-columns: 276px minmax(0, 1fr) !important;
   color: #162033;
@@ -12740,7 +12683,6 @@ button:disabled {
   }
 }
 
-/* Feed polish pass: compact, consistent social home layout. */
 .shell.shell-home-theme {
   --feed-page-bg: #eef2f6;
   --feed-card-bg: #ffffff;
@@ -13439,7 +13381,6 @@ button:disabled {
   }
 }
 
-/* Feed polish cleanup: override older oversized home-theme rules. */
 .shell.shell-home-theme {
   --feed-accent: #2563eb !important;
 }
@@ -14026,7 +13967,6 @@ button:disabled {
   }
 }
 
-/* Final feed UI cleanup for screenshot review. */
 .shell.shell-home-theme {
   --feed-page-bg: #eaf0f6 !important;
   --feed-card-bg: #ffffff !important;

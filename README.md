@@ -21,7 +21,7 @@ AgroLink Hub connects both sides:
 
 | Social | Commerce | Workspace |
 | --- | --- | --- |
-| ![Social feature](Lisharefrontend/src/assets/backgrounds/landing-feature-social-friends-generated.jpg) | ![Commerce feature](Lisharefrontend/src/assets/backgrounds/landing-feature-commerce-generated.jpg) | ![Workspace feature](Lisharefrontend/src/assets/backgrounds/landing-feature-workspace-generated.jpg) |
+| ![Social feature](Lisharefrontend/src/assets/backgrounds/landing-feature-community.jpg) | ![Commerce feature](Lisharefrontend/src/assets/backgrounds/landing-feature-marketplace.jpg) | ![Workspace feature](Lisharefrontend/src/assets/backgrounds/landing-feature-workspace.jpg) |
 | Posts, stories, comments, reactions, followers, friends, and chat. | Product discovery, cart, checkout, seller orders, business profiles, and reviews. | Calendar, analytics, notifications, support tickets, admin tools, and role-based dashboards. |
 
 ## Who Uses It
@@ -263,7 +263,7 @@ Lisharefrontend/src/dashboard-ui.css
 Lisharefrontend/src/feed-card-reference.css
 ```
 
-The current UI direction is practical and work-focused: strong AgroLink green/teal/yellow branding, fewer plain white cards, stable cart and order layouts, compact notifications, responsive marketplace cards, polished auth pages, and generated landing visuals for the Social, Commerce, and Workspace feature cards.
+The current UI direction is practical and work-focused: strong AgroLink green/teal/yellow branding, fewer plain white cards, stable cart and order layouts, compact notifications, responsive marketplace cards, refined auth pages, and dedicated landing visuals for the Social, Commerce, and Workspace feature cards.
 
 ## Documentation
 

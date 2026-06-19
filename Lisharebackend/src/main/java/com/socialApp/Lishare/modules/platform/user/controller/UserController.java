@@ -4,20 +4,16 @@ import com.socialApp.Lishare.modules.platform.user.service.UserProfileService;
 import com.socialApp.Lishare.modules.platform.user.dto.UserDto;
 import com.socialApp.Lishare.modules.platform.user.entity.User;
 import com.socialApp.Lishare.modules.platform.user.repository.UserRepo;
-import com.socialApp.Lishare.modules.platform.storage.UploadPathResolver;
+import com.socialApp.Lishare.modules.platform.storage.UploadStorageService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/user")
@@ -26,7 +22,7 @@ public class UserController {
 
     private final UserProfileService userProfileService;
     private final UserRepo userRepo;
-    private final UploadPathResolver uploadPathResolver;
+    private final UploadStorageService uploadStorageService;
 
     // Update name
     @PutMapping("/update-name")
@@ -168,31 +164,7 @@ public class UserController {
     }
 
     private String saveImage(MultipartFile file, String prefix, Long userId) throws IOException {
-        if (file == null || file.isEmpty()) {
-            throw new IllegalArgumentException("Image file is required");
-        }
-        if (file.getContentType() == null || !file.getContentType().startsWith("image/")) {
-            throw new IllegalArgumentException("Only image uploads are allowed");
-        }
-
-        String original = StringUtils.cleanPath(file.getOriginalFilename() == null ? "" : file.getOriginalFilename());
-        String extension = "";
-        int dotIndex = original.lastIndexOf(".");
-        if (dotIndex >= 0) {
-            extension = original.substring(dotIndex);
-        }
-
-        String filename = prefix + "_" + userId + "_" + UUID.randomUUID() + extension;
-
-        Path uploadBase = uploadPathResolver.ensurePrimaryUploadPath();
-        Path uploadPath = uploadBase.resolve(filename).normalize();
-
-        if (!uploadPath.startsWith(uploadBase)) {
-            throw new IllegalArgumentException("Invalid upload path");
-        }
-
-        Files.write(uploadPath, file.getBytes());
-        return "/uploads/" + filename;
+        return uploadStorageService.saveImage(file, prefix + "_" + userId, null);
     }
 }
 

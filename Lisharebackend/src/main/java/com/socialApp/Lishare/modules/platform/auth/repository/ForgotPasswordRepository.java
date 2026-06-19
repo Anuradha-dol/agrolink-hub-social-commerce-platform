@@ -8,9 +8,9 @@ import java.util.Optional;
 
 public interface ForgotPasswordRepository extends JpaRepository<ForgotPassword, Integer> {
 
-    // 🔹 Used when verifying OTP
+    // Used when verifying OTP.
     Optional<ForgotPassword> findByOtpAndUser(Integer otp, User user);
 
-    // 🔹 Used to ensure ONE OTP per user (VERY IMPORTANT)
+    // Ensures one active OTP record per user.
     Optional<ForgotPassword> findByUser(User user);
 }

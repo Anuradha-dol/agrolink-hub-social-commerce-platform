@@ -10,6 +10,7 @@ import com.socialApp.Lishare.modules.platform.user.entity.User;
 import com.socialApp.Lishare.modules.platform.auth.repository.ForgotPasswordRepository;
 import com.socialApp.Lishare.modules.platform.user.repository.UserRepo;
 import com.socialApp.Lishare.modules.platform.utils.JwtUtils;
+import com.socialApp.Lishare.modules.platform.utils.OtpUtils;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -29,7 +30,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Random;
 import java.time.Duration;
 
 @RestController
@@ -64,7 +64,7 @@ public class ForgotPasswordController {
         String tempEmail = request.get("backupEmail") != null ? request.get("backupEmail") : request.get("tempEmail");
         String phoneNumber = request.get("phoneNumber");
 
-        // 🔹 At least 2 of 3 must be provided
+        // At least 2 of 3 identifiers must be provided.
         int providedCount = 0;
         if (email != null && !email.isEmpty()) providedCount++;
         if (tempEmail != null && !tempEmail.isEmpty()) providedCount++;
@@ -75,7 +75,7 @@ public class ForgotPasswordController {
                     .body("At least 2 of email, tempEmail, or phoneNumber must be provided.");
         }
 
-        // 🔹 Find user matching at least 2 identifiers
+        // Find a user matching at least 2 identifiers.
         Optional<User> userOpt = userRepo.findAll().stream()
                 .filter(u -> {
                     int match = 0;
@@ -93,7 +93,7 @@ public class ForgotPasswordController {
 
         User user = userOpt.get();
 
-        // 🔹 Generate OTP
+        // Generate OTP.
         int otp = generateOtp();
         Date expirationTime = new Date(System.currentTimeMillis() + 5 * 60 * 1000); // 5 min
 
@@ -107,7 +107,7 @@ public class ForgotPasswordController {
         fp.setFirstResendTime(null);
         fp.setBlockUntil(null);
 
-        // 🔹 Determine recovery channel based on rules
+        // Determine recovery channel based on matched identifiers.
         boolean emailVerified = email != null && email.equals(user.getEmail());
         boolean tempEmailVerified = tempEmail != null && (tempEmail.equals(user.getBackupEmail()) || tempEmail.equals(user.getTempEmail()));
         boolean phoneVerified = phoneNumber != null && phoneNumber.equals(user.getPhoneNumber());
@@ -124,14 +124,14 @@ public class ForgotPasswordController {
         fp.setRecoveryChannel(recoveryChannel);
         forgotPasswordRepository.save(fp);
 
-        // 🔹 Send OTP
+        // Send OTP.
         switch (recoveryChannel) {
             case EMAIL -> sendOtpEmail(user.getEmail(), otp);
             case BACKUP_EMAIL -> sendOtpEmail(resolveBackupEmail(user), otp);
             case PHONE -> sendOtpSms(user.getPhoneNumber(), otp);
         }
 
-        // 🔹 Save email in cookie for OTP verification
+        // Save email in cookie for OTP verification.
         setForgotEmailCookie(response, user.getEmail());
 
         return ResponseEntity.ok("OTP sent successfully.");
@@ -156,14 +156,14 @@ public class ForgotPasswordController {
 
         Date now = new Date();
 
-        // 🔹 Block check
+        // Block check.
         if (fp.getBlockUntil() != null && now.before(fp.getBlockUntil())) {
             long remaining = (fp.getBlockUntil().getTime() - now.getTime()) / 1000;
             return ResponseEntity.badRequest()
                     .body("Maximum resend attempts reached. Wait " + remaining + " seconds.");
         }
 
-        // 🔹 Reset resend count every 60s
+        // Reset resend count every 60s.
         if (fp.getFirstResendTime() == null || now.getTime() - fp.getFirstResendTime().getTime() > 60 * 1000) {
             fp.setFirstResendTime(now);
             fp.setResendCount(0);
@@ -178,13 +178,13 @@ public class ForgotPasswordController {
                     .body("Maximum resend attempts reached. Blocked for 30 minutes.");
         }
 
-        // 🔹 Generate new OTP and update expiration
+        // Generate new OTP and update expiration.
         int newOtp = generateOtp();
         fp.setOtp(newOtp);
         fp.setExpirationTime(new Date(System.currentTimeMillis() + 5 * 60 * 1000)); // 5 min
         forgotPasswordRepository.save(fp);
 
-        // 🔹 Resend using the same channel
+        // Resend using the same channel.
         RecoveryChannel recoveryChannel = fp.getRecoveryChannel();
         switch (recoveryChannel) {
             case EMAIL -> sendOtpEmail(user.getEmail(), newOtp);
@@ -192,7 +192,7 @@ public class ForgotPasswordController {
             case PHONE -> sendOtpSms(user.getPhoneNumber(), newOtp);
         }
 
-        // 🔹 Keep email cookie valid
+        // Keep email cookie valid.
         setForgotEmailCookie(response, user.getEmail());
 
         return ResponseEntity.ok("OTP resent successfully (" + fp.getResendCount() + "/3)");
@@ -232,7 +232,7 @@ public class ForgotPasswordController {
                     .body("OTP expired");
         }
 
-        // ✅ generate VERIFY token in cookie
+        // Generate VERIFY token in cookie.
         jwtUtils.generateToken(Map.of(), user, response, Token.VERIFY);
 
         return ResponseEntity.ok("OTP verified successfully");
@@ -271,7 +271,7 @@ public class ForgotPasswordController {
 
     // ================= HELPERS =================
     private int generateOtp() {
-        return new Random().nextInt(100_000, 999_999);
+        return OtpUtils.sixDigitOtp();
     }
 
     private void sendOtpEmail(String email, int otp) {
@@ -282,8 +282,7 @@ public class ForgotPasswordController {
     }
 
     private void sendOtpSms(String phoneNumber, int otp) {
-        // Implement your SMS provider logic here
-        System.out.println("Send OTP " + otp + " to phone " + phoneNumber);
+        throw new IllegalStateException("SMS recovery is not configured");
     }
 
     private String resolveBackupEmail(User user) {

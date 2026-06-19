@@ -2,7 +2,7 @@ package com.socialApp.Lishare.modules.social.story.serviceImpl;
 
 import com.socialApp.Lishare.modules.platform.user.entity.User;
 import com.socialApp.Lishare.modules.platform.user.repository.UserRepo;
-import com.socialApp.Lishare.modules.platform.storage.UploadPathResolver;
+import com.socialApp.Lishare.modules.platform.storage.UploadStorageService;
 import com.socialApp.Lishare.modules.social.chat.dto.ConversationSummaryResponse;
 import com.socialApp.Lishare.modules.social.chat.dto.MessageRequest;
 import com.socialApp.Lishare.modules.social.chat.service.ChatConversationService;
@@ -28,9 +28,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -47,7 +44,7 @@ public class StoryServiceImpl implements StoryService {
     private final FriendRepository friendRepository;
     private final ChatConversationService chatConversationService;
     private final NotificationService notificationService;
-    private final UploadPathResolver uploadPathResolver;
+    private final UploadStorageService uploadStorageService;
 
     @Override
     @Transactional
@@ -338,27 +335,7 @@ public class StoryServiceImpl implements StoryService {
     }
 
     private String saveMedia(MultipartFile file) {
-        try {
-            String originalFilename = file.getOriginalFilename();
-            String extension = "";
-            if (originalFilename != null) {
-                int dotIndex = originalFilename.lastIndexOf(".");
-                if (dotIndex >= 0) {
-                    extension = originalFilename.substring(dotIndex);
-                }
-            }
-            String filename = UUID.randomUUID() + extension;
-            Path folder = uploadPathResolver.ensurePrimaryUploadPath();
-            Path destinationPath = folder.resolve(filename).normalize();
-            if (!destinationPath.startsWith(folder)) {
-                throw new IllegalArgumentException("Invalid story media path");
-            }
-            File destination = destinationPath.toFile();
-            file.transferTo(destination);
-            return "/uploads/" + filename;
-        } catch (IOException exception) {
-            throw new RuntimeException("Failed to save story media", exception);
-        }
+        return uploadStorageService.saveMedia(file, "", null);
     }
 
     private String resolveMediaType(MultipartFile media, String mediaUrl) {

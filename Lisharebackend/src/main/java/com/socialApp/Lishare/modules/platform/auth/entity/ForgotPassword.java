@@ -38,7 +38,7 @@ public class ForgotPassword {
     private Date firstResendTime;
     // start time of resend window
 
-    // 🔹 Add this field to store which channel OTP was sent to
+    // Stores the recovery channel used for the current OTP.
     @Enumerated(EnumType.STRING)
     private RecoveryChannel recoveryChannel;
 

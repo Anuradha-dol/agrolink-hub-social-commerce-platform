@@ -9,20 +9,12 @@ import com.socialApp.Lishare.modules.business.product.entity.Product;
 import com.socialApp.Lishare.modules.business.product.mapper.ProductMapper;
 import com.socialApp.Lishare.modules.business.product.repository.ProductRepository;
 import com.socialApp.Lishare.modules.business.product.service.ProductService;
-import com.socialApp.Lishare.modules.platform.storage.UploadPathResolver;
+import com.socialApp.Lishare.modules.platform.storage.UploadStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.util.Locale;
-import java.util.Set;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -32,9 +24,7 @@ public class ProductServiceImpl implements ProductService {
     private final BusinessPageRepository businessPageRepository;
     private final AppOrderRepository appOrderRepository;
     private final ProductMapper mapper;
-    private final UploadPathResolver uploadPathResolver;
-
-    private static final Set<String> ALLOWED_IMAGE_EXTENSIONS = Set.of(".jpg", ".jpeg", ".png", ".webp", ".gif");
+    private final UploadStorageService uploadStorageService;
 
     @Override
     public ProductResponse createProduct(Long userId, ProductRequest request) {
@@ -174,37 +164,6 @@ public class ProductServiceImpl implements ProductService {
     }
 
     private String saveProductImage(MultipartFile file) {
-        String contentType = file.getContentType();
-        if (contentType == null || !contentType.toLowerCase(Locale.ROOT).startsWith("image/")) {
-            throw new RuntimeException("Product image must be an image file");
-        }
-
-        String extension = fileExtension(file.getOriginalFilename());
-        Path uploadDirectory = uploadPathResolver.ensurePrimaryUploadPath().resolve("products").normalize();
-        try {
-            Files.createDirectories(uploadDirectory);
-            String filename = "product-" + UUID.randomUUID() + extension;
-            Path target = uploadDirectory.resolve(filename).normalize();
-            if (!target.startsWith(uploadDirectory)) {
-                throw new RuntimeException("Invalid product image path");
-            }
-            Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
-            return "/uploads/products/" + filename;
-        } catch (IOException exception) {
-            throw new RuntimeException("Failed to save product image", exception);
-        }
-    }
-
-    private String fileExtension(String originalFilename) {
-        if (originalFilename == null || originalFilename.isBlank()) {
-            return ".jpg";
-        }
-        String cleaned = Path.of(originalFilename).getFileName().toString().toLowerCase(Locale.ROOT);
-        int dotIndex = cleaned.lastIndexOf('.');
-        if (dotIndex < 0) {
-            return ".jpg";
-        }
-        String extension = cleaned.substring(dotIndex);
-        return ALLOWED_IMAGE_EXTENSIONS.contains(extension) ? extension : ".jpg";
+        return uploadStorageService.saveImage(file, "product-", "products");
     }
 }

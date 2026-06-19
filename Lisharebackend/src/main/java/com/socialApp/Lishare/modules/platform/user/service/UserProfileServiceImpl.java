@@ -16,6 +16,7 @@ import com.socialApp.Lishare.modules.social.share.repository.ShareRepository;
 import com.socialApp.Lishare.modules.platform.user.entity.User;
 import com.socialApp.Lishare.modules.platform.user.repository.UserRepo;
 import com.socialApp.Lishare.modules.platform.utils.EmailUtils;
+import com.socialApp.Lishare.modules.platform.utils.OtpUtils;
 import jakarta.mail.MessagingException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +25,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
@@ -63,7 +63,7 @@ public class UserProfileServiceImpl implements UserProfileService {
     @Transactional
     @Override
     public void requestDeletion(User user) {
-        int otp = new Random().nextInt(900_000) + 100_000;
+        int otp = OtpUtils.sixDigitOtp();
         Date expiration = new Date(System.currentTimeMillis() + 10 * 60 * 1000);
 
         ForgotPassword fp = forgotPasswordRepository.findByUser(user)
@@ -156,7 +156,7 @@ public class UserProfileServiceImpl implements UserProfileService {
         }
 
         user.setTempEmail(newEmail);
-        int otp = new Random().nextInt(900_000) + 100_000;
+        int otp = OtpUtils.sixDigitOtp();
         user.setVerifyCode(String.valueOf(otp));
         user.setVerifyCodeExpiry(new Date(System.currentTimeMillis() + 5 * 60 * 1000));
         user.setLastOtpSentAt(new Date());

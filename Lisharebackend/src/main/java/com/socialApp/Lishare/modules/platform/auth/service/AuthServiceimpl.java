@@ -10,6 +10,7 @@ import com.socialApp.Lishare.modules.platform.user.dto.UserDto;
 import com.socialApp.Lishare.modules.platform.user.repository.UserRepo;
 import com.socialApp.Lishare.modules.platform.utils.EmailUtils;
 import com.socialApp.Lishare.modules.platform.utils.JwtUtils;
+import com.socialApp.Lishare.modules.platform.utils.OtpUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletResponse;
@@ -95,7 +96,7 @@ public class AuthServiceimpl implements AuthService {
         }
 
         //  Generate 6-digit verification code
-        int verificationCode = (int) (Math.random() * 900_000) + 100_000;
+        int verificationCode = OtpUtils.sixDigitOtp();
         user.setVerifyCode(String.valueOf(verificationCode));
         user.setVerifyCodeExpiry(new Date(System.currentTimeMillis() + 2 * 60 * 1000)); // 2 min expiry
         user.setLastOtpSentAt(new Date());
@@ -211,7 +212,7 @@ public class AuthServiceimpl implements AuthService {
         claims.put("name", user.getFirstname());
         claims.put("email", user.getEmail());
 
-        String accessToken = jwtUtils.generateToken(claims, user, response, Token.ACCESS);
+        jwtUtils.generateToken(claims, user, response, Token.ACCESS);
         String refreshToken = jwtUtils.generateToken(claims, user, response, Token.REFRESH);
 
         // You just set cookies in JwtUtils, but saved refresh token in DB
@@ -220,10 +221,8 @@ public class AuthServiceimpl implements AuthService {
 
         return AuthResponse.builder()
                 .firstname(savedUser.getFirstname())
-                .lastName(savedUser.getLastName())// ✅ safer to use savedUser
+                .lastName(savedUser.getLastName())
                 .email(savedUser.getEmail())
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
                 .isVerified(Boolean.TRUE)
                 .role(savedUser.getRole()) // pass the Set<Role>
 
@@ -338,7 +337,7 @@ public class AuthServiceimpl implements AuthService {
         }
 
         //  Generate new OTP
-        int verificationCode = (int) (Math.random() * 900000) + 100000;
+        int verificationCode = OtpUtils.sixDigitOtp();
         user.setVerifyCode(String.valueOf(verificationCode));
         user.setVerifyCodeExpiry(new Date(System.currentTimeMillis() + 2 * 60 * 1000));
         user.setLastOtpSentAt(now);
@@ -415,7 +414,7 @@ public class AuthServiceimpl implements AuthService {
         claims.put("name", user.getFirstname());
         claims.put("email", user.getEmail());
 
-        String accessToken = jwtUtils.generateToken(claims, user, response, Token.ACCESS);
+        jwtUtils.generateToken(claims, user, response, Token.ACCESS);
 
         return AuthResponse.builder()
                 .success(true)
@@ -424,7 +423,6 @@ public class AuthServiceimpl implements AuthService {
                 .lastName(user.getLastName())
                 .email(user.getEmail())
                 .role(user.getRole())
-                .accessToken(accessToken)
                 .build();
     }
 

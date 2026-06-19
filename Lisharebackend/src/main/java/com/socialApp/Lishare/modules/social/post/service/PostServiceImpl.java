@@ -3,7 +3,7 @@ package com.socialApp.Lishare.modules.social.post.service;
 import com.socialApp.Lishare.modules.platform.user.entity.User;
 import com.socialApp.Lishare.modules.platform.user.repository.UserBlockRepository;
 import com.socialApp.Lishare.modules.platform.user.repository.UserRepo;
-import com.socialApp.Lishare.modules.platform.storage.UploadPathResolver;
+import com.socialApp.Lishare.modules.platform.storage.UploadStorageService;
 import com.socialApp.Lishare.modules.social.follow.entity.Follow;
 import com.socialApp.Lishare.modules.social.follow.repository.FollowRepository;
 import com.socialApp.Lishare.modules.social.friend.dto.FriendStatus;
@@ -32,10 +32,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -57,7 +54,7 @@ public class PostServiceImpl implements PostService {
     private final FriendRepository friendRepository;
     private final NotificationService notificationService;
     private final MentionNotificationService mentionNotificationService;
-    private final UploadPathResolver uploadPathResolver;
+    private final UploadStorageService uploadStorageService;
 
     @Override
     @Transactional
@@ -476,27 +473,7 @@ public class PostServiceImpl implements PostService {
             return null;
         }
 
-        try {
-            String originalFilename = file.getOriginalFilename();
-            String extension = "";
-            if (originalFilename != null) {
-                int dotIndex = originalFilename.lastIndexOf(".");
-                if (dotIndex >= 0) {
-                    extension = originalFilename.substring(dotIndex);
-                }
-            }
-            String filename = UUID.randomUUID() + extension;
-            Path folder = uploadPathResolver.ensurePrimaryUploadPath();
-            Path destinationPath = folder.resolve(filename).normalize();
-            if (!destinationPath.startsWith(folder)) {
-                throw new IllegalArgumentException("Invalid media path");
-            }
-            File destination = destinationPath.toFile();
-            file.transferTo(destination);
-            return "/uploads/" + filename;
-        } catch (IOException exception) {
-            throw new RuntimeException("Failed to save media", exception);
-        }
+        return uploadStorageService.saveMedia(file, "", null);
     }
 
     private String resolveMediaType(MultipartFile imageFile, String mediaUrl) {

@@ -2,19 +2,15 @@ package com.socialApp.Lishare.modules.social.chat.controller;
 
 import com.socialApp.Lishare.modules.social.chat.dto.ChatAttachmentUploadResponse;
 import com.socialApp.Lishare.modules.platform.common.response.ApiResponse;
-import com.socialApp.Lishare.modules.platform.storage.UploadPathResolver;
+import com.socialApp.Lishare.modules.platform.storage.UploadStorageService;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/chat/attachments")
@@ -22,35 +18,14 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ChatAttachmentController {
 
-    private final UploadPathResolver uploadPathResolver;
+    private final UploadStorageService uploadStorageService;
 
     @PostMapping
     public ResponseEntity<ApiResponse<ChatAttachmentUploadResponse>> upload(
             @NotNull @RequestParam("file") MultipartFile file
     ) throws IOException {
-        if (file.isEmpty()) {
-            throw new IllegalArgumentException("Attachment file is required");
-        }
-
-        String original = StringUtils.cleanPath(file.getOriginalFilename() == null ? "" : file.getOriginalFilename());
-        String extension = "";
-        int dotIndex = original.lastIndexOf(".");
-        if (dotIndex >= 0) {
-            extension = original.substring(dotIndex);
-        }
-
-        String attachmentType = file.getContentType() == null ? "application/octet-stream" : file.getContentType();
-        String filename = "chat_" + UUID.randomUUID() + extension;
-
-        Path basePath = uploadPathResolver.ensurePrimaryUploadPath();
-        Path targetPath = basePath.resolve(filename).normalize();
-        if (!targetPath.startsWith(basePath)) {
-            throw new IllegalArgumentException("Invalid attachment path");
-        }
-
-        Files.write(targetPath, file.getBytes());
-
-        ChatAttachmentUploadResponse response = new ChatAttachmentUploadResponse("/uploads/" + filename, attachmentType);
+        UploadStorageService.StoredUpload upload = uploadStorageService.saveAttachment(file, "chat_", null);
+        ChatAttachmentUploadResponse response = new ChatAttachmentUploadResponse(upload.url(), upload.contentType());
         return ResponseEntity.ok(ApiResponse.success("Attachment uploaded", response));
     }
 }
