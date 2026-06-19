@@ -71130,3 +71130,130 @@ body .notif-panel.notif-panel-floating .notif-row-actions .notif-mark-btn,
 body .notif-panel.notif-panel-floating .notif-row-actions .notif-remove-btn {
   overflow: visible !important;
 }
+
+.auth-ref-page.auth-signup-ref.auth-signup-step-2 {
+  min-height: 100svh !important;
+  height: 100svh !important;
+  place-items: center !important;
+  align-content: center !important;
+  padding: 82px 28px 24px !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  background-color: #07140d !important;
+  background-image:
+    linear-gradient(90deg, rgba(3, 10, 7, 0.58) 0%, rgba(4, 18, 12, 0.26) 44%, rgba(5, 22, 14, 0.12) 100%),
+    url("./assets/backgrounds/signup-step1-hero-4k.jpg") !important;
+  background-position: center !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+}
+
+.auth-ref-page.auth-signup-ref.auth-signup-step-2::before,
+.auth-ref-page.auth-signup-ref.auth-signup-step-2::after {
+  display: none !important;
+  content: none !important;
+}
+
+.auth-ref-page.auth-signup-ref.auth-signup-step-2 .signup-pdf-card {
+  align-self: center !important;
+  width: min(600px, calc(100vw - 48px)) !important;
+  max-width: 600px !important;
+  gap: 8px !important;
+  padding: 16px 32px 14px !important;
+  border-radius: 18px !important;
+}
+
+.auth-ref-page.auth-signup-ref.auth-signup-step-2 .auth-step-panel {
+  gap: 8px !important;
+}
+
+.auth-ref-page.auth-signup-ref.auth-signup-step-2 .pdf-step-rail {
+  margin-bottom: 0 !important;
+}
+
+.auth-ref-page.auth-signup-ref.auth-signup-step-2 .auth-step-title,
+.auth-ref-page.auth-signup-ref.auth-signup-step-2 .signup-step2-title {
+  min-height: auto !important;
+  margin-bottom: 4px !important;
+}
+
+.auth-ref-page.auth-signup-ref.auth-signup-step-2 .persona-role-grid {
+  gap: 10px !important;
+}
+
+.auth-ref-page.auth-signup-ref.auth-signup-step-2 .persona-role-grid .signup-role-card {
+  min-height: 92px !important;
+  grid-template-rows: 26px auto auto !important;
+  gap: 3px !important;
+  padding: 14px 10px 10px !important;
+}
+
+.auth-ref-page.auth-signup-ref.auth-signup-step-2 .persona-role-grid .signup-role-card .role-card-icon,
+.auth-ref-page.auth-signup-ref.auth-signup-step-2 .persona-role-grid .signup-role-card.active .role-card-icon {
+  width: 26px !important;
+  height: 26px !important;
+}
+
+.auth-ref-page.auth-signup-ref.auth-signup-step-2 .signup-phone-control,
+.auth-ref-page.auth-signup-ref.auth-signup-step-2 .signup-profile-selects .signup-icon-control {
+  min-height: 46px !important;
+  border-radius: 10px !important;
+}
+
+.auth-ref-page.auth-signup-ref.auth-signup-step-2 .signup-profile-selects .signup-icon-control {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  overflow: hidden !important;
+}
+
+.auth-ref-page.auth-signup-ref.auth-signup-step-2 .signup-profile-selects .signup-icon-control select {
+  min-height: 46px !important;
+  padding-left: 48px !important;
+  padding-right: 42px !important;
+  line-height: 1.2 !important;
+  text-overflow: ellipsis !important;
+}
+
+.auth-ref-page.auth-signup-ref.auth-signup-step-2 .signup-profile-selects .signup-control-icon {
+  left: 18px !important;
+  width: 17px !important;
+  height: 17px !important;
+}
+
+.auth-ref-page.auth-signup-ref.auth-signup-step-2 .signup-bio-field textarea {
+  min-height: 42px !important;
+  padding: 10px 14px 18px !important;
+}
+
+.auth-ref-page.auth-signup-ref.auth-signup-step-2 .auth-step-actions {
+  margin-top: 0 !important;
+}
+
+.auth-ref-page.auth-signup-ref.auth-signup-step-2 .signup-privacy-note {
+  font-size: 0.78rem !important;
+}
+
+@media (max-height: 680px) and (min-width: 761px) {
+  .auth-ref-page.auth-signup-ref.auth-signup-step-2 {
+    padding-top: 68px !important;
+    padding-bottom: 16px !important;
+  }
+
+  .auth-ref-page.auth-signup-ref.auth-signup-step-2 .signup-pdf-card {
+    width: min(580px, calc(100vw - 48px)) !important;
+    padding: 14px 30px 12px !important;
+  }
+
+  .auth-ref-page.auth-signup-ref.auth-signup-step-2 .persona-role-grid .signup-role-card {
+    min-height: 84px !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .auth-ref-page.auth-signup-ref.auth-signup-step-2 {
+    height: auto !important;
+    min-height: 100svh !important;
+    padding: 92px 14px 24px !important;
+  }
+}
