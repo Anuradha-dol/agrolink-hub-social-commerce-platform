@@ -1,173 +1,182 @@
 # AgroLink Hub
 
-AgroLink Hub is a full-stack social commerce platform for local communities, farmers, producers, small businesses, buyers, and admins. It brings the energy of a social network into a practical marketplace, so people can share updates, build trust, sell products, manage orders, and get support in one place.
+AgroLink Hub is a full-stack social commerce platform for farmers, small businesses, buyers, creators, and community users. I built it as one connected workspace where people can post updates, discover sellers, chat, list products, manage carts and orders, track activity, request support, and keep a local marketplace active around real user relationships.
 
-The core idea is simple: a seller should not need one platform for audience, another for chat, another for product listing, and another for orders. AgroLink Hub keeps those workflows together. A farmer can post harvest updates, answer customer questions, list fresh products, receive orders, and build a trusted business profile. A small shop can do the same with handmade products, food items, supplies, or local services. Buyers can discover real sellers, compare products, place orders, and communicate directly.
+The main idea is simple: sellers should not need one app for audience, another for chat, another for products, and another for orders. AgroLink Hub keeps those daily workflows together.
 
 ![AgroLink Hub landing page preview](docs/agrolink-hub-landing-page.png)
 
 [Project Report](docs/agrolink-hub-project-report.pdf)
 
-## Why It Matters
+## What The Project Solves
 
-Many small producers and small businesses depend on social media to reach customers, but normal social platforms do not give them proper product, cart, order, review, and seller-management workflows. Marketplace-only platforms can solve selling, but they often miss community trust and daily engagement.
+Many small producers already use social media to reach customers, but normal social platforms do not give them proper product listings, carts, seller order management, reviews, or support tools. Marketplace-only systems can handle selling, but they often miss the trust that comes from posts, comments, profiles, reviews, and direct conversation.
 
 AgroLink Hub connects both sides:
 
-- Community posts, comments, reactions, stories, reels, followers, friends, and chat keep people active.
-- Business pages, marketplace products, carts, orders, reviews, and analytics turn that activity into real buying and selling.
-- Direct producer-to-customer selling reduces dependency on middlemen. Customers can get better prices, and sellers can keep a fairer share of the value.
-- The platform is useful for farmers, but it is not limited to farmers. Any small business can use the same flow to promote products, build a customer base, and manage orders.
+- Farmers and producers can share harvest updates, publish products, talk to buyers, and receive orders directly.
+- Small businesses can run a lightweight seller page with products, reviews, order status, and analytics.
+- Buyers can discover real sellers through both marketplace browsing and community activity.
+- Creators and community users can keep the feed active with posts, stories, reactions, comments, friends, follows, and messages.
+- Admins can review users, support tickets, reports, moderation states, and platform statistics.
 
-## Product Snapshot
+## Main User Flows
 
-| Social | Commerce | Workspace |
-| --- | --- | --- |
-| ![Social feature](Lisharefrontend/src/assets/backgrounds/landing-feature-community.jpg) | ![Commerce feature](Lisharefrontend/src/assets/backgrounds/landing-feature-marketplace.jpg) | ![Workspace feature](Lisharefrontend/src/assets/backgrounds/landing-feature-workspace.jpg) |
-| Posts, stories, comments, reactions, followers, friends, and chat. | Product discovery, cart, checkout, seller orders, business profiles, and reviews. | Calendar, analytics, notifications, support tickets, admin tools, and role-based dashboards. |
-
-## Who Uses It
-
-| User type | What they get |
+| Flow | What happens |
 | --- | --- |
-| Farmers and producers | A place to promote harvests, publish products, talk to buyers, receive orders, and earn closer to the real product value. |
-| Small businesses | A lightweight online storefront connected to social reach, customer trust, reviews, and order management. |
-| Buyers | Direct access to local sellers, product details, saved cart items, order tracking, seller reviews, and chat. |
-| Community users | A familiar social feed with posts, media, reactions, comments, stories, reels, friends, follows, and notifications. |
-| Creators | A social-first account experience with discovery and community engagement. |
-| Admins | User management, role workflows, support tickets, reports, moderation, and platform oversight. |
+| Signup and verification | A user creates an account, receives an OTP email, verifies the account, then enters the protected app shell. |
+| Social discovery | Users create posts, view feed content, comment, react, share, save posts, follow users, and manage friends. |
+| Seller setup | Business and farmer accounts create seller pages, add products, update availability, and manage received orders. |
+| Buyer purchase | Buyers browse marketplace products, add items to the backend cart, checkout, and track order history. |
+| Messaging | Users open direct or group conversations, send media, react to messages, and see sent/delivered/read behavior. |
+| Support and moderation | Users submit support questions and reports. Admins respond, review reports, and apply moderation actions. |
 
-## Main Features
+## Product Areas
 
-### Social Community
+| Area | Included work |
+| --- | --- |
+| Social | Feed, posts, media, poll support, comments, replies, reactions, shares, saved posts, reports, stories, friends, followers, profiles, and notifications. |
+| Commerce | Marketplace, product publishing, seller pages, product images, category/price/stock fields, cart persistence, checkout, buyer orders, seller orders, reviews, and analytics. |
+| Platform | Signup, login, OTP verification, forgot password, JWT refresh/logout, Google OAuth2, protected routes, role routes, settings, calendar, support center, admin dashboard, and assistant. |
+| Realtime | WebSocket/STOMP chat, typing events, presence-style behavior, message reactions, seen state, read ticks, and notification behavior. |
+| Operations | PostgreSQL persistence, JPA repositories, schema patching, local upload storage, mail configuration, CORS/cookie settings, and production security notes. |
 
-- Create posts with media, captions, audience metadata, feelings, location data, and poll support.
-- Post categories show XP guidance in the composer. Education and News posts earn the strongest XP weight because the product intentionally rewards useful knowledge, local updates, and learning content.
-- React, comment, reply, share, save posts, and report unsafe content.
-- Stories and reel-style content for short updates.
-- Profiles with cover photos, profile media, bio, activity, posts, saved content, and public profile views.
-- Friends, followers, following, discovery, requests, accepts, rejects, cancels, and unfriending.
-- Real-time notifications with unread count, mark-read, delete, and clear-all actions.
+## Roles
 
-### Messaging
+| Role | Access |
+| --- | --- |
+| `ROLE_USER` | Feed, marketplace buying, cart, buyer orders, chat, support, calendar, profile, and settings. |
+| `ROLE_CREATOR` | Social content, community reach, marketplace buying, chat, support, and profile management. |
+| `ROLE_BUSINESS` | Seller page, product publishing, seller order management, reviews, and analytics. |
+| `ROLE_FARMER` | Farmer seller tools, product listing, received orders, reviews, and analytics. |
+| `ROLE_ADMIN` | Admin dashboard, user groups, reports, support tickets, moderation, and platform oversight. |
 
-- Direct chat is available from the chat UI through account search and conversation opening.
-- Group chats can be created from the Messages page by adding a group name and selecting at least two members.
-- WebSocket/STOMP is used for incoming chat messages, typing events, and presence updates.
-- Online/offline presence, typing indicator, message sent/delivered/read ticks, message seen state, and message reactions are implemented.
-- Image/video attachments can be uploaded and rendered in messages.
-- The chat detail panel shows recent shared media from attachment messages.
-- Pinned link persistence is outside the final project scope; completed chat behavior focuses on reliable messaging, media, reactions, presence, and read receipts.
-
-### Marketplace
-
-- Product listing with images, category, price, stock, availability, delivery method, and seller details.
-- Marketplace browsing with filtering, search, sorting, featured products, seller pages, and product detail views.
-- Business profiles with owner details, product lists, reviews, and ratings.
-- Cart persistence on the backend, so buyer cart data is not only temporary browser state.
-- Checkout flow from cart into real order records.
-
-### Seller Workspace
-
-- Business and farmer accounts can manage a public seller page.
-- Sellers can add, edit, and remove products.
-- Seller order view for received orders.
-- Order status workflow for pending, accepted, processing, on the way, completed, and cancelled orders.
-- Analytics screens for seller and admin insight.
-
-### Platform Tools
-
-- Signup, login, OTP verification, forgot password, refresh token flow, logout, and Google OAuth2 support.
-- Role-based routing for user, creator, business, farmer, and admin accounts.
-- Calendar with events, meetings, birthdays, tasks, reminders, and planning views.
-- Support center with tickets, admin replies, website reviews, and moderation messages.
-- Admin command center for users, roles, reports, support tickets, and safety workflows.
-- Landing-page assistant backed by a small knowledge base.
+Admin accounts should be created through a controlled process. Public signup supports normal user, creator, business, and farmer roles.
 
 ## Tech Stack
 
 | Layer | Technology |
 | --- | --- |
-| Frontend | React 18, Vite 6, React Router, Axios, STOMP client |
-| Backend | Java 25, Spring Boot 4.0.2, Spring Security, Spring Data JPA, WebSocket/STOMP, Spring Mail |
+| Frontend | React 18.3.1, Vite 6.3.5, React Router DOM 6.30, Axios 1.8, STOMP client |
+| Backend | Java 25, Spring Boot 4.0.2, Spring Security, Spring Data JPA, Spring Mail, WebSocket/STOMP |
 | Database | PostgreSQL |
-| Auth | JWT access/refresh/verify cookies, email OTP, Google OAuth2 |
-| UI | Modular React pages, shared dashboard components, custom CSS design system |
-| Media | Local upload handling through Spring resource mapping |
+| Auth | Email/password, OTP verification, JWT access/refresh behavior, Google OAuth2 |
+| Storage | Local upload folder for development, served through backend resource mapping |
+| Styling | Custom CSS system with shared dashboard UI components |
 
-## Repository Layout
+## Architecture
+
+The repository is split into a React frontend and a Spring Boot backend. Both sides follow a similar domain structure, which makes features easier to trace from UI to API to service logic.
 
 ```text
 agrolink-hub/
+  Lisharefrontend/
+    src/
+      assets/          # branding, landing images, auth backgrounds, workspace visuals
+      modules/
+        business/      # admin, analytics, cart, orders, products, business pages, reviews, support
+        platform/      # app routes, auth, calendar, common UI, layouts, support, users
+        social/        # feed, posts, chat, chatbot, friends, follows, notifications
+      dashboard-ui.css
+      feed-card-reference.css
+      index.css
+
   Lisharebackend/
     src/main/java/com/socialApp/Lishare/
       modules/
-        business/      # products, cart, orders, business pages, reviews, support, admin
-        platform/      # auth, users, calendar, security, storage, common utilities
-        social/        # posts, stories, comments, reactions, chat, friends, follow, notifications
+        business/      # products, cart, orders, seller pages, reviews, support, admin
+        platform/      # auth, users, calendar, security, storage, config, utilities
+        social/        # posts, stories, comments, reactions, shares, chat, friends, follow, notifications
     src/main/resources/
       application.yaml
       schema.sql
     .env.example
     pom.xml
 
-  Lisharefrontend/
-    src/
-      assets/          # branding, landing images, feature visuals, workspace backgrounds
-      modules/
-        business/      # marketplace, cart, orders, analytics, business pages, admin
-        platform/      # app routes, auth, profile, settings, support, calendar, shared UI
-        social/        # feed, chat, friends, notifications, posts
-      dashboard-ui.css
-      feed-card-reference.css
-    .env.example
-    package.json
-
   docs/
+    agrolink-hub-landing-page.png
     agrolink-hub-project-report.pdf
 ```
 
-## Main Routes
+## Frontend Routes
+
+Public pages:
 
 | Route | Purpose |
 | --- | --- |
-| `/` | Public landing page with product story, platform areas, reviews, and assistant |
-| `/login`, `/signup`, `/verify`, `/forgot-password` | Authentication and account recovery |
-| `/home` | Social feed, posts, stories, reels, reactions, and comments |
-| `/profile`, `/profile/:userId` | User profile and profile content |
-| `/friends` | Friend and follow discovery |
-| `/chat` | Real-time messaging |
-| `/marketplace` | Product discovery and seller profiles |
-| `/cart` | Buyer cart and checkout |
-| `/orders` | Buyer order history and seller received orders |
-| `/business` | Business/farmer seller studio |
-| `/analytics` | Seller/admin analytics |
-| `/calendar` | Events, tasks, meetings, birthdays, and reminders |
-| `/support` | User support tickets and website reviews |
-| `/admin` | Admin command center |
+| `/` | Landing page |
+| `/login` | Login |
+| `/signup` | Signup |
+| `/verify` | OTP verification |
+| `/forgot-password` | Account recovery |
+| `/oauth2/callback` | Google OAuth2 callback |
 
-## Roles
+Protected app pages:
 
-| Role | Access |
+| Route | Purpose |
 | --- | --- |
-| `ROLE_USER` | Feed, marketplace buying, cart, orders, chat, support, calendar, profile |
-| `ROLE_CREATOR` | Social content, creator account experience, marketplace buying, chat, support |
-| `ROLE_BUSINESS` | Business page, product listing, seller orders, analytics |
-| `ROLE_FARMER` | Farmer seller tools, product listing, seller orders, analytics |
-| `ROLE_ADMIN` | Admin dashboard, users, moderation, support tickets, reports, role workflows |
+| `/home` | Social feed, composer, posts, media, stories, comments, reactions |
+| `/profile`, `/profile/:userId` | Own profile and public profile views |
+| `/settings` | Account settings |
+| `/friends` | Friend and user discovery |
+| `/notifications` | Notification center |
+| `/chat` | Realtime chat |
+| `/marketplace` | Product discovery |
+| `/cart` | Saved/cart items and checkout flow |
+| `/orders` | Buyer order history and seller received orders |
+| `/business` | Seller workspace for business and farmer roles |
+| `/analytics` | Seller/admin insight views |
+| `/calendar` | Events, reminders, tasks, meetings, birthdays |
+| `/support` | Support tickets and website review flow |
+| `/admin` and `/admin/*` | Admin command center |
 
-Admin accounts should be created through a controlled admin/database process. Public signup is for normal platform roles.
+## Backend API Areas
+
+The backend is organized around controllers, services, repositories, entities, DTOs, security filters, and configuration classes.
+
+| Module | Responsibilities |
+| --- | --- |
+| `platform/auth` | Register, login, OTP verify/resend, refresh, logout, forgot password, Google OAuth2. |
+| `platform/user` | Profile data, public profiles, settings, email/password changes, profile/cover image upload, account deletion, blocking. |
+| `platform/security` | Security filter chain, JWT filter, auth config, upload security headers, role-based protection. |
+| `platform/calendar` | Events, user reminders, visibility, meetings, birthdays, farm/business planning. |
+| `social/post` | Feed posts, media URLs, audience metadata, location/feeling fields, reels, polls, saved posts, reports. |
+| `social/comment/reaction/share/story` | Comments, replies, comment reactions, post reactions, shares, stories, views, story reactions, replies. |
+| `social/chat` | Direct/group conversations, messages, attachments, message reactions, seen state, typing, WebSocket delivery. |
+| `social/friend/follow/notification` | Friend requests, accept/reject/cancel/unfriend, follow graph, notifications, unread count. |
+| `social/chatbot` | Knowledge-base assistant for common platform questions. |
+| `business/product/page` | Marketplace products, seller pages, availability, stock, images, public browsing, seller ownership. |
+| `business/cart/order` | Backend cart rows, quantity updates, checkout, buyer orders, seller orders, order status changes. |
+| `business/admin/support/review` | Admin stats, user moderation, reports, support tickets, replies, reviews, trust workflows. |
+
+## Database And Storage
+
+PostgreSQL is used for the main data model. JPA entities and repositories cover users, roles, OTP fields, forgot-password records, posts, comments, reactions, shares, stories, story views, friends, follows, notifications, chat conversations, chat messages, attachments, products, business pages, cart items, orders, reviews, support questions, reports, and assistant knowledge entries.
+
+The project also includes schema patching for existing local databases. Runtime uploads are kept outside source control and served through backend resource mapping. For a real deployment, the upload folder should move to persistent storage or object storage.
+
+## Security Notes
+
+- Secrets must stay outside git. Use `.env` files or hosting secret stores.
+- `application.yaml` reads database, mail, JWT, OAuth2, cookie, CORS, and upload settings from environment variables.
+- JWT and cookie behavior are handled by the backend security layer.
+- `ProtectedRoute` blocks logged-out frontend users from app pages.
+- `RoleRoute` blocks non-seller users from seller tools and non-admin users from admin tools.
+- Public signup does not allow admin account creation.
+- Production should use HTTPS cookies, strict CORS origins, a strong JWT secret, trusted OAuth2 redirects, and rotated credentials if any secret was ever exposed.
 
 ## Environment Configuration
 
-Secrets must stay outside git. Use the included `.env.example` files as templates.
+Copy the example environment files and fill in local values.
 
-Backend environment values:
+Backend values:
 
 ```text
 DB_URL=jdbc:postgresql://localhost:5432/bodlyy_db
 DB_USERNAME=postgres
 DB_PASSWORD=your_database_password
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
 MAIL_USERNAME=your_email@example.com
 MAIL_PASSWORD=your_mail_app_password
 JWT_SECRET=your_32_byte_or_longer_base64_secret
@@ -176,33 +185,28 @@ FILE_UPLOAD_DIR=uploads
 APP_CORS_ALLOWED_ORIGINS=http://localhost:[*],http://127.0.0.1:[*]
 ```
 
-Frontend environment values:
+Frontend values:
 
 ```text
 VITE_API_BASE_URL=http://localhost:8081
 VITE_WS_URL=ws://localhost:8081/ws
 ```
 
-Security note: if a real password, app password, token, or JWT secret was ever committed before cleanup, rotate it. Removing a value from the current file does not remove it from old git history.
+For Gmail OTP email, use a Gmail app password, not the normal account password.
 
 ## Running Locally
 
-### 1. Create PostgreSQL Database
+Create the PostgreSQL database:
 
 ```sql
 CREATE DATABASE bodlyy_db;
 ```
 
-### 2. Start Backend
+Start the backend:
 
 ```powershell
 cd Lisharebackend
-$env:DB_URL="jdbc:postgresql://localhost:5432/bodlyy_db"
-$env:DB_USERNAME="postgres"
-$env:DB_PASSWORD="your_database_password"
-$env:MAIL_USERNAME="your_email@example.com"
-$env:MAIL_PASSWORD="your_mail_app_password"
-$env:JWT_SECRET="replace_with_secure_base64_secret"
+Copy-Item .env.example .env
 .\mvnw spring-boot:run
 ```
 
@@ -212,7 +216,7 @@ Backend default URL:
 http://localhost:8081
 ```
 
-### 3. Start Frontend
+Start the frontend:
 
 ```powershell
 cd Lisharefrontend
@@ -227,9 +231,9 @@ Frontend default URL:
 http://localhost:5173
 ```
 
-If Vite chooses another port, use the URL printed in the terminal.
+If Vite selects another port, use the URL printed in the terminal.
 
-## Build and Verification
+## Build And Verification
 
 Frontend production build:
 
@@ -238,7 +242,7 @@ cd Lisharefrontend
 npm run build
 ```
 
-Backend tests/build:
+Backend build and tests:
 
 ```powershell
 cd Lisharebackend
@@ -246,33 +250,28 @@ cd Lisharebackend
 .\mvnw clean package
 ```
 
-Some backend tests may need PostgreSQL and environment variables, depending on the active test profile.
+Some backend tests need PostgreSQL and required environment values.
 
-## Design and UI Notes
+## Design Notes
 
-The frontend uses shared UI components from:
+The UI is designed as a practical work-focused product, not a marketing-only landing page. The current visual direction uses AgroLink green, teal, yellow, clean dark surfaces, compact dashboard cards, responsive marketplace layouts, stable cart/order screens, refined auth pages, and clear workspace navigation.
+
+Main UI files:
 
 ```text
 Lisharefrontend/src/modules/platform/common/ui/DashboardUI.jsx
-```
-
-Main design files:
-
-```text
-Lisharefrontend/src/index.css
 Lisharefrontend/src/dashboard-ui.css
 Lisharefrontend/src/feed-card-reference.css
+Lisharefrontend/src/index.css
 ```
-
-The current UI direction is practical and work-focused: strong AgroLink green/teal/yellow branding, fewer plain white cards, stable cart and order layouts, compact notifications, responsive marketplace cards, refined auth pages, and dedicated landing visuals for the Social, Commerce, and Workspace feature cards.
 
 ## Documentation
 
 - [Project report PDF](docs/agrolink-hub-project-report.pdf)
 
-The report covers product purpose, target users, system architecture, technology stack, frontend/backend modules, database behavior, authentication, social features, business workflows, support tools, testing notes, deployment checklist, and final handover notes.
+The report explains the product purpose, user roles, architecture, frontend and backend modules, database model, security behavior, social features, business workflows, support tools, deployment notes, testing notes, and final project scope.
 
-## Data and Upload Hygiene
+## Data And Upload Hygiene
 
 Runtime uploads are application data, not source code. They are ignored by git:
 
@@ -281,26 +280,21 @@ uploads/
 **/uploads/
 ```
 
-Local uploaded files can remain on a developer machine, but they should not be committed. IDE files, logs, build folders, local environment files, private Spring profiles, frontend `dist`, backend `target`, and dependency folders are also ignored.
+Do not commit local uploads, IDE folders, dependency folders, `target`, `dist`, logs, `.env`, private Spring profiles, real passwords, mail app passwords, OAuth2 secrets, or JWT secrets.
 
 ## Production Checklist
 
-- Set production PostgreSQL credentials through the hosting secret store.
+- Use managed PostgreSQL credentials from the hosting secret store.
 - Use a strong Base64 JWT secret.
-- Configure mail credentials for OTP and password reset emails.
-- Configure OAuth2 redirect URLs for the production domain.
+- Configure mail credentials for OTP and password recovery.
+- Configure trusted OAuth2 redirect URLs.
 - Set `COOKIE_SECURE=true` behind HTTPS.
-- Restrict CORS origins to trusted frontend domains.
-- Use persistent upload storage outside the git repository.
-- Run frontend and backend builds before release.
-- Add route-level code splitting if the frontend bundle size becomes a deployment concern.
+- Restrict CORS origins to production frontend domains.
+- Use persistent media storage outside the repository.
+- Run frontend and backend builds before deployment.
+- Review large frontend chunks if Vite warns about bundle size.
+- Rotate credentials if a real secret was ever committed.
 
-## Project Direction
+## Project Status
 
-AgroLink Hub is built for a local agriculture and small-business setting, but the model can support any community where trust and commerce belong together. The strongest value is the connection between social activity and direct selling: people can follow sellers, see updates, ask questions, read reviews, place orders, and keep returning to the same platform.
-
-That makes the platform useful for farmers, home-based sellers, small shops, local producers, creators, buyers, and admins who need a managed digital marketplace with real community behavior behind it.
-
-The XP idea supports that vision. General entertainment can keep a community active, but a healthy community also needs people to share useful news, practical education, farming knowledge, product updates, safety notices, and local opportunities. Giving higher XP to Education and News categories gently nudges users toward posts that help others think, learn, and make better decisions. Over time, that makes the feed more than a place to scroll: it becomes a local knowledge space where good information has visible value.
-
-Messaging supports the same trust model. Sent, delivered, and read ticks make conversations clearer, so buyers and sellers know whether a message reached the other person and whether it was seen. That small detail matters when someone is asking about stock, delivery, price, or an order.
+This repository demonstrates a complete social commerce workflow: account creation, role-based access, social posting, profiles, friendship/follow behavior, realtime chat, notifications, marketplace products, cart checkout, order management, support, admin oversight, calendar tools, and documentation. The project is built for a local agriculture and small-business setting, but the same structure can support other community marketplaces where trust, communication, and direct selling need to work together.
