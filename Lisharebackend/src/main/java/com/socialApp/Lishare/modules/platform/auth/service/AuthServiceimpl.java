@@ -15,6 +15,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.mail.MailException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -45,8 +46,8 @@ public class AuthServiceimpl implements AuthService {
         if (optionalUser.isPresent()) {
             user = optionalUser.get();
 
-            // Block if already verified or verification code still valid
-            if (user.getIsVerified() || (user.getVerifyCodeExpiry() != null && user.getVerifyCodeExpiry().after(new Date()))) {
+            // Block only verified accounts. Unverified accounts can retry signup to receive a fresh OTP.
+            if (user.getIsVerified()) {
                 return AuthResponse.builder()
                         .message("Email already exists!")
                         .success(false)
@@ -101,9 +102,6 @@ public class AuthServiceimpl implements AuthService {
         user.setVerifyCodeExpiry(new Date(System.currentTimeMillis() + 2 * 60 * 1000)); // 2 min expiry
         user.setLastOtpSentAt(new Date());
 
-        //  Save user to DB
-        User savedUser = userRepo.save(user);
-
         //  Prepare verification email
         final String subject = "Verify your account";
         final String EMAIL_TEMPLATE = """
@@ -117,19 +115,22 @@ public class AuthServiceimpl implements AuthService {
                 <p>This link will expire in 2 minutes.</p>
             </body>
         </html>
-        """.formatted(savedUser.getFirstname(), savedUser.getVerifyCode(), savedUser.getEmail(), savedUser.getVerifyCode());
+        """.formatted(user.getFirstname(), user.getVerifyCode(), user.getEmail(), user.getVerifyCode());
 
-        //  Send email
+        // Send email before saving the signup state so a mail failure does not leave a stuck unverified account.
         try {
-            MailBody mailBody = new MailBody(savedUser.getEmail(), subject, EMAIL_TEMPLATE);
+            MailBody mailBody = new MailBody(user.getEmail(), subject, EMAIL_TEMPLATE);
             emailUtils.sendMail(mailBody);
-        } catch (MessagingException e) {
+        } catch (MessagingException | MailException e) {
             e.printStackTrace();
             return AuthResponse.builder()
                     .message("Failed to send verification email!")
                     .success(false)
                     .build();
         }
+
+        //  Save user to DB after email succeeds
+        User savedUser = userRepo.save(user);
 
         //  Return response
         return AuthResponse.builder()
@@ -342,9 +343,7 @@ public class AuthServiceimpl implements AuthService {
         user.setVerifyCodeExpiry(new Date(System.currentTimeMillis() + 2 * 60 * 1000));
         user.setLastOtpSentAt(now);
 
-        userRepo.save(user);
-
-        // Send email
+        // Send email before saving the new OTP so a mail failure does not replace the user's usable code.
         try {
             MailBody mailBody = new MailBody(
                     user.getEmail(),
@@ -352,12 +351,15 @@ public class AuthServiceimpl implements AuthService {
                     "Your verification code is: " + verificationCode + " (valid 2 minutes)"
             );
             emailUtils.sendMail(mailBody);
-        } catch (MessagingException e) {
+        } catch (MessagingException | MailException e) {
+            e.printStackTrace();
             return AuthResponse.builder()
                     .message("Failed to send verification email!")
                     .success(false)
                     .build();
         }
+
+        userRepo.save(user);
 
         return AuthResponse.builder()
                 .message("Verification code resent successfully! (" + user.getOtpResendCount() + "/3)")

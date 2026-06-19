@@ -22,11 +22,16 @@ public class EmailUtils {
     }
 
     public void sendMail(MailBody mailBody) throws MessagingException {
+        String sender = fromAddress == null ? "" : fromAddress.trim();
+        if (sender.isBlank()) {
+            throw new MessagingException("Email sender address is not configured. Set MAIL_USERNAME in .env.");
+        }
+
         MimeMessage message = javaMailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
         helper.setTo(mailBody.to());
-        helper.setFrom(fromAddress);
+        helper.setFrom(sender);
         helper.setSubject(mailBody.subject());
         helper.setText(mailBody.text(), true); // Set to true for HTML content
 
