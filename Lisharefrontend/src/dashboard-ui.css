@@ -71148,6 +71148,16 @@ body .notif-panel.notif-panel-floating .notif-row-actions .notif-remove-btn {
   background-repeat: no-repeat !important;
 }
 
+.auth-ref-page.auth-signup-ref.auth-signup-step-3 {
+  background-color: #07140d !important;
+  background-image:
+    linear-gradient(90deg, rgba(3, 10, 7, 0.58) 0%, rgba(4, 18, 12, 0.26) 44%, rgba(5, 22, 14, 0.12) 100%),
+    url("./assets/backgrounds/signup-step1-hero-4k.jpg") !important;
+  background-position: center !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+}
+
 .auth-ref-page.auth-signup-ref.auth-signup-step-2::before,
 .auth-ref-page.auth-signup-ref.auth-signup-step-2::after {
   display: none !important;

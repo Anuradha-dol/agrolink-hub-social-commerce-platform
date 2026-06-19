@@ -1,6 +1,14 @@
 -- Pre-JPA schema patch for existing PostgreSQL databases.
 -- Ensures new social feed/story columns exist before Hibernate update runs.
 
+ALTER TABLE IF EXISTS users
+    DROP CONSTRAINT IF EXISTS users_role_check;
+
+ALTER TABLE IF EXISTS users
+    ADD CONSTRAINT users_role_check
+    CHECK (role IN ('ROLE_USER', 'ROLE_ADMIN', 'ROLE_BUSINESS', 'ROLE_FARMER', 'ROLE_CREATOR'));
+
+
 ALTER TABLE IF EXISTS posts
     ADD COLUMN IF NOT EXISTS media_type VARCHAR(20);
 
