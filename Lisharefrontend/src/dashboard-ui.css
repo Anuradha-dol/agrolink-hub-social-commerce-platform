@@ -13298,8 +13298,8 @@ body.route-is-changing .shell-content::before {
   place-items: center !important;
   padding: clamp(58px, 7vh, 76px) clamp(12px, 2.4vw, 34px) clamp(10px, 2vh, 18px) !important;
   background:
-    linear-gradient(90deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.26) 20%, rgba(255, 255, 255, 0.52) 50%, rgba(255, 255, 255, 0.26) 80%, rgba(255, 255, 255, 0.42)),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.24), rgba(255, 255, 255, 0.34)),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.34) 0%, rgba(255, 255, 255, 0.16) 24%, rgba(255, 255, 255, 0.18) 50%, rgba(255, 255, 255, 0.16) 76%, rgba(255, 255, 255, 0.34) 100%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.2)),
     url("./assets/backgrounds/signup-step2-hero-4k.jpg") center / cover no-repeat !important;
 }
 
