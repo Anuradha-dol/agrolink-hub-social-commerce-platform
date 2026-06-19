@@ -54,6 +54,15 @@ public class NotificationApiController {
         return ResponseEntity.ok(ApiResponse.success("All notifications marked as read", null));
     }
 
+    @DeleteMapping("/{notificationId}")
+    public ResponseEntity<ApiResponse<Void>> delete(
+            @AuthenticationPrincipal User user,
+            @PathVariable Long notificationId
+    ) {
+        notificationService.deleteNotification(user.getUserId(), notificationId);
+        return ResponseEntity.ok(ApiResponse.success("Notification removed", null));
+    }
+
     @DeleteMapping
     public ResponseEntity<ApiResponse<Void>> clear(@AuthenticationPrincipal User user) {
         notificationService.clearAll(user.getUserId());

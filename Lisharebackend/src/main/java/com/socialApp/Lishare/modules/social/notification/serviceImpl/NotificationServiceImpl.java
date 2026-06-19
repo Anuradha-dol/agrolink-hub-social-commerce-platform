@@ -63,6 +63,19 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     @Transactional
+    public void deleteNotification(Long userId, Long notificationId) {
+        Notification notification = notificationRepository.findById(notificationId)
+                .orElseThrow(() -> new RuntimeException("Notification not found"));
+
+        if (notification.getUser() == null || !notification.getUser().getUserId().equals(userId)) {
+            throw new RuntimeException("You are not allowed to delete this notification");
+        }
+
+        notificationRepository.delete(notification);
+    }
+
+    @Override
+    @Transactional
     public void clearAll(Long userId) {
         notificationRepository.deleteAllByUserId(userId);
     }

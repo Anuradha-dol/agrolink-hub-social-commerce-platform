@@ -13,6 +13,8 @@ public interface NotificationService {
 
     void markAllRead(Long userId);
 
+    void deleteNotification(Long userId, Long notificationId);
+
     void clearAll(Long userId);
 
     long unreadCount(Long userId);

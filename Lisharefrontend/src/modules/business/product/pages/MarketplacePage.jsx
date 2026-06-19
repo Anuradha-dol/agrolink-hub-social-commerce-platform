@@ -550,7 +550,7 @@ export default function MarketplacePage() {
         </main>
       </div>
 
-      <Modal open={modal === "product"} title={selectedProduct?.name || "Product"} subtitle={selectedProduct?.businessName || "Marketplace product"} onClose={() => setModal("")} className="ui-modal-wide">
+      <Modal open={modal === "product"} title={selectedProduct?.name || "Product"} subtitle={selectedProduct?.businessName || "Marketplace product"} onClose={() => setModal("")} className="ui-modal-wide commerce-product-detail-modal">
         {selectedProduct ? <ProductDetails product={selectedProduct} onAddToCart={addToCart} onOrderNow={orderNow} onBusiness={openBusinessProfile} busy={busy} canBuy={!isBusiness} /> : null}
       </Modal>
 

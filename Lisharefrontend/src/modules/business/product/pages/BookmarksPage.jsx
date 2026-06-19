@@ -30,6 +30,13 @@ function lineTotal(item) {
   return Number(item.lineTotal ?? Number(item.unitPrice || 0) * Number(item.quantity || 1));
 }
 
+function clampQuantity(value, maxValue = 999) {
+  const parsed = Number(value);
+  const max = Number(maxValue || 999);
+  if (!Number.isFinite(parsed)) return 1;
+  return Math.max(1, Math.min(Number.isFinite(max) && max > 0 ? max : 999, Math.trunc(parsed)));
+}
+
 function itemImage(item) {
   const value = String(item.productImageUrl || "").trim();
   if (!value) return "";
@@ -55,12 +62,13 @@ export default function CartPage() {
   const [selectedItem, setSelectedItem] = useState(null);
   const [modal, setModal] = useState("");
   const [busy, setBusy] = useState("");
+  const [quantityDrafts, setQuantityDrafts] = useState({});
 
-  const load = async () => {
-    setLoading(true);
+  const load = async ({ showLoading = true } = {}) => {
+    if (showLoading) setLoading(true);
     if (isBusiness) {
       setCart([]);
-      setLoading(false);
+      if (showLoading) setLoading(false);
       return;
     }
     try {
@@ -69,7 +77,7 @@ export default function CartPage() {
     } catch {
       pushToast("Failed to load cart", "error");
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   };
 
@@ -91,15 +99,66 @@ export default function CartPage() {
   const businessCount = new Set(cart.map((item) => item.businessPageId || item.businessName).filter(Boolean)).size;
   const deliveryCount = new Set(cart.map((item) => item.deliveryMethod || "Pickup")).size;
 
+  const clearQuantityDraft = (itemId) => {
+    setQuantityDrafts((prev) => {
+      if (!Object.prototype.hasOwnProperty.call(prev, itemId)) return prev;
+      const next = { ...prev };
+      delete next[itemId];
+      return next;
+    });
+  };
+
+  const quantityInputValue = (item) => (
+    Object.prototype.hasOwnProperty.call(quantityDrafts, item.id)
+      ? quantityDrafts[item.id]
+      : item.quantity || 1
+  );
+
+  const quantityActionBase = (item) => {
+    const value = quantityInputValue(item);
+    return value === "" ? Number(item.quantity || 1) : Number(value || item.quantity || 1);
+  };
+
+  const editQuantityDraft = (item, value) => {
+    const digits = String(value || "").replace(/[^\d]/g, "");
+    const nextValue = digits ? String(clampQuantity(digits, item.stock || 999)) : "";
+    setQuantityDrafts((prev) => ({ ...prev, [item.id]: nextValue }));
+  };
+
+  const commitQuantityDraft = (item) => {
+    if (!Object.prototype.hasOwnProperty.call(quantityDrafts, item.id)) return;
+    const draft = quantityDrafts[item.id];
+    if (draft === "") {
+      clearQuantityDraft(item.id);
+      return;
+    }
+    updateQuantity(item, draft);
+  };
+
   const updateQuantity = async (item, quantityValue) => {
-    const nextQuantity = Number(quantityValue);
-    if (!Number.isFinite(nextQuantity) || nextQuantity < 1) return;
+    const nextQuantity = clampQuantity(quantityValue, item.stock || 999);
+    if (nextQuantity === Number(item.quantity || 1)) {
+      clearQuantityDraft(item.id);
+      return;
+    }
     setBusy(`qty-${item.id}`);
+    clearQuantityDraft(item.id);
+    setCart((prev) => prev.map((row) => (
+      row.id === item.id
+        ? { ...row, quantity: nextQuantity, lineTotal: Number(row.unitPrice || 0) * nextQuantity }
+        : row
+    )));
+    setSelectedItem((prev) => (
+      prev?.id === item.id
+        ? { ...prev, quantity: nextQuantity, lineTotal: Number(prev.unitPrice || 0) * nextQuantity }
+        : prev
+    ));
     try {
       await cartService.update(item.id, { productId: item.productId, quantity: nextQuantity });
-      await load();
-      pushToast("Cart quantity updated", "success");
+      const response = await cartService.list();
+      setCart(unwrap(response));
     } catch {
+      await load({ showLoading: false });
       pushToast("Failed to update cart quantity", "error");
     } finally {
       setBusy("");
@@ -110,7 +169,7 @@ export default function CartPage() {
     setBusy(`remove-${item.id}`);
     try {
       await cartService.remove(item.id);
-      await load();
+      await load({ showLoading: false });
       setModal("");
       pushToast("Item removed from cart", "success");
     } catch {
@@ -124,7 +183,7 @@ export default function CartPage() {
     setBusy("clear");
     try {
       await cartService.clear();
-      await load();
+      await load({ showLoading: false });
       setModal("");
       pushToast("Cart cleared", "success");
     } catch {
@@ -223,9 +282,41 @@ export default function CartPage() {
                       <strong>{money(item.unitPrice)} each</strong>
                     </div>
                     <div className="commerce-cart-quantity">
-                      <button type="button" onClick={() => updateQuantity(item, Number(item.quantity || 1) - 1)} disabled={Number(item.quantity || 1) <= 1 || busy === `qty-${item.id}`}>-</button>
-                      <input type="number" min="1" max={item.stock || 999} value={item.quantity || 1} onChange={(event) => updateQuantity(item, event.target.value)} />
-                      <button type="button" onClick={() => updateQuantity(item, Number(item.quantity || 1) + 1)} disabled={busy === `qty-${item.id}` || Number(item.quantity || 1) >= Number(item.stock || 999)}>+</button>
+                      <button
+                        type="button"
+                        onMouseDown={(event) => event.preventDefault()}
+                        onClick={() => updateQuantity(item, quantityActionBase(item) - 1)}
+                        disabled={quantityActionBase(item) <= 1 || busy === `qty-${item.id}`}
+                        aria-label={`Decrease ${item.productName} quantity`}
+                      >
+                        -
+                      </button>
+                      <input
+                        type="number"
+                        min="1"
+                        max={item.stock || 999}
+                        inputMode="numeric"
+                        value={quantityInputValue(item)}
+                        onChange={(event) => editQuantityDraft(item, event.target.value)}
+                        onBlur={() => commitQuantityDraft(item)}
+                        onKeyDown={(event) => {
+                          if (event.key === "Enter") {
+                            event.preventDefault();
+                            commitQuantityDraft(item);
+                          }
+                        }}
+                        disabled={busy === `qty-${item.id}`}
+                        aria-label={`${item.productName} quantity`}
+                      />
+                      <button
+                        type="button"
+                        onMouseDown={(event) => event.preventDefault()}
+                        onClick={() => updateQuantity(item, quantityActionBase(item) + 1)}
+                        disabled={busy === `qty-${item.id}` || quantityActionBase(item) >= Number(item.stock || 999)}
+                        aria-label={`Increase ${item.productName} quantity`}
+                      >
+                        +
+                      </button>
                     </div>
                     <div className="commerce-cart-total">
                       <span>Line total</span>

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { orderService } from "../services/orderService";
+import { cartService } from "/src/modules/business/cart/services/cartService";
 import { useAuth } from "/src/modules/platform/app/store";
 import LoadingState from "/src/modules/platform/common/components/LoadingState";
 import { useToast } from "/src/modules/platform/common/hooks/useToast";
@@ -32,6 +33,16 @@ function money(value) {
 
 function orderTotal(order) {
   return Number(order.totalPrice ?? Number(order.unitPrice || 0) * Number(order.quantity || 1));
+}
+
+function validQuantity(value) {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed < 1) return 1;
+  return Math.trunc(parsed);
+}
+
+function apiMessage(error, fallback) {
+  return error?.response?.data?.message || error?.response?.data?.error || fallback;
 }
 
 function statusLabel(status = "") {
@@ -87,8 +98,8 @@ export default function OrdersPage() {
   const [modal, setModal] = useState("");
   const [busy, setBusy] = useState("");
 
-  const load = async () => {
-      setLoading(true);
+  const load = async ({ showLoading = true } = {}) => {
+      if (showLoading) setLoading(true);
       try {
         const [mineRes, businessRes] = await Promise.allSettled([
         isBusiness ? Promise.resolve({ data: { data: [] } }) : orderService.myOrders({ page: 0, size: 100 }),
@@ -99,7 +110,7 @@ export default function OrdersPage() {
     } catch {
       pushToast("Failed to load orders", "error");
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   };
 
@@ -165,13 +176,26 @@ export default function OrdersPage() {
   };
 
   const reorder = async (order) => {
+    const productId = Number(order.productId);
+    if (!Number.isFinite(productId) || productId <= 0) {
+      pushToast("Cannot reorder because this order has no product reference.", "error");
+      return;
+    }
+    const quantity = validQuantity(order.quantity);
+    const deliveryMethod = order.deliveryMethod || "Pickup";
     setBusy(`reorder-${order.id}`);
     try {
-      await orderService.createOrder({ productId: order.productId, quantity: order.quantity || 1, deliveryMethod: order.deliveryMethod });
+      await orderService.createOrder({ productId, quantity, deliveryMethod });
       pushToast("Reorder placed", "success");
-      await load();
-    } catch {
-      pushToast("Failed to reorder", "error");
+      await load({ showLoading: false });
+    } catch (error) {
+      try {
+        await cartService.add({ productId, quantity });
+        pushToast("Reorder item added to cart. Review it before checkout.", "success");
+        navigate("/cart");
+      } catch {
+        pushToast(apiMessage(error, "Failed to reorder. Product may be unavailable or out of stock."), "error");
+      }
     } finally {
       setBusy("");
     }
@@ -303,7 +327,7 @@ export default function OrdersPage() {
         </aside>
       </div>
 
-      <Modal open={modal === "details"} title={`Order LSH-${String(selectedOrder?.id || "").padStart(6, "0")}`} subtitle={selectedOrder?.productName || "Order details"} onClose={() => setModal("")} className="ui-modal-wide">
+      <Modal open={modal === "details"} title={`Order LSH-${String(selectedOrder?.id || "").padStart(6, "0")}`} subtitle={selectedOrder ? `${selectedOrder.businessName || selectedOrder.sellerName || "Order details"} - ${statusLabel(selectedOrder.status)}` : "Order details"} onClose={() => setModal("")} className="ui-modal-wide commerce-order-detail-modal">
         {selectedOrder ? <OrderDetails order={selectedOrder} /> : null}
       </Modal>
     </PageGrid>

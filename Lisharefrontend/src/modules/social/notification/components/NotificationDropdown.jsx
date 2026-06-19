@@ -131,6 +131,21 @@ export default function NotificationDropdown() {
     }
   };
 
+  const removeNotification = async (item) => {
+    const hideNotification = () => {
+      setItems((prev) => prev.filter((row) => String(row.id) !== String(item.id)));
+      if (!item.read) setUnreadCount((prev) => Math.max(0, prev - 1));
+    };
+
+    try {
+      await notificationService.remove(item.id);
+      hideNotification();
+      window.dispatchEvent(new Event("lishare-notifications-refresh"));
+    } catch {
+      hideNotification();
+    }
+  };
+
   const openNotification = async (item) => {
     if (!item?.read) {
       await markRead(item.id);
@@ -194,11 +209,16 @@ export default function NotificationDropdown() {
               <p>{item.message}</p>
               <small>{item.createdAt ? new Date(item.createdAt).toLocaleString() : ""}</small>
             </button>
-            {!item.read ? (
-              <button type="button" className="notif-mark-btn" onClick={() => markRead(item.id)} aria-label="Mark notification read" title="Mark read">
-                <CheckIcon />
+            <span className="notif-row-actions">
+              {!item.read ? (
+                <button type="button" className="notif-mark-btn" onClick={() => markRead(item.id)} aria-label="Mark notification read" title="Mark read">
+                  <CheckIcon />
+                </button>
+              ) : null}
+              <button type="button" className="notif-remove-btn" onClick={() => removeNotification(item)} aria-label="Remove notification" title="Remove">
+                <TrashIcon />
               </button>
-            ) : null}
+            </span>
           </li>
         ))}
       </ul>

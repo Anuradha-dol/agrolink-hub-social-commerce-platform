@@ -1,7 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import agroLinkHubLogo from "/src/assets/branding/agrolink-hub-logo.svg";
 import heroBackground from "/src/assets/backgrounds/agrolink-landing-hero-marketplace-4k.jpg";
+import socialFeatureImage from "/src/assets/backgrounds/landing-feature-social-friends-generated.jpg";
+import commerceFeatureImage from "/src/assets/backgrounds/landing-feature-commerce-generated.jpg";
+import workspaceFeatureImage from "/src/assets/backgrounds/landing-feature-workspace-generated.jpg";
 import { reviewService } from "/src/modules/business/review/services/reviewService";
 import { toMediaUrl } from "/src/modules/platform/common/utils/mediaUrl";
 import { assistantService } from "/src/modules/social/chatbot/services/assistantService";
@@ -40,17 +43,20 @@ const featureCards = [
   {
     label: "Social",
     title: "Share updates, stories, and media",
-    text: "Posts, reels, stories, chat, followers, comments, and notifications keep the community active."
+    text: "Posts, reels, stories, chat, followers, comments, and notifications keep the community active.",
+    image: socialFeatureImage
   },
   {
     label: "Commerce",
     title: "Turn local products into orders",
-    text: "Sellers can publish products while buyers browse, save, add to cart, and track purchases."
+    text: "Sellers can publish products while buyers browse, save, add to cart, and track purchases.",
+    image: commerceFeatureImage
   },
   {
     label: "Workspace",
     title: "Keep the work organized",
-    text: "Calendar, analytics, support tickets, admin reviews, and role-based tools sit beside the daily feed."
+    text: "Calendar, analytics, support tickets, admin reviews, and role-based tools sit beside the daily feed.",
+    image: workspaceFeatureImage
   }
 ];
 
@@ -119,6 +125,7 @@ function shouldLetBrowserHandle(event) {
 
 export default function LandingPage() {
   const navigate = useNavigate();
+  const landingRootRef = useRef(null);
   const [reviews, setReviews] = useState([]);
   const [chatOpen, setChatOpen] = useState(false);
   const [chatLoading, setChatLoading] = useState(false);
@@ -131,6 +138,90 @@ export default function LandingPage() {
     reviewService.list()
       .then((response) => setReviews(unwrapReviews(response).slice(0, 3)))
       .catch(() => setReviews([]));
+  }, []);
+
+  useEffect(() => {
+    const root = landingRootRef.current;
+    if (!root) return undefined;
+
+    const animatedSelectors = [
+      ".landing-section-head",
+      ".landing-live-panel",
+      ".landing-panel-list article",
+      ".landing-feature-card",
+      ".landing-story-band",
+      ".landing-workflow-list li",
+      ".landing-review-card"
+    ].join(",");
+
+    const revealItems = root.querySelectorAll(animatedSelectors);
+    const driftItems = root.querySelectorAll([
+      ".landing-live-panel",
+      ".landing-panel-list article",
+      ".landing-feature-card",
+      ".landing-story-band",
+      ".landing-workflow-list li",
+      ".landing-review-card"
+    ].join(","));
+
+    revealItems.forEach((item, index) => {
+      item.classList.add("landing-reveal-item");
+      item.style.setProperty("--landing-reveal-delay", `${Math.min(index * 35, 220)}ms`);
+    });
+
+    driftItems.forEach((item) => {
+      item.classList.add("landing-drift-item");
+    });
+
+    let observer;
+    if (!("IntersectionObserver" in window)) {
+      revealItems.forEach((item) => item.classList.add("is-visible"));
+    } else {
+      observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("is-visible");
+          observer.unobserve(entry.target);
+        });
+      }, { rootMargin: "0px 0px -12% 0px", threshold: 0.14 });
+
+      revealItems.forEach((item) => observer.observe(item));
+    }
+
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let frameId = 0;
+
+    const updateDrift = () => {
+      frameId = 0;
+      if (reduceMotion) return;
+
+      const viewportCenter = window.innerHeight / 2;
+      driftItems.forEach((item) => {
+        const rect = item.getBoundingClientRect();
+        const itemCenter = rect.top + rect.height / 2;
+        const progress = Math.max(-1, Math.min(1, (viewportCenter - itemCenter) / window.innerHeight));
+
+        item.style.setProperty("--landing-drift-x", "0px");
+        item.style.setProperty("--landing-drift-y", `${(progress * -10).toFixed(2)}px`);
+        item.style.setProperty("--landing-drift-rotate", "0deg");
+      });
+    };
+
+    const scheduleDrift = () => {
+      if (frameId) return;
+      frameId = window.requestAnimationFrame(updateDrift);
+    };
+
+    scheduleDrift();
+    window.addEventListener("scroll", scheduleDrift, { passive: true });
+    window.addEventListener("resize", scheduleDrift);
+
+    return () => {
+      if (observer) observer.disconnect();
+      if (frameId) window.cancelAnimationFrame(frameId);
+      window.removeEventListener("scroll", scheduleDrift);
+      window.removeEventListener("resize", scheduleDrift);
+    };
   }, []);
 
   const sendChat = async (event, presetText) => {
@@ -176,7 +267,7 @@ export default function LandingPage() {
   };
 
   return (
-    <main className="landing-page-public landing-v2" style={{ "--landing-hero-image": `url(${heroBackground})` }}>
+    <main ref={landingRootRef} className="landing-page-public landing-v2" style={{ "--landing-hero-image": `url(${heroBackground})` }}>
       <section className="landing-hero-v2">
         <div className="landing-hero-shade" />
         <nav className="landing-nav landing-nav-v2">
@@ -247,9 +338,14 @@ export default function LandingPage() {
         <div className="landing-feature-grid">
           {featureCards.map((feature) => (
             <article className="landing-feature-card" key={feature.label}>
-              <span>{feature.label}</span>
-              <h3>{feature.title}</h3>
-              <p>{feature.text}</p>
+              <figure className="landing-feature-card-media">
+                <img src={feature.image} alt="" loading="lazy" decoding="async" />
+              </figure>
+              <div className="landing-feature-card-body">
+                <span>{feature.label}</span>
+                <h3>{feature.title}</h3>
+                <p>{feature.text}</p>
+              </div>
             </article>
           ))}
         </div>

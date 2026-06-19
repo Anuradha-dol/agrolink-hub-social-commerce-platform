@@ -6,5 +6,6 @@ export const notificationService = {
   getUnreadCount: () => axiosInstance.get(ENDPOINTS.notifications.unreadCount),
   markRead: (id) => axiosInstance.put(ENDPOINTS.notifications.markRead(id)),
   readAll: () => axiosInstance.put(ENDPOINTS.notifications.readAll),
+  remove: (id) => axiosInstance.delete(ENDPOINTS.notifications.item(id)),
   clearAll: () => axiosInstance.delete(ENDPOINTS.notifications.clearAll)
 };

@@ -82,6 +82,7 @@ export const ENDPOINTS = {
     unreadCount: "/api/notifications/unread-count",
     markRead: (id) => `/api/notifications/${id}/read`,
     readAll: "/api/notifications/read-all",
+    item: (id) => `/api/notifications/${id}`,
     clearAll: "/api/notifications"
   },
   business: {
