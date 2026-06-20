@@ -6,8 +6,12 @@ The main idea is simple: sellers should not need one app for audience, another f
 
 ![AgroLink Hub landing page preview](docs/agrolink-hub-landing-page.png)
 
-[Project Report](docs/agrolink-hub-project-report.pdf)
-[Screenshot Guide](docs/AgroLink_Hub_Final_Screenshot_Guide.pdf)
+## Project Documents
+
+| Document | What it includes | PDF |
+| --- | --- | --- |
+| Project Report | Product scope, user roles, architecture, modules, database model, security, testing, deployment notes, and final project summary. | [Open project report](docs/agrolink-hub-project-report.pdf) |
+| Final Screenshot Guide | Completed app screens and visual workflow reference for reviewing the AgroLink Hub user experience. | [Open screenshot guide](docs/AgroLink_Hub_Final_Screenshot_Guide.pdf) |
 
 ## What The Project Solves
 
@@ -269,12 +273,10 @@ Lisharefrontend/src/index.css
 
 ## Documentation
 
-- [Project report PDF](docs/agrolink-hub-project-report.pdf)
-- [Final screenshot guide PDF](docs/AgroLink_Hub_Final_Screenshot_Guide.pdf)
-
-The report explains the product purpose, user roles, architecture, frontend and backend modules, database model, security behavior, social features, business workflows, support tools, deployment notes, testing notes, and final project scope.
-
-The screenshot guide provides the final app screens and visual reference for reviewing the completed AgroLink Hub workflow.
+| Document | Description |
+| --- | --- |
+| [Project report PDF](docs/agrolink-hub-project-report.pdf) | Explains the product purpose, user roles, architecture, frontend and backend modules, database model, security behavior, social features, business workflows, support tools, deployment notes, testing notes, and final project scope. |
+| [Final screenshot guide PDF](docs/AgroLink_Hub_Final_Screenshot_Guide.pdf) | Provides the final app screens and visual reference for reviewing the completed AgroLink Hub workflow. |
 
 ## Data And Upload Hygiene
 
